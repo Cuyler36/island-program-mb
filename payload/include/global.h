@@ -18,6 +18,18 @@
 #define INCBIN_S32 INCBIN
 #endif
 
+#define TRUE 1
+#define FALSE 0
+
+#define ARRAY_COUNT(arr) ((int)(sizeof(arr) / sizeof((arr)[0])))
+
+#ifndef MAX
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+#endif
+#ifndef MIN
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
+#endif
+
 // Prevent cross-jump optimization.
 #define BLOCK_CROSS_JUMP asm("");
 
@@ -27,6 +39,7 @@
 #define asm_unified(x) asm(".syntax unified\n" x "\n.syntax divided\n")
 
 #define NAKED __attribute__((naked))
+#define ATTRIBUTE_ALIGN(n) __attribute__((aligned(n)))
 
 
 #define NELEMS(arr) (sizeof(arr)/sizeof(*(arr)))
@@ -79,12 +92,718 @@ enum
 #define COLOR_G(color) ((color >> 5) & 0x1F)
 #define COLOR_B(color) ((color >> 10) & 0x1F)
 
+typedef u16 mActor_name_t;
 
-typedef struct GLOBAL_STRUCTURE {
+#define mISL_ISLAND_NAME_LEN 8
+
+#define mISL_FG_BLOCK_X_NUM 2
+#define mISL_FG_BLOCK_Z_NUM 1
+
+#define LAND_NAME_SIZE 8
+#define PLAYER_NAME_LEN 8
+
+#define PLAYER_NUM 4
+
+#define mHm_LAYER_NUM 4
+
+#define UT_X_NUM 16
+#define UT_Z_NUM 16
+
+#define mNW_ORIGINAL_DESIGN_NAME_LEN 16 /* length of design name */
+#define mNW_ORIGINAL_DESIGN_WIDTH 32 /* width */
+#define mNW_ORIGINAL_DESIGN_HEIGHT 32 /* height */
+#define mNW_DESIGN_TEX_SIZE (mNW_ORIGINAL_DESIGN_HEIGHT * (mNW_ORIGINAL_DESIGN_WIDTH / 2)) /* total texture data size */
+#define mNW_PALETTE_SIZE (16 * sizeof(u16))
+#define mNW_PALETTE_COUNT 16 /* number of design palettes */
+
+#define MAIL_HEADER_BASE_LEN 32
+#define MAIL_HEADER_LEN (MAIL_HEADER_BASE_LEN - PLAYER_NAME_LEN)
+#define MAIL_FOOTER_LEN 32
+#define MAIL_BODY_LEN 192
+
+#define ANIMAL_NUM_MIN 5
+#define ANIMAL_NUM_MAX 15 /* Maximum number of villagers possible in town */
+#define ANIMAL_MEMORY_NUM 7
+#define ANIMAL_CATCHPHRASE_LEN 10
+#define ANIMAL_HP_MAIL_NUM PLAYER_NUM
+#define mNpc_ISLAND_FTR_SAVE_NUM 4
+
+enum {
+    mISL_ISLAND_BLOCK_LEFT,
+    mISL_ISLAND_BLOCK_RIGHT,
+  
+    mISL_ISLAND_BLOCK_NUM
+};
+
+#define CHAR_INVERT_EXCLAMATION 0
+#define CHAR_INVERT_QUESTIONMARK 1
+#define CHAR_DIAERESIS_A 2
+#define CHAR_GRAVE_A 3
+#define CHAR_ACUTE_A 4
+#define CHAR_CIRCUMFLEX_A 5
+#define CHAR_TILDE_A 6
+#define CHAR_ANGSTROM_A 7
+#define CHAR_CEDILLA 8
+#define CHAR_GRAVE_E 9
+#define CHAR_ACUTE_E 10
+#define CHAR_CIRCUMFLEX_E 11
+#define CHAR_DIARESIS_E 12
+#define CHAR_GRAVE_I 13
+#define CHAR_ACUTE_I 14
+#define CHAR_CIRCUMFLEX_I 15
+#define CHAR_DIARESIS_I 16
+#define CHAR_ETH 17
+#define CHAR_TILDE_N 18
+#define CHAR_GRAVE_O 19
+#define CHAR_ACUTE_O 20
+#define CHAR_CIRCUMFLEX_O 21
+#define CHAR_TILDE_O 22
+#define CHAR_DIARESIS_O 23
+#define CHAR_OE 24
+#define CHAR_GRAVE_U 25
+#define CHAR_ACUTE_U 26
+#define CHAR_CIRCUMFLEX_U 27
+#define CHAR_DIARESIS_U 28
+#define CHAR_LOWER_BETA 29
+#define CHAR_THORN 30
+#define CHAR_GRAVE_a 31
+#define CHAR_SPACE 32
+#define CHAR_EXCLAMATION 33
+#define CHAR_QUOTATION 34
+#define CHAR_ACUTE_a 35
+#define CHAR_CIRCUMFLEX_a 36
+#define CHAR_PERCENT 37
+#define CHAR_AMPERSAND 38
+#define CHAR_APOSTROPHE 39
+#define CHAR_OPEN_PARENTHESIS 40
+#define CHAR_CLOSE_PARENTHESIS 41
+#define CHAR_TILDE 42
+#define CHAR_SYMBOL_HEART 43
+#define CHAR_COMMA 44
+#define CHAR_DASH 45
+#define CHAR_PERIOD 46
+#define CHAR_SYMBOL_MUSIC_NOTE 47
+#define CHAR_ZERO 48
+#define CHAR_ONE 49
+#define CHAR_TWO 50
+#define CHAR_THREE 51
+#define CHAR_FOUR 52
+#define CHAR_FIVE 53
+#define CHAR_SIX 54
+#define CHAR_SEVEN 55
+#define CHAR_EIGHT 56
+#define CHAR_NINE 57
+#define CHAR_COLON 58
+#define CHAR_SYMBOL_DROPLET 59
+#define CHAR_LESS_THAN 60
+#define CHAR_EQUALS 61
+#define CHAR_GREATER_THAN 62
+#define CHAR_QUESTIONMARK 63
+#define CHAR_AT_SIGN 64
+#define CHAR_A 65
+#define CHAR_B 66
+#define CHAR_C 67
+#define CHAR_D 68
+#define CHAR_E 69
+#define CHAR_F 70
+#define CHAR_G 71
+#define CHAR_H 72
+#define CHAR_I 73
+#define CHAR_J 74
+#define CHAR_K 75
+#define CHAR_L 76
+#define CHAR_M 77
+#define CHAR_N 78
+#define CHAR_O 79
+#define CHAR_P 80
+#define CHAR_Q 81
+#define CHAR_R 82
+#define CHAR_S 83
+#define CHAR_T 84
+#define CHAR_U 85
+#define CHAR_V 86
+#define CHAR_W 87
+#define CHAR_X 88
+#define CHAR_Y 89
+#define CHAR_Z 90
+#define CHAR_TILDE_a 91
+#define CHAR_SYMBOL_ANNOYED 92
+#define CHAR_DIARESIS_a 93
+#define CHAR_ANGSTROM_a 94
+#define CHAR_UNDERSCORE 95
+#define CHAR_LOWER_CEDILLA 96
+#define CHAR_a 97
+#define CHAR_b 98
+#define CHAR_c 99
+#define CHAR_d 100
+#define CHAR_e 101
+#define CHAR_f 102
+#define CHAR_g 103
+#define CHAR_h 104
+#define CHAR_i 105
+#define CHAR_j 106
+#define CHAR_k 107
+#define CHAR_l 108
+#define CHAR_m 109
+#define CHAR_n 110
+#define CHAR_o 111
+#define CHAR_p 112
+#define CHAR_q 113
+#define CHAR_r 114
+#define CHAR_s 115
+#define CHAR_t 116
+#define CHAR_u 117
+#define CHAR_v 118
+#define CHAR_w 119
+#define CHAR_x 120
+#define CHAR_y 121
+#define CHAR_z 122
+#define CHAR_GRAVE_e 123
+#define CHAR_ACUTE_e 124
+#define CHAR_CIRCUMFLEX_e 125
+#define CHAR_DIARESIS_e 126
+#define CHAR_CONTROL_CODE 127
+#define CHAR_MESSAGE_TAG 128
+#define CHAR_GRAVE_i 129
+#define CHAR_ACUTE_i 130
+#define CHAR_CIRCUMFLEX_i 131
+#define CHAR_DIARESIS_i 132
+#define CHAR_INTERPUNCT 133
+#define CHAR_LOWER_ETH 134
+#define CHAR_TILDE_n 135
+#define CHAR_GRAVE_o 136
+#define CHAR_ACUTE_o 137
+#define CHAR_CIRCUMFLEX_o 138
+#define CHAR_TILDE_o 139
+#define CHAR_DIARESIS_o 140
+#define CHAR_oe 141
+#define CHAR_GRAVE_u 142
+#define CHAR_ACUTE_u 143
+#define CHAR_HYPHEN 144
+#define CHAR_CIRCUMFLEX_u 145
+#define CHAR_DIARESIS_u 146
+#define CHAR_ACUTE_y 147
+#define CHAR_DIARESIS_y 148
+#define CHAR_LOWER_THORN 149
+#define CHAR_ACUTE_Y 150
+#define CHAR_BROKEN_BAR 151
+#define CHAR_SILCROW 152
+#define CHAR_FEMININE_ORDINAL 153
+#define CHAR_MASCULINE_ORDINAL 154
+#define CHAR_DOUBLE_VERTICAL_BAR 155
+#define CHAR_LATIN_MU 156
+#define CHAR_SUPERSCRIPT_THREE 157
+#define CHAR_SUPERSCRIPT_TWO 158
+#define CHAR_SUPRESCRIPT_ONE 159
+#define CHAR_MACRON_SYMBOL 160
+#define CHAR_LOGICAL_NEGATION 161
+#define CHAR_ASH 162
+#define CHAR_LOWER_ASH 163
+#define CHAR_INVERT_QUOTATION 164
+#define CHAR_GUILLEMET_OPEN 165
+#define CHAR_GUILLEMET_CLOSE 166
+#define CHAR_SYMBOL_SUN 167
+#define CHAR_SYMBOL_CLOUD 168
+#define CHAR_SYMBOL_UMBRELLA 169
+#define CHAR_SYMBOL_WIND 170
+#define CHAR_SYMBOL_SNOWMAN 171
+#define CHAR_LINES_CONVERGE_RIGHT 172
+#define CHAR_LINES_CONVERGE_LEFT 173
+#define CHAR_FORWARD_SLASH 174
+#define CHAR_INFINITY 175
+#define CHAR_CIRCLE 176
+#define CHAR_CROSS 177
+#define CHAR_SQUARE 178
+#define CHAR_TRIANGLE 179
+#define CHAR_PLUS 180
+#define CHAR_SYMBOL_LIGTNING 181 // ?? maybe electric also?
+#define CHAR_MARS_SYMBOL 182 // aka male symbol
+#define CHAR_VENUS_SYMBOL 183 // aka female symbol
+#define CHAR_SYMBOL_FLOWER 184
+#define CHAR_SYMBOL_STAR 185
+#define CHAR_SYMBOL_SKULL 186
+#define CHAR_SYMBOL_SURPRISE 187
+#define CHAR_SYMBOL_HAPPY 188
+#define CHAR_SYMBOL_SAD 189
+#define CHAR_SYMBOL_ANGRY 190
+#define CHAR_SYMBOL_SMILE 191
+#define CHAR_DIMENSION_SIGN 192 // multiplication character
+#define CHAR_OBELUS_SIGN 193 // division character
+#define CHAR_SYMBOL_HAMMER 194
+#define CHAR_SYMBOL_RIBBON 195
+#define CHAR_SYMBOL_MAIL 196
+#define CHAR_SYMBOL_MONEY 197
+#define CHAR_SYMBOL_PAW 198
+#define CHAR_SYMBOL_SQUIRREL 199 // might be dog? would make a bit more sense ig
+#define CHAR_SYMBOL_CAT 200
+#define CHAR_SYMBOL_RABBIT 201
+#define CHAR_SYMBOL_OCTOPUS 202 // could also be bird...?
+#define CHAR_SYMBOL_COW 203
+#define CHAR_SYMBOL_PIG 204
+#define CHAR_NEW_LINE 205
+#define CHAR_SYMBOL_FISH 206
+#define CHAR_SYMBOL_BUG 207
+#define CHAR_SEMICOLON 208
+#define CHAR_HASHTAG 209
+#define CHAR_SPACE_2 210 // Short space
+#define CHAR_SPACE_3 211 // Wide space
+#define CHAR_SYMBOL_KEY 212
+/* Begin EU-only symbols, unused in AC */
+#define CHAR_LEFT_QUOTATION 213
+#define CHAR_RIGHT_QUOTATION 214
+#define CHAR_LEFT_APOSTROPHE 215
+#define CHAR_RIGHT_APOSTROPHE 216
+#define CHAR_ETHEL 217
+#define CHAR_LOWER_ETHEL 218
+#define CHAR_ORDINAL_e 219
+#define CHAR_ORDINAL_er 220
+#define CHAR_ORDINAL_re 221
+#define CHAR_BACKSLASH 222
+/* Unused characters */
+#define CHAR_223 223
+#define CHAR_224 224
+#define CHAR_225 225
+#define CHAR_226 226
+#define CHAR_227 227
+#define CHAR_228 228
+#define CHAR_229 229
+#define CHAR_230 230
+#define CHAR_231 231
+#define CHAR_232 232
+#define CHAR_233 233
+#define CHAR_234 234
+#define CHAR_235 235
+#define CHAR_236 236
+#define CHAR_237 237
+#define CHAR_238 238
+#define CHAR_239 239
+#define CHAR_240 240
+#define CHAR_241 241
+#define CHAR_242 242
+#define CHAR_243 243
+#define CHAR_244 244
+#define CHAR_245 245
+#define CHAR_246 246
+#define CHAR_247 247
+#define CHAR_248 248
+#define CHAR_249 249
+#define CHAR_250 250
+#define CHAR_251 251
+#define CHAR_252 252
+#define CHAR_253 253
+#define CHAR_254 254
+#define CHAR_255 255
+
+#define TOTAL_CHARS 256
+
+enum {
+    mFont_CONT_CODE_BEGIN = 0,
+    mFont_CONT_CODE_LAST = mFont_CONT_CODE_BEGIN,
+    mFont_CONT_CODE_CONTINUE,
+    mFont_CONT_CODE_CLEAR,
+    mFont_CONT_CODE_CURSOR_SET_TIME,
+    mFont_CONT_CODE_BUTTON,
+    mFont_CONT_CODE_COLOR,
+    mFont_CONT_CODE_ABLE_CANCEL,
+    mFont_CONT_CODE_UNABLE_CANCEL,
+    mFont_CONT_CODE_SET_DEMO_ORDER_PLAYER,
+    mFont_CONT_CODE_SET_DEMO_ORDER_NPC0,
+    mFont_CONT_CODE_SET_DEMO_ORDER_NPC1,
+    mFont_CONT_CODE_SET_DEMO_ORDER_NPC2,
+    mFont_CONT_CODE_SET_DEMO_ORDER_QUEST,
+    mFont_CONT_CODE_SET_SELECT_WINDOW,
+    mFont_CONT_CODE_SET_NEXT_MESSAGE_F,
+    mFont_CONT_CODE_SET_NEXT_MESSAGE_0,
+    mFont_CONT_CODE_SET_NEXT_MESSAGE_1,
+    mFont_CONT_CODE_SET_NEXT_MESSAGE_2,
+    mFont_CONT_CODE_SET_NEXT_MESSAGE_3,
+    mFont_CONT_CODE_SET_NEXT_MESSAGE_RANDOM_2,
+    mFont_CONT_CODE_SET_NEXT_MESSAGE_RANDOM_3,
+    mFont_CONT_CODE_SET_NEXT_MESSAGE_RANDOM_4,
+    mFont_CONT_CODE_SET_SELECT_STRING_2,
+    mFont_CONT_CODE_SET_SELECT_STRING_3,
+    mFont_CONT_CODE_SET_SELECT_STRING_4,
+    mFont_CONT_CODE_SET_FORCE_NEXT,
+    mFont_CONT_CODE_PUT_STRING_PLAYER_NAME,
+    mFont_CONT_CODE_PUT_STRING_TALK_NAME,
+    mFont_CONT_CODE_PUT_STRING_TAIL,
+    mFont_CONT_CODE_PUT_STRING_YEAR,
+    mFont_CONT_CODE_PUT_STRING_MONTH,
+    mFont_CONT_CODE_PUT_STRING_WEEK,
+    mFont_CONT_CODE_PUT_STRING_DAY,
+    mFont_CONT_CODE_PUT_STRING_HOUR,
+    mFont_CONT_CODE_PUT_STRING_MIN,
+    mFont_CONT_CODE_PUT_STRING_SEC,
+    mFont_CONT_CODE_PUT_STRING_FREE0,
+    mFont_CONT_CODE_PUT_STRING_FREE1,
+    mFont_CONT_CODE_PUT_STRING_FREE2,
+    mFont_CONT_CODE_PUT_STRING_FREE3,
+    mFont_CONT_CODE_PUT_STRING_FREE4,
+    mFont_CONT_CODE_PUT_STRING_FREE5,
+    mFont_CONT_CODE_PUT_STRING_FREE6,
+    mFont_CONT_CODE_PUT_STRING_FREE7,
+    mFont_CONT_CODE_PUT_STRING_FREE8,
+    mFont_CONT_CODE_PUT_STRING_FREE9,
+    mFont_CONT_CODE_PUT_STRING_DETERMINATION,
+    mFont_CONT_CODE_PUT_STRING_COUNTRY_NAME,
+    mFont_CONT_CODE_PUT_STRING_RANDOM_NUMBER_2,
+    mFont_CONT_CODE_PUT_STRING_ITEM0,
+    mFont_CONT_CODE_PUT_STRING_ITEM1,
+    mFont_CONT_CODE_PUT_STRING_ITEM2,
+    mFont_CONT_CODE_PUT_STRING_ITEM3,
+    mFont_CONT_CODE_PUT_STRING_ITEM4,
+    mFont_CONT_CODE_PUT_STRING_FREE10,
+    mFont_CONT_CODE_PUT_STRING_FREE11,
+    mFont_CONT_CODE_PUT_STRING_FREE12,
+    mFont_CONT_CODE_PUT_STRING_FREE13,
+    mFont_CONT_CODE_PUT_STRING_FREE14,
+    mFont_CONT_CODE_PUT_STRING_FREE15,
+    mFont_CONT_CODE_PUT_STRING_FREE16,
+    mFont_CONT_CODE_PUT_STRING_FREE17,
+    mFont_CONT_CODE_PUT_STRING_FREE18,
+    mFont_CONT_CODE_PUT_STRING_FREE19,
+    mFont_CONT_CODE_PUT_STRING_MAIL,
+    mFont_CONT_CODE_SET_PLAYER_DESTINY0,
+    mFont_CONT_CODE_SET_PLAYER_DESTINY1,
+    mFont_CONT_CODE_SET_PLAYER_DESTINY2,
+    mFont_CONT_CODE_SET_PLAYER_DESTINY3,
+    mFont_CONT_CODE_SET_PLAYER_DESTINY4,
+    mFont_CONT_CODE_SET_PLAYER_DESTINY5,
+    mFont_CONT_CODE_SET_PLAYER_DESTINY6,
+    mFont_CONT_CODE_SET_PLAYER_DESTINY7,
+    mFont_CONT_CODE_SET_PLAYER_DESTINY8,
+    mFont_CONT_CODE_SET_PLAYER_DESTINY9,
+    mFont_CONT_CODE_SET_MESSAGE_CONTENTS_NORMAL,
+    mFont_CONT_CODE_SET_MESSAGE_CONTENTS_ANGRY,
+    mFont_CONT_CODE_SET_MESSAGE_CONTENTS_SAD,
+    mFont_CONT_CODE_SET_MESSAGE_CONTENTS_FUN,
+    mFont_CONT_CODE_SET_MESSAGE_CONTENTS_SLEEPY,
+    mFont_CONT_CODE_SET_COLOR_CHAR,
+    mFont_CONT_CODE_SOUND_CUT,
+    mFont_CONT_CODE_SET_LINE_OFFSET,
+    mFont_CONT_CODE_SET_LINE_TYPE,
+    mFont_CONT_CODE_SET_CHAR_SCALE,
+    mFont_CONT_CODE_BUTTON2,
+    mFont_CONT_CODE_BGM_MAKE,
+    mFont_CONT_CODE_BGM_DELETE,
+    mFont_CONT_CODE_MSG_TIME_END,
+    mFont_CONT_CODE_SOUND_TRG_SYS,
+    mFont_CONT_CODE_SET_LINE_SCALE,
+    mFont_CONT_CODE_SOUND_NO_PAGE,
+    mFont_CONT_CODE_VOICE_TRUE,
+    mFont_CONT_CODE_VOICE_FALSE,
+    mFont_CONT_CODE_SELECT_NO_B,
+    mFont_CONT_CODE_GIVE_OPEN,
+    mFont_CONT_CODE_GIVE_CLOSE,
+    mFont_CONT_CODE_SET_MESSAGE_CONTENTS_GLOOMY,
+    mFont_CONT_CODE_SELECT_NO_B_CLOSE,
+    mFont_CONT_CODE_SET_NEXT_MESSAGE_RANDOM_SECTION,
+    mFont_CONT_CODE_AGB_DUMMY0,
+    mFont_CONT_CODE_AGB_DUMMY1,
+    mFont_CONT_CODE_AGB_DUMMY2,
+    mFont_CONT_CODE_SPACE,
+    mFont_CONT_CODE_AGB_DUMMY3,
+    mFont_CONT_CODE_AGB_DUMMY4,
+    mFont_CONT_CODE_MALE_FEMALE_CHECK,
+    mFont_CONT_CODE_AGB_DUMMY5,
+    mFont_CONT_CODE_AGB_DUMMY6,
+    mFont_CONT_CODE_AGB_DUMMY7,
+    mFont_CONT_CODE_AGB_DUMMY8,
+    mFont_CONT_CODE_AGB_DUMMY9,
+    mFont_CONT_CODE_AGB_DUMMY10,
+    mFont_CONT_CODE_PUT_STRING_ISLAND_NAME,
+    mFont_CONT_CODE_SET_CURSOR_JUST,
+    mFont_CONT_CODE_CLR_CURSOR_JUST,
+    mFont_CONT_CODE_CUT_ARTICLE,
+    mFont_CONT_CODE_CAPITAL_LETTER,
+    mFont_CONT_CODE_PUT_STRING_AM_PM,
+    mFont_CONT_CODE_SET_NEXT_MESSAGE_4,
+    mFont_CONT_CODE_SET_NEXT_MESSAGE_5,
+    mFont_CONT_CODE_SET_SELECT_STRING_5,
+    mFont_CONT_CODE_SET_SELECT_STRING_6,
+  
+    mFont_CONT_CODE_NUM,
+    mFont_CONT_CODE_END = 256
+};
+
+typedef struct OSRTCTime { // from lbrtc library in N64
+    u8 sec;
+    u8 min;
+    u8 hour;
+    u8 day;
+    u8 weekday;
+    u8 month;
+    u16 year;
+} OSRTCTime; 
+  
+typedef u8 lbRTC_sec_t;
+typedef u8 lbRTC_min_t;
+typedef u8 lbRTC_hour_t;
+typedef u8 lbRTC_day_t;
+typedef u8 lbRTC_weekday_t;
+typedef u8 lbRTC_month_t;
+typedef u16 lbRTC_year_t;
+
+  typedef OSRTCTime lbRTC_time_c; /* Name leaked in lbRTC_time_c_save_data_check */
+  
+typedef struct lbRTC_ymd_s {
+    lbRTC_year_t year;
+    lbRTC_month_t month;
+    lbRTC_day_t day;
+} lbRTC_ymd_c; /* Name leaked in mTM_ymd_2_time */
+
+/* sizeof(TempoBeat_c) == 2 */
+typedef struct audio_tempo_beat_s {
+    /* 0x00 */ u8 tempo;
+    /* 0x01 */ s8 beat;
+} TempoBeat_c;
+
+/* sizeof(PersonalID_c) == 0x14 */
+typedef struct personal_id_s {
+    /* 0x00 */ u8 player_name[PLAYER_NAME_LEN];
+    /* 0x08 */ u8 land_name[LAND_NAME_SIZE];
+    /* 0x10 */ u16 player_id;
+    /* 0x12 */ u16 land_id;
+} PersonalID_c;
+
+enum {
+    mNpc_LOOKS_GIRL, // 'normal'
+    mNpc_LOOKS_KO_GIRL, // 'peppy'
+    mNpc_LOOKS_BOY, // 'lazy'
+    mNpc_LOOKS_SPORT_MAN, // 'jock'
+    mNpc_LOOKS_GRIM_MAN, // 'cranky'
+    mNpc_LOOKS_NANIWA_LADY, // 'snooty'
+    mNpc_LOOKS_UNSET,
+  
+    mNpc_LOOKS_NUM = mNpc_LOOKS_UNSET
+};
+  
+/* sizeof(AnmPersonalID_c) == 0xE */
+typedef struct animal_personal_id_s {
+    /* 0x00 */ mActor_name_t npc_id; /* id */
+    /* 0x02 */ u16 land_id; /* town id */
+    /* 0x04 */ u8 land_name[LAND_NAME_SIZE]; /* town name */
+    /* 0x0C */ u8 name_id; /* lower byte of the id */
+    /* 0x0D */ u8 looks; /* internal name for personality */
+} AnmPersonalID_c;
+
+/* sizeof(mHm_lyr_c) == 0x228 */
+typedef struct home_layer_s {
+    /* 0x000 */ mActor_name_t items[UT_Z_NUM][UT_X_NUM]; /* Furniture item actors */
+    /* 0x200 */ u64 ftr_switch;     /* Bitfield for controlling which furniture items are active, max of 64 */
+    /* 0x208 */ u32 haniwa_step[8]; /* Only referenced in mISL_gc_to_agb_layer */
+} mHm_lyr_c;
+
+/* sizeof(mHm_wf_c) == 2 */
+typedef struct home_wall_floor_s {
+    /* 0x00 */ u8 flooring_idx;
+    /* 0x01 */ u8 wallpaper_idx;
+} mHm_wf_c;
+
+/* sizeof(mHm_goki_c) == 0xA */
+typedef struct home_goki_s {
+    /* 0x00 */ lbRTC_time_c time; /* last time updated */
+    /* 0x08 */ u8 num;            /* number of cockroaches in the house */
+    /* 0x09 */ u8 pad;            /* unused outside of being initalized to 0 */
+} mHm_goki_c;
+
+/* sizeof(Anmlnd_c) == 0xA */
+typedef struct animal_land_mem_s {
+    /* 0x00 */ u8 name[LAND_NAME_SIZE];
+    /* 0x08 */ u16 id;
+} Anmlnd_c;
+
+typedef struct island_animal_best_ftr_s {
+    u32 check;
+    u16 have_bitfield;
+} Anm_bestFtr_c;
+
+/* sizeof(memuni_u) == 0xC */
+typedef union {
+    Anmlnd_c land;        /* size = 0xA */
+    Anm_bestFtr_c island; /* size = 6 */
+} memuni_u;
+
+/* sizeof(anmuni) == 8 */
+typedef union {
+    u8 previous_land_name[LAND_NAME_SIZE];
+    mActor_name_t island_ftr[mNpc_ISLAND_FTR_SAVE_NUM];
+} anmuni_u;
+
+/* sizeof(AnmHPMail_c) == 0x1C */
+typedef struct animal_password_mail_s {
+    /* 0x00 */ lbRTC_time_c receive_time;
+    /* 0x08 */ u8 password[20]; /* TODO: this should not be a hardcoded length */
+} AnmHPMail_c;
+
+/* sizeof(Anmhome_c) == 5 */
+typedef struct animal_home_s {
+    /* 0x00 */ u8 type_unused; /* Likely the house type, but seems to be unused outside of SChk_Anmhome_c_sub */
+    /* 0x01 */ u8 block_x;     /* acre x position */
+    /* 0x02 */ u8 block_z;     /* acre y position */
+    /* 0x03 */ u8 ut_x;        /* unit x position */
+    /* 0x04 */ u8 ut_z;        /* unit z position */
+} Anmhome_c;
+
+/* sizeof(mQst_contest_info_u) == 4 */
+typedef union quest_contest_info_s {
+    struct {
+        /* 0x00 */ u8 flowers_requested; /* number of flowers village requests be planted in acre */
+    } flower_data;
+
+    struct {
+        /* 0x00 */ u8 score;              /* score rank of letter */
+        /* 0x02 */ mActor_name_t present; /* present sent with letter */
+    } letter_data;
+} mQst_contest_info_u;
+
+/* sizeof(mFM_fg_c) == 0x200 */
+typedef struct fg_items_s {
+    /* 0x000 */ mActor_name_t items[UT_Z_NUM][UT_X_NUM];
+} mFM_fg_c;
+
+typedef struct original_texture_s {
+    u8 data[mNW_DESIGN_TEX_SIZE];
+} ATTRIBUTE_ALIGN(32) mNW_original_tex_c;
+  
+/* sizeof(mNW_original_design_c) == 0x220 */
+typedef struct original_data_s {
+    /* 0x000 */ u8 name[mNW_ORIGINAL_DESIGN_NAME_LEN];
+    /* 0x010 */ u8 palette;
+    /* 0x011 */ u8 flag_design_set;
+    /* 0x020 */ mNW_original_tex_c design; /* this is aligned to 32 bytes for ARAM transfer */
+} mNW_original_design_c;
+
+typedef struct agb_landinfo_s {
+    u8 name[LAND_NAME_SIZE];
+    s8 exists;
+    u16 id;
+} mISL_landinfo_agb_c;
+
+typedef struct agb_floor_s {
+    /* 0x000 */ mHm_lyr_c layers[mHm_LAYER_NUM];
+    /* 0x8A0 */ mHm_wf_c wall_floor;
+    /* 0x8A2 */ u16 pad_8A2;
+    /* 0x8A4 */ TempoBeat_c tempo_beat;
+    /* 0x8A8 */ u32 floor_bit_info;
+} mISL_flr_agb_c;
+
+typedef struct agb_cottage_s {
+    /* 0x000 */ mHm_wf_c unused_wall_floor; /* Has wallpaper & flooring bounds checks in sChk_CheckSaveData_Cattage */
+    /* 0x002 */ u8 pad_2[2];
+    /* 0x004 */ u8 unk_2[2]; /* struct/array that is two bytes long, maybe another wall floor? */
+    /* 0x008 */ mISL_flr_agb_c room; /* Cottage room */
+    /* 0x8B8 */ u8 unk_8B8; // unk_4
+    /* 0x8B9 */ u8 unk_8B9; // unk_5
+    /* 0x8BA */ u8 pad_8BA;
+    /* 0x8BB */ u8 pad_8BB;
+    /* 0x8BC */ mHm_goki_c goki; /* Cottage cockroaches */
+    /* 0x8C8 */ u32 pad_8C8;
+    /* 0x8CC */ u32 music_box[2]; /* Cottage music storage... separate from main home? */
+} mISL_cottage_agb_c;
+
+typedef struct agb_anmplayermail_s {
+    /* 0x000 */ u8 font; /* 'font' to use for letter info */
+    /* 0x001 */ u8 paper_type; 
+    /* 0x002 */ mActor_name_t present;
+    /* 0x004 */ u8 header_back_start; /* position for name insertion in header */
+    /* 0x005 */ u8 pad_5[3]; /* likely pad */
+    /* 0x008 */ u8 header[MAIL_HEADER_LEN];
+    /* 0x020 */ u8 body[MAIL_BODY_LEN];
+    /* 0x0E0 */ u8 footer[MAIL_FOOTER_LEN];
+    /* 0x100 */ lbRTC_ymd_c date; /* sent date */
+} mISL_Anmplmail_agb_c;
+
+typedef struct agb_anmmem_s {
+    PersonalID_c player_id;
+    lbRTC_time_c last_speak_time;
+    memuni_u memuni;
+    u64 saved_town_tune;
+    s8 friendship;
+    u32 letter_info;
+    mISL_Anmplmail_agb_c letter;
+} mISL_Anmmem_agb_c;
+
+typedef struct agb_quest_base_s {
+    /* 0x00 */ u32 info;
+    /* 0x04 */ lbRTC_time_c time_limit;
+} mISL_quest_base_c;
+
+typedef struct agb_quest_contest_s {
+    /* 0x00 */ mISL_quest_base_c base; /* quest base struct */
+    /* 0x0C */ mActor_name_t requested_item; /* item (if any) requested by the villager */
+    /* 0x0E */ u8 pad_0E[2];
+    /* 0x10 */ PersonalID_c player_id; /* personal id of the player */
+    /* 0x24 */ s8 type; /* type of quest, seems to be repeat of data in quest base */
+    /* 0x25 */ u8 pad_25[3];
+    /* 0x28 */ mQst_contest_info_u info; /* contest info for flower & letter quests */
+} mISL_quest_contest_c;
+
+typedef struct agb_animal_s {
+    /* 0x000 */ AnmPersonalID_c id; /* this villager's ID */
+    /* 0x010 */ mISL_Anmmem_agb_c memories[ANIMAL_MEMORY_NUM]; /* memories of players who've spoken to this villager */
+    /* 0x8D0 */ Anmhome_c home_info; /* home position info */
+    /* 0x8D5 */ u8 pad_8D5[3];
+    /* 0x8D8 */ u8 catchphrase[ANIMAL_CATCHPHRASE_LEN]; /* may be called 'word_ending' */
+    /* 0x8E2 */ u8 pad_8E2[2];
+    /* 0x8E4 */ mISL_quest_contest_c contest_quest; /* current contest quest information */
+    /* 0x910 */ u8 parent_name[PLAYER_NAME_LEN]; /* name of the player who 'spawned' the villager in, unsure why this is tracked */
+    /* 0x918 */ u8 pad_918[4];
+    /* 0x91C */ anmuni_u anmuni; /* name of the last town the villager lived in or saved island ftr */
+    /* 0x924 */ u8 pad_924[4]; /* may include last_land_id */
+    /* 0x928 */ u8 mood; /* probably called 'feel' based on code */
+    /* 0x929 */ u8 mood_time; /* probably called 'feel_tim' based on code */
+    /* 0x92A */ mActor_name_t cloth; /* shirt the villager is wearing */
+    /* 0x92C */ u16 remove_info; /* info about villager moving between towns? kinda stubbed */
+    /* 0x92D */ u8 is_home; /* TRUE when the villager is home, otherwise FALSE */
+    /* 0x92E */ u8 moved_in; /* TRUE when the villager moved in after town creation, FALSE if they started out in town */
+    /* 0x92F */ u8 removing; /* TRUE when the villager is leaving town, FALSE otherwise */
+    /* 0x930 */ u8 cloth_original_id; /* 0xFF when not wearing an Able Sister's pattern, otherwise 0-3 indicating which pattern */
+    /* 0x931 */ s8 umbrella_id; /* 0xFF when no umbrella, 0-31 when a standard umbrella, 32-35 when using an Able Sister's pattern */
+    /* 0x932 */ u8 unk_932; /* Exists according to mISL_gc_to_agb_animal, but seems unused in practice */
+    /* 0x934 */ mActor_name_t present_cloth; /* The most recently received shirt from a letter which the villager may change into */
+    /* 0x936 */ u8 pad_936[6];
+    /* 0x93C */ u8 animal_relations[ANIMAL_NUM_MAX]; /* relationships between all villagers in town, starts at 128 which is neutral */
+    /* 0x94B */ u8 pad_94B[5];
+    /* 0x950 */ AnmHPMail_c hp_mail[ANIMAL_HP_MAIL_NUM]; /* mail password info storage */
+    /* 0x9C0 */ u8 _9C0[24]; /* unknown usage/unused */
+} mISL_Animal_agb_c;
+
+typedef struct island_agb_s {
+    /* 0x0000 */ u8 _0000[8];
+    /* 0x0008 */ u8 name[mISL_ISLAND_NAME_LEN]; /* island name */
+    /* 0x0010 */ u8 grass_tex_type; /* grass type */
+    /* 0x0011 */ u8 _0011[2];
+    /* 0x0013 */ u8 in_use; /* Set on the GBA when the island has been transferred already */
+    /* 0x0014 */ mISL_landinfo_agb_c landinfo; /* land info for town */
+    /* 0x0020 */ u8 _0020[4];
+    /* 0x0024 */ mFM_fg_c fgblock[mISL_FG_BLOCK_Z_NUM][mISL_FG_BLOCK_X_NUM]; /* island item actor data */
+    /* 0x0424 */ u8 _0424[4];
+    /* 0x0428 */ mISL_cottage_agb_c cottage; /* player shared cottage data */
+    /* 0x0D00 */ mNW_original_design_c flag_design; /* island flag design */
+    /* 0x0F20 */ mISL_Animal_agb_c animal; /* islander info */
+    /* 0x18F8 */ u16 deposit[mISL_FG_BLOCK_X_NUM * mISL_FG_BLOCK_Z_NUM][UT_Z_NUM]; /* buried item bitfield */
+    /* 0x1938 */ u8 bg_data[mISL_ISLAND_BLOCK_NUM]; /* island acre ids */
+    /* 0x193A */ u8 weather;
+    /* 0x193C */ lbRTC_time_c renew_time; /* last time island was visited? */
+    /* 0x1944 */ int npc_idx;
+    /* 0x1948 */ u32 earth_tex[1024];
+    /* 0x2948 */ u32 npc_tex[1024];
+    /* 0x3948 */ u16 npc_pal[16];
+    /* 0x3968 */ u8 _3968[20];
+    /* 0x397C */ u8 _397C;
+    /* 0x397D */ u8 last_song_to_island; /* last song kapp'n sang for a male character */
+    /* 0x397E */ u8 last_song_from_island; /* last song kapp'n sang for a female character */
+    /* 0x397F */ u8 checksum;
+} Island_agb_c;
+
+
+typedef struct GameState {
     u32 unk_000;
     u8 pad_004[0x8];
     u32 rngValue;
-    u8 pad_010[0x814 - 0x10];
+    u32 game_time_frames; // time of day represented by number of frames
+    u8 pad_014[0x814 - 0x14];
     vu16 unk_814; // thanks jiang
     u16 unk_816;
     u16 unk_818;
@@ -106,7 +825,12 @@ typedef struct GLOBAL_STRUCTURE {
     u16 unk_846;
     u16 unk_848;
     u16 unk_84A;
-    u8 pad_84C[0x852 - 0x84C];
+    u8 unk_84C;
+    u8 unk_84D;
+    u8 unk_84E;
+    u8 unk_84F;
+    u8 unk_850;
+    u8 unk_851;
     u8 unk_852;
     u8 unk_853;
     u8 unk_854;
@@ -122,8 +846,38 @@ typedef struct GLOBAL_STRUCTURE {
     u8 unk_85E;
     u8 unk_85F;
     u8 unk_860;
-} GLOBAL_STRUCTURE;
+} GameState;
 
+typedef struct Entity {
+    int x;
+    int y;
+    int _08;
+    int _0C;
+    int _10;
+    int _14;
+    int _18;
+    int _1C;
+    int _20;
+    int _24;
+    u16 item_tile_no[5];
+    u16 item[5];
+    u16 _3C;
+    u16 _3E;
+    u16 _40;
+    u16 _42;
+    u16 _44;
+    u16 _46;
+    u16 _48;
+    u16 _4A;
+    u8 item_tile_frame;
+    u8 _4D;
+    u8 type;
+    u8 _4F;
+    u8 _50;
+    u8 _51;
+    u8 _52;
+    u8 _53;
+} Entity;
 
 typedef struct unk_struct_03000E30 {
     s8 *unk0;
@@ -146,6 +900,57 @@ typedef struct unk_struct_03000E50 {
     u8 pad[0x16];
     u8 unk26;
 } unk_struct_03000E50;
+
+typedef struct m_msg_struct0_s {
+    int _00;
+    int _04;
+    u8 _08;
+    u8 _09;
+    u8 _0A;
+    u8 _0B;
+    int _0C;
+    u8 _10;
+    u8 _11;
+    u8 _12;
+    u8 _13;
+    u8 _14;
+    u8 _15;
+    u8 _16;
+    u8 _17;
+} m_msg_struct0_c;
+
+typedef struct m_msg_agb_s {
+    m_msg_struct0_c _00[3];
+    int _48;
+    int _4C;
+    u32* _50;
+    u8* code_p;
+    int _58;
+    int _5C;
+    int total_code;
+    int _64;
+    u32 _68;
+    s16 code_ofs;
+    s16 _6E;
+    u8 _70;
+    u8 mode;
+    u8 _72;
+    s8 _73;
+    s8 _74;
+    u8 _75;
+    s8 _76;
+    u8 _77;
+    u8 _78;
+    u8 _79;
+    u8 _7A;
+    u8 _7B;
+    u8 _7C;
+    u8 _7D;
+    u8 _7E;
+    u8 _7F;
+    u8 _80;
+    u8 _81[0xA0 - 0x81];
+} M_MSG_AGB;
 
 
 #define DmaSetSrc(dmaNum, src)     \
@@ -212,9 +1017,10 @@ extern u8* g020317a4;
 extern u8* g02038000;
 extern u8* g02038200;
 extern u32* gUnk_30008C0;
-extern GLOBAL_STRUCTURE gGlobalStructure;
+extern GameState gGameState;
 extern u64 gUnk_30008D0[0x80];
 extern unk_struct_03000E30 gUnk_3000E30;
 extern unk_struct_03000E50 g03000E50;
+extern M_MSG_AGB gMsgAgb; // 0x03002A20
 
 #endif

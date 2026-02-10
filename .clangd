@@ -1,0 +1,11 @@
+CompileFlags:
+  Add:
+    - -I./tools/agbcc/include
+    - -I./payload/include
+    - -I./include
+    - -nostdinc
+    - -undef
+    - -D__GBA__
+    - -target
+    - arm-none-eabi
+    - -mcpu=arm7tdmi

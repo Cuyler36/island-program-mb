@@ -12,3 +12,6 @@ tools/binutils
 *.dump
 .idea
 payload/payload.bin
+.cache/
+compile_commands.json
+.vscode/
