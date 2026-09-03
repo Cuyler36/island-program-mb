@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prepare the monolithic ARM ELF object for objdiff.
+"""Prepare the generated monolithic ARM ELF object for objdiff.
 
 The hand-written target assembly declares functions but does not emit matching
 ``.size`` directives.  Modern GNU as also emits R_ARM_V4BX marker relocations,
@@ -9,7 +9,7 @@ that:
 * infers zero-sized function extents from the next function in .text, and
 * removes R_ARM_V4BX marker relocations that objdiff cannot parse.
 
-Neither operation changes section contents or instruction bytes.
+Neither operation changes section contents, data bytes, or instructions.
 """
 
 from __future__ import annotations
@@ -161,7 +161,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
         "input",
         nargs="?",
         type=Path,
-        default=Path("payload/build/payload/asm/all.o"),
+        default=Path("payload/build/objdiff/all.raw.target.o"),
     )
     parser.add_argument(
         "output",
