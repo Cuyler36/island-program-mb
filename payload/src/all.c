@@ -1,18 +1,14 @@
 #include "global.h"
 
-void sub_02019E88();                                   /* extern */
 void sub_0201A0D4();                                   /* extern */
-void sub_02019D28();                                   /* extern */
-void sub_02019D40();                                   /* extern */
 void sub_02027040();                                   /* extern */
-void sub_020292E8(void*, void*, s32);                      /* extern */
 
 static int transfer_size;
-static int _03000010; // offset
-static int _03000014; // size
+static int sMsgDirtyTileOffset;
+static int sMsgDirtyTileCount;
 static int _03000018; // ??
-static u8 _0300001C;
-static u8 _0300001D;
+static u8 sMsgPreviousTextRow;
+static u8 sMsgPreviousTextX;
 
 GameState gGameState;
 
@@ -26,7 +22,7 @@ void sub_02018228(void) {
     // nothing
 }
 
-static u8 gUnk3002410[256];
+static u8 gUnk3002410[0x400];
 
 void sub_0201822C(void) {
     u8 temp_r5;
@@ -39,7 +35,7 @@ void sub_0201822C(void) {
     }
     temp_r5 = gGameState.unk_85F;
     if (temp_r5 == 0) {
-        sub_020292E8(gUnk3002410, (void*)OAM, sizeof(gUnk3002410));
+        CpuFastCopy(gUnk3002410, (void*)OAM, sizeof(gUnk3002410));
         REG_DISPCNT = gGameState.unk_82A;
         REG_BG0HOFS = gGameState.unk_83C;
         REG_BG0VOFS = gGameState.unk_83E;
@@ -48,7 +44,7 @@ void sub_0201822C(void) {
         REG_BG2HOFS = gGameState.unk_844;
         REG_BG2VOFS = gGameState.unk_846;
         REG_BG3HOFS = gGameState.unk_848;
-        REG_BG3VOFS = gGameState.unk_84A;
+        REG_BG3VOFS = gGameState.bg3_vofs;
         REG_BLDALPHA = gGameState.unk_81C;
         REG_BLDY = gGameState.unk_81E;
         REG_BLDCNT = gGameState.unk_820;
@@ -78,7 +74,7 @@ void sub_02018368(void) {
     // nothing
 }
 
-static u8 BYTE_ARRAY_020296d0[256] = {
+static u8 sMsgGlyphWidths[256] = {
     0x04, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07,
     0x07, 0x07, 0x07, 0x07, 0x07, 0x05, 0x05, 0x06,
     0x06, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07, 0x07,
@@ -113,7 +109,7 @@ static u8 BYTE_ARRAY_020296d0[256] = {
     0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
 };
 
-static u8 u8_ARRAY_020297d0[256] = {
+static u8 sFontCodeWidths[256] = {
     0x06, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08,
     0x07, 0x07, 0x07, 0x07, 0x07, 0x06, 0x06, 0x06,
     0x06, 0x08, 0x08, 0x09, 0x09, 0x09, 0x09, 0x09,
@@ -148,7 +144,7 @@ static u8 u8_ARRAY_020297d0[256] = {
     0x0C, 0x0C, 0x0C, 0x0C, 0x0C, 0x0C, 0x0C, 0x0C,
 };
 
-static u8 u8_ARRAY_ARRAY_ARRAY_ARRAY_020298d0[16][2][16][8] = {
+static u8 sMsgFontGlyphs[16][2][16][8] = {
     {{{0x00, 0x00, 0x00, 0x06, 0x06, 0x00, 0x00, 0x02}, {0x00, 0x00, 0x00, 0x18, 0x18, 0x00, 0x08, 0x08}, {0x33, 0x33, 0x00, 0x0C, 0x0C, 0x1E, 0x12, 0x12}, {0x0E, 0x1C, 0x00, 0x0C, 0x0C, 0x1E, 0x12, 0x12}, {0x1C, 0x0E, 0x00, 0x0C, 0x0C, 0x1E, 0x12, 0x12}, {0x1C, 0x36, 0x00, 0x0C, 0x0C, 0x1E, 0x12, 0x12}, {0x1D, 0x36, 0x00, 0x0C, 0x0C, 0x1E, 0x12, 0x12}, {0x0C, 0x0C, 0x00, 0x0C, 0x0C, 0x1E, 0x12, 0x12}, {0x00, 0x00, 0x00, 0x1C, 0x3E, 0x23, 0x21, 0x01}, {0x0E, 0x1C, 0x00, 0x3F, 0x3F, 0x01, 0x01, 0x1F}, {0x1C, 0x0E, 0x00, 0x3F, 0x3F, 0x01, 0x01, 0x1F}, {0x1C, 0x36, 0x00, 0x3F, 0x3F, 0x01, 0x01, 0x1F}, {0x33, 0x33, 0x00, 0x3F, 0x3F, 0x01, 0x01, 0x1F}, {0x07, 0x0E, 0x00, 0x0E, 0x0E, 0x04, 0x04, 0x04}, {0x0E, 0x07, 0x00, 0x07, 0x07, 0x02, 0x02, 0x02}, {0x0E, 0x1B, 0x00, 0x0E, 0x0E, 0x04, 0x04, 0x04}}, {{0x02, 0x02, 0x03, 0x03, 0x03, 0x03, 0x00, 0x00}, {0x0E, 0x07, 0x21, 0x31, 0x1F, 0x0E, 0x00, 0x00}, {0x12, 0x3F, 0x3F, 0x21, 0x21, 0x21, 0x00, 0x00}, {0x12, 0x3F, 0x3F, 0x21, 0x21, 0x21, 0x00, 0x00}, {0x12, 0x3F, 0x3F, 0x21, 0x21, 0x21, 0x00, 0x00}, {0x12, 0x3F, 0x3F, 0x21, 0x21, 0x21, 0x00, 0x00}, {0x12, 0x3F, 0x3F, 0x21, 0x21, 0x21, 0x00, 0x00}, {0x12, 0x3F, 0x3F, 0x21, 0x21, 0x21, 0x00, 0x00}, {0x01, 0x01, 0x21, 0x31, 0x1F, 0x0E, 0x04, 0x06}, {0x1F, 0x01, 0x01, 0x01, 0x3F, 0x3F, 0x00, 0x00}, {0x1F, 0x01, 0x01, 0x01, 0x3F, 0x3F, 0x00, 0x00}, {0x1F, 0x01, 0x01, 0x01, 0x3F, 0x3F, 0x00, 0x00}, {0x1F, 0x01, 0x01, 0x01, 0x3F, 0x3F, 0x00, 0x00}, {0x04, 0x04, 0x04, 0x04, 0x0E, 0x0E, 0x00, 0x00}, {0x02, 0x02, 0x02, 0x02, 0x07, 0x07, 0x00, 0x00}, {0x04, 0x04, 0x04, 0x04, 0x0E, 0x0E, 0x00, 0x00}}},
     {{{0x1B, 0x1B, 0x00, 0x0E, 0x0E, 0x04, 0x04, 0x04}, {0x00, 0x00, 0x00, 0x0E, 0x1E, 0x32, 0x22, 0x27}, {0x1D, 0x36, 0x00, 0x21, 0x23, 0x23, 0x27, 0x25}, {0x0E, 0x1C, 0x00, 0x1C, 0x3E, 0x23, 0x21, 0x21}, {0x1C, 0x0E, 0x00, 0x1C, 0x3E, 0x23, 0x21, 0x21}, {0x1C, 0x36, 0x00, 0x1C, 0x3E, 0x23, 0x21, 0x21}, {0x1D, 0x36, 0x00, 0x1C, 0x3E, 0x23, 0x21, 0x21}, {0x33, 0x33, 0x00, 0x1C, 0x3E, 0x23, 0x21, 0x21}, {0x00, 0x00, 0x20, 0x3C, 0x1E, 0x33, 0x39, 0x29}, {0x0E, 0x1C, 0x00, 0x21, 0x21, 0x21, 0x21, 0x21}, {0x1C, 0x0E, 0x00, 0x21, 0x21, 0x21, 0x21, 0x21}, {0x1C, 0x36, 0x00, 0x21, 0x21, 0x21, 0x21, 0x21}, {0x33, 0x33, 0x00, 0x21, 0x21, 0x21, 0x21, 0x21}, {0x00, 0x00, 0x00, 0x0F, 0x1F, 0x11, 0x11, 0x19}, {0x00, 0x00, 0x01, 0x01, 0x1F, 0x3F, 0x21, 0x21}, {0x00, 0x00, 0x0E, 0x1C, 0x00, 0x0E, 0x1E, 0x18}}, {{0x04, 0x04, 0x04, 0x04, 0x0E, 0x0E, 0x00, 0x00}, {0x27, 0x32, 0x12, 0x1A, 0x0E, 0x06, 0x00, 0x00}, {0x29, 0x39, 0x31, 0x31, 0x21, 0x21, 0x00, 0x00}, {0x21, 0x21, 0x21, 0x33, 0x1F, 0x0E, 0x00, 0x00}, {0x21, 0x21, 0x21, 0x33, 0x1F, 0x0E, 0x00, 0x00}, {0x21, 0x21, 0x21, 0x33, 0x1F, 0x0E, 0x00, 0x00}, {0x21, 0x21, 0x21, 0x33, 0x1F, 0x0E, 0x00, 0x00}, {0x21, 0x21, 0x21, 0x33, 0x1F, 0x0E, 0x00, 0x00}, {0x2D, 0x25, 0x27, 0x33, 0x1E, 0x0F, 0x01, 0x00}, {0x21, 0x21, 0x21, 0x33, 0x1F, 0x0E, 0x00, 0x00}, {0x21, 0x21, 0x21, 0x33, 0x1F, 0x0E, 0x00, 0x00}, {0x21, 0x21, 0x21, 0x33, 0x1F, 0x0E, 0x00, 0x00}, {0x21, 0x21, 0x21, 0x33, 0x1F, 0x0E, 0x00, 0x00}, {0x3D, 0x31, 0x21, 0x33, 0x1F, 0x0D, 0x01, 0x00}, {0x31, 0x1D, 0x0F, 0x03, 0x01, 0x01, 0x01, 0x00}, {0x1E, 0x13, 0x11, 0x19, 0x1F, 0x16, 0x00, 0x00}}},
     {{{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x00, 0x00, 0x00, 0x06, 0x06, 0x06, 0x06, 0x02}, {0x00, 0x00, 0x00, 0x1B, 0x1B, 0x1B, 0x09, 0x00}, {0x00, 0x00, 0x00, 0x1C, 0x0E, 0x00, 0x0E, 0x18}, {0x00, 0x00, 0x00, 0x0E, 0x1B, 0x00, 0x0E, 0x18}, {0x00, 0x00, 0x00, 0x46, 0x67, 0x25, 0x37, 0x1B}, {0x00, 0x00, 0x00, 0x0C, 0x1E, 0x12, 0x1A, 0x0E}, {0x00, 0x00, 0x00, 0x03, 0x03, 0x03, 0x01, 0x00}, {0x00, 0x00, 0x00, 0x18, 0x0C, 0x04, 0x06, 0x02}, {0x00, 0x00, 0x00, 0x03, 0x06, 0x04, 0x0C, 0x08}, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x06}, {0x00, 0x00, 0x00, 0x36, 0x7F, 0x7F, 0x7F, 0x7F}, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x00, 0x00, 0x10, 0x30, 0x30, 0x70, 0x50, 0x50}}, {{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x02, 0x02, 0x00, 0x00, 0x03, 0x03, 0x00, 0x00}, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x1E, 0x13, 0x11, 0x19, 0x1F, 0x16, 0x00, 0x00}, {0x1E, 0x13, 0x11, 0x19, 0x1F, 0x16, 0x00, 0x00}, {0x08, 0x6C, 0x76, 0x52, 0x73, 0x31, 0x00, 0x00}, {0x36, 0x1F, 0x09, 0x1B, 0x3F, 0x2E, 0x00, 0x00}, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x02, 0x02, 0x06, 0x04, 0x0C, 0x18, 0x00, 0x00}, {0x08, 0x08, 0x0C, 0x04, 0x06, 0x03, 0x00, 0x00}, {0x4F, 0x79, 0x30, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x3E, 0x3E, 0x3E, 0x1C, 0x1C, 0x08, 0x00, 0x00}, {0x00, 0x00, 0x00, 0x00, 0x03, 0x03, 0x02, 0x01}, {0x1F, 0x1F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x00, 0x00, 0x00, 0x00, 0x03, 0x03, 0x00, 0x00}, {0x50, 0x1E, 0x1F, 0x1F, 0x0F, 0x06, 0x00, 0x00}}},
@@ -167,313 +163,265 @@ static u8 u8_ARRAY_ARRAY_ARRAY_ARRAY_020298d0[16][2][16][8] = {
     {{{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}}, {{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}}},
 };
 
-static u8 u8_ARRAY_ARRAY_0202a8d0[2][8] = {
+static u8 sMsgSpaceGlyph[2][8] = {
     {0x00, 0x00, 0x7F, 0x49, 0x08, 0x2E, 0x2E, 0x2C},
     {0x09, 0x4B, 0x6B, 0x68, 0x6C, 0x7F, 0x00, 0x00},
 };
 
-static int INT_ARRAY_0202a8e0[9] = { 0x15, 0x16, 0x17, 0x04, 0x05, 0x06, 0x11, 0x12, 0x19 };
-static M_MSG_AGB m_msg_window[9];
+static int sCachedMessageIds[9] = { 0x15, 0x16, 0x17, 0x04, 0x05, 0x06, 0x11, 0x12, 0x19 };
+static mMsg_Window_c sMsgWindows[9];
 
 // @non-matching
-void sub_0201836C(void* arg0, void* arg1, u8 arg2) {
-    s32 sp0;
-    s32 sp4;
-    s32 sp8;
-    s32 spC;
-    s32 temp_r1;
-    s32 var_r0;
-    s32 var_r1;
+void mFont_GetGlyphRows(void* lower_rows, void* upper_rows, u8 character) {
+    u8 lower[8];
+    u8 upper[8];
+    u8* upper_source;
+    u8* lower_source;
     s32 i;
-    s32* var_r3;
-    s32* var_r4;
-    u32 temp_r2;
-    u8 temp_r7;
-    u8 var_r0_2;
-    u8* var_r1_2;
-    u8* var_r5;
-    void* var_r6;
 
-    // temp_r2 = arg2 << 0x18;
-    sp0 = *((u32*)arg0 + 0);
-    sp4 = *((u32*)arg0 + 1);
-    sp8 = *((u32*)arg1 + 0);
-    spC = *((u32*)arg1 + 1);
-
-    // Check for control codes (0x7F, 0x80) or newline (0xCD)
-    if ((arg2 == 0x7F) || (arg2 == 0x80) || (arg2 == 0xCD)) {
-        // No tile data for these characters
-        var_r0 = 0;
-        var_r1 = 0;
-        *((u32*)arg0 + 0) = 0;
-        *((u32*)arg0 + 1) = 0;
-    } else {
-        // temp_r1 = (((temp_r2 >> 0x1C) << 5) + (0xF & temp_r7)) * 8;
-        u8* src0 = u8_ARRAY_ARRAY_ARRAY_ARRAY_020298d0[arg2 >> 4][0][arg2 & 0xF];
-        u8* src1 = u8_ARRAY_ARRAY_ARRAY_ARRAY_020298d0[arg2 >> 4][1][arg2 & 0xF];
-        var_r4 = &sp0;
-        var_r3 = &sp8;
-        for (i = 0; i < 8; i++) {
-            // Check for space (0x20)
-            if (arg2 != 0x20) {
-                // Copy character tile data?
-                var_r3[i] = src0[i];
-                var_r0_2 = src1[i];
-            } else {
-                // Copy space tile data?
-                var_r3[i] = u8_ARRAY_ARRAY_0202a8d0[0][i];
-                var_r0_2 = u8_ARRAY_ARRAY_0202a8d0[1][i];
-            }
-            var_r4[i] = var_r0_2;
-            // var_r4 += 1;
-            // var_r3 += 1;
-        }
-        *((u32*)arg0 + 0) = sp0;
-        *((u32*)arg0 + 1) = sp4;
-        var_r0 = sp8;
-        var_r1 = spC;
+    if ((character == CHAR_CONTROL_CODE) || (character == 0x80) ||
+        (character == CHAR_NEW_LINE)) {
+        ((u32*)lower_rows)[0] = 0;
+        ((u32*)lower_rows)[1] = 0;
+        ((u32*)upper_rows)[0] = 0;
+        ((u32*)upper_rows)[1] = 0;
+        return;
     }
-    *((u32*)arg1 + 0) = var_r0;
-    *((u32*)arg1 + 1) = var_r1;
+
+    if (character == 0x20) {
+        upper_source = sMsgSpaceGlyph[0];
+        lower_source = sMsgSpaceGlyph[1];
+    } else {
+        upper_source = sMsgFontGlyphs[character >> 4][0][character & 0xF];
+        lower_source = sMsgFontGlyphs[character >> 4][1][character & 0xF];
+    }
+
+    for (i = 0; i < 8; i++) {
+        upper[i] = upper_source[i];
+        lower[i] = lower_source[i];
+    }
+
+    ((u32*)lower_rows)[0] = ((u32*)lower)[0];
+    ((u32*)lower_rows)[1] = ((u32*)lower)[1];
+    ((u32*)upper_rows)[0] = ((u32*)upper)[0];
+    ((u32*)upper_rows)[1] = ((u32*)upper)[1];
 }
 
-int sub_02018414(u32 c) {
+int mFont_GetGlyphWidth(u32 c) {
     if (c < 0x100) {
-        return BYTE_ARRAY_020296d0[c];
+        return sMsgGlyphWidths[c];
     }
     return -1;
 }
 
-int sub_02018430(u32 c) {
+int mFont_GetCodeWidth(u32 c) {
     if (c < 0x100) {
-        return u8_ARRAY_020297d0[c];
+        return sFontCodeWidths[c];
     }
     return -1;
 }
 
-static void sub_0201974c(M_MSG_AGB* msg, u8* code_p, u32* arg2);
-
-void sub_0201844C(M_MSG_AGB* msg) {
-    sub_0201974c(msg, msg->code_p, msg->_50);
+void mMsg_MainSetup_Hide(mMsg_Window_c* msg) {
+    mMsg_InitWindow(msg, msg->text, msg->tile_data);
 }
 
-static void sub_02019708(M_MSG_AGB* msg);
-
-void sub_0201845C(M_MSG_AGB* msg) {
-    sub_02019708(msg);
+void mMsg_Main_Hide(mMsg_Window_c* msg) {
+    mMsg_MainSetup_Window(msg);
 }
 
-static s16 sub_020192e8(u8* code_p, int arg1);
-static void sub_02019330(M_MSG_AGB* msg);
-static void sub_02019d78(int arg0);
-static u8 sub_0201916c(M_MSG_AGB* msg);
-static u8 sub_0201918c(M_MSG_AGB* msg);
-
-void sub_02018468(M_MSG_AGB* msg) {
-    msg->_6E = sub_020192e8(msg->code_p, msg->_58);
-    if (msg->_6E > 0) {
-        msg->_7C = 1;
-        msg->_5C = msg->_58;
-        msg->_58 = -1;
-        msg->_70 = msg->mode;
-        msg->mode = 0xFF;
-        msg->code_ofs = 0;
-        sub_02019330(msg);
-        sub_02019d78(0x1F);
+void mMsg_MainSetup_Appear(mMsg_Window_c* msg) {
+    msg->message_length = mMsg_LoadMessage(msg->text, msg->next_message_id);
+    if (msg->message_length > 0) {
+        msg->draw_enabled = 1;
+        msg->message_id = msg->next_message_id;
+        msg->next_message_id = -1;
+        msg->current_mode = msg->requested_mode;
+        msg->requested_mode = -1;
+        msg->text_offset = 0;
+        mMsg_ClearText(msg);
+        sub_02019D78(0x1F);
     }
 }
 
-static int sub_020190f4(s8* arg0);
-static u8 sub_0201915c(M_MSG_AGB* msg);
+void mMsg_Main_Appear(mMsg_Window_c* msg) {
+    gGameState.bg3_vofs = mMsg_GetWindowScrollOffset(&msg->transition_frame);
 
-void sub_020184bc(M_MSG_AGB* msg) {
-    gGameState.unk_84A = sub_020190f4(&msg->_76);
-
-    if (msg->_76 > 10 && sub_0201915c(msg) != 0) {
-        sub_02019708(msg);
+    if (msg->transition_frame > 10 && mMsg_RequestCursor(msg) != 0) {
+        mMsg_MainSetup_Window(msg);
     } else {
-        msg->_76++;
+        msg->transition_frame++;
     }
 }
 
-static s8 ControlCode_GetSize(u8* code_p);
-static void mMsg_memcpy(void* dest, void* src, size_t size);
-static int mMsg_ProcessLines(M_MSG_AGB* msg, u32* tile_data, int lines);
-
-int sub_02018508(M_MSG_AGB* msg, s16* ofs_p, int c) {
-    u8* curmsg = &msg->code_p[*ofs_p];
-    u16 codeupper = curmsg[2] << 8;
-    u16 code = (codeupper | curmsg[3]);
+int mMsg_Cont_SetNextMessage(mMsg_Window_c* msg, s16* offset, int choice) {
+    u8* command = &msg->text[*offset];
+    u16 message_id = (command[2] << 8) | command[3];
     
-    if (c == 0xFF || c == msg->_80) {
-        if (code <= 30) {
-            msg->_58 = code;
+    if (choice == 0xFF || choice == msg->choice_index) {
+        if (message_id <= 30) {
+            msg->next_message_id = message_id;
         } else {
-            msg->_7B = 1;
+            msg->cancel_continue = 1;
         }
     }
 
-    *ofs_p += ControlCode_GetSize(&msg->code_p[*ofs_p]);
+    *offset += mFont_CodeSize_get(&msg->text[*offset]);
     return 1;
 }
 
-int sub_0201855C(M_MSG_AGB* msg, s16* ofs_p, int c) {
-    msg->_7F = c;
-    *ofs_p += ControlCode_GetSize(&msg->code_p[*ofs_p]);
+int mMsg_Cont_SetChoiceCount(mMsg_Window_c* msg, s16* offset, int count) {
+    msg->choice_count = count;
+    *offset += mFont_CodeSize_get(&msg->text[*offset]);
     return 4;
 }
 
-static void sub_02019e40(u8* msg_data_p, u8* arg1, int arg2);
+int mMsg_Cont_SetChoiceText(mMsg_Window_c* msg, s16* offset, int index) {
+    mMsg_ChoiceEntry_c* choice = &msg->choices[index];
 
-int sub_02018584(M_MSG_AGB* msg, s16* ofs_p, int idx) {
-    m_msg_struct0_c* data_p = &msg->_00[idx];
-
-    data_p->_12 = *(msg->code_p + *ofs_p + 2);
-    sub_02019e40(msg->code_p + *ofs_p + 3, &data_p->_08, data_p->_12);
-    data_p->_00 = (s8)msg->_74;
-    data_p->_04 = (u8)msg->_78;
-    *ofs_p += ControlCode_GetSize(&msg->code_p[*ofs_p]);
+    choice->length = msg->text[*offset + 2];
+    mMsg_Copy(msg->text + *offset + 3, choice->text, choice->length);
+    choice->line = msg->text_row;
+    choice->x = msg->text_x;
+    *offset += mFont_CodeSize_get(&msg->text[*offset]);
     return 1;
 }
 
-int sub_020185E4(M_MSG_AGB* msg, s16* ofs_p) {
-    if ((msg->_68 & 0x100) == 0) {
-        msg->_68 |= 0x100;
+int mMsg_Cont_Last(mMsg_Window_c* msg, s16* offset) {
+    if ((msg->status_flags & mMsg_STATUS_LAST_DELAY) == 0) {
+        msg->status_flags |= mMsg_STATUS_LAST_DELAY;
         return 3;
     } else {
-        msg->_68 &= ~0x100;
+        msg->status_flags &= ~mMsg_STATUS_LAST_DELAY;
         return 2;
     }
 }
 
-int sub_02018610(M_MSG_AGB* msg, s16* ofs_p) {
-    if ((msg->_68 & 0x100) == 0) {
-        msg->_68 |= 0x100;
+int mMsg_Cont_Continue(mMsg_Window_c* msg, s16* offset) {
+    if ((msg->status_flags & mMsg_STATUS_LAST_DELAY) == 0) {
+        msg->status_flags |= mMsg_STATUS_LAST_DELAY;
         return 3;
     } else {
-        msg->_68 &= ~0x100;
+        msg->status_flags &= ~mMsg_STATUS_LAST_DELAY;
         return 2;
     }
 }
 
-int sub_0201863C(M_MSG_AGB* msg, s16* ofs_p) {
-    sub_02019330(msg);
-    *ofs_p += ControlCode_GetSize(msg->code_p + *ofs_p);
+int mMsg_Cont_Clear(mMsg_Window_c* msg, s16* offset) {
+    mMsg_ClearText(msg);
+    *offset += mFont_CodeSize_get(msg->text + *offset);
     return 1;
 }
 
-int sub_02018664(M_MSG_AGB* msg, s16* ofs_p) {
-    if ((msg->_68 & 0x100) == 0) {
-        msg->_68 |= 0x100;
+int mMsg_Cont_Button(mMsg_Window_c* msg, s16* offset) {
+    if ((msg->status_flags & mMsg_STATUS_LAST_DELAY) == 0) {
+        msg->status_flags |= mMsg_STATUS_LAST_DELAY;
         return 3;
     } else {
-        msg->_68 &= ~0x100;
-        *ofs_p += ControlCode_GetSize(msg->code_p + *ofs_p);
+        msg->status_flags &= ~mMsg_STATUS_LAST_DELAY;
+        *offset += mFont_CodeSize_get(msg->text + *offset);
         return 2;
     }
 }
 
-int sub_020186A8(M_MSG_AGB* msg, s16* ofs_p) {
-    msg->_79 = 1;
-    return sub_02018508(msg, ofs_p, 0xFF);
+int mMsg_Cont_SetNextMessageF(mMsg_Window_c* msg, s16* offset) {
+    msg->force_next = 1;
+    return mMsg_Cont_SetNextMessage(msg, offset, 0xFF);
 }
 
-int sub_020186BC(M_MSG_AGB* msg, s16* ofs_p) {
-    return sub_02018508(msg, ofs_p, 0);
+int mMsg_Cont_SetNextMessage0(mMsg_Window_c* msg, s16* offset) {
+    return mMsg_Cont_SetNextMessage(msg, offset, 0);
 }
 
-int sub_020186C8(M_MSG_AGB* msg, s16* ofs_p) {
-    return sub_02018508(msg, ofs_p, 1);
+int mMsg_Cont_SetNextMessage1(mMsg_Window_c* msg, s16* offset) {
+    return mMsg_Cont_SetNextMessage(msg, offset, 1);
 }
 
-int sub_020186D4(M_MSG_AGB* msg, s16* ofs_p) {
-    msg->_7E = *(msg->code_p + *ofs_p + 3);
-    msg->_7D = *(msg->code_p + *ofs_p + 2);
-    *ofs_p += ControlCode_GetSize(msg->code_p + *ofs_p);
+int mMsg_Cont_SetTemporaryColor(mMsg_Window_c* msg, s16* offset) {
+    msg->temporary_color_length = msg->text[*offset + 3];
+    msg->temporary_color = msg->text[*offset + 2];
+    *offset += mFont_CodeSize_get(msg->text + *offset);
     return 1;
 }
 
-int sub_02018718(M_MSG_AGB* msg, s16* ofs_p) {
-    msg->_78 += *(msg->code_p + *ofs_p + 2);
-    *ofs_p += ControlCode_GetSize(msg->code_p + *ofs_p);
+int mMsg_Cont_Space(mMsg_Window_c* msg, s16* offset) {
+    msg->text_x += msg->text[*offset + 2];
+    *offset += mFont_CodeSize_get(msg->text + *offset);
     return 1;
 }
 
-int sub_02018750(M_MSG_AGB* msg, s16* ofs_p) {
-    msg->_74++;
-    *ofs_p += ControlCode_GetSize(msg->code_p + *ofs_p);
+int mMsg_Cont_MoveDown(mMsg_Window_c* msg, s16* offset) {
+    msg->text_row++;
+    *offset += mFont_CodeSize_get(msg->text + *offset);
     return 1;
 }
 
-static void sub_020190c8(int arg0, int arg1, u32* arg2);
-
-int sub_0201877C(M_MSG_AGB* msg, s16* ofs_p) {
+int mMsg_Cont_RestoreCachedMessage(mMsg_Window_c* msg, s16* offset) {
     int i;
-    for (i = 0; i < ARRAY_COUNT(INT_ARRAY_0202a8e0); i++) {
-        if (INT_ARRAY_0202a8e0[i] == msg->_5C && &m_msg_window[i] != msg) {
-            u32* _50 = msg->_50;
-            u8* code_p = msg->code_p;
-            u8 _77 = msg->_77;
+    for (i = 0; i < ARRAY_COUNT(sCachedMessageIds); i++) {
+        if (sCachedMessageIds[i] == msg->message_id && &sMsgWindows[i] != msg) {
+            u8* tile_data = msg->tile_data;
+            u8* text = msg->text;
+            u8 selected_choice = msg->selected_choice;
 
-            CpuFastCopy(&m_msg_window[i], msg, sizeof(M_MSG_AGB));
-            msg->_50 = _50;
-            msg->code_p = code_p;
-            msg->_77 = _77;
-            msg->_7C = 1;
-            mMsg_memcpy(m_msg_window[i].code_p, msg->code_p, msg->_6E);
-            CpuFastCopy(m_msg_window[i]._50, msg->_50, 0x1200);
-            sub_020190c8(0, 0x90, msg->_50);
+            CpuFastCopy(&sMsgWindows[i], msg, sizeof(mMsg_Window_c));
+            msg->tile_data = tile_data;
+            msg->text = text;
+            msg->selected_choice = selected_choice;
+            msg->draw_enabled = 1;
+            mMsg_Copy(sMsgWindows[i].text, msg->text, msg->message_length);
+            CpuFastCopy(sMsgWindows[i].tile_data, msg->tile_data, 0x1200);
+            mMsg_CopyTilesToVram(0, 0x90, msg->tile_data);
             break;
         }
     }
 
-    if (i == ARRAY_COUNT(INT_ARRAY_0202a8e0)) {
-        *ofs_p += ControlCode_GetSize(msg->code_p + *ofs_p);
+    if (i == ARRAY_COUNT(sCachedMessageIds)) {
+        *offset += mFont_CodeSize_get(msg->text + *offset);
     }
 
     return 1;
 }
 
-int sub_02018850(M_MSG_AGB* msg, s16* ofs_p) {
-    return sub_0201855C(msg, ofs_p, 2);
+int mMsg_Cont_SetChoiceCount2(mMsg_Window_c* msg, s16* offset) {
+    return mMsg_Cont_SetChoiceCount(msg, offset, 2);
 }
 
-int sub_0201885C(M_MSG_AGB* msg, s16* ofs_p) {
-    return sub_0201855C(msg, ofs_p, 3);
+int mMsg_Cont_SetChoiceCount3(mMsg_Window_c* msg, s16* offset) {
+    return mMsg_Cont_SetChoiceCount(msg, offset, 3);
 }
 
-int sub_02018868(M_MSG_AGB* msg, s16* ofs_p) {
-    return sub_02018584(msg, ofs_p, 0);
+int mMsg_Cont_SetChoiceText0(mMsg_Window_c* msg, s16* offset) {
+    return mMsg_Cont_SetChoiceText(msg, offset, 0);
 }
 
-int sub_02018874(M_MSG_AGB* msg, s16* ofs_p) {
-    return sub_02018584(msg, ofs_p, 1);
+int mMsg_Cont_SetChoiceText1(mMsg_Window_c* msg, s16* offset) {
+    return mMsg_Cont_SetChoiceText(msg, offset, 1);
 }
 
-int sub_02018880(M_MSG_AGB* msg, s16* ofs_p) {
-    return sub_02018584(msg, ofs_p, 2);
+int mMsg_Cont_SetChoiceText2(mMsg_Window_c* msg, s16* offset) {
+    return mMsg_Cont_SetChoiceText(msg, offset, 2);
 }
 
-int sub_0201888C(M_MSG_AGB* msg, s16* ofs_p) {
+int mMsg_Cont_CheckChoice(mMsg_Window_c* msg, s16* offset) {
     int ret = 3;
 
-    if (*(msg->code_p + *ofs_p + 2) == msg->_80 + 1) {
+    if (msg->text[*offset + 2] == msg->choice_index + 1) {
         ret = 2;
     } else {
-        *ofs_p += ControlCode_GetSize(msg->code_p + *ofs_p);
+        *offset += mFont_CodeSize_get(msg->text + *offset);
     }
 
     return ret;
 }
 
-int sub_020188C4(M_MSG_AGB* msg, s16* ofs_p) {
-    u8 param = *(msg->code_p + *ofs_p + 2);
+int mMsg_Cont_SoundTrgSys(mMsg_Window_c* msg, s16* offset) {
+    u8 sound = msg->text[*offset + 2];
 
-    if (param == 7 || param == 8) {
-        sub_02019d78(param == 7 ? 0x10 : 0x02);
+    if (sound == 7 || sound == 8) {
+        sub_02019D78(sound == 7 ? 0x10 : 0x02);
     }
 
-    *ofs_p += ControlCode_GetSize(msg->code_p + *ofs_p);
+    *offset += mFont_CodeSize_get(msg->text + *offset);
     return 3;
 }
 
@@ -483,234 +431,1688 @@ int sub_020188C4(M_MSG_AGB* msg, s16* ofs_p) {
  * @param ofs_p Pointer to the offset in the message code.
  * @return 1.
  */
-int mMsg_Cont_dummy_proc(M_MSG_AGB* msg, s16* ofs_p) {
-    *ofs_p += ControlCode_GetSize(msg->code_p + *ofs_p);
+int mMsg_Cont_Noop(mMsg_Window_c* msg, s16* offset) {
+    *offset += mFont_CodeSize_get(msg->text + *offset);
     return 1;
 }
 
-typedef int (*mMsg_CONTROL_CODE_PROC)(M_MSG_AGB* msg, s16* ofs_p);
+typedef int (*mMsg_CONTROL_CODE_PROC)(mMsg_Window_c* msg, s16* offset);
 
-static mMsg_CONTROL_CODE_PROC ControlCodeProcessTable[] = {
-    sub_020185E4, // mFont_CONT_CODE_LAST
-    sub_02018610, // mFont_CONT_CODE_CONTINUE
-    sub_0201863C, // mFont_CONT_CODE_CLEAR
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_CURSOR_SET_TIME
-    sub_02018664, // mFont_CONT_CODE_BUTTON
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_COLOR
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_ABLE_CANCEL
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_UNABLE_CANCEL
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SET_DEMO_ORDER_PLAYER
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SET_DEMO_ORDER_NPC0
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SET_DEMO_ORDER_NPC1
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SET_DEMO_ORDER_NPC2
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SET_DEMO_ORDER_QUEST
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SET_SELECT_WINDOW
-    sub_020186A8, // mFont_CONT_CODE_SET_NEXT_MESSAGE_F
-    sub_020186BC, // mFont_CONT_CODE_SET_NEXT_MESSAGE_0
-    sub_020186C8, // mFont_CONT_CODE_SET_NEXT_MESSAGE_1
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SET_NEXT_MESSAGE_2
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SET_NEXT_MESSAGE_3
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SET_NEXT_MESSAGE_RANDOM_2
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SET_NEXT_MESSAGE_RANDOM_3
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SET_NEXT_MESSAGE_RANDOM_4
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SET_SELECT_STRING_2
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SET_SELECT_STRING_3
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SET_SELECT_STRING_4
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SET_FORCE_NEXT
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_PUT_STRING_PLAYER_NAME
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_PUT_STRING_TALK_NAME
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_PUT_STRING_TAIL
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_PUT_STRING_YEAR
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_PUT_STRING_MONTH
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_PUT_STRING_WEEK
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_PUT_STRING_DAY
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_PUT_STRING_HOUR
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_PUT_STRING_MIN
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_PUT_STRING_SEC
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_PUT_STRING_FREE0
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_PUT_STRING_FREE1
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_PUT_STRING_FREE2
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_PUT_STRING_FREE3
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_PUT_STRING_FREE4
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_PUT_STRING_FREE5
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_PUT_STRING_FREE6
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_PUT_STRING_FREE7
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_PUT_STRING_FREE8
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_PUT_STRING_FREE9
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_PUT_STRING_DETERMINATION
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_PUT_STRING_COUNTRY_NAME
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_PUT_STRING_RANDOM_NUMBER_2
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_PUT_STRING_ITEM0
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_PUT_STRING_ITEM1
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_PUT_STRING_ITEM2
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_PUT_STRING_ITEM3
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_PUT_STRING_ITEM4
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_PUT_STRING_FREE10
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_PUT_STRING_FREE11
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_PUT_STRING_FREE12
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_PUT_STRING_FREE13
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_PUT_STRING_FREE14
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_PUT_STRING_FREE15
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_PUT_STRING_FREE16
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_PUT_STRING_FREE17
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_PUT_STRING_FREE18
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_PUT_STRING_FREE19
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_PUT_STRING_MAIL
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SET_PLAYER_DESTINY0
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SET_PLAYER_DESTINY1
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SET_PLAYER_DESTINY2
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SET_PLAYER_DESTINY3
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SET_PLAYER_DESTINY4
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SET_PLAYER_DESTINY5
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SET_PLAYER_DESTINY6
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SET_PLAYER_DESTINY7
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SET_PLAYER_DESTINY8
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SET_PLAYER_DESTINY9
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SET_MESSAGE_CONTENTS_NORMAL
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SET_MESSAGE_CONTENTS_ANGRY
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SET_MESSAGE_CONTENTS_SAD
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SET_MESSAGE_CONTENTS_FUN
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SET_MESSAGE_CONTENTS_SLEEPY
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SET_COLOR_CHAR
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SOUND_CUT
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SET_LINE_OFFSET
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SET_LINE_TYPE
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SET_CHAR_SCALE
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_BUTTON2
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_BGM_MAKE
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_BGM_DELETE
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_MSG_TIME_END
-    sub_020188C4, // mFont_CONT_CODE_SOUND_TRG_SYS
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SET_LINE_SCALE
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SOUND_NO_PAGE
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_VOICE_TRUE
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_VOICE_FALSE
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SELECT_NO_B
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_GIVE_OPEN
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_GIVE_CLOSE
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SET_MESSAGE_CONTENTS_GLOOMY
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SELECT_NO_B_CLOSE
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_SET_NEXT_MESSAGE_RANDOM_SECTION
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_AGB_DUMMY0
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_AGB_DUMMY1
-    sub_020186D4, // mFont_CONT_CODE_AGB_DUMMY2
-    sub_02018718, // mFont_CONT_CODE_SPACE
-    sub_02018750, // mFont_CONT_CODE_AGB_DUMMY3
-    sub_0201877C, // mFont_CONT_CODE_AGB_DUMMY4
-    mMsg_Cont_dummy_proc, // mFont_CONT_CODE_MALE_FEMALE_CHECK
-    sub_02018850, // mFont_CONT_CODE_AGB_DUMMY5
-    sub_0201885C, // mFont_CONT_CODE_AGB_DUMMY6
-    sub_02018868, // mFont_CONT_CODE_AGB_DUMMY7
-    sub_02018874, // mFont_CONT_CODE_AGB_DUMMY8
-    sub_02018880, // mFont_CONT_CODE_AGB_DUMMY9
-    sub_0201888C, // mFont_CONT_CODE_AGB_DUMMY10
+static mMsg_CONTROL_CODE_PROC sMsgControlCodeHandlers[] = {
+    mMsg_Cont_Last, // mFont_CONT_CODE_LAST
+    mMsg_Cont_Continue, // mFont_CONT_CODE_CONTINUE
+    mMsg_Cont_Clear, // mFont_CONT_CODE_CLEAR
+    mMsg_Cont_Noop, // mFont_CONT_CODE_CURSOR_SET_TIME
+    mMsg_Cont_Button, // mFont_CONT_CODE_BUTTON
+    mMsg_Cont_Noop, // mFont_CONT_CODE_COLOR
+    mMsg_Cont_Noop, // mFont_CONT_CODE_ABLE_CANCEL
+    mMsg_Cont_Noop, // mFont_CONT_CODE_UNABLE_CANCEL
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SET_DEMO_ORDER_PLAYER
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SET_DEMO_ORDER_NPC0
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SET_DEMO_ORDER_NPC1
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SET_DEMO_ORDER_NPC2
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SET_DEMO_ORDER_QUEST
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SET_SELECT_WINDOW
+    mMsg_Cont_SetNextMessageF, // mFont_CONT_CODE_SET_NEXT_MESSAGE_F
+    mMsg_Cont_SetNextMessage0, // mFont_CONT_CODE_SET_NEXT_MESSAGE_0
+    mMsg_Cont_SetNextMessage1, // mFont_CONT_CODE_SET_NEXT_MESSAGE_1
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SET_NEXT_MESSAGE_2
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SET_NEXT_MESSAGE_3
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SET_NEXT_MESSAGE_RANDOM_2
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SET_NEXT_MESSAGE_RANDOM_3
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SET_NEXT_MESSAGE_RANDOM_4
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SET_SELECT_STRING_2
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SET_SELECT_STRING_3
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SET_SELECT_STRING_4
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SET_FORCE_NEXT
+    mMsg_Cont_Noop, // mFont_CONT_CODE_PUT_STRING_PLAYER_NAME
+    mMsg_Cont_Noop, // mFont_CONT_CODE_PUT_STRING_TALK_NAME
+    mMsg_Cont_Noop, // mFont_CONT_CODE_PUT_STRING_TAIL
+    mMsg_Cont_Noop, // mFont_CONT_CODE_PUT_STRING_YEAR
+    mMsg_Cont_Noop, // mFont_CONT_CODE_PUT_STRING_MONTH
+    mMsg_Cont_Noop, // mFont_CONT_CODE_PUT_STRING_WEEK
+    mMsg_Cont_Noop, // mFont_CONT_CODE_PUT_STRING_DAY
+    mMsg_Cont_Noop, // mFont_CONT_CODE_PUT_STRING_HOUR
+    mMsg_Cont_Noop, // mFont_CONT_CODE_PUT_STRING_MIN
+    mMsg_Cont_Noop, // mFont_CONT_CODE_PUT_STRING_SEC
+    mMsg_Cont_Noop, // mFont_CONT_CODE_PUT_STRING_FREE0
+    mMsg_Cont_Noop, // mFont_CONT_CODE_PUT_STRING_FREE1
+    mMsg_Cont_Noop, // mFont_CONT_CODE_PUT_STRING_FREE2
+    mMsg_Cont_Noop, // mFont_CONT_CODE_PUT_STRING_FREE3
+    mMsg_Cont_Noop, // mFont_CONT_CODE_PUT_STRING_FREE4
+    mMsg_Cont_Noop, // mFont_CONT_CODE_PUT_STRING_FREE5
+    mMsg_Cont_Noop, // mFont_CONT_CODE_PUT_STRING_FREE6
+    mMsg_Cont_Noop, // mFont_CONT_CODE_PUT_STRING_FREE7
+    mMsg_Cont_Noop, // mFont_CONT_CODE_PUT_STRING_FREE8
+    mMsg_Cont_Noop, // mFont_CONT_CODE_PUT_STRING_FREE9
+    mMsg_Cont_Noop, // mFont_CONT_CODE_PUT_STRING_DETERMINATION
+    mMsg_Cont_Noop, // mFont_CONT_CODE_PUT_STRING_COUNTRY_NAME
+    mMsg_Cont_Noop, // mFont_CONT_CODE_PUT_STRING_RANDOM_NUMBER_2
+    mMsg_Cont_Noop, // mFont_CONT_CODE_PUT_STRING_ITEM0
+    mMsg_Cont_Noop, // mFont_CONT_CODE_PUT_STRING_ITEM1
+    mMsg_Cont_Noop, // mFont_CONT_CODE_PUT_STRING_ITEM2
+    mMsg_Cont_Noop, // mFont_CONT_CODE_PUT_STRING_ITEM3
+    mMsg_Cont_Noop, // mFont_CONT_CODE_PUT_STRING_ITEM4
+    mMsg_Cont_Noop, // mFont_CONT_CODE_PUT_STRING_FREE10
+    mMsg_Cont_Noop, // mFont_CONT_CODE_PUT_STRING_FREE11
+    mMsg_Cont_Noop, // mFont_CONT_CODE_PUT_STRING_FREE12
+    mMsg_Cont_Noop, // mFont_CONT_CODE_PUT_STRING_FREE13
+    mMsg_Cont_Noop, // mFont_CONT_CODE_PUT_STRING_FREE14
+    mMsg_Cont_Noop, // mFont_CONT_CODE_PUT_STRING_FREE15
+    mMsg_Cont_Noop, // mFont_CONT_CODE_PUT_STRING_FREE16
+    mMsg_Cont_Noop, // mFont_CONT_CODE_PUT_STRING_FREE17
+    mMsg_Cont_Noop, // mFont_CONT_CODE_PUT_STRING_FREE18
+    mMsg_Cont_Noop, // mFont_CONT_CODE_PUT_STRING_FREE19
+    mMsg_Cont_Noop, // mFont_CONT_CODE_PUT_STRING_MAIL
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SET_PLAYER_DESTINY0
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SET_PLAYER_DESTINY1
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SET_PLAYER_DESTINY2
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SET_PLAYER_DESTINY3
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SET_PLAYER_DESTINY4
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SET_PLAYER_DESTINY5
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SET_PLAYER_DESTINY6
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SET_PLAYER_DESTINY7
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SET_PLAYER_DESTINY8
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SET_PLAYER_DESTINY9
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SET_MESSAGE_CONTENTS_NORMAL
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SET_MESSAGE_CONTENTS_ANGRY
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SET_MESSAGE_CONTENTS_SAD
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SET_MESSAGE_CONTENTS_FUN
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SET_MESSAGE_CONTENTS_SLEEPY
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SET_COLOR_CHAR
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SOUND_CUT
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SET_LINE_OFFSET
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SET_LINE_TYPE
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SET_CHAR_SCALE
+    mMsg_Cont_Noop, // mFont_CONT_CODE_BUTTON2
+    mMsg_Cont_Noop, // mFont_CONT_CODE_BGM_MAKE
+    mMsg_Cont_Noop, // mFont_CONT_CODE_BGM_DELETE
+    mMsg_Cont_Noop, // mFont_CONT_CODE_MSG_TIME_END
+    mMsg_Cont_SoundTrgSys, // mFont_CONT_CODE_SOUND_TRG_SYS
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SET_LINE_SCALE
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SOUND_NO_PAGE
+    mMsg_Cont_Noop, // mFont_CONT_CODE_VOICE_TRUE
+    mMsg_Cont_Noop, // mFont_CONT_CODE_VOICE_FALSE
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SELECT_NO_B
+    mMsg_Cont_Noop, // mFont_CONT_CODE_GIVE_OPEN
+    mMsg_Cont_Noop, // mFont_CONT_CODE_GIVE_CLOSE
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SET_MESSAGE_CONTENTS_GLOOMY
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SELECT_NO_B_CLOSE
+    mMsg_Cont_Noop, // mFont_CONT_CODE_SET_NEXT_MESSAGE_RANDOM_SECTION
+    mMsg_Cont_Noop, // mFont_CONT_CODE_UNKNOWN_100
+    mMsg_Cont_Noop, // mFont_CONT_CODE_UNKNOWN_101
+    mMsg_Cont_SetTemporaryColor, // mFont_CONT_CODE_SET_TEMPORARY_COLOR
+    mMsg_Cont_Space, // mFont_CONT_CODE_SPACE
+    mMsg_Cont_MoveDown, // mFont_CONT_CODE_MOVE_DOWN
+    mMsg_Cont_RestoreCachedMessage, // mFont_CONT_CODE_RESTORE_CACHED_MESSAGE
+    mMsg_Cont_Noop, // mFont_CONT_CODE_MALE_FEMALE_CHECK
+    mMsg_Cont_SetChoiceCount2, // mFont_CONT_CODE_SET_CHOICE_COUNT_2
+    mMsg_Cont_SetChoiceCount3, // mFont_CONT_CODE_SET_CHOICE_COUNT_3
+    mMsg_Cont_SetChoiceText0, // mFont_CONT_CODE_SET_CHOICE_TEXT_0
+    mMsg_Cont_SetChoiceText1, // mFont_CONT_CODE_SET_CHOICE_TEXT_1
+    mMsg_Cont_SetChoiceText2, // mFont_CONT_CODE_SET_CHOICE_TEXT_2
+    mMsg_Cont_CheckChoice, // mFont_CONT_CODE_CHECK_CHOICE
 };
 
-int mMsg_ProcessControlCode(M_MSG_AGB* msg, s16* ofs_p) {
+// @0x0201892c
+int mMsg_ProcessControlCode(mMsg_Window_c* msg, s16* offset) {
     int ret = 1;
-    u8 code = *(msg->code_p + *ofs_p + 0);
-    u8 type = *(msg->code_p + *ofs_p + 1);
+    u8 code = msg->text[*offset];
+    u8 type = msg->text[*offset + 1];
     
-    if (code == CHAR_CONTROL_CODE && type <= mFont_CONT_CODE_AGB_DUMMY10) {
-        ret = ControlCodeProcessTable[type](msg, ofs_p);
+    if (code == CHAR_CONTROL_CODE && type <= mFont_CONT_CODE_CHECK_CHOICE) {
+        ret = sMsgControlCodeHandlers[type](msg, offset);
     }
 
     return ret;
 }
 
-static void sub_02018968(M_MSG_AGB* msg) {
-    msg->_70 = msg->mode;
-    msg->mode = 0xFF;
+static void mMsg_MainSetup_Cursor(mMsg_Window_c* msg) {
+    msg->current_mode = msg->requested_mode;
+    msg->requested_mode = -1;
 }
 
-static void sub_02018978(M_MSG_AGB* msg) {
+static void mMsg_Main_Cursor(mMsg_Window_c* msg) {
     int process_res;
     u8 res;
     int i;
 
-    _0300001C = msg->_74;
-    _0300001D = msg->_78;
+    sMsgPreviousTextRow = msg->text_row;
+    sMsgPreviousTextX = msg->text_x;
     
-    process_res = mMsg_ProcessLines(msg, msg->_50, 1);
+    process_res = mMsg_ProcessText(msg, msg->tile_data, 1);
     switch (process_res) {
         case 4:
-            res = sub_0201918c(msg);
+            res = mMsg_RequestChoice(msg);
             if (res) {
-                sub_02019708(msg);
+                mMsg_MainSetup_Window(msg);
             }
             return;
         case 2:
-            res = sub_0201916c(msg);
+            res = mMsg_RequestNormal(msg);
             if (res) {
-                sub_02019708(msg);
+                mMsg_MainSetup_Window(msg);
             }
             return;
     }
 
-    for (i = _0300001C; _0300001C < msg->_74; i++) {
+    for (i = sMsgPreviousTextRow; sMsgPreviousTextRow < msg->text_row; i++) {
         int temp;
 
-        _03000010 = _0300001C * msg->_73 + _0300001D / 8;
-        temp = msg->_73 * 8 - _0300001D + 7;
+        sMsgDirtyTileOffset = sMsgPreviousTextRow * msg->tile_stride + sMsgPreviousTextX / 8;
+        temp = msg->tile_stride * 8 - sMsgPreviousTextX + 7;
         if (temp < 0) {
             temp += 7;
         }
-        _03000014 = temp >> 3;
+        sMsgDirtyTileCount = temp >> 3;
 
-        sub_020190c8(_03000010, _03000014, msg->_50);
-        sub_020190c8(_03000010 + msg->_73, _03000014, msg->_50);
-        _0300001D = msg->_75;
-        _0300001C += 2;
-        _0300001C &= 0xFE;
+        mMsg_CopyTilesToVram(sMsgDirtyTileOffset, sMsgDirtyTileCount, msg->tile_data);
+        mMsg_CopyTilesToVram(sMsgDirtyTileOffset + msg->tile_stride, sMsgDirtyTileCount, msg->tile_data);
+        sMsgPreviousTextX = msg->text_start_x;
+        sMsgPreviousTextRow += 2;
+        sMsgPreviousTextRow &= 0xFE;
     }
 
-    if (_0300001D != msg->_78) {
+    if (sMsgPreviousTextX != msg->text_x) {
         int temp;
 
-        _03000010 = msg->_74 * msg->_73 + _0300001D / 8;
-        _03000014 = MIN(msg->_73 * 8, msg->_78);
+        sMsgDirtyTileOffset = msg->text_row * msg->tile_stride + sMsgPreviousTextX / 8;
+        sMsgDirtyTileCount = MIN(msg->tile_stride * 8, msg->text_x);
 
-        temp = _03000014 - _0300001D + 7;
+        temp = sMsgDirtyTileCount - sMsgPreviousTextX + 7;
         if (temp < 0) {
             temp += 7;
         }
 
-        _03000014 = temp >> 3;
-        sub_020190c8(_03000010, _03000014, msg->_50);
-        sub_020190c8(_03000010 + msg->_73, _03000014, msg->_50);
+        sMsgDirtyTileCount = temp >> 3;
+        mMsg_CopyTilesToVram(sMsgDirtyTileOffset, sMsgDirtyTileCount, msg->tile_data);
+        mMsg_CopyTilesToVram(sMsgDirtyTileOffset + msg->tile_stride, sMsgDirtyTileCount, msg->tile_data);
     }
 }
 
-static int sub_02018ADC(void) {
-    return gGameState.unk_81A & 3;
+static int mMsg_CheckAdvanceInput(void) {
+    return gGameState.keys_pressed & (A_BUTTON | B_BUTTON);
 }
 
-static void sub_02018AF4(M_MSG_AGB* msg) {
-    msg->_68 &= ~0x7;
-    msg->_70 = msg->mode;
-    msg->mode = 0xFF;
+static void mMsg_MainSetup_Normal(mMsg_Window_c* msg) {
+    msg->status_flags &= ~mMsg_STATUS_END_REACHED;
+    msg->current_mode = msg->requested_mode;
+    msg->requested_mode = -1;
 }
 
-static void sub_02018B10(M_MSG_AGB* msg) {
-    // TODO
+static void mMsg_Main_Normal(mMsg_Window_c* msg) {
+    int is_terminal_code = 0;
+
+    if (mMsg_EndTimerDec(msg) == 1 &&
+        !mMsg_CheckControlCode(msg->text, mFont_CONT_CODE_MSG_TIME_END, msg->text_offset)) {
+        mMsg_RequestDisappear(msg);
+        mMsg_MainSetup_Window(msg);
+        return;
+    }
+
+    if (mMsg_CheckAdvanceInput() || msg->force_next == 1) {
+        if (msg->lock_continue != 0) {
+            return;
+        }
+
+        if (mMsg_CheckControlCode(msg->text, mFont_CONT_CODE_CONTINUE, msg->text_offset) &&
+            msg->cancel_continue == 0) {
+            if (msg->next_message_id <= 30 &&
+                mMsg_ChangeMsgData(msg, msg->next_message_id) == 1) {
+                if (mMsg_RequestCursor(msg) == 1) {
+                    mMsg_MainSetup_Window(msg);
+                    msg->force_next = 0;
+                    msg->next_message_id = -1;
+                }
+            }
+            return;
+        }
+
+        if (mMsg_CheckControlCode(msg->text, mFont_CONT_CODE_CONTINUE, msg->text_offset) &&
+            msg->cancel_continue == 1) {
+            mMsg_RequestDisappear(msg);
+            mMsg_MainSetup_Window(msg);
+            return;
+        }
+
+        is_terminal_code = mMsg_CheckControlCode(msg->text, mFont_CONT_CODE_CHECK_CHOICE,
+                                                 msg->text_offset);
+        if (!is_terminal_code) {
+            is_terminal_code = mMsg_CheckControlCode(msg->text, mFont_CONT_CODE_LAST,
+                                                     msg->text_offset);
+        }
+
+        if (is_terminal_code ||
+            mMsg_CheckControlCode(msg->text, mFont_CONT_CODE_MSG_TIME_END, msg->text_offset)) {
+            if (is_terminal_code && (msg->status_flags & mMsg_STATUS_KEEP_OPEN)) {
+                msg->status_flags |= mMsg_STATUS_END_REACHED;
+            } else {
+                mMsg_RequestDisappear(msg);
+                mMsg_MainSetup_Window(msg);
+            }
+        } else if (mMsg_RequestCursor(msg) == 1) {
+            mMsg_MainSetup_Window(msg);
+            msg->force_next = 0;
+        }
+        return;
+    }
+
+    if (!mMsg_CheckControlCode(msg->text, mFont_CONT_CODE_CONTINUE, msg->text_offset) &&
+        msg->lock_continue == 0 && msg->continue_prompt == NULL) {
+        int alternate = (u32)(msg->message_id - 1) <= 1;
+        msg->continue_prompt = sub_0201C310(0xA, 0xC8, 0x68, alternate);
+    }
 }
 
-static void sub_02018C7C(M_MSG_AGB* msg) {
-    msg->_76 = 12;
-    msg->_70 = msg->mode;
-    msg->mode = 0xFF;
-    sub_02019d78(0x20);
+static void mMsg_MainSetup_Disappear(mMsg_Window_c* msg) {
+    msg->transition_frame = 12;
+    msg->current_mode = msg->requested_mode;
+    msg->requested_mode = -1;
+    sub_02019D78(0x20);
 }
 
-static void sub_02018CA4(M_MSG_AGB* msg) {
-    gGameState.unk_84A = sub_020190f4(&msg->_76);
-    if (msg->_76 == 0 && sub_0201915c(msg) != 0) {
+static void mMsg_Main_Disappear(mMsg_Window_c* msg) {
+    gGameState.bg3_vofs = mMsg_GetWindowScrollOffset(&msg->transition_frame);
+    if (msg->transition_frame == 0 && mMsg_RequestHide(msg) != 0) {
         gGameState.unk_84E = 0;
         gGameState.unk_84F = 0;
         gGameState.unk_84C = 0;
         gGameState.unk_84D = 0;
-        sub_02019708(msg);
+        mMsg_MainSetup_Window(msg);
     } else {
-        msg->_76--;
+        msg->transition_frame--;
     }
+}
+
+#define gMsgGlyph (*(mFont_GlyphDraw_c*)0x03003100)
+#define gMsgCodeBuffers ((u8*)0x02000400)
+#define gMsgTileBuffers ((u8*)0x02001D80)
+#define gMsgWindowTileData ((u8*)0x0200F580)
+#define gMsgVram ((u8*)0x06002000)
+#define gObjPaletteBuffer ((u16*)0x02000200)
+
+#define gMsgTwoChoiceHighlightTiles ((void**)0x0202AAC8)
+#define gMsgThreeChoiceHighlightTiles ((void**)0x0202AAD0)
+/* These tables are indexed by the one-based mMsg_MODE_* values. */
+#define gMsgModeSetupCallbacks ((mMsg_Callback*)0x0202AADC)
+#define gMsgModeCallbacks ((mMsg_Callback*)0x0202AB00)
+#define gMsgChoiceTemplateParams ((u8*)0x0202AD18)
+#define gUnk_0202AD1C ((void**)0x0202AD1C)
+#define gUnk_0202AD28 ((u32*)0x0202AD28)
+#define gUnk_0202AFB4 ((u32*)0x0202AFB4)
+
+// @0x0202AB24
+static int gMsgWindowScrollOffsets[12] = {
+    0x00000000, 0x4A000000, 0x92000000, 0xBE000000, 0xD8000000, 0xE8000000, 0xF1000000, 0xF7000000,
+    0xFA000000, 0xFD000000, 0xFF000000, 0x00010000
+};
+
+// @0x02034FA4 - CHAR_* plus control codes
+static u8 gMsgTextData[2002] = {
+    0x44, 0x6F, 0x20, 0x6E, 0x6F, 0x74, 0x20, 0x74,
+    0x75, 0x72, 0x6E, 0x20, 0x74, 0x68, 0x65, 0x20,
+    0x70, 0x6F, 0x77, 0x65, 0x72, 0x20, 0x6F, 0x66,
+    0x66, 0x2E, 0xCD, 0x54, 0x6F, 0x20, 0x71, 0x75,
+    0x69, 0x74, 0x20, 0x77, 0x69, 0x74, 0x68, 0x6F,
+    0x75, 0x74, 0x20, 0x6C, 0x6F, 0x73, 0x69, 0x6E,
+    0x67, 0x20, 0x79, 0x6F, 0x75, 0x72, 0xCD, 0x64,
+    0x65, 0x73, 0x69, 0x67, 0x6E, 0x20, 0x64, 0x61,
+    0x74, 0x61, 0x2C, 0x20, 0x70, 0x72, 0x65, 0x73,
+    0x73, 0x20, 0x7F, 0x66, 0x0A, 0x06, 0x53, 0x45,
+    0x4C, 0x45, 0x43, 0x54, 0xCD, 0x61, 0x6E, 0x64,
+    0x20, 0x63, 0x68, 0x6F, 0x6F, 0x73, 0x65, 0x20,
+    0x7F, 0x66, 0x0B, 0x0A, 0x53, 0x6C, 0x65, 0x65,
+    0x70, 0x20, 0x4D, 0x6F, 0x64, 0x65, 0x2E, 0xCD,
+    0x7F, 0x00, 0x54, 0x6F, 0x20, 0x73, 0x61, 0x76,
+    0x65, 0x20, 0x79, 0x6F, 0x75, 0x72, 0x20, 0x63,
+    0x6F, 0x6D, 0x70, 0x6C, 0x65, 0x74, 0x65, 0x64,
+    0xCD, 0x64, 0x65, 0x73, 0x69, 0x67, 0x6E, 0x2C,
+    0x20, 0x63, 0x6F, 0x6E, 0x6E, 0x65, 0x63, 0x74,
+    0x20, 0x74, 0x6F, 0x20, 0x74, 0x68, 0x65, 0xCD,
+    0x4E, 0x69, 0x6E, 0x74, 0x65, 0x6E, 0x64, 0x6F,
+    0x20, 0x47, 0x61, 0x6D, 0x65, 0x43, 0x75, 0x62,
+    0x65, 0x20, 0x61, 0x6E, 0x64, 0xCD, 0x67, 0x65,
+    0x74, 0x20, 0x69, 0x74, 0x20, 0x74, 0x68, 0x65,
+    0x20, 0x74, 0x61, 0x69, 0x6C, 0x6F, 0x72, 0x20,
+    0x73, 0x68, 0x6F, 0x70, 0x2E, 0xCD, 0x7F, 0x04,
+    0x7F, 0x02, 0x57, 0x68, 0x65, 0x72, 0x65, 0x20,
+    0x77, 0x6F, 0x75, 0x6C, 0x64, 0x20, 0x79, 0x6F,
+    0x75, 0x20, 0x6C, 0x69, 0x6B, 0x65, 0xCD, 0x74,
+    0x6F, 0x20, 0x73, 0x61, 0x76, 0x65, 0x20, 0x79,
+    0x6F, 0x75, 0x72, 0x20, 0x64, 0x65, 0x73, 0x69,
+    0x67, 0x6E, 0x3F, 0xCD, 0x7F, 0x00, 0xCD, 0x45,
+    0x6E, 0x74, 0x65, 0x72, 0x20, 0x61, 0x20, 0x6E,
+    0x61, 0x6D, 0x65, 0x20, 0x66, 0x6F, 0x72, 0xCD,
+    0x74, 0x68, 0x69, 0x73, 0x20, 0x64, 0x65, 0x73,
+    0x69, 0x67, 0x6E, 0x2E, 0xCD, 0x7F, 0x00, 0x7F,
+    0x68, 0x7F, 0x65, 0x0D, 0x54, 0x72, 0x61, 0x6E,
+    0x73, 0x6D, 0x69, 0x74, 0x74, 0x69, 0x6E, 0x67,
+    0x20, 0x64, 0x61, 0x74, 0x61, 0x2E, 0x2E, 0x2E,
+    0xCD, 0x7F, 0x68, 0x7F, 0x65, 0x0D, 0x44, 0x6F,
+    0x20, 0x6E, 0x6F, 0x74, 0x20, 0x72, 0x65, 0x6D,
+    0x6F, 0x76, 0x65, 0x20, 0x74, 0x68, 0x65, 0x20,
+    0x63, 0x61, 0x62, 0x6C, 0x65, 0x21, 0xCD, 0x7F,
+    0x68, 0x7F, 0x65, 0x0D, 0x44, 0x6F, 0x20, 0x6E,
+    0x6F, 0x74, 0x20, 0x74, 0x75, 0x72, 0x6E, 0x20,
+    0x74, 0x68, 0x65, 0x20, 0x70, 0x6F, 0x77, 0x65,
+    0x72, 0x20, 0x4F, 0x46, 0x46, 0x21, 0xCD, 0x7F,
+    0x00, 0x7F, 0x69, 0x7F, 0x68, 0x7F, 0x67, 0x0D,
+    0x54, 0x72, 0x61, 0x64, 0x65, 0x20, 0x69, 0x73,
+    0x6C, 0x61, 0x6E, 0x64, 0x73, 0x3F, 0xCD, 0xCD,
+    0x7F, 0x67, 0x28, 0x7F, 0x6D, 0x03, 0x59, 0x65,
+    0x73, 0x7F, 0x67, 0x1B, 0x7F, 0x6E, 0x02, 0x4E,
+    0x6F, 0x7F, 0x6B, 0x7F, 0x70, 0x02, 0x7F, 0x0F,
+    0x00, 0x05, 0xCD, 0x7F, 0x01, 0x55, 0x73, 0x65,
+    0x20, 0x74, 0x68, 0x65, 0x20, 0x7F, 0x66, 0x09,
+    0x10, 0x47, 0x61, 0x6D, 0x65, 0x20, 0x42, 0x6F,
+    0x79, 0x20, 0x41, 0x64, 0x76, 0x61, 0x6E, 0x63,
+    0x65, 0xCD, 0x7F, 0x65, 0x09, 0x47, 0x61, 0x6D,
+    0x65, 0x20, 0x4C, 0x69, 0x6E, 0x6B, 0x20, 0x63,
+    0x61, 0x62, 0x6C, 0x65, 0xCD, 0x74, 0x6F, 0x20,
+    0x63, 0x6F, 0x6E, 0x6E, 0x65, 0x63, 0x74, 0x20,
+    0x79, 0x6F, 0x75, 0x72, 0x20, 0x7F, 0x66, 0x09,
+    0x08, 0x47, 0x61, 0x6D, 0x65, 0x20, 0x42, 0x6F,
+    0x79, 0xCD, 0x7F, 0x66, 0x09, 0x07, 0x41, 0x64,
+    0x76, 0x61, 0x6E, 0x63, 0x65, 0x20, 0x73, 0x79,
+    0x73, 0x74, 0x65, 0x6D, 0x73, 0x2E, 0x7F, 0x04,
+    0x7F, 0x0E, 0x00, 0x06, 0xCD, 0x7F, 0x01, 0xCD,
+    0x50, 0x72, 0x65, 0x73, 0x73, 0x20, 0x74, 0x68,
+    0x65, 0x20, 0x7F, 0x66, 0x0E, 0x08, 0x41, 0x20,
+    0x42, 0x75, 0x74, 0x74, 0x6F, 0x6E, 0xCD, 0x77,
+    0x68, 0x65, 0x6E, 0x20, 0x79, 0x6F, 0x75, 0x27,
+    0x72, 0x65, 0x20, 0x72, 0x65, 0x61, 0x64, 0x79,
+    0x2E, 0x7F, 0x04, 0xCD, 0x7F, 0x01, 0x7F, 0x65,
+    0x0D, 0x54, 0x72, 0x61, 0x64, 0x69, 0x6E, 0x67,
+    0x20, 0x69, 0x73, 0x6C, 0x61, 0x6E, 0x64, 0x20,
+    0x64, 0x61, 0x74, 0x61, 0x2E, 0x2E, 0x2E, 0xCD,
+    0x7F, 0x65, 0x0D, 0x44, 0x6F, 0x20, 0x6E, 0x6F,
+    0x74, 0x20, 0x64, 0x69, 0x73, 0x63, 0x6F, 0x6E,
+    0x6E, 0x65, 0x63, 0x74, 0x20, 0x74, 0x68, 0x65,
+    0xCD, 0x7F, 0x65, 0x0D, 0x63, 0x61, 0x62, 0x6C,
+    0x65, 0x21, 0x20, 0x44, 0x6F, 0x20, 0x6E, 0x6F,
+    0x74, 0x20, 0x74, 0x75, 0x72, 0x6E, 0x20, 0x79,
+    0x6F, 0x75, 0x72, 0xCD, 0x7F, 0x65, 0x0D, 0x7F,
+    0x66, 0x09, 0x10, 0x47, 0x61, 0x6D, 0x65, 0x20,
+    0x42, 0x6F, 0x79, 0x20, 0x41, 0x64, 0x76, 0x61,
+    0x6E, 0x63, 0x65, 0x20, 0x6F, 0x66, 0x66, 0x21,
+    0xCD, 0x7F, 0x01, 0x54, 0x68, 0x65, 0x20, 0x73,
+    0x79, 0x73, 0x74, 0x65, 0x6D, 0x73, 0x20, 0x61,
+    0x72, 0x65, 0x20, 0x6E, 0x6F, 0x74, 0xCD, 0x63,
+    0x6F, 0x6E, 0x6E, 0x65, 0x63, 0x74, 0x65, 0x64,
+    0x20, 0x70, 0x72, 0x6F, 0x70, 0x65, 0x72, 0x6C,
+    0x79, 0x2E, 0x20, 0x50, 0x6C, 0x65, 0x61, 0x73,
+    0x65, 0xCD, 0x63, 0x68, 0x65, 0x63, 0x6B, 0x20,
+    0x74, 0x68, 0x65, 0x20, 0x63, 0x6F, 0x6E, 0x6E,
+    0x65, 0x63, 0x74, 0x69, 0x6F, 0x6E, 0x73, 0x20,
+    0x61, 0x6E, 0x64, 0xCD, 0x74, 0x72, 0x79, 0x20,
+    0x61, 0x67, 0x61, 0x69, 0x6E, 0x2E, 0x7F, 0x04,
+    0xCD, 0x7F, 0x01, 0x7F, 0x68, 0x54, 0x68, 0x61,
+    0x6E, 0x6B, 0x20, 0x79, 0x6F, 0x75, 0x20, 0x66,
+    0x6F, 0x72, 0x20, 0x77, 0x61, 0x69, 0x74, 0x69,
+    0x6E, 0x67, 0x2E, 0xCD, 0x7F, 0x68, 0xCD, 0x7F,
+    0x68, 0x54, 0x68, 0x65, 0x20, 0x74, 0x72, 0x61,
+    0x64, 0x65, 0x20, 0x69, 0x73, 0x20, 0x63, 0x6F,
+    0x6D, 0x70, 0x6C, 0x65, 0x74, 0x65, 0x2E, 0xCD,
+    0x7F, 0x00, 0x54, 0x68, 0x65, 0x20, 0x74, 0x72,
+    0x61, 0x64, 0x65, 0x20, 0x77, 0x61, 0x73, 0x20,
+    0x63, 0x61, 0x6E, 0x63, 0x65, 0x6C, 0x65, 0x64,
+    0x2E, 0xCD, 0x50, 0x6C, 0x65, 0x61, 0x73, 0x65,
+    0x20, 0x73, 0x74, 0x61, 0x72, 0x74, 0x20, 0x74,
+    0x68, 0x65, 0x20, 0x74, 0x72, 0x61, 0x64, 0x65,
+    0xCD, 0x61, 0x67, 0x61, 0x69, 0x6E, 0x20, 0x66,
+    0x72, 0x6F, 0x6D, 0x20, 0x74, 0x68, 0x65, 0x20,
+    0x62, 0x65, 0x67, 0x69, 0x6E, 0x6E, 0x69, 0x6E,
+    0x67, 0x2E, 0x7F, 0x04, 0xCD, 0x7F, 0x01, 0x7F,
+    0x65, 0x0D, 0x54, 0x72, 0x61, 0x6E, 0x73, 0x6D,
+    0x69, 0x74, 0x74, 0x69, 0x6E, 0x67, 0x20, 0x64,
+    0x61, 0x74, 0x61, 0x2E, 0x2E, 0x2E, 0xCD, 0x7F,
+    0x65, 0x0D, 0x44, 0x6F, 0x20, 0x6E, 0x6F, 0x74,
+    0x20, 0x64, 0x69, 0x73, 0x63, 0x6F, 0x6E, 0x6E,
+    0x65, 0x63, 0x74, 0x20, 0x74, 0x68, 0x65, 0xCD,
+    0x7F, 0x65, 0x0D, 0x63, 0x61, 0x62, 0x6C, 0x65,
+    0x21, 0x20, 0x44, 0x6F, 0x20, 0x6E, 0x6F, 0x74,
+    0x20, 0x74, 0x75, 0x72, 0x6E, 0x20, 0x79, 0x6F,
+    0x75, 0x72, 0xCD, 0x7F, 0x65, 0x0D, 0x7F, 0x66,
+    0x09, 0x10, 0x47, 0x61, 0x6D, 0x65, 0x20, 0x42,
+    0x6F, 0x79, 0x20, 0x41, 0x64, 0x76, 0x61, 0x6E,
+    0x63, 0x65, 0x20, 0x6F, 0x66, 0x66, 0x21, 0xCD,
+    0x7F, 0x01, 0x41, 0x6E, 0x20, 0x65, 0x72, 0x72,
+    0x6F, 0x72, 0x20, 0x68, 0x61, 0x73, 0x20, 0x6F,
+    0x63, 0x63, 0x75, 0x72, 0x72, 0x65, 0x64, 0x2E,
+    0xCD, 0x50, 0x6C, 0x65, 0x61, 0x73, 0x65, 0x20,
+    0x63, 0x68, 0x65, 0x63, 0x6B, 0x20, 0x74, 0x68,
+    0x65, 0xCD, 0x63, 0x61, 0x62, 0x6C, 0x65, 0x20,
+    0x63, 0x6F, 0x6E, 0x6E, 0x65, 0x63, 0x74, 0x69,
+    0x6F, 0x6E, 0x73, 0x2E, 0x7F, 0x04, 0xCD, 0x7F,
+    0x01, 0xCD, 0x7F, 0x68, 0x54, 0x72, 0x61, 0x6E,
+    0x73, 0x6D, 0x69, 0x73, 0x73, 0x69, 0x6F, 0x6E,
+    0x20, 0x63, 0x6F, 0x6D, 0x70, 0x6C, 0x65, 0x74,
+    0x65, 0x2E, 0xCD, 0x7F, 0x00, 0xCD, 0x44, 0x61,
+    0x74, 0x61, 0x20, 0x74, 0x72, 0x61, 0x6E, 0x73,
+    0x6D, 0x69, 0x73, 0x73, 0x69, 0x6F, 0x6E, 0xCD,
+    0x63, 0x61, 0x6E, 0x63, 0x65, 0x6C, 0x65, 0x64,
+    0x2E, 0x7F, 0x04, 0xCD, 0x7F, 0x01, 0xCD, 0x7F,
+    0x68, 0x7F, 0x65, 0x0D, 0x50, 0x6C, 0x65, 0x61,
+    0x73, 0x65, 0x20, 0x77, 0x61, 0x69, 0x74, 0x20,
+    0x61, 0x20, 0x6D, 0x6F, 0x6D, 0x65, 0x6E, 0x74,
+    0x2E, 0x2E, 0x2E, 0xCD, 0xCD, 0x7F, 0x01, 0xCD,
+    0x54, 0x68, 0x65, 0x20, 0x6F, 0x74, 0x68, 0x65,
+    0x72, 0x20, 0x73, 0x79, 0x73, 0x74, 0x65, 0x6D,
+    0x20, 0x69, 0x73, 0xCD, 0x6E, 0x6F, 0x74, 0x20,
+    0x72, 0x65, 0x73, 0x70, 0x6F, 0x6E, 0x64, 0x69,
+    0x6E, 0x67, 0x2E, 0x7F, 0x04, 0xCD, 0x7F, 0x01,
+    0x7F, 0x69, 0x7F, 0x68, 0x44, 0x6F, 0x20, 0x79,
+    0x6F, 0x75, 0x20, 0x77, 0x61, 0x6E, 0x74, 0x20,
+    0x74, 0x6F, 0x20, 0x74, 0x72, 0x79, 0x20, 0x61,
+    0x67, 0x61, 0x69, 0x6E, 0x3F, 0xCD, 0x7F, 0x68,
+    0xCD, 0x7F, 0x68, 0x7F, 0x67, 0x28, 0x7F, 0x6D,
+    0x03, 0x59, 0x65, 0x73, 0x7F, 0x67, 0x1B, 0x7F,
+    0x6E, 0x02, 0x4E, 0x6F, 0x7F, 0x6B, 0x7F, 0x70,
+    0x02, 0x7F, 0x0F, 0x00, 0x05, 0xCD, 0x7F, 0x01,
+    0x50, 0x6C, 0x65, 0x61, 0x73, 0x65, 0x20, 0x72,
+    0x65, 0x6D, 0x6F, 0x76, 0x65, 0x20, 0x74, 0x68,
+    0x65, 0xCD, 0x7F, 0x66, 0x09, 0x15, 0x47, 0x61,
+    0x6D, 0x65, 0x20, 0x42, 0x6F, 0x79, 0x20, 0x41,
+    0x64, 0x76, 0x61, 0x6E, 0x63, 0x65, 0x20, 0x47,
+    0x61, 0x6D, 0x65, 0xCD, 0x7F, 0x66, 0x09, 0x0A,
+    0x4C, 0x69, 0x6E, 0x6B, 0x20, 0x63, 0x61, 0x62,
+    0x6C, 0x65, 0x2E, 0xCD, 0x7F, 0x00, 0xCD, 0x7F,
+    0x68, 0x54, 0x72, 0x61, 0x6E, 0x73, 0x6D, 0x69,
+    0x73, 0x73, 0x69, 0x6F, 0x6E, 0x20, 0x63, 0x6F,
+    0x6D, 0x70, 0x6C, 0x65, 0x74, 0x65, 0x2E, 0xCD,
+    0x7F, 0x00, 0xCD, 0x44, 0x61, 0x74, 0x61, 0x20,
+    0x74, 0x72, 0x61, 0x6E, 0x73, 0x6D, 0x69, 0x73,
+    0x73, 0x69, 0x6F, 0x6E, 0xCD, 0x63, 0x61, 0x6E,
+    0x63, 0x65, 0x6C, 0x65, 0x64, 0x2E, 0xCD, 0x7F,
+    0x00, 0x7F, 0x69, 0x7F, 0x68, 0x45, 0x6E, 0x61,
+    0x62, 0x6C, 0x65, 0x20, 0x7F, 0x66, 0x0B, 0x0A,
+    0x53, 0x6C, 0x65, 0x65, 0x70, 0x20, 0x4D, 0x6F,
+    0x64, 0x65, 0x3F, 0xCD, 0xCD, 0x7F, 0x67, 0x28,
+    0x7F, 0x6D, 0x03, 0x59, 0x65, 0x73, 0x7F, 0x67,
+    0x1B, 0x7F, 0x6E, 0x02, 0x4E, 0x6F, 0x7F, 0x6B,
+    0x7F, 0x70, 0x02, 0x7F, 0x0F, 0x00, 0x16, 0xCD,
+    0x7F, 0x01, 0x54, 0x6F, 0x20, 0x64, 0x69, 0x73,
+    0x61, 0x62, 0x6C, 0x65, 0x20, 0x7F, 0x66, 0x0B,
+    0x0A, 0x53, 0x6C, 0x65, 0x65, 0x70, 0x20, 0x4D,
+    0x6F, 0x64, 0x65, 0x2C, 0xCD, 0x70, 0x72, 0x65,
+    0x73, 0x73, 0x20, 0x74, 0x68, 0x65, 0x20, 0x7F,
+    0x66, 0x0A, 0x08, 0x4C, 0x20, 0x42, 0x75, 0x74,
+    0x74, 0x6F, 0x6E, 0x20, 0x61, 0x6E, 0x64, 0xCD,
+    0x7F, 0x66, 0x0A, 0x06, 0x53, 0x45, 0x4C, 0x45,
+    0x43, 0x54, 0x20, 0x73, 0x69, 0x6D, 0x75, 0x6C,
+    0x74, 0x61, 0x6E, 0x65, 0x6F, 0x75, 0x73, 0x6C,
+    0x79, 0x2E, 0x7F, 0x04, 0xCD, 0x7F, 0x01, 0x7F,
+    0x69, 0x7F, 0x68, 0x44, 0x69, 0x73, 0x61, 0x62,
+    0x6C, 0x65, 0x20, 0x7F, 0x66, 0x0B, 0x0A, 0x53,
+    0x6C, 0x65, 0x65, 0x70, 0x20, 0x4D, 0x6F, 0x64,
+    0x65, 0x3F, 0xCD, 0xCD, 0x7F, 0x67, 0x28, 0x7F,
+    0x6D, 0x03, 0x59, 0x65, 0x73, 0x7F, 0x67, 0x1B,
+    0x7F, 0x6E, 0x02, 0x4E, 0x6F, 0x7F, 0x6B, 0x7F,
+    0x70, 0x01, 0xCD, 0x7F, 0x01, 0x7F, 0x67, 0x28,
+    0x7F, 0x66, 0x07, 0x03, 0x59, 0x65, 0x73, 0x7F,
+    0x67, 0x1B, 0x7F, 0x66, 0x07, 0x02, 0x4E, 0x6F,
+    0xCD, 0x7F, 0x00, 0x7F, 0x69, 0x7F, 0x66, 0x0E,
+    0x0B, 0x49, 0x73, 0x20, 0x74, 0x68, 0x69, 0x73,
+    0x20, 0x4F, 0x4B, 0x3F, 0xCD, 0x7F, 0x67, 0x21,
+    0x7F, 0x6D, 0x03, 0x59, 0x65, 0x73, 0xCD, 0x7F,
+    0x67, 0x21, 0x7F, 0x6E, 0x08, 0x52, 0x65, 0x64,
+    0x65, 0x73, 0x69, 0x67, 0x6E, 0xCD, 0x7F, 0x67,
+    0x21, 0x7F, 0x6F, 0x0C, 0x54, 0x68, 0x72, 0x6F,
+    0x77, 0x20, 0x69, 0x74, 0x20, 0x6F, 0x75, 0x74,
+    0x7F, 0x6C, 0x7F, 0x70, 0x02, 0x7F, 0x0F, 0x00,
+    0x02, 0xCD, 0x7F, 0x00, 0x7F, 0x68, 0x59, 0x6F,
+    0x75, 0x20, 0x63, 0x61, 0x6E, 0x27, 0x74, 0x20,
+    0x75, 0x73, 0x65, 0x20, 0x74, 0x68, 0x65, 0x20,
+    0x7F, 0x66, 0x09, 0x04, 0x47, 0x61, 0x6D, 0x65,
+    0xCD, 0x7F, 0x68, 0x7F, 0x66, 0x09, 0x0B, 0x42,
+    0x6F, 0x79, 0x20, 0x41, 0x64, 0x76, 0x61, 0x6E,
+    0x63, 0x65, 0x20, 0x69, 0x73, 0x6C, 0x61, 0x6E,
+    0x64, 0x20, 0x6F, 0x6E, 0x20, 0x74, 0x68, 0x65,
+    0xCD, 0x7F, 0x68, 0x7F, 0x66, 0x09, 0x11, 0x4E,
+    0x69, 0x6E, 0x74, 0x65, 0x6E, 0x64, 0x6F, 0x20,
+    0x47, 0x61, 0x6D, 0x65, 0x43, 0x75, 0x62, 0x65,
+    0x20, 0x69, 0x73, 0x6C, 0x61, 0x6E, 0x64, 0x2E,
+    0x7F, 0x04, 0x7F, 0x0E, 0x00, 0x1B, 0xCD, 0x7F,
+    0x01, 0x59, 0x6F, 0x75, 0x20, 0x6D, 0x61, 0x79,
+    0x20, 0x74, 0x75, 0x72, 0x6E, 0x20, 0x74, 0x68,
+    0x65, 0x20, 0x70, 0x6F, 0x77, 0x65, 0x72, 0xCD,
+    0x6F, 0x66, 0x66, 0x2C, 0x20, 0x62, 0x75, 0x74,
+    0x20, 0x62, 0x65, 0x20, 0x73, 0x75, 0x72, 0x65,
+    0x20, 0x74, 0x6F, 0x20, 0x74, 0x75, 0x72, 0x6E,
+    0xCD, 0x79, 0x6F, 0x75, 0x72, 0x20, 0x7F, 0x66,
+    0x09, 0x04, 0x47, 0x61, 0x6D, 0x65, 0x20, 0x7F,
+    0x66, 0x09, 0x0B, 0x42, 0x6F, 0x79, 0x20, 0x41,
+    0x64, 0x76, 0x61, 0x6E, 0x63, 0x65, 0x20, 0x6F,
+    0x6E, 0xCD, 0x77, 0x68, 0x65, 0x6E, 0x20, 0x79,
+    0x6F, 0x75, 0x20, 0x77, 0x61, 0x6E, 0x74, 0x20,
+    0x74, 0x6F, 0x20, 0x6C, 0x65, 0x61, 0x76, 0x65,
+    0x2E, 0xCD, 0x7F, 0x00, 0xCD, 0x7F, 0x68, 0x7F,
+    0x66, 0x0D, 0x15, 0x54, 0x72, 0x61, 0x6E, 0x73,
+    0x6D, 0x69, 0x73, 0x73, 0x69, 0x6F, 0x6E, 0x20,
+    0x63, 0x6F, 0x6D, 0x70, 0x6C, 0x65, 0x74, 0x65,
+    0x2E, 0xCD, 0x7F, 0x00, 0x7F, 0x67, 0x21, 0x7F,
+    0x66, 0x09, 0x03, 0x59, 0x65, 0x73, 0xCD, 0x7F,
+    0x67, 0x21, 0x7F, 0x66, 0x09, 0x08, 0x52, 0x65,
+    0x64, 0x65, 0x73, 0x69, 0x67, 0x6E, 0xCD, 0x7F,
+    0x67, 0x21, 0x7F, 0x66, 0x09, 0x0C, 0x54, 0x68,
+    0x72, 0x6F, 0x77, 0x20, 0x69, 0x74, 0x20, 0x6F,
+    0x75, 0x74, 0xCD, 0x7F, 0x00, 0xCD, 0x7F, 0x68,
+    0x7F, 0x66, 0x0D, 0x0B, 0x43, 0x68, 0x65, 0x63,
+    0x6B, 0x69, 0x6E, 0x67, 0x2E, 0x2E, 0x2E, 0xCD,
+    0x7F, 0x01
+};
+
+// @0x02035778 - big endian byte array
+static u8 sMsgOffsets[31][4] = {
+    {0x00, 0x00, 0x00, 0x72},
+    {0x00, 0x00, 0x00, 0xFE},
+    {0x00, 0x00, 0x01, 0x1F},
+    {0x00, 0x00, 0x01, 0x79},
+    {0x00, 0x00, 0x01, 0xAD},
+    {0x00, 0x00, 0x02, 0x17},
+    {0x00, 0x00, 0x02, 0x46},
+    {0x00, 0x00, 0x02, 0xB3},
+    {0x00, 0x00, 0x03, 0x0B},
+    {0x00, 0x00, 0x03, 0x42},
+    {0x00, 0x00, 0x03, 0x8F},
+    {0x00, 0x00, 0x03, 0xFA},
+    {0x00, 0x00, 0x04, 0x39},
+    {0x00, 0x00, 0x04, 0x55},
+    {0x00, 0x00, 0x04, 0x76},
+    {0x00, 0x00, 0x04, 0x97},
+    {0x00, 0x00, 0x04, 0xC0},
+    {0x00, 0x00, 0x05, 0x00},
+    {0x00, 0x00, 0x05, 0x3E},
+    {0x00, 0x00, 0x05, 0x5A},
+    {0x00, 0x00, 0x05, 0x79},
+    {0x00, 0x00, 0x05, 0xB2},
+    {0x00, 0x00, 0x06, 0x07},
+    {0x00, 0x00, 0x06, 0x3D},
+    {0x00, 0x00, 0x06, 0x53},
+    {0x00, 0x00, 0x06, 0x9C},
+    {0x00, 0x00, 0x07, 0x01},
+    {0x00, 0x00, 0x07, 0x6C},
+    {0x00, 0x00, 0x07, 0x8C},
+    {0x00, 0x00, 0x07, 0xBD},
+    {0x00, 0x00, 0x07, 0xD2},
+};
+
+// @0x0202AB54
+static mFont_ControlCodeInfo_c sMsgControlCodeInfo[] = {
+    {2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_LAST
+    {2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_CONTINUE
+    {2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_CLEAR
+    {3, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_CURSOR_SET_TIME
+    {2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_BUTTON
+    {5, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_COLOR
+    {2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_ABLE_CANCEL
+    {2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_UNABLE_CANCEL
+    {5, 0x01, 0x00, 0x00}, // mFont_CONT_CODE_SET_DEMO_ORDER_PLAYER
+    {5, 0x01, 0x00, 0x00}, // mFont_CONT_CODE_SET_DEMO_ORDER_NPC0
+    {5, 0x01, 0x00, 0x00}, // mFont_CONT_CODE_SET_DEMO_ORDER_NPC1
+    {5, 0x01, 0x00, 0x00}, // mFont_CONT_CODE_SET_DEMO_ORDER_NPC2
+    {5, 0x01, 0x00, 0x00}, // mFont_CONT_CODE_SET_DEMO_ORDER_QUEST
+    {2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_SELECT_WINDOW
+    {4, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_NEXT_MESSAGE_F
+    {4, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_NEXT_MESSAGE_0
+    {4, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_NEXT_MESSAGE_1
+    {4, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_NEXT_MESSAGE_2
+    {4, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_NEXT_MESSAGE_3
+    {6, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_NEXT_MESSAGE_RANDOM_2
+    {8, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_NEXT_MESSAGE_RANDOM_3
+    {10, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_NEXT_MESSAGE_RANDOM_4
+    {6, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_SELECT_STRING_2
+    {8, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_SELECT_STRING_3
+    {10, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_SELECT_STRING_4
+    {2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_FORCE_NEXT
+    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_PLAYER_NAME
+    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_TALK_NAME
+    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_TAIL
+    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_YEAR
+    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_MONTH
+    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_WEEK
+    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_DAY
+    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_HOUR
+    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_MIN
+    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_SEC
+    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE0
+    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE1
+    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE2
+    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE3
+    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE4
+    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE5
+    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE6
+    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE7
+    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE8
+    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE9
+    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_DETERMINATION
+    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_COUNTRY_NAME
+    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_RANDOM_NUMBER_2
+    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_ITEM0
+    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_ITEM1
+    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_ITEM2
+    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_ITEM3
+    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_ITEM4
+    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE10
+    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE11
+    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE12
+    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE13
+    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE14
+    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE15
+    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE16
+    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE17
+    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE18
+    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE19
+    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_MAIL
+    {2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_PLAYER_DESTINY0
+    {2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_PLAYER_DESTINY1
+    {2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_PLAYER_DESTINY2
+    {2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_PLAYER_DESTINY3
+    {2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_PLAYER_DESTINY4
+    {2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_PLAYER_DESTINY5
+    {2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_PLAYER_DESTINY6
+    {2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_PLAYER_DESTINY7
+    {2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_PLAYER_DESTINY8
+    {2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_PLAYER_DESTINY9
+    {2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_MESSAGE_CONTENTS_NORMAL
+    {2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_MESSAGE_CONTENTS_ANGRY
+    {2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_MESSAGE_CONTENTS_SAD
+    {2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_MESSAGE_CONTENTS_FUN
+    {2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_MESSAGE_CONTENTS_SLEEPY
+    {6, 0x05, 0x00, 0x00}, // mFont_CONT_CODE_SET_COLOR_CHAR
+    {3, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SOUND_CUT
+    {3, 0x04, 0x00, 0x00}, // mFont_CONT_CODE_SET_LINE_OFFSET
+    {3, 0x04, 0x00, 0x00}, // mFont_CONT_CODE_SET_LINE_TYPE
+    {3, 0x05, 0x00, 0x00}, // mFont_CONT_CODE_SET_CHAR_SCALE
+    {2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_BUTTON2
+    {4, 0x06, 0x00, 0x00}, // mFont_CONT_CODE_BGM_MAKE
+    {4, 0x06, 0x00, 0x00}, // mFont_CONT_CODE_BGM_DELETE
+    {3, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_MSG_TIME_END
+    {3, 0x07, 0x00, 0x00}, // mFont_CONT_CODE_SOUND_TRG_SYS
+    {3, 0x04, 0x00, 0x00}, // mFont_CONT_CODE_SET_LINE_SCALE
+    {2, 0x07, 0x00, 0x00}, // mFont_CONT_CODE_SOUND_NO_PAGE
+    {2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_VOICE_TRUE
+    {2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_VOICE_FALSE
+    {2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SELECT_NO_B
+    {2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_GIVE_OPEN
+    {2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_GIVE_CLOSE
+    {2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_MESSAGE_CONTENTS_GLOOMY
+    {2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SELECT_NO_B_CLOSE
+    {6, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_NEXT_MESSAGE_RANDOM_SECTION
+    {3, 0x08, 0x00, 0x00}, // mFont_CONT_CODE_UNKNOWN_100
+    {3, 0x08, 0x00, 0x00}, // mFont_CONT_CODE_UNKNOWN_101
+    {4, 0x08, 0x00, 0x00}, // mFont_CONT_CODE_SET_TEMPORARY_COLOR
+    {3, 0x04, 0x00, 0x00}, // mFont_CONT_CODE_SPACE
+    {2, 0x08, 0x00, 0x00}, // mFont_CONT_CODE_MOVE_DOWN
+    {2, 0x08, 0x00, 0x00}, // mFont_CONT_CODE_RESTORE_CACHED_MESSAGE
+    {6, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_MALE_FEMALE_CHECK
+    {2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_CHOICE_COUNT_2
+    {2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_CHOICE_COUNT_3
+    {3, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_CHOICE_TEXT_0
+    {3, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_CHOICE_TEXT_1
+    {3, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_CHOICE_TEXT_2
+    {3, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_CHECK_CHOICE
+};
+
+/* Message and font routines recovered from the m2c seed output. */
+s32 mMsg_CheckChoiceNext(mMsg_Window_c *msg) {
+    s32 result;
+    s32 button;
+
+    if (msg->message_id == 0x19) {
+        result = 0;
+        button = DPAD_DOWN;
+    } else {
+        result = 0;
+        button = DPAD_RIGHT;
+    }
+    if ((button & gGameState.keys_pressed) && ((s32) (msg->choice_count - 1) > (s32) msg->choice_index)) {
+        result = 1;
+    }
+    return result;
+}
+
+s32 mMsg_CheckChoicePrevious(mMsg_Window_c *msg) {
+    s32 button;
+    u32 result;
+
+    if (msg->message_id == 0x19) {
+        result = 0;
+        button = DPAD_UP;
+    } else {
+        result = 0;
+        button = DPAD_LEFT;
+    }
+    if (button & gGameState.keys_pressed) {
+        u8 choice_index = msg->choice_index;
+        result = (u32) ((0 - choice_index) | choice_index) >> 0x1F;
+    }
+    return (s32) result;
+}
+
+void mMsg_UpdateChoiceCursorPosition(mMsg_Window_c *msg) {
+    m_msg_sprite_c *cursor;
+
+    cursor = msg->choice_cursor;
+    if (cursor != NULL) {
+        cursor->_30 = (msg->choices[msg->choice_index].line + 7) * 8;
+        cursor->_2C = msg->choices[msg->choice_index].x + 0x2F;
+    }
+}
+
+void mMsg_UpdateChoiceHighlight(mMsg_Window_c *msg) {
+    void *choice_tiles[5];
+    s8 tile_stride;
+    u16 first_choice_tile;
+
+    choice_tiles[0] = gMsgThreeChoiceHighlightTiles[0];
+    choice_tiles[1] = gMsgThreeChoiceHighlightTiles[1];
+    choice_tiles[2] = gMsgThreeChoiceHighlightTiles[2];
+    choice_tiles[3] = gMsgTwoChoiceHighlightTiles[0];
+    choice_tiles[4] = gMsgTwoChoiceHighlightTiles[1];
+    tile_stride = msg->tile_stride;
+    first_choice_tile = tile_stride * msg->choices[0].line;
+    if (msg->message_id == 0x19) {
+        CpuFastSet(choice_tiles[msg->choice_index], gMsgVram + (first_choice_tile << 5), (tile_stride * 0x30) & 0x1FFFFF);
+        CpuFastSet(choice_tiles[msg->choice_index], msg->tile_data + (first_choice_tile << 5), (msg->tile_stride * 0x30) & 0x1FFFFF);
+        return;
+    }
+    CpuFastSet(choice_tiles[msg->choice_index + 3], gMsgVram + (first_choice_tile << 5), (tile_stride * 0x10) & 0x1FFFFF);
+    CpuFastSet(choice_tiles[msg->choice_index + 3], msg->tile_data + (first_choice_tile << 5), (msg->tile_stride * 0x10) & 0x1FFFFF);
+}
+
+void mMsg_MainSetup_Choice(mMsg_Window_c *msg) {
+    msg->choice_cursor = sub_0201C310(0xBU, 0, 0, 0);
+    mMsg_UpdateChoiceCursorPosition(msg);
+    mMsg_UpdateChoiceHighlight(msg);
+    msg->current_mode = (s8) (u8) msg->requested_mode;
+    msg->requested_mode = -1;
+    msg->selected_choice = -1;
+}
+
+static inline s8 mMsg_GetChoice(mMsg_Window_c *msg) {
+    return msg->choice_index;
+}
+
+void mMsg_Main_Choice(mMsg_Window_c *msg) {
+    u16 sound;
+    s8 choice_index;
+
+    if (msg->selected_choice != -1) {
+        if (mMsg_TimerDec(msg) != 0) {
+            mMsg_MainSetup_Window(msg);
+        }
+    } else {
+        if (msg->choice_cursor == NULL) {
+            msg->choice_cursor = sub_0201C310(0xBU, 0, 0, 0);
+            mMsg_UpdateChoiceCursorPosition(msg);
+            mMsg_UpdateChoiceHighlight(msg);
+            return;
+        }
+        if ((A_BUTTON & gGameState.keys_pressed) && (mMsg_RequestCursor(msg) != 0)) {
+            msg->force_next = 1;
+            choice_index = msg->choice_index;
+            msg->selected_choice = choice_index;
+            __asm__("" : "+r" (choice_index)); // @HACK
+            sound = choice_index == 0 ? 0x10 : 0x11;
+            mMsg_SetTimer(msg, 0x14);
+            sub_02019D78(sound);
+            return;
+        }
+        if (mMsg_CheckChoiceNext(msg) != 0) {
+            msg->choice_index += 1;
+            sub_02019D78(0xFU);
+            mMsg_UpdateChoiceHighlight(msg);
+        }
+        if (mMsg_CheckChoicePrevious(msg) != 0) {
+            msg->choice_index -= 1;
+            sub_02019D78(0xFU);
+            mMsg_UpdateChoiceHighlight(msg);
+        }
+        mMsg_UpdateChoiceCursorPosition(msg);
+    }
+}
+
+void mMsg_MainSetup_DisappearWait(mMsg_Window_c *msg) {
+    msg->transition_frame = 12;
+    msg->saved_mode = msg->current_mode;
+    msg->current_mode = msg->requested_mode;
+    msg->requested_mode = -1;
+    sub_02019D78(0x20U);
+}
+
+void mMsg_Main_DisappearWait(mMsg_Window_c *msg) {
+    gGameState.bg3_vofs = (u16) mMsg_GetWindowScrollOffset(&msg->transition_frame);
+    if ((s32) msg->transition_frame > 0) {
+        msg->transition_frame = (u8) msg->transition_frame - 1;
+        return;
+    }
+    msg->draw_enabled = 0;
+}
+
+void mMsg_MainSetup_AppearWait(mMsg_Window_c *msg) {
+    msg->transition_frame = 0;
+    msg->current_mode = (s8) (u8) msg->requested_mode;
+    msg->requested_mode = -1;
+    sub_02019D78(0x1FU);
+}
+
+void mMsg_Main_AppearWait(mMsg_Window_c *msg) {
+    gGameState.bg3_vofs = (u16) mMsg_GetWindowScrollOffset(&msg->transition_frame);
+    if ((s32) msg->transition_frame > 0xA) {
+        msg->current_mode = msg->saved_mode;
+        msg->draw_enabled = 1;
+        return;
+    }
+    msg->transition_frame = (u8) msg->transition_frame + 1;
+}
+
+void mMsg_CopyTilesToVram(s32 tile, s32 count, u8 *tile_data) {
+    if (count > 0) {
+        CpuFastSet(tile_data + (s32)(tile << 5), gMsgVram + (s32)(tile << 5), (count * 8) & 0x1FFFFF);
+    }
+}
+
+s32 mMsg_GetWindowScrollOffset(s8 *frame) {
+    if (*frame >= 12) {
+        *frame = 11;
+    }
+    if (*frame < 0) {
+        *frame = 0;
+    }
+
+    return gMsgWindowScrollOffsets[(s8) (u8) *frame];
+}
+
+s8 mMsg_RequestMode(mMsg_Window_c *msg, s8 mode) {
+    msg->requested_mode = mode;
+    return 1;
+}
+
+s8 mMsg_RequestDisappear(mMsg_Window_c *msg) {
+    return mMsg_RequestMode(msg, mMsg_MODE_DISAPPEAR);
+}
+
+s8 mMsg_RequestAppear(mMsg_Window_c *msg, s32 message_id) {
+    s8 result;
+
+    result = mMsg_RequestMode(msg, mMsg_MODE_APPEAR);
+    if (result == 1) {
+        msg->next_message_id = message_id;
+    }
+    return result;
+}
+
+s8 mMsg_RequestCursor(mMsg_Window_c *msg) {
+    return mMsg_RequestMode(msg, mMsg_MODE_CURSOR);
+}
+
+s8 mMsg_RequestNormal(mMsg_Window_c *msg) {
+    return mMsg_RequestMode(msg, mMsg_MODE_NORMAL);
+}
+
+s8 mMsg_RequestHide(mMsg_Window_c *msg) {
+    return mMsg_RequestMode(msg, mMsg_MODE_HIDE);
+}
+
+s8 mMsg_RequestChoice(mMsg_Window_c *msg) {
+    return mMsg_RequestMode(msg, mMsg_MODE_CHOICE);
+}
+
+s8 mMsg_RequestDisappearWait(mMsg_Window_c *msg) {
+    if (msg->current_mode == mMsg_MODE_CURSOR || msg->current_mode == mMsg_MODE_NORMAL || msg->current_mode == mMsg_MODE_CHOICE) {
+        return mMsg_RequestMode(msg, mMsg_MODE_DISAPPEAR_WAIT);
+    }
+
+    return 0;
+}
+
+s8 mMsg_RequestAppearWait(mMsg_Window_c *msg) {
+    if (msg->current_mode == mMsg_MODE_DISAPPEAR_WAIT) {
+        return mMsg_RequestMode(msg, mMsg_MODE_APPEAR_WAIT);
+    }
+
+    return 0;
+}
+
+// @0x020191e8
+s8 mMsg_GetMessageBody(u32 index, u8 **data, u16 *size) {
+    mMsg_U32Bytes_c raw_offset;
+    mMsg_U32Bytes_c decoded_offset;
+    s32 message_offset;
+    u32 message_size;
+    u32 msg_ofs;
+    u8* msg_ofs_ptr;
+    u8* message_offset_ptr;
+
+    if (index >= 0x1F) {
+        *data = NULL;
+        *size = 0;
+        return 0;
+    }
+    if (index != 0) {
+        message_offset_ptr = (u8*)&message_offset;
+        msg_ofs = *(u32*)sMsgOffsets[index - 1];
+        msg_ofs_ptr = (u8*)&msg_ofs;
+
+        message_offset_ptr[0] = msg_ofs_ptr[3];
+        message_offset_ptr[1] = msg_ofs_ptr[2];
+        message_offset_ptr[2] = msg_ofs_ptr[1];
+        message_offset_ptr[3] = msg_ofs_ptr[0];
+    } else {
+        message_offset = 0;
+    }
+    message_offset_ptr = (u8*)&message_offset;
+    msg_ofs = *(u32*)sMsgOffsets[index];
+    msg_ofs_ptr = (u8*)&msg_ofs;
+
+    message_offset_ptr[0] = msg_ofs_ptr[3];
+    message_offset_ptr[1] = msg_ofs_ptr[2];
+    message_offset_ptr[2] = msg_ofs_ptr[1];
+    message_offset_ptr[3] = msg_ofs_ptr[0];
+
+    message_size = msg_ofs - message_offset;
+    if (message_size < 0x200) {
+        *data = &gMsgTextData[message_offset];
+        *size = (u16)message_size;
+    } else {
+        *size = 0;
+        *data = NULL;
+    }
+    return 1;
+}
+
+s16 mMsg_GetMessageLength(u8 *text) {
+    s32 offset;
+    u8 *next;
+    u8 control_code;
+
+    offset = 0;
+loop_1:
+    offset += mFont_CodeSize_get(&text[offset]);
+    next = &text[offset];
+    if ((next[0] != CHAR_CONTROL_CODE) ||
+        ((control_code = next[1], (control_code != mFont_CONT_CODE_MSG_TIME_END)) &&
+         (control_code != mFont_CONT_CODE_LAST) && (control_code != mFont_CONT_CODE_CONTINUE))) {
+        if (offset <= 0x1FF) {
+            goto loop_1;
+        }
+    }
+    return (s16) offset;
+}
+
+s8 mFont_CodeSize_get(u8 *code) {
+    u8 size;
+
+    if (code[0] == 0x7F) {
+        size = sMsgControlCodeInfo[code[1]].size;
+    } else {
+        size = 1;
+    }
+    return (s8) size;
+}
+
+s16 mMsg_LoadMessage(u8 *text, s32 index) {
+    u16 size;
+    u8 *source;
+
+    if ((mMsg_GetMessageBody((u32) index, &source, &size) == 1) && (source != NULL) && ((s16) size != 0)) {
+        mMsg_Copy(source, text, (s32) (s16) size);
+        return mMsg_GetMessageLength(text);
+    }
+    return 0;
+}
+
+void mMsg_ClearText(mMsg_Window_c *msg) {
+    CpuFastFill(0x55555555, msg->tile_data, 0x1200);
+    mMsg_CopyTilesToVram(0, 0x90, msg->tile_data);
+    msg->text_x = msg->text_start_x;
+    msg->text_row = 0;
+    msg->temporary_color_length = 0;
+}
+
+s32 mMsg_ChangeMsgData(mMsg_Window_c *msg, s32 index) {
+    s32 result;
+
+    result = 0;
+    if (((u32) index <= 0x1EU) && ((mMsg_LoadMessage(msg->text, index) << 0x10) != 0)) {
+        msg->message_id = index;
+        msg->next_message_id = -1;
+        msg->text_offset = 0;
+        mMsg_ClearText(msg);
+        mMsg_SetTimer(msg, 0x14);
+        result = 1;
+    }
+    return result;
+}
+
+void mMsg_SetTimer(mMsg_Window_c *msg, s32 frames) {
+    msg->text_delay_timer = frames;
+}
+
+s32 mMsg_TimerDec(mMsg_Window_c *msg) {
+    s32 timer;
+    s32 next_timer;
+    s32 expired;
+
+    expired = 0;
+    timer = msg->text_delay_timer;
+    if (timer == 1) {
+        expired = 1;
+    }
+    next_timer = 0;
+    if (timer > 0) {
+        next_timer = timer - 1;
+    }
+    msg->text_delay_timer = next_timer;
+    return expired;
+}
+
+void mMsg_SetEndTimer(mMsg_Window_c *msg, s32 frames) {
+    msg->end_timer = frames;
+}
+
+s32 mMsg_EndTimerDec(mMsg_Window_c *msg) {
+    s32 timer;
+    s32 next_timer;
+    s32 expired;
+
+    expired = 0;
+    timer = msg->end_timer;
+    if (timer == 1) {
+        expired = 1;
+    }
+    next_timer = 0;
+    if (timer > 0) {
+        next_timer = timer - 1;
+    }
+    msg->end_timer = next_timer;
+    return expired;
+}
+
+void mMsg_DestroySprites(mMsg_Window_c *msg) {
+    m_msg_sprite_c *sprite;
+
+    sprite = msg->choice_cursor;
+    if (sprite != NULL) {
+        sub_0201C300(sprite);
+        msg->choice_cursor = NULL;
+    }
+    sprite = msg->continue_prompt;
+    if (sprite != NULL) {
+        sub_0201C300(sprite);
+        msg->continue_prompt = NULL;
+    }
+}
+
+s32 mMsg_CheckControlCode(u8 *text, u8 type, s16 offset) {
+    s32 result;
+    u8 *code;
+
+    result = 0;
+    code = &text[offset];
+    if ((code[0] == 0x7F) && (code[1] == type)) {
+        result = 1;
+    }
+    return result;
+}
+
+s32 mMsg_ProcessText(mMsg_Window_c *msg, u8 *tile_data, s32 max_characters) {
+    u8 *destination;
+    s32 result;
+    s32 palette;
+    s32 control_result;
+    s32 glyph_width;
+    s32 characters_processed;
+    s8 tile_stride;
+    u8 *code;
+    u8 temporary_color_length;
+    u8 character;
+
+    destination = tile_data;
+    result = 1;
+    palette = 6;
+    if (mMsg_TimerDec(msg) != 0) {
+        return 1;
+    }
+    characters_processed = 0;
+    if ((max_characters > 0) && (msg->text_delay_timer == 0)) {
+loop_6:
+        code = &msg->text[msg->text_offset];
+        character = *code;
+        if (character != 0xCD) {
+            if (character == 0x7F) {
+                control_result = mMsg_ProcessControlCode(msg, &msg->text_offset);
+                result = control_result;
+                if ((u32) (control_result - 2) > 2U) {
+                    goto block_17;
+                }
+            } else {
+                glyph_width = mFont_GetGlyphWidth((u32) character);
+                tile_stride = msg->tile_stride;
+                if ((s32) (tile_stride * 8) >= (s32) ((msg->text_x - 1) + glyph_width)) {
+                    temporary_color_length = msg->temporary_color_length;
+                    if (temporary_color_length != 0) {
+                        palette = (s32) msg->temporary_color;
+                        msg->temporary_color_length = temporary_color_length - 1;
+                    }
+                    if (character == 0x20) {
+                        character = 0x80;
+                    }
+                    mFont_DrawCharToTiles(destination + ((tile_stride * (s8) (u8) msg->text_row) << 5), (u16) msg->text_x, 0U, (u16) (s8) (u8) msg->tile_stride, (u8) (s32) character, (u8) palette, glyph_width - 1);
+                    msg->text_x += glyph_width;
+                }
+                msg->text_offset = mFont_CodeSize_get(&msg->text[msg->text_offset]) + (u16) msg->text_offset;
+                characters_processed += 1;
+block_17:
+                if ((characters_processed < max_characters) && (msg->text_delay_timer == 0)) {
+                    goto loop_6;
+                }
+            }
+        } else {
+            msg->text_offset = mFont_CodeSize_get(code) + (u16) msg->text_offset;
+            msg->text_x = msg->text_start_x;
+            msg->text_row = ((u8) msg->text_row + 2) & ~1;
+        }
+    }
+    return result;
+}
+
+void mMsg_Init(void) {
+    u8 init_data[4];
+    s32 i;
+
+    sub_020295E4(init_data, gMsgChoiceTemplateParams, sizeof(init_data));
+
+    for (i = 0; i < 2; i++) {
+        mMsg_Window_c* msg = &sMsgWindows[i];
+
+        mMsg_InitWindow(msg, gMsgCodeBuffers + i * 0x220,
+                        gMsgTileBuffers + i * 0x1200);
+        msg->text_x = msg->text_start_x;
+        msg->text_row = 0;
+        msg->message_length = mMsg_LoadMessage(msg->text, 0x18);
+        msg->text[5] = init_data[i * 2];
+        msg->text[0xF] = init_data[i * 2 + 1];
+        msg->tile_data = gMsgWindowTileData + i * 0x480;
+        CpuFastFill(0x55555555, msg->tile_data, 0x480);
+
+        while (mMsg_ProcessText(msg, msg->tile_data, 1) == 1) {
+        }
+    }
+
+    for (i = 0; i < ARRAY_COUNT(sMsgWindows); i++) {
+        mMsg_Window_c* msg = &sMsgWindows[i];
+        u16 saved_text_offset;
+
+        mMsg_InitWindow(msg, gMsgCodeBuffers + i * 0x220,
+                        gMsgTileBuffers + i * 0x1200);
+        mMsg_ClearText(msg);
+        msg->message_id = sCachedMessageIds[i];
+        msg->message_length = mMsg_LoadMessage(msg->text, msg->message_id);
+        msg->current_mode = mMsg_MODE_CURSOR;
+
+        do {
+            saved_text_offset = msg->text_offset;
+        } while (mMsg_ProcessText(msg, msg->tile_data, 1) == 1);
+        msg->text_offset = saved_text_offset;
+    }
+}
+
+void mMsg_MainSetup_Window(mMsg_Window_c *msg) {
+    if (((u32) (u8) ((u8) msg->requested_mode - 1) <= 8U) && (gMsgModeSetupCallbacks[msg->requested_mode] != NULL)) {
+        mMsg_DestroySprites(msg);
+        sub_0202930C(msg, (void (*)(void *)) gMsgModeSetupCallbacks[msg->requested_mode]);
+    }
+}
+
+void mMsg_InitWindow(mMsg_Window_c *msg, u8 *text, u8 *tile_data) {
+    CpuFastFill(0, msg, sizeof(*msg));
+    msg->tile_data = tile_data;
+    msg->text = text;
+    msg->next_message_id = -1;
+    msg->message_id = -1;
+    msg->current_mode = mMsg_MODE_HIDE;
+    msg->requested_mode = -1;
+    msg->selected_choice = -1;
+    msg->tile_stride = 0x12;
+    msg->text_start_x = 1;
+    msg->draw_enabled = 0;
+}
+
+void mMsg_Main_Window(mMsg_Window_c *msg) {
+    void (*main)(mMsg_Window_c *);
+
+    main = gMsgModeCallbacks[(s8) (u8) msg->current_mode];
+    if (main != NULL) {
+        sub_0202930C(msg, (void (*)(void *)) main);
+    }
+}
+
+s32 mFont_DrawStringToTiles(u8 *tile_data, u16 *cursor, u32 packed_position, u16 glyph_height, u8 *text, s32 length, u8 palette, u8 stop_at_newline, u8 fixed_width) {
+    u8 *destination;
+    s32 palette_index;
+    s32 stop_on_newline;
+    s32 use_fixed_width;
+    s32 character_width;
+    s32 characters_drawn;
+    u16 current_x;
+    u16 tile_stride;
+    u32 position;
+    u8 character;
+
+    destination = tile_data;
+    position = packed_position << 0x10;
+    tile_stride = glyph_height;
+    palette_index = (s32) (u8) (s32) palette;
+    stop_on_newline = (s32) (u8) (s32) stop_at_newline;
+    use_fixed_width = (s32) (u8) (s32) fixed_width;
+    characters_drawn = 0;
+loop_2:
+    if ((characters_drawn < length) && ((character = text[characters_drawn], (stop_on_newline != 1)) || (character != CHAR_NEW_LINE)) && (character != CHAR_CONTROL_CODE)) {
+        if (use_fixed_width != 1) {
+            character_width = mFont_GetGlyphWidth((u32) character);
+        } else {
+            character_width = 8;
+        }
+        current_x = *cursor;
+        if ((s32) (character_width + current_x) <= (s32) (tile_stride * 8)) {
+            mFont_DrawCharToTiles(destination + (((position >> 0x13) * tile_stride) << 5), current_x, (u16) ((u32) (0x70000 & position) >> 0x10), tile_stride, (u8) (s32) character, (u8) palette_index, character_width - 1);
+            *cursor += character_width;
+            characters_drawn += 1;
+            goto loop_2;
+        }
+    }
+    return characters_drawn;
+}
+
+void mFont_DrawCharToTiles(u8 *tile_data, u16 tile_offset, u16 row, u16 tile_stride, u8 character, u8 palette, s32 width) {
+    gMsgGlyph.tile_data = tile_data;
+    gMsgGlyph.tile_offset = tile_offset;
+    gMsgGlyph.row = row;
+    gMsgGlyph.tile_stride = tile_stride;
+    gMsgGlyph.palette = (u8) (s32) palette;
+    mFont_GetGlyphRows(gMsgGlyph.glyph_lower_rows, gMsgGlyph.glyph_upper_rows, (u8) (s32) character);
+    mFont_BlitGlyphToTiles(&gMsgGlyph, width);
+}
+
+void sub_020198B8(s8 index) {
+    void* dest[3];
+    void* src[3];
+    u32 size[3];
+
+    dest[0] = gUnk_0202AD1C[0];
+    dest[1] = gUnk_0202AD1C[1];
+    dest[2] = gUnk_0202AD1C[2];
+    sub_02029644(src, 0, sizeof(src));
+    size[0] = gUnk_0202AD28[0];
+    size[1] = gUnk_0202AD28[1];
+    size[2] = gUnk_0202AD28[2];
+
+    if (index >= 0) {
+        CpuFastSet(src[index], dest[index], (size[index] << 9) >> 11);
+    }
+}
+
+void sub_02019910(u8 value, s8 index) {
+    void* dest[3];
+    u32 size[3];
+    s32 sp18;
+    s32 i;
+
+    sub_02029644(dest, 0, sizeof(dest));
+    size[0] = gUnk_0202AD28[0];
+    size[1] = gUnk_0202AD28[1];
+    size[2] = gUnk_0202AD28[2];
+
+    if (index >= 0) {
+        sp18 = 0;
+        for (i = 0; i < 8; i++) {
+            sp18 |= (value & 0xF) << (i * 4);
+        }
+        CpuFastFill(sp18, dest[index], size[index]);
+    }
+}
+
+void mFont_BlitGlyphToTiles(mFont_GlyphDraw_c *glyph, s32 width) {
+    s32 glyph_width;
+    s32 glyph_row;
+    s32 next_glyph_row;
+    s32 next_y;
+    s32 tile_row_byte_offset;
+    s32 color_bits;
+    s32 lower_color_bits;
+    s32 preserved_bits;
+    s32 lower_preserved_bits;
+    s32 column;
+    u16 byte_offset;
+    u16 lower_byte_offset;
+    u16 tile_index;
+    u16 x;
+    u16 y;
+    u8 *destination;
+    u8 *lower_destination;
+    u8 packed_pixels;
+    u8 lower_packed_pixels;
+
+    glyph_width = width;
+    glyph_row = 0;
+    y = glyph->row;
+loop_1:
+    column = 0;
+    x = glyph->tile_offset;
+    next_glyph_row = glyph_row + 1;
+    next_y = y + 1;
+    if (glyph_width > 0) {
+        tile_row_byte_offset = (y & 7) * 4;
+        do {
+            tile_index = ((y >> 3) * glyph->tile_stride) + (x >> 3);
+            if (((s32) glyph->glyph_upper_rows[glyph_row] >> column) & 1) {
+                byte_offset = (tile_index << 5) + tile_row_byte_offset + ((u32) (x & 7) >> 1);
+                destination = glyph->tile_data;
+                packed_pixels = destination[byte_offset];
+                if (x & 1) {
+                    preserved_bits = packed_pixels & 0xF;
+                    color_bits = (0xF & glyph->palette) * 0x10;
+                } else {
+                    preserved_bits = packed_pixels & 0xF0;
+                    color_bits = 0xF & glyph->palette;
+                }
+                destination[byte_offset] = preserved_bits | color_bits;
+            }
+            if (((s32) glyph->glyph_lower_rows[glyph_row] >> column) & 1) {
+                lower_byte_offset = ((u16) (tile_index + glyph->tile_stride) << 5) + tile_row_byte_offset + ((u32) (x & 7) >> 1);
+                lower_destination = glyph->tile_data;
+                lower_packed_pixels = lower_destination[lower_byte_offset];
+                if (x & 1) {
+                    lower_preserved_bits = lower_packed_pixels & 0xF;
+                    lower_color_bits = (0xF & glyph->palette) * 0x10;
+                } else {
+                    lower_preserved_bits = lower_packed_pixels & 0xF0;
+                    lower_color_bits = 0xF & glyph->palette;
+                }
+                lower_destination[lower_byte_offset] = lower_preserved_bits | lower_color_bits;
+            }
+            column += 1;
+            x += 1;
+        } while (column < glyph_width);
+    }
+    glyph_row = next_glyph_row;
+    y = (u16) next_y;
+    if (next_glyph_row <= 7) {
+        goto loop_1;
+    }
+}
+
+s16 sub_02019ABC(s16 lhs, s16 rhs) {
+    s32 var_r0_3371;
+
+    var_r0_3371 = rhs * lhs;
+    if (var_r0_3371 < 0) {
+        var_r0_3371 += 0xFF;
+    }
+    return (s16) ((s32) (var_r0_3371 << 8) >> 0x10);
+}
+
+s16 sub_02019AD8(s16 numerator, s16 denominator) {
+    return (s16) sub_02029344((s32) (numerator << 0x10) >> 8, (s32) denominator);
+}
+
+u16 sub_02019AF0(GameState *state) {
+    u32 temp_r0_3407;
+
+    temp_r0_3407 = (state->rngValue * 0x41C64E6D) + (state->unk_85B + 0x3039);
+    state->rngValue = temp_r0_3407;
+    return (u16) ((u32) (temp_r0_3407 * 2) >> 0x11);
+}
+
+void sub_02019B18(GameState *state, u32 seed) {
+    state->rngValue = seed;
+}
+
+void sub_02019B1C(GameState *state, u16 target, u16 blend_control, u16 intensity) {
+    s32 var_r0_3434;
+    u16 var_r3_3431;
+
+    var_r3_3431 = intensity;
+    if (target == 1) {
+        var_r0_3434 = 0xC0;
+    } else {
+        var_r0_3434 = 0x80;
+    }
+    state->unk_820 = blend_control | var_r0_3434;
+    if ((u32) var_r3_3431 > 0x10U) {
+        var_r3_3431 = 0x10;
+    }
+    state->unk_81E = var_r3_3431;
+}
+
+u16 sub_02019B58(GameState *state, u8 direction, u8 amount) {
+    s32 temp_r0_3473;
+    s32 temp_r0_3486;
+    u16 temp_r0_3472;
+    u16 temp_r0_3485;
+    u16 var_r3_3469;
+    u8 temp_r1_3463;
+    u8 temp_r2_3465;
+
+    temp_r1_3463 = direction;
+    temp_r2_3465 = amount;
+    var_r3_3469 = state->unk_81E;
+    if (temp_r1_3463 == 1) {
+        temp_r0_3472 = var_r3_3469 + temp_r2_3465;
+        temp_r0_3473 = temp_r0_3472 << 0x10;
+        var_r3_3469 = temp_r0_3472;
+        if ((s32) (temp_r0_3473 >> 0x10) > 0x10) {
+            var_r3_3469 = 0x10;
+        }
+    } else if (temp_r1_3463 == 0) {
+        temp_r0_3485 = var_r3_3469 - temp_r2_3465;
+        temp_r0_3486 = temp_r0_3485 << 0x10;
+        var_r3_3469 = temp_r0_3485;
+        if (temp_r0_3486 < 0) {
+            var_r3_3469 = 0;
+        }
+    }
+    state->unk_81E = var_r3_3469;
+    return state->unk_81E;
+}
+
+void sub_02019BA8(u16 *palette, u8 x, u8 y, u8 *red, u8 *green, u8 *blue) {
+    u16 temp_r1_3514;
+
+    temp_r1_3514 = palette[((0xF & x) * 0x10) + (y & 0xF)];
+    *blue = (temp_r1_3514 >> 0xA) & 0x1F;
+    *green = (temp_r1_3514 >> 5) & 0x1F;
+    *red = temp_r1_3514 & 0x1F;
+}
+
+void sub_02019BD8(u8 palette, u8 x, u8 y, u8 red, u8 green, u8 blue) {
+    u16 *var_r5_3547;
+
+    var_r5_3547 = (u16 *)0x02000000;
+    if (palette == 1) {
+        var_r5_3547 = gObjPaletteBuffer;
+    }
+    var_r5_3547[((x & 0xF) * 0x10) + (y & 0xF)] = (red & 0x1F) | ((((u8) (s32) blue & 0x1F) << 0xA) | (((u8) (s32) green & 0x1F) << 5));
+    gGameState.unk_852 = 1;
+}
+
+void sub_02019C3C(void) {
+    gGameState.unk_814 &= 0xFFFE;
+    if (!(1 & gGameState.unk_814)) {
+        do {
+
+        } while (!(1 & gGameState.unk_814));
+    }
+    gGameState.unk_814 &= 0xFFFE;
+}
+
+void sub_02019C88(void) {
+    u32 *end;
+    u32 *oam;
+
+    oam = (u32*)gUnk3002410;
+    end = (u32*)(gUnk3002410 + sizeof(gUnk3002410));
+    while (oam < end) {
+        *oam++ = gUnk_0202AFB4[0];
+        *oam++ = gUnk_0202AFB4[1];
+    }
+    gGameState.unk_860 = 0;
+}
+
+void sub_02019CC0(void) {
+    u16 temp_r2_3660;
+
+    temp_r2_3660 = 0x3FF ^ REG_KEYINPUT;
+    gGameState.keys_pressed = temp_r2_3660 & ~gGameState.keys_held;
+    gGameState.keys_held = temp_r2_3660;
+}
+
+void sub_02019CFC(void) {
+    REG_IME = 0;
+    REG_DISPCNT = 0x80;
+    REG_DISPSTAT = 8;
+    REG_IE = 1;
+    REG_IF = 1;
+    REG_IME = 1;
+}
+
+void sub_02019D28(void) {
+    sub_02026F0C();
+}
+
+void sub_02019D34(void) {
+    sub_020269C8();
+}
+
+void sub_02019D40(void) {
+    sub_02026F18();
+}
+
+void sub_02019D4C(void) {
+    sub_020269E0();
+}
+
+void sub_02019D58(u16 value) {
+    sub_02026B48(value);
+}
+
+void sub_02019D68(u16 value) {
+    sub_02026BC8(value);
+}
+
+void sub_02019D78(u16 value) {
+    sub_02026A38(value);
+}
+
+void sub_02019D88(u16 value) {
+    sub_02026C10(value);
+}
+
+void sub_02019D98(u16 value) {
+    sub_02026C68(value);
+}
+
+void mMsg_ReplaceChar(u8 *data, u8 from, u8 to, s32 length) {
+    s32 i;
+    u8 *character;
+
+    i = 0;
+    if ((length > 0) && (length > 0)) {
+        do {
+            character = &data[i];
+            if (*character == from) {
+                *character = to;
+            }
+            i += 1;
+        } while (i < length);
+    }
+}
+
+s32 mMsg_TrimTrailingSpaces(u8 *data, s32 length) {
+    s32 trimmed_length;
+    u8 *character;
+
+    trimmed_length = 0;
+    if (length > 0) {
+        trimmed_length = length;
+        if (*(&data[trimmed_length] - 1) == 0x80) {
+            character = &data[trimmed_length - 1];
+loop_3:
+            character -= 1;
+            trimmed_length -= 1;
+            if (trimmed_length > 0) {
+                if (*character == 0x80) {
+                    goto loop_3;
+                }
+            }
+        }
+    }
+    return trimmed_length;
+}
+
+s32 mMsg_StringsDiffer(u8 *lhs, u8 *rhs, s32 length) {
+    s32 difference;
+    s32 i;
+
+    i = 0;
+    if ((length > 0) && (length > 0) && (*lhs == *rhs)) {
+loop_3:
+        i += 1;
+        if (i < length) {
+            if (lhs[i] == rhs[i]) {
+                goto loop_3;
+            }
+        }
+    }
+    difference = i ^ length;
+    return (s32) ((u32) ((0 - difference) | difference) >> 0x1F);
+}
+
+void mMsg_Copy(u8 *src, u8 *dest, s32 length) {
+    s32 i;
+
+    if (length > 0) {
+        i = 0;
+        if (length > 0) {
+            do {
+                dest[i] = src[i];
+                i += 1;
+            } while (i < length);
+        }
+    }
+}
+
+void mMsg_Fill(u8 value, u8 *dest, s32 length) {
+    s32 i;
+
+    if (length > 0) {
+        i = 0;
+        if (length > 0) {
+            do {
+                dest[i] = value;
+                i += 1;
+            } while (i < length);
+        }
+    }
+}
+
+void sub_02019E88(void) {
+    s32 sp0;
+
+    RegisterRamReset(RESET_SOUND_REGS | RESET_REGS);
+    sp0 = 0;
+    REG_DMA3SAD = (u32)&sp0;
+    REG_DMA3DAD = 0x03000000;
+    REG_DMA3CNT = 0x85001E00;
+    REG_WAITCNT = 0x4014;
+    REG_DMA3SAD = 0x02029698;
+    REG_DMA3DAD = 0x030023C0;
+    REG_DMA3CNT = 0x8000001C;
+    REG_DMA3SAD = (u32)_intr;
+    REG_DMA3DAD = 0x03001B64;
+    REG_DMA3CNT = 0x80000400;
+    *(u32*)0x03007FFC = 0x03001B64;
+    sub_02019D34();
 }

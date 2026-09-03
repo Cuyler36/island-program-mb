@@ -46,7 +46,7 @@ _02018246:
 	lsls r1, r1, #0x13
 	movs r2, #0x80
 	lsls r2, r2, #1
-	bl sub_020292E8
+	bl CpuFastSet
 	movs r1, #0x80
 	lsls r1, r1, #0x13
 	ldr r2, _0201834C @ =0x0000082A
@@ -181,8 +181,8 @@ sub_02018368: @ 0x02018368
 	bx lr
 	.align 2, 0
 
-	thumb_func_start sub_0201836C
-sub_0201836C: @ 0x0201836C
+	thumb_func_start mFont_GetGlyphRows
+mFont_GetGlyphRows: @ 0x0201836C
 	push {r4, r5, r6, r7, lr}
 	mov r7, r8
 	push {r7}
@@ -273,8 +273,8 @@ _02018402:
 	pop {r0}
 	bx r0
 
-	thumb_func_start sub_02018414
-sub_02018414: @ 0x02018414
+	thumb_func_start mFont_GetGlyphWidth
+mFont_GetGlyphWidth: @ 0x02018414
 	push {lr}
 	adds r1, r0, #0
 	cmp r1, #0xff
@@ -292,8 +292,8 @@ _02018428:
 	.align 2, 0
 _0201842C: .4byte 0x020296D0
 
-	thumb_func_start sub_02018430
-sub_02018430: @ 0x02018430
+	thumb_func_start mFont_GetCodeWidth
+mFont_GetCodeWidth: @ 0x02018430
 	push {lr}
 	adds r1, r0, #0
 	cmp r1, #0xff
@@ -311,31 +311,31 @@ _02018444:
 	.align 2, 0
 _02018448: .4byte 0x020297D0
 
-	thumb_func_start sub_0201844C
-sub_0201844C: @ 0x0201844C
+	thumb_func_start mMsg_MainSetup_Hide
+mMsg_MainSetup_Hide: @ 0x0201844C
 	push {lr}
 	ldr r1, [r0, #0x54]
 	ldr r2, [r0, #0x50]
-	bl sub_0201974C
+	bl mMsg_InitWindow
 	pop {r0}
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_0201845C
-sub_0201845C: @ 0x0201845C
+	thumb_func_start mMsg_Main_Hide
+mMsg_Main_Hide: @ 0x0201845C
 	push {lr}
-	bl sub_02019708
+	bl mMsg_MainSetup_Window
 	pop {r0}
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_02018468
-sub_02018468: @ 0x02018468
+	thumb_func_start mMsg_MainSetup_Appear
+mMsg_MainSetup_Appear: @ 0x02018468
 	push {r4, lr}
 	adds r4, r0, #0
 	ldr r0, [r4, #0x54]
 	ldr r1, [r4, #0x58]
-	bl sub_020192E8
+	bl mMsg_LoadMessage
 	adds r1, r4, #0
 	adds r1, #0x6e
 	strh r0, [r1]
@@ -363,7 +363,7 @@ sub_02018468: @ 0x02018468
 	movs r0, #0
 	strh r0, [r1]
 	adds r0, r4, #0
-	bl sub_02019330
+	bl mMsg_ClearText
 	movs r0, #0x1f
 	bl sub_02019D78
 _020184B4:
@@ -372,14 +372,14 @@ _020184B4:
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_020184BC
-sub_020184BC: @ 0x020184BC
+	thumb_func_start mMsg_Main_Appear
+mMsg_Main_Appear: @ 0x020184BC
 	push {r4, r5, lr}
 	adds r5, r0, #0
 	adds r4, r5, #0
 	adds r4, #0x76
 	adds r0, r4, #0
-	bl sub_020190F4
+	bl mMsg_GetWindowScrollOffset
 	ldr r1, _020184F0 @ =0x03001B50
 	ldr r2, _020184F4 @ =0x0000084A
 	adds r1, r1, r2
@@ -389,12 +389,12 @@ sub_020184BC: @ 0x020184BC
 	cmp r0, #0xa
 	ble _020184F8
 	adds r0, r5, #0
-	bl sub_0201915C
+	bl mMsg_RequestCursor
 	lsls r0, r0, #0x18
 	cmp r0, #0
 	beq _020184F8
 	adds r0, r5, #0
-	bl sub_02019708
+	bl mMsg_MainSetup_Window
 	b _02018502
 	.align 2, 0
 _020184F0: .4byte 0x03001B50
@@ -410,8 +410,8 @@ _02018502:
 	pop {r0}
 	bx r0
 
-	thumb_func_start sub_02018508
-sub_02018508: @ 0x02018508
+	thumb_func_start mMsg_Cont_SetNextMessage
+mMsg_Cont_SetNextMessage: @ 0x02018508
 	push {r4, lr}
 	adds r3, r0, #0
 	adds r4, r1, #0
@@ -445,7 +445,7 @@ _0201853C:
 	ldrsh r1, [r4, r0]
 	ldr r0, [r3, #0x54]
 	adds r0, r0, r1
-	bl sub_020192C0
+	bl mFont_CodeSize_get
 	lsls r0, r0, #0x18
 	asrs r0, r0, #0x18
 	ldrh r1, [r4]
@@ -457,8 +457,8 @@ _0201853C:
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_0201855C
-sub_0201855C: @ 0x0201855C
+	thumb_func_start mMsg_Cont_SetChoiceCount
+mMsg_Cont_SetChoiceCount: @ 0x0201855C
 	push {r4, lr}
 	adds r4, r1, #0
 	adds r1, r0, #0
@@ -468,7 +468,7 @@ sub_0201855C: @ 0x0201855C
 	ldrsh r1, [r4, r2]
 	ldr r0, [r0, #0x54]
 	adds r0, r0, r1
-	bl sub_020192C0
+	bl mFont_CodeSize_get
 	lsls r0, r0, #0x18
 	asrs r0, r0, #0x18
 	ldrh r1, [r4]
@@ -479,8 +479,8 @@ sub_0201855C: @ 0x0201855C
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_02018584
-sub_02018584: @ 0x02018584
+	thumb_func_start mMsg_Cont_SetChoiceText
+mMsg_Cont_SetChoiceText: @ 0x02018584
 	push {r4, r5, r6, lr}
 	adds r5, r0, #0
 	adds r6, r1, #0
@@ -502,7 +502,7 @@ sub_02018584: @ 0x02018584
 	adds r1, r4, #0
 	adds r1, #8
 	ldrb r2, [r4, #0x12]
-	bl sub_02019E40
+	bl mMsg_Copy
 	adds r0, r5, #0
 	adds r0, #0x74
 	ldrb r0, [r0]
@@ -517,7 +517,7 @@ sub_02018584: @ 0x02018584
 	ldrsh r1, [r6, r0]
 	ldr r0, [r5, #0x54]
 	adds r0, r0, r1
-	bl sub_020192C0
+	bl mFont_CodeSize_get
 	lsls r0, r0, #0x18
 	asrs r0, r0, #0x18
 	ldrh r1, [r6]
@@ -528,8 +528,8 @@ sub_02018584: @ 0x02018584
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_020185E4
-sub_020185E4: @ 0x020185E4
+	thumb_func_start mMsg_Cont_Last
+mMsg_Cont_Last: @ 0x020185E4
 	push {lr}
 	adds r2, r0, #0
 	ldr r1, [r2, #0x68]
@@ -555,8 +555,8 @@ _0201860A:
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_02018610
-sub_02018610: @ 0x02018610
+	thumb_func_start mMsg_Cont_Continue
+mMsg_Cont_Continue: @ 0x02018610
 	push {lr}
 	adds r2, r0, #0
 	ldr r1, [r2, #0x68]
@@ -582,17 +582,17 @@ _02018636:
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_0201863C
-sub_0201863C: @ 0x0201863C
+	thumb_func_start mMsg_Cont_Clear
+mMsg_Cont_Clear: @ 0x0201863C
 	push {r4, r5, lr}
 	adds r5, r0, #0
 	adds r4, r1, #0
-	bl sub_02019330
+	bl mMsg_ClearText
 	movs r0, #0
 	ldrsh r1, [r4, r0]
 	ldr r0, [r5, #0x54]
 	adds r0, r0, r1
-	bl sub_020192C0
+	bl mFont_CodeSize_get
 	lsls r0, r0, #0x18
 	asrs r0, r0, #0x18
 	ldrh r1, [r4]
@@ -603,8 +603,8 @@ sub_0201863C: @ 0x0201863C
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_02018664
-sub_02018664: @ 0x02018664
+	thumb_func_start mMsg_Cont_Button
+mMsg_Cont_Button: @ 0x02018664
 	push {r4, lr}
 	adds r2, r0, #0
 	adds r4, r1, #0
@@ -622,7 +622,7 @@ sub_02018664: @ 0x02018664
 	ldrsh r1, [r4, r0]
 	ldr r0, [r2, #0x54]
 	adds r0, r0, r1
-	bl sub_020192C0
+	bl mFont_CodeSize_get
 	lsls r0, r0, #0x18
 	asrs r0, r0, #0x18
 	ldrh r1, [r4]
@@ -641,36 +641,36 @@ _020186A2:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_020186A8
-sub_020186A8: @ 0x020186A8
+	thumb_func_start mMsg_Cont_SetNextMessageF
+mMsg_Cont_SetNextMessageF: @ 0x020186A8
 	push {lr}
 	adds r3, r0, #0
 	adds r3, #0x79
 	movs r2, #1
 	strb r2, [r3]
 	movs r2, #0xff
-	bl sub_02018508
+	bl mMsg_Cont_SetNextMessage
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_020186BC
-sub_020186BC: @ 0x020186BC
+	thumb_func_start mMsg_Cont_SetNextMessage0
+mMsg_Cont_SetNextMessage0: @ 0x020186BC
 	push {lr}
 	movs r2, #0
-	bl sub_02018508
+	bl mMsg_Cont_SetNextMessage
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_020186C8
-sub_020186C8: @ 0x020186C8
+	thumb_func_start mMsg_Cont_SetNextMessage1
+mMsg_Cont_SetNextMessage1: @ 0x020186C8
 	push {lr}
 	movs r2, #1
-	bl sub_02018508
+	bl mMsg_Cont_SetNextMessage
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_020186D4
-sub_020186D4: @ 0x020186D4
+	thumb_func_start mMsg_Cont_SetTemporaryColor
+mMsg_Cont_SetTemporaryColor: @ 0x020186D4
 	push {r4, lr}
 	adds r2, r0, #0
 	adds r4, r1, #0
@@ -694,7 +694,7 @@ sub_020186D4: @ 0x020186D4
 	ldrsh r1, [r4, r0]
 	ldr r0, [r2, #0x54]
 	adds r0, r0, r1
-	bl sub_020192C0
+	bl mFont_CodeSize_get
 	lsls r0, r0, #0x18
 	asrs r0, r0, #0x18
 	ldrh r1, [r4]
@@ -705,8 +705,8 @@ sub_020186D4: @ 0x020186D4
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_02018718
-sub_02018718: @ 0x02018718
+	thumb_func_start mMsg_Cont_Space
+mMsg_Cont_Space: @ 0x02018718
 	push {r4, lr}
 	adds r4, r1, #0
 	adds r3, r0, #0
@@ -723,7 +723,7 @@ sub_02018718: @ 0x02018718
 	ldrsh r1, [r4, r2]
 	ldr r0, [r0, #0x54]
 	adds r0, r0, r1
-	bl sub_020192C0
+	bl mFont_CodeSize_get
 	lsls r0, r0, #0x18
 	asrs r0, r0, #0x18
 	ldrh r1, [r4]
@@ -735,8 +735,8 @@ sub_02018718: @ 0x02018718
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_02018750
-sub_02018750: @ 0x02018750
+	thumb_func_start mMsg_Cont_MoveDown
+mMsg_Cont_MoveDown: @ 0x02018750
 	push {r4, lr}
 	adds r4, r1, #0
 	adds r2, r0, #0
@@ -748,7 +748,7 @@ sub_02018750: @ 0x02018750
 	ldrsh r1, [r4, r2]
 	ldr r0, [r0, #0x54]
 	adds r0, r0, r1
-	bl sub_020192C0
+	bl mFont_CodeSize_get
 	lsls r0, r0, #0x18
 	asrs r0, r0, #0x18
 	ldrh r1, [r4]
@@ -759,8 +759,8 @@ sub_02018750: @ 0x02018750
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_0201877C
-sub_0201877C: @ 0x0201877C
+	thumb_func_start mMsg_Cont_RestoreCachedMessage
+mMsg_Cont_RestoreCachedMessage: @ 0x0201877C
 	push {r4, r5, r6, r7, lr}
 	mov r7, sl
 	mov r6, sb
@@ -793,7 +793,7 @@ _0201879A:
 	adds r1, r7, #0
 	movs r2, #0x28
 	str r3, [sp, #4]
-	bl sub_020292E8
+	bl CpuFastSet
 	str r4, [r7, #0x50]
 	str r5, [r7, #0x54]
 	mov r2, sb
@@ -812,7 +812,7 @@ _0201879A:
 	adds r2, #0x6e
 	movs r4, #0
 	ldrsh r2, [r2, r4]
-	bl sub_02019E40
+	bl mMsg_Copy
 	mov r0, r8
 	adds r0, #0x50
 	ldr r3, [sp, #4]
@@ -821,11 +821,11 @@ _0201879A:
 	ldr r1, [r7, #0x50]
 	movs r2, #0x90
 	lsls r2, r2, #3
-	bl sub_020292E8
+	bl CpuFastSet
 	ldr r2, [r7, #0x50]
 	movs r0, #0
 	movs r1, #0x90
-	bl sub_020190C8
+	bl mMsg_CopyTilesToVram
 	b _0201881E
 	.align 2, 0
 _02018808: .4byte 0x0202A8E0
@@ -847,7 +847,7 @@ _0201881E:
 	ldrsh r1, [r4, r0]
 	ldr r0, [r7, #0x54]
 	adds r0, r0, r1
-	bl sub_020192C0
+	bl mFont_CodeSize_get
 	lsls r0, r0, #0x18
 	asrs r0, r0, #0x18
 	ldrh r1, [r4]
@@ -865,48 +865,48 @@ _0201883C:
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_02018850
-sub_02018850: @ 0x02018850
+	thumb_func_start mMsg_Cont_SetChoiceCount2
+mMsg_Cont_SetChoiceCount2: @ 0x02018850
 	push {lr}
 	movs r2, #2
-	bl sub_0201855C
+	bl mMsg_Cont_SetChoiceCount
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_0201885C
-sub_0201885C: @ 0x0201885C
+	thumb_func_start mMsg_Cont_SetChoiceCount3
+mMsg_Cont_SetChoiceCount3: @ 0x0201885C
 	push {lr}
 	movs r2, #3
-	bl sub_0201855C
+	bl mMsg_Cont_SetChoiceCount
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_02018868
-sub_02018868: @ 0x02018868
+	thumb_func_start mMsg_Cont_SetChoiceText0
+mMsg_Cont_SetChoiceText0: @ 0x02018868
 	push {lr}
 	movs r2, #0
-	bl sub_02018584
+	bl mMsg_Cont_SetChoiceText
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_02018874
-sub_02018874: @ 0x02018874
+	thumb_func_start mMsg_Cont_SetChoiceText1
+mMsg_Cont_SetChoiceText1: @ 0x02018874
 	push {lr}
 	movs r2, #1
-	bl sub_02018584
+	bl mMsg_Cont_SetChoiceText
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_02018880
-sub_02018880: @ 0x02018880
+	thumb_func_start mMsg_Cont_SetChoiceText2
+mMsg_Cont_SetChoiceText2: @ 0x02018880
 	push {lr}
 	movs r2, #2
-	bl sub_02018584
+	bl mMsg_Cont_SetChoiceText
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_0201888C
-sub_0201888C: @ 0x0201888C
+	thumb_func_start mMsg_Cont_CheckChoice
+mMsg_Cont_CheckChoice: @ 0x0201888C
 	push {r4, r5, lr}
 	adds r4, r1, #0
 	movs r5, #3
@@ -924,7 +924,7 @@ sub_0201888C: @ 0x0201888C
 	b _020188BA
 _020188AA:
 	adds r0, r2, #0
-	bl sub_020192C0
+	bl mFont_CodeSize_get
 	lsls r0, r0, #0x18
 	asrs r0, r0, #0x18
 	ldrh r1, [r4]
@@ -937,8 +937,8 @@ _020188BA:
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_020188C4
-sub_020188C4: @ 0x020188C4
+	thumb_func_start mMsg_Cont_SoundTrgSys
+mMsg_Cont_SoundTrgSys: @ 0x020188C4
 	push {r4, r5, lr}
 	adds r5, r0, #0
 	adds r4, r1, #0
@@ -963,7 +963,7 @@ _020188EA:
 	ldrsh r1, [r4, r0]
 	ldr r0, [r5, #0x54]
 	adds r0, r0, r1
-	bl sub_020192C0
+	bl mFont_CodeSize_get
 	lsls r0, r0, #0x18
 	asrs r0, r0, #0x18
 	ldrh r1, [r4]
@@ -974,15 +974,15 @@ _020188EA:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_02018908
-sub_02018908: @ 0x02018908
+	thumb_func_start mMsg_Cont_Noop
+mMsg_Cont_Noop: @ 0x02018908
 	push {r4, lr}
 	adds r4, r1, #0
 	movs r2, #0
 	ldrsh r1, [r4, r2]
 	ldr r0, [r0, #0x54]
 	adds r0, r0, r1
-	bl sub_020192C0
+	bl mFont_CodeSize_get
 	lsls r0, r0, #0x18
 	asrs r0, r0, #0x18
 	ldrh r1, [r4]
@@ -994,8 +994,8 @@ sub_02018908: @ 0x02018908
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_0201892C
-sub_0201892C: @ 0x0201892C
+	thumb_func_start mMsg_ProcessControlCode
+mMsg_ProcessControlCode: @ 0x0201892C
 	push {r4, lr}
 	adds r3, r0, #0
 	adds r4, r1, #0
@@ -1026,8 +1026,8 @@ _0201895A:
 	.align 2, 0
 _02018964: .4byte 0x0202A904
 
-	thumb_func_start sub_02018968
-sub_02018968: @ 0x02018968
+	thumb_func_start mMsg_MainSetup_Cursor
+mMsg_MainSetup_Cursor: @ 0x02018968
 	adds r2, r0, #0
 	adds r2, #0x71
 	ldrb r1, [r2]
@@ -1037,8 +1037,8 @@ sub_02018968: @ 0x02018968
 	strb r0, [r2]
 	bx lr
 
-	thumb_func_start sub_02018978
-sub_02018978: @ 0x02018978
+	thumb_func_start mMsg_Main_Cursor
+mMsg_Main_Cursor: @ 0x02018978
 	push {r4, r5, r6, r7, lr}
 	mov r7, sl
 	mov r6, sb
@@ -1060,20 +1060,20 @@ sub_02018978: @ 0x02018978
 	ldr r1, [r4, #0x50]
 	adds r0, r4, #0
 	movs r2, #1
-	bl sub_02019440
+	bl mMsg_ProcessText
 	cmp r0, #2
 	beq _020189C0
 	cmp r0, #4
 	bne _020189D6
 	adds r0, r4, #0
-	bl sub_0201918C
+	bl mMsg_RequestChoice
 	b _020189C6
 	.align 2, 0
 _020189B8: .4byte 0x0300001C
 _020189BC: .4byte 0x0300001D
 _020189C0:
 	adds r0, r4, #0
-	bl sub_0201916C
+	bl mMsg_RequestNormal
 _020189C6:
 	lsls r0, r0, #0x18
 	cmp r0, #0
@@ -1081,7 +1081,7 @@ _020189C6:
 	b _02018AC2
 _020189CE:
 	adds r0, r4, #0
-	bl sub_02019708
+	bl mMsg_MainSetup_Window
 	b _02018AC2
 _020189D6:
 	ldrb r1, [r6]
@@ -1122,7 +1122,7 @@ _02018A14:
 	str r1, [r2]
 	ldr r2, [r4, #0x50]
 	adds r0, r3, #0
-	bl sub_020190C8
+	bl mMsg_CopyTilesToVram
 	movs r1, #0
 	ldrsb r1, [r5, r1]
 	mov r3, sb
@@ -1131,7 +1131,7 @@ _02018A14:
 	mov r2, r8
 	ldr r1, [r2]
 	ldr r2, [r4, #0x50]
-	bl sub_020190C8
+	bl mMsg_CopyTilesToVram
 	adds r0, r4, #0
 	adds r0, #0x75
 	ldrb r0, [r0]
@@ -1194,7 +1194,7 @@ _02018AA4:
 	str r1, [r6]
 	ldr r2, [r4, #0x50]
 	adds r0, r3, #0
-	bl sub_020190C8
+	bl mMsg_CopyTilesToVram
 	movs r1, #0
 	ldrsb r1, [r5, r1]
 	mov r2, r8
@@ -1202,7 +1202,7 @@ _02018AA4:
 	adds r0, r0, r1
 	ldr r1, [r6]
 	ldr r2, [r4, #0x50]
-	bl sub_020190C8
+	bl mMsg_CopyTilesToVram
 _02018AC2:
 	pop {r3, r4, r5}
 	mov r8, r3
@@ -1216,8 +1216,8 @@ _02018AD0: .4byte 0x03000010
 _02018AD4: .4byte 0x03000014
 _02018AD8: .4byte 0x0300001D
 
-	thumb_func_start sub_02018ADC
-sub_02018ADC: @ 0x02018ADC
+	thumb_func_start mMsg_CheckAdvanceInput
+mMsg_CheckAdvanceInput: @ 0x02018ADC
 	ldr r0, _02018AEC @ =0x03001B50
 	ldr r1, _02018AF0 @ =0x0000081A
 	adds r0, r0, r1
@@ -1229,8 +1229,8 @@ sub_02018ADC: @ 0x02018ADC
 _02018AEC: .4byte 0x03001B50
 _02018AF0: .4byte 0x0000081A
 
-	thumb_func_start sub_02018AF4
-sub_02018AF4: @ 0x02018AF4
+	thumb_func_start mMsg_MainSetup_Normal
+mMsg_MainSetup_Normal: @ 0x02018AF4
 	ldr r1, [r0, #0x68]
 	movs r2, #5
 	rsbs r2, r2, #0
@@ -1246,12 +1246,12 @@ sub_02018AF4: @ 0x02018AF4
 	bx lr
 	.align 2, 0
 
-	thumb_func_start sub_02018B10
-sub_02018B10: @ 0x02018B10
+	thumb_func_start mMsg_Main_Normal
+mMsg_Main_Normal: @ 0x02018B10
 	push {r4, r5, r6, r7, lr}
 	adds r5, r0, #0
 	movs r7, #0
-	bl sub_020193D8
+	bl mMsg_EndTimerDec
 	cmp r0, #1
 	bne _02018B32
 	ldr r0, [r5, #0x54]
@@ -1260,11 +1260,11 @@ sub_02018B10: @ 0x02018B10
 	movs r3, #0
 	ldrsh r2, [r1, r3]
 	movs r1, #0x58
-	bl sub_0201941C
+	bl mMsg_CheckControlCode
 	cmp r0, #0
 	bne _02018C02
 _02018B32:
-	bl sub_02018ADC
+	bl mMsg_CheckAdvanceInput
 	cmp r0, #0
 	bne _02018B44
 	adds r0, r5, #0
@@ -1284,7 +1284,7 @@ _02018B44:
 	movs r1, #0
 	ldrsh r2, [r4, r1]
 	movs r1, #1
-	bl sub_0201941C
+	bl mMsg_CheckControlCode
 	cmp r0, #0
 	beq _02018B9E
 	adds r0, r5, #0
@@ -1298,16 +1298,16 @@ _02018B44:
 	b _02018C74
 _02018B74:
 	adds r0, r5, #0
-	bl sub_02019374
+	bl mMsg_ChangeMsgData
 	cmp r0, #1
 	bne _02018C74
 	adds r0, r5, #0
-	bl sub_0201915C
+	bl mMsg_RequestCursor
 	lsls r0, r0, #0x18
 	cmp r0, #0
 	beq _02018C74
 	adds r0, r5, #0
-	bl sub_02019708
+	bl mMsg_MainSetup_Window
 	adds r0, r5, #0
 	adds r0, #0x79
 	strb r6, [r0]
@@ -1320,7 +1320,7 @@ _02018B9E:
 	movs r3, #0
 	ldrsh r2, [r4, r3]
 	movs r1, #1
-	bl sub_0201941C
+	bl mMsg_CheckControlCode
 	cmp r0, #0
 	beq _02018BB8
 	adds r0, r5, #0
@@ -1333,7 +1333,7 @@ _02018BB8:
 	movs r1, #0
 	ldrsh r2, [r4, r1]
 	movs r1, #0x70
-	bl sub_0201941C
+	bl mMsg_CheckControlCode
 	adds r7, r0, #0
 	cmp r7, #0
 	bne _02018BF0
@@ -1341,7 +1341,7 @@ _02018BB8:
 	movs r3, #0
 	ldrsh r2, [r4, r3]
 	movs r1, #0
-	bl sub_0201941C
+	bl mMsg_CheckControlCode
 	adds r7, r0, #0
 	cmp r7, #0
 	bne _02018BF0
@@ -1349,7 +1349,7 @@ _02018BB8:
 	movs r1, #0
 	ldrsh r2, [r4, r1]
 	movs r1, #0x58
-	bl sub_0201941C
+	bl mMsg_CheckControlCode
 	cmp r0, #0
 	beq _02018C16
 _02018BEC:
@@ -1367,21 +1367,21 @@ _02018BF0:
 	b _02018C74
 _02018C02:
 	adds r0, r5, #0
-	bl sub_02019130
+	bl mMsg_RequestDisappear
 	lsls r0, r0, #0x18
 	cmp r0, #0
 	beq _02018C74
 	adds r0, r5, #0
-	bl sub_02019708
+	bl mMsg_MainSetup_Window
 	b _02018C74
 _02018C16:
 	adds r0, r5, #0
-	bl sub_0201915C
+	bl mMsg_RequestCursor
 	lsls r0, r0, #0x18
 	cmp r0, #0
 	beq _02018C74
 	adds r0, r5, #0
-	bl sub_02019708
+	bl mMsg_MainSetup_Window
 	adds r0, r5, #0
 	adds r0, #0x79
 	strb r7, [r0]
@@ -1393,7 +1393,7 @@ _02018C30:
 	movs r3, #0
 	ldrsh r2, [r1, r3]
 	movs r1, #1
-	bl sub_0201941C
+	bl mMsg_CheckControlCode
 	cmp r0, #0
 	bne _02018C74
 	adds r0, r5, #0
@@ -1427,8 +1427,8 @@ _02018C74:
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_02018C7C
-sub_02018C7C: @ 0x02018C7C
+	thumb_func_start mMsg_MainSetup_Disappear
+mMsg_MainSetup_Disappear: @ 0x02018C7C
 	push {lr}
 	adds r2, r0, #0
 	adds r1, r2, #0
@@ -1449,14 +1449,14 @@ sub_02018C7C: @ 0x02018C7C
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_02018CA4
-sub_02018CA4: @ 0x02018CA4
+	thumb_func_start mMsg_Main_Disappear
+mMsg_Main_Disappear: @ 0x02018CA4
 	push {r4, r5, r6, r7, lr}
 	adds r5, r0, #0
 	adds r4, r5, #0
 	adds r4, #0x76
 	adds r0, r4, #0
-	bl sub_020190F4
+	bl mMsg_GetWindowScrollOffset
 	ldr r6, _02018CF0 @ =0x03001B50
 	ldr r2, _02018CF4 @ =0x0000084A
 	adds r1, r6, r2
@@ -1467,7 +1467,7 @@ sub_02018CA4: @ 0x02018CA4
 	cmp r0, #0
 	bne _02018D00
 	adds r0, r5, #0
-	bl sub_0201917C
+	bl mMsg_RequestHide
 	lsls r0, r0, #0x18
 	cmp r0, #0
 	beq _02018D00
@@ -1484,7 +1484,7 @@ sub_02018CA4: @ 0x02018CA4
 	adds r0, r6, r2
 	strb r7, [r0]
 	adds r0, r5, #0
-	bl sub_02019708
+	bl mMsg_MainSetup_Window
 	b _02018D0A
 	.align 2, 0
 _02018CF0: .4byte 0x03001B50
@@ -1502,8 +1502,8 @@ _02018D0A:
 	pop {r0}
 	bx r0
 
-	thumb_func_start sub_02018D10
-sub_02018D10: @ 0x02018D10
+	thumb_func_start mMsg_CheckChoiceNext
+mMsg_CheckChoiceNext: @ 0x02018D10
 	push {lr}
 	adds r2, r0, #0
 	ldr r0, [r2, #0x5c]
@@ -1548,8 +1548,8 @@ _02018D56:
 _02018D5C: .4byte 0x03001B50
 _02018D60: .4byte 0x0000081A
 
-	thumb_func_start sub_02018D64
-sub_02018D64: @ 0x02018D64
+	thumb_func_start mMsg_CheckChoicePrevious
+mMsg_CheckChoicePrevious: @ 0x02018D64
 	push {lr}
 	adds r2, r0, #0
 	ldr r0, [r2, #0x5c]
@@ -1590,8 +1590,8 @@ _02018DA2:
 _02018DA8: .4byte 0x03001B50
 _02018DAC: .4byte 0x0000081A
 
-	thumb_func_start sub_02018DB0
-sub_02018DB0: @ 0x02018DB0
+	thumb_func_start mMsg_UpdateChoiceCursorPosition
+mMsg_UpdateChoiceCursorPosition: @ 0x02018DB0
 	push {r4, lr}
 	adds r3, r0, #0
 	ldr r4, [r3, #0x48]
@@ -1622,8 +1622,8 @@ _02018DE2:
 	pop {r0}
 	bx r0
 
-	thumb_func_start sub_02018DE8
-sub_02018DE8: @ 0x02018DE8
+	thumb_func_start mMsg_UpdateChoiceHighlight
+mMsg_UpdateChoiceHighlight: @ 0x02018DE8
 	push {r4, r5, r6, r7, lr}
 	mov r7, sb
 	mov r6, r8
@@ -1669,7 +1669,7 @@ sub_02018DE8: @ 0x02018DE8
 	lsls r2, r2, #4
 	ldr r6, _02018E70 @ =0x001FFFFF
 	ands r2, r6
-	bl sub_020292E8
+	bl CpuFastSet
 	ldrb r0, [r5]
 	lsls r0, r0, #2
 	add r0, sp
@@ -1684,7 +1684,7 @@ sub_02018DE8: @ 0x02018DE8
 	adds r2, r2, r3
 	lsls r2, r2, #4
 	ands r2, r6
-	bl sub_020292E8
+	bl CpuFastSet
 	b _02018EBA
 	.align 2, 0
 _02018E68: .4byte 0x0202AAC8
@@ -1709,7 +1709,7 @@ _02018E74:
 	ldr r3, _02018EC8 @ =0x001FFFFF
 	mov sb, r3
 	ands r2, r3
-	bl sub_020292E8
+	bl CpuFastSet
 	ldrb r0, [r6]
 	lsls r0, r0, #2
 	adds r0, r0, r5
@@ -1723,7 +1723,7 @@ _02018E74:
 	lsls r2, r2, #4
 	mov r3, sb
 	ands r2, r3
-	bl sub_020292E8
+	bl CpuFastSet
 _02018EBA:
 	add sp, #0x14
 	pop {r3, r4}
@@ -1735,8 +1735,8 @@ _02018EBA:
 	.align 2, 0
 _02018EC8: .4byte 0x001FFFFF
 
-	thumb_func_start sub_02018ECC
-sub_02018ECC: @ 0x02018ECC
+	thumb_func_start mMsg_MainSetup_Choice
+mMsg_MainSetup_Choice: @ 0x02018ECC
 	push {r4, lr}
 	adds r4, r0, #0
 	movs r0, #0xb
@@ -1746,9 +1746,9 @@ sub_02018ECC: @ 0x02018ECC
 	bl sub_0201C310
 	str r0, [r4, #0x48]
 	adds r0, r4, #0
-	bl sub_02018DB0
+	bl mMsg_UpdateChoiceCursorPosition
 	adds r0, r4, #0
-	bl sub_02018DE8
+	bl mMsg_UpdateChoiceHighlight
 	adds r2, r4, #0
 	adds r2, #0x71
 	ldrb r1, [r2]
@@ -1765,8 +1765,8 @@ sub_02018ECC: @ 0x02018ECC
 	pop {r0}
 	bx r0
 
-	thumb_func_start sub_02018F08
-sub_02018F08: @ 0x02018F08
+	thumb_func_start mMsg_Main_Choice
+mMsg_Main_Choice: @ 0x02018F08
 	push {r4, r5, lr}
 	adds r4, r0, #0
 	adds r5, r4, #0
@@ -1778,11 +1778,11 @@ sub_02018F08: @ 0x02018F08
 	cmp r1, r0
 	beq _02018F2E
 	adds r0, r4, #0
-	bl sub_020193B8
+	bl mMsg_TimerDec
 	cmp r0, #0
 	beq _02018FE6
 	adds r0, r4, #0
-	bl sub_02019708
+	bl mMsg_MainSetup_Window
 	b _02018FE6
 _02018F2E:
 	ldr r0, [r4, #0x48]
@@ -1795,9 +1795,9 @@ _02018F2E:
 	bl sub_0201C310
 	str r0, [r4, #0x48]
 	adds r0, r4, #0
-	bl sub_02018DB0
+	bl mMsg_UpdateChoiceCursorPosition
 	adds r0, r4, #0
-	bl sub_02018DE8
+	bl mMsg_UpdateChoiceHighlight
 	b _02018FE6
 _02018F50:
 	ldr r0, _02018F98 @ =0x03001B50
@@ -1809,7 +1809,7 @@ _02018F50:
 	cmp r0, #0
 	beq _02018FA0
 	adds r0, r4, #0
-	bl sub_0201915C
+	bl mMsg_RequestCursor
 	lsls r0, r0, #0x18
 	cmp r0, #0
 	beq _02018FA0
@@ -1829,7 +1829,7 @@ _02018F50:
 _02018F86:
 	adds r0, r4, #0
 	movs r1, #0x14
-	bl sub_020193B4
+	bl mMsg_SetTimer
 	adds r0, r5, #0
 	bl sub_02019D78
 	b _02018FE6
@@ -1838,7 +1838,7 @@ _02018F98: .4byte 0x03001B50
 _02018F9C: .4byte 0x0000081A
 _02018FA0:
 	adds r0, r4, #0
-	bl sub_02018D10
+	bl mMsg_CheckChoiceNext
 	cmp r0, #0
 	beq _02018FC0
 	adds r1, r4, #0
@@ -1849,10 +1849,10 @@ _02018FA0:
 	movs r0, #0xf
 	bl sub_02019D78
 	adds r0, r4, #0
-	bl sub_02018DE8
+	bl mMsg_UpdateChoiceHighlight
 _02018FC0:
 	adds r0, r4, #0
-	bl sub_02018D64
+	bl mMsg_CheckChoicePrevious
 	cmp r0, #0
 	beq _02018FE0
 	adds r1, r4, #0
@@ -1863,17 +1863,17 @@ _02018FC0:
 	movs r0, #0xf
 	bl sub_02019D78
 	adds r0, r4, #0
-	bl sub_02018DE8
+	bl mMsg_UpdateChoiceHighlight
 _02018FE0:
 	adds r0, r4, #0
-	bl sub_02018DB0
+	bl mMsg_UpdateChoiceCursorPosition
 _02018FE6:
 	pop {r4, r5}
 	pop {r0}
 	bx r0
 
-	thumb_func_start sub_02018FEC
-sub_02018FEC: @ 0x02018FEC
+	thumb_func_start mMsg_MainSetup_DisappearWait
+mMsg_MainSetup_DisappearWait: @ 0x02018FEC
 	push {lr}
 	adds r1, r0, #0
 	adds r2, r1, #0
@@ -1896,14 +1896,14 @@ sub_02018FEC: @ 0x02018FEC
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_02019018
-sub_02019018: @ 0x02019018
+	thumb_func_start mMsg_Main_DisappearWait
+mMsg_Main_DisappearWait: @ 0x02019018
 	push {r4, r5, lr}
 	adds r5, r0, #0
 	adds r4, r5, #0
 	adds r4, #0x76
 	adds r0, r4, #0
-	bl sub_020190F4
+	bl mMsg_GetWindowScrollOffset
 	ldr r1, _02019040 @ =0x03001B50
 	ldr r2, _02019044 @ =0x0000084A
 	adds r1, r1, r2
@@ -1930,8 +1930,8 @@ _02019050:
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_02019058
-sub_02019058: @ 0x02019058
+	thumb_func_start mMsg_MainSetup_AppearWait
+mMsg_MainSetup_AppearWait: @ 0x02019058
 	push {lr}
 	adds r2, r0, #0
 	adds r1, r2, #0
@@ -1952,14 +1952,14 @@ sub_02019058: @ 0x02019058
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_02019080
-sub_02019080: @ 0x02019080
+	thumb_func_start mMsg_Main_AppearWait
+mMsg_Main_AppearWait: @ 0x02019080
 	push {r4, r5, lr}
 	adds r5, r0, #0
 	adds r4, r5, #0
 	adds r4, #0x76
 	adds r0, r4, #0
-	bl sub_020190F4
+	bl mMsg_GetWindowScrollOffset
 	ldr r1, _020190B4 @ =0x03001B50
 	ldr r2, _020190B8 @ =0x0000084A
 	adds r1, r1, r2
@@ -1991,8 +1991,8 @@ _020190C0:
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_020190C8
-sub_020190C8: @ 0x020190C8
+	thumb_func_start mMsg_CopyTilesToVram
+mMsg_CopyTilesToVram: @ 0x020190C8
 	push {r4, lr}
 	adds r3, r0, #0
 	adds r4, r1, #0
@@ -2006,7 +2006,7 @@ sub_020190C8: @ 0x020190C8
 	lsls r2, r4, #3
 	ldr r3, _020190F0 @ =0x001FFFFF
 	ands r2, r3
-	bl sub_020292E8
+	bl CpuFastSet
 _020190E6:
 	pop {r4}
 	pop {r0}
@@ -2015,8 +2015,8 @@ _020190E6:
 _020190EC: .4byte 0x06002000
 _020190F0: .4byte 0x001FFFFF
 
-	thumb_func_start sub_020190F4
-sub_020190F4: @ 0x020190F4
+	thumb_func_start mMsg_GetWindowScrollOffset
+mMsg_GetWindowScrollOffset: @ 0x020190F4
 	push {lr}
 	adds r1, r0, #0
 	movs r0, #0
@@ -2045,30 +2045,30 @@ _02019110:
 	.align 2, 0
 _02019124: .4byte 0x0202AB24
 
-	thumb_func_start sub_02019128
-sub_02019128: @ 0x02019128
+	thumb_func_start mMsg_RequestMode
+mMsg_RequestMode: @ 0x02019128
 	adds r0, #0x71
 	strb r1, [r0]
 	movs r0, #1
 	bx lr
 
-	thumb_func_start sub_02019130
-sub_02019130: @ 0x02019130
+	thumb_func_start mMsg_RequestDisappear
+mMsg_RequestDisappear: @ 0x02019130
 	push {lr}
 	movs r1, #6
-	bl sub_02019128
+	bl mMsg_RequestMode
 	lsls r0, r0, #0x18
 	asrs r0, r0, #0x18
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_02019140
-sub_02019140: @ 0x02019140
+	thumb_func_start mMsg_RequestAppear
+mMsg_RequestAppear: @ 0x02019140
 	push {r4, r5, lr}
 	adds r4, r0, #0
 	adds r5, r1, #0
 	movs r1, #2
-	bl sub_02019128
+	bl mMsg_RequestMode
 	lsls r0, r0, #0x18
 	asrs r0, r0, #0x18
 	cmp r0, #1
@@ -2079,48 +2079,48 @@ _02019156:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_0201915C
-sub_0201915C: @ 0x0201915C
+	thumb_func_start mMsg_RequestCursor
+mMsg_RequestCursor: @ 0x0201915C
 	push {lr}
 	movs r1, #3
-	bl sub_02019128
+	bl mMsg_RequestMode
 	lsls r0, r0, #0x18
 	asrs r0, r0, #0x18
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_0201916C
-sub_0201916C: @ 0x0201916C
+	thumb_func_start mMsg_RequestNormal
+mMsg_RequestNormal: @ 0x0201916C
 	push {lr}
 	movs r1, #4
-	bl sub_02019128
+	bl mMsg_RequestMode
 	lsls r0, r0, #0x18
 	asrs r0, r0, #0x18
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_0201917C
-sub_0201917C: @ 0x0201917C
+	thumb_func_start mMsg_RequestHide
+mMsg_RequestHide: @ 0x0201917C
 	push {lr}
 	movs r1, #1
-	bl sub_02019128
+	bl mMsg_RequestMode
 	lsls r0, r0, #0x18
 	asrs r0, r0, #0x18
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_0201918C
-sub_0201918C: @ 0x0201918C
+	thumb_func_start mMsg_RequestChoice
+mMsg_RequestChoice: @ 0x0201918C
 	push {lr}
 	movs r1, #5
-	bl sub_02019128
+	bl mMsg_RequestMode
 	lsls r0, r0, #0x18
 	asrs r0, r0, #0x18
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_0201919C
-sub_0201919C: @ 0x0201919C
+	thumb_func_start mMsg_RequestDisappearWait
+mMsg_RequestDisappearWait: @ 0x0201919C
 	push {lr}
 	adds r1, r0, #0
 	adds r0, #0x70
@@ -2135,7 +2135,7 @@ sub_0201919C: @ 0x0201919C
 _020191B2:
 	adds r0, r1, #0
 	movs r1, #7
-	bl sub_02019128
+	bl mMsg_RequestMode
 	lsls r0, r0, #0x18
 	asrs r0, r0, #0x18
 _020191BE:
@@ -2143,8 +2143,8 @@ _020191BE:
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_020191C4
-sub_020191C4: @ 0x020191C4
+	thumb_func_start mMsg_RequestAppearWait
+mMsg_RequestAppearWait: @ 0x020191C4
 	push {lr}
 	adds r1, r0, #0
 	adds r0, #0x70
@@ -2158,15 +2158,15 @@ sub_020191C4: @ 0x020191C4
 _020191D8:
 	adds r0, r1, #0
 	movs r1, #8
-	bl sub_02019128
+	bl mMsg_RequestMode
 	lsls r0, r0, #0x18
 	asrs r0, r0, #0x18
 _020191E4:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_020191E8
-sub_020191E8: @ 0x020191E8
+	thumb_func_start mMsg_GetMessageBody
+mMsg_GetMessageBody: @ 0x020191E8
 	push {r4, r5, lr}
 	sub sp, #8
 	adds r4, r1, #0
@@ -2250,14 +2250,14 @@ _0201927A:
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_02019284
-sub_02019284: @ 0x02019284
+	thumb_func_start mMsg_GetMessageLength
+mMsg_GetMessageLength: @ 0x02019284
 	push {r4, r5, lr}
 	adds r5, r0, #0
 	movs r4, #0
 _0201928A:
 	adds r0, r5, r4
-	bl sub_020192C0
+	bl mFont_CodeSize_get
 	lsls r0, r0, #0x18
 	asrs r0, r0, #0x18
 	adds r4, r4, r0
@@ -2285,8 +2285,8 @@ _020192B2:
 	.align 2, 0
 _020192BC: .4byte 0x000001FF
 
-	thumb_func_start sub_020192C0
-sub_020192C0: @ 0x020192C0
+	thumb_func_start mFont_CodeSize_get
+mFont_CodeSize_get: @ 0x020192C0
 	push {lr}
 	adds r2, r0, #0
 	ldrb r0, [r2]
@@ -2309,15 +2309,15 @@ _020192DE:
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_020192E8
-sub_020192E8: @ 0x020192E8
+	thumb_func_start mMsg_LoadMessage
+mMsg_LoadMessage: @ 0x020192E8
 	push {r4, lr}
 	sub sp, #8
 	adds r4, r0, #0
 	adds r0, r1, #0
 	add r1, sp, #4
 	mov r2, sp
-	bl sub_020191E8
+	bl mMsg_GetMessageBody
 	cmp r0, #1
 	bne _02019326
 	ldr r1, [sp, #4]
@@ -2333,9 +2333,9 @@ sub_020192E8: @ 0x020192E8
 	ldrsh r2, [r0, r3]
 	adds r0, r1, #0
 	adds r1, r4, #0
-	bl sub_02019E40
+	bl mMsg_Copy
 	adds r0, r4, #0
-	bl sub_02019284
+	bl mMsg_GetMessageLength
 	lsls r0, r0, #0x10
 	asrs r0, r0, #0x10
 	b _02019328
@@ -2347,8 +2347,8 @@ _02019328:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_02019330
-sub_02019330: @ 0x02019330
+	thumb_func_start mMsg_ClearText
+mMsg_ClearText: @ 0x02019330
 	push {r4, lr}
 	sub sp, #4
 	adds r4, r0, #0
@@ -2357,11 +2357,11 @@ sub_02019330: @ 0x02019330
 	ldr r1, [r4, #0x50]
 	ldr r2, _02019370 @ =0x01000480
 	mov r0, sp
-	bl sub_020292E8
+	bl CpuFastSet
 	ldr r2, [r4, #0x50]
 	movs r0, #0
 	movs r1, #0x90
-	bl sub_020190C8
+	bl mMsg_CopyTilesToVram
 	adds r0, r4, #0
 	adds r0, #0x75
 	ldrb r1, [r0]
@@ -2380,8 +2380,8 @@ sub_02019330: @ 0x02019330
 _0201936C: .4byte 0x55555555
 _02019370: .4byte 0x01000480
 
-	thumb_func_start sub_02019374
-sub_02019374: @ 0x02019374
+	thumb_func_start mMsg_ChangeMsgData
+mMsg_ChangeMsgData: @ 0x02019374
 	push {r4, r5, r6, lr}
 	adds r4, r0, #0
 	adds r5, r1, #0
@@ -2389,7 +2389,7 @@ sub_02019374: @ 0x02019374
 	cmp r5, #0x1e
 	bhi _020193AA
 	ldr r0, [r4, #0x54]
-	bl sub_020192E8
+	bl mMsg_LoadMessage
 	lsls r0, r0, #0x10
 	cmp r0, #0
 	beq _020193AA
@@ -2401,10 +2401,10 @@ sub_02019374: @ 0x02019374
 	adds r0, #0x6c
 	strh r6, [r0]
 	adds r0, r4, #0
-	bl sub_02019330
+	bl mMsg_ClearText
 	adds r0, r4, #0
 	movs r1, #0x14
-	bl sub_020193B4
+	bl mMsg_SetTimer
 	movs r6, #1
 _020193AA:
 	adds r0, r6, #0
@@ -2413,13 +2413,13 @@ _020193AA:
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_020193B4
-sub_020193B4: @ 0x020193B4
+	thumb_func_start mMsg_SetTimer
+mMsg_SetTimer: @ 0x020193B4
 	str r1, [r0, #0x60]
 	bx lr
 
-	thumb_func_start sub_020193B8
-sub_020193B8: @ 0x020193B8
+	thumb_func_start mMsg_TimerDec
+mMsg_TimerDec: @ 0x020193B8
 	push {lr}
 	movs r3, #0
 	ldr r1, [r0, #0x60]
@@ -2437,13 +2437,13 @@ _020193CC:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_020193D4
-sub_020193D4: @ 0x020193D4
+	thumb_func_start mMsg_SetEndTimer
+mMsg_SetEndTimer: @ 0x020193D4
 	str r1, [r0, #0x64]
 	bx lr
 
-	thumb_func_start sub_020193D8
-sub_020193D8: @ 0x020193D8
+	thumb_func_start mMsg_EndTimerDec
+mMsg_EndTimerDec: @ 0x020193D8
 	push {lr}
 	movs r3, #0
 	ldr r1, [r0, #0x64]
@@ -2461,8 +2461,8 @@ _020193EC:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_020193F4
-sub_020193F4: @ 0x020193F4
+	thumb_func_start mMsg_DestroySprites
+mMsg_DestroySprites: @ 0x020193F4
 	push {r4, lr}
 	adds r4, r0, #0
 	ldr r0, [r4, #0x48]
@@ -2484,8 +2484,8 @@ _02019414:
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_0201941C
-sub_0201941C: @ 0x0201941C
+	thumb_func_start mMsg_CheckControlCode
+mMsg_CheckControlCode: @ 0x0201941C
 	push {lr}
 	lsls r1, r1, #0x18
 	lsrs r1, r1, #0x18
@@ -2506,8 +2506,8 @@ _02019438:
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_02019440
-sub_02019440: @ 0x02019440
+	thumb_func_start mMsg_ProcessText
+mMsg_ProcessText: @ 0x02019440
 	push {r4, r5, r6, r7, lr}
 	mov r7, sl
 	mov r6, sb
@@ -2522,13 +2522,13 @@ sub_02019440: @ 0x02019440
 	movs r1, #6
 	str r1, [sp, #0x14]
 	adds r0, r5, #0
-	bl sub_020193B8
+	bl mMsg_TimerDec
 	cmp r0, #0
 	beq _02019496
 	movs r0, #1
 	b _02019570
 _02019468:
-	bl sub_020192C0
+	bl mFont_CodeSize_get
 	lsls r0, r0, #0x18
 	asrs r0, r0, #0x18
 	mov r2, r8
@@ -2574,7 +2574,7 @@ _020194AA:
 	bne _020194D0
 	adds r0, r5, #0
 	mov r1, r8
-	bl sub_0201892C
+	bl mMsg_ProcessControlCode
 	str r0, [sp, #0x10]
 	subs r0, #2
 	cmp r0, #2
@@ -2582,7 +2582,7 @@ _020194AA:
 	b _02019564
 _020194D0:
 	adds r0, r4, #0
-	bl sub_02018414
+	bl mFont_GetGlyphWidth
 	adds r7, r0, #0
 	adds r3, r5, #0
 	adds r3, #0x73
@@ -2635,7 +2635,7 @@ _02019520:
 	str r0, [sp, #8]
 	mov r0, ip
 	movs r2, #0
-	bl sub_02019880
+	bl mFont_DrawCharToTiles
 	ldrb r0, [r6]
 	adds r0, r0, r7
 	strb r0, [r6]
@@ -2645,7 +2645,7 @@ _02019544:
 	ldrsh r1, [r0, r2]
 	ldr r0, [r5, #0x54]
 	adds r0, r0, r1
-	bl sub_020192C0
+	bl mFont_CodeSize_get
 	lsls r0, r0, #0x18
 	asrs r0, r0, #0x18
 	mov r1, r8
@@ -2673,8 +2673,8 @@ _02019570:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_02019580
-sub_02019580: @ 0x02019580
+	thumb_func_start mMsg_Init
+mMsg_Init: @ 0x02019580
 	push {r4, r5, r6, r7, lr}
 	mov r7, sl
 	mov r6, sb
@@ -2708,7 +2708,7 @@ _020195BC:
 	ldr r0, [sp, #0x14]
 	ldr r1, [sp, #0x10]
 	ldr r2, [sp, #0xc]
-	bl sub_0201974C
+	bl mMsg_InitWindow
 	ldrb r0, [r6, #7]
 	movs r1, #0
 	strb r0, [r6, #0xa]
@@ -2718,7 +2718,7 @@ _020195BC:
 	add r4, sl
 	ldr r0, [r4]
 	movs r1, #0x18
-	bl sub_020192E8
+	bl mMsg_LoadMessage
 	strh r0, [r6]
 	ldr r1, [r4]
 	ldrb r0, [r5]
@@ -2733,14 +2733,14 @@ _020195BC:
 	ldr r0, [sp, #8]
 	mov r1, r8
 	ldr r2, _020196F8 @ =0x01000120
-	bl sub_020292E8
+	bl CpuFastSet
 	mov r4, sl
 _020195FE:
 	ldr r1, [r7]
 	ldr r2, _020196E4 @ =0x03002A20
 	adds r0, r4, r2
 	movs r2, #1
-	bl sub_02019440
+	bl mMsg_ProcessText
 	cmp r0, #1
 	beq _020195FE
 	adds r7, #0xa0
@@ -2790,9 +2790,9 @@ _02019646:
 	ldr r0, _020196EC @ =0x02001D80
 	adds r2, r2, r0
 	adds r0, r5, #0
-	bl sub_0201974C
+	bl mMsg_InitWindow
 	adds r0, r5, #0
-	bl sub_02019330
+	bl mMsg_ClearText
 	ldr r2, _020196E4 @ =0x03002A20
 	adds r2, #0x5c
 	adds r2, r4, r2
@@ -2803,7 +2803,7 @@ _02019646:
 	ldr r2, _02019700 @ =0x03002A74
 	adds r0, r4, r2
 	ldr r0, [r0]
-	bl sub_020192E8
+	bl mMsg_LoadMessage
 	adds r1, r5, #0
 	adds r1, #0x6e
 	strh r0, [r1]
@@ -2823,7 +2823,7 @@ _020196A8:
 	ldr r1, [r6]
 	adds r0, r5, #0
 	movs r2, #1
-	bl sub_02019440
+	bl mMsg_ProcessText
 	cmp r0, #1
 	beq _020196A8
 	mov r0, r8
@@ -2857,8 +2857,8 @@ _020196FC: .4byte 0x0202A8E0
 _02019700: .4byte 0x03002A74
 _02019704: .4byte 0x03002A70
 
-	thumb_func_start sub_02019708
-sub_02019708: @ 0x02019708
+	thumb_func_start mMsg_MainSetup_Window
+mMsg_MainSetup_Window: @ 0x02019708
 	push {r4, r5, r6, lr}
 	adds r5, r0, #0
 	adds r4, r5, #0
@@ -2878,7 +2878,7 @@ sub_02019708: @ 0x02019708
 	cmp r0, #0
 	beq _02019742
 	adds r0, r5, #0
-	bl sub_020193F4
+	bl mMsg_DestroySprites
 	movs r0, #0
 	ldrsb r0, [r4, r0]
 	lsls r0, r0, #2
@@ -2893,8 +2893,8 @@ _02019742:
 	.align 2, 0
 _02019748: .4byte 0x0202AADC
 
-	thumb_func_start sub_0201974C
-sub_0201974C: @ 0x0201974C
+	thumb_func_start mMsg_InitWindow
+mMsg_InitWindow: @ 0x0201974C
 	push {r4, r5, r6, r7, lr}
 	sub sp, #4
 	adds r7, r0, #0
@@ -2905,7 +2905,7 @@ sub_0201974C: @ 0x0201974C
 	ldr r2, _020197A0 @ =0x01000028
 	mov r0, sp
 	adds r1, r7, #0
-	bl sub_020292E8
+	bl CpuFastSet
 	str r4, [r7, #0x50]
 	str r5, [r7, #0x54]
 	movs r0, #1
@@ -2939,8 +2939,8 @@ sub_0201974C: @ 0x0201974C
 	.align 2, 0
 _020197A0: .4byte 0x01000028
 
-	thumb_func_start sub_020197A4
-sub_020197A4: @ 0x020197A4
+	thumb_func_start mMsg_Main_Window
+mMsg_Main_Window: @ 0x020197A4
 	push {lr}
 	adds r2, r0, #0
 	ldr r1, _020197C8 @ =0x0202AB00
@@ -2961,8 +2961,8 @@ _020197C2:
 	.align 2, 0
 _020197C8: .4byte 0x0202AB00
 
-	thumb_func_start sub_020197CC
-sub_020197CC: @ 0x020197CC
+	thumb_func_start mFont_DrawStringToTiles
+mFont_DrawStringToTiles: @ 0x020197CC
 	push {r4, r5, r6, r7, lr}
 	mov r7, sl
 	mov r6, sb
@@ -3009,7 +3009,7 @@ _02019812:
 	adds r1, r2, #0
 	lsrs r2, r7, #0x10
 	mov r3, r8
-	bl sub_02019880
+	bl mFont_DrawCharToTiles
 	mov r1, sb
 	ldrh r0, [r1]
 	adds r0, r0, r5
@@ -3034,7 +3034,7 @@ _0201984A:
 	cmp r0, #1
 	beq _0201985E
 	adds r0, r4, #0
-	bl sub_02018414
+	bl mFont_GetGlyphWidth
 	adds r5, r0, #0
 	b _02019860
 _0201985E:
@@ -3058,8 +3058,8 @@ _0201986E:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_02019880
-sub_02019880: @ 0x02019880
+	thumb_func_start mFont_DrawCharToTiles
+mFont_DrawCharToTiles: @ 0x02019880
 	push {r4, r5, r6, r7, lr}
 	adds r6, r2, #0
 	ldr r2, [sp, #0x14]
@@ -3077,10 +3077,10 @@ sub_02019880: @ 0x02019880
 	adds r1, #0x18
 	lsls r2, r2, #0x18
 	lsrs r2, r2, #0x18
-	bl sub_0201836C
+	bl mFont_GetGlyphRows
 	adds r0, r4, #0
 	adds r1, r7, #0
-	bl sub_02019980
+	bl mFont_BlitGlyphToTiles
 	pop {r4, r5, r6, r7}
 	pop {r0}
 	bx r0
@@ -3122,7 +3122,7 @@ sub_020198B8: @ 0x020198B8
 	ldr r2, [r2]
 	lsls r2, r2, #9
 	lsrs r2, r2, #0xb
-	bl sub_020292E8
+	bl CpuFastSet
 _02019900:
 	add sp, #0x24
 	pop {r4, r5, r6, r7}
@@ -3181,7 +3181,7 @@ _02019946:
 	lsls r0, r0, #0x11
 	orrs r2, r0
 	adds r0, r7, #0
-	bl sub_020292E8
+	bl CpuFastSet
 _02019972:
 	add sp, #0x1c
 	pop {r4, r5, r6, r7}
@@ -3190,8 +3190,8 @@ _02019972:
 	.align 2, 0
 _0201997C: .4byte 0x0202AD28
 
-	thumb_func_start sub_02019980
-sub_02019980: @ 0x02019980
+	thumb_func_start mFont_BlitGlyphToTiles
+mFont_BlitGlyphToTiles: @ 0x02019980
 	push {r4, r5, r6, r7, lr}
 	mov r7, sl
 	mov r6, sb
@@ -3783,8 +3783,8 @@ sub_02019D98: @ 0x02019D98
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_02019DA8
-sub_02019DA8: @ 0x02019DA8
+	thumb_func_start mMsg_ReplaceChar
+mMsg_ReplaceChar: @ 0x02019DA8
 	push {r4, r5, r6, lr}
 	adds r6, r0, #0
 	lsls r1, r1, #0x18
@@ -3811,8 +3811,8 @@ _02019DCE:
 	pop {r0}
 	bx r0
 
-	thumb_func_start sub_02019DD4
-sub_02019DD4: @ 0x02019DD4
+	thumb_func_start mMsg_TrimTrailingSpaces
+mMsg_TrimTrailingSpaces: @ 0x02019DD4
 	push {lr}
 	adds r3, r0, #0
 	movs r2, #0
@@ -3840,8 +3840,8 @@ _02019DFC:
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_02019E04
-sub_02019E04: @ 0x02019E04
+	thumb_func_start mMsg_StringsDiffer
+mMsg_StringsDiffer: @ 0x02019E04
 	push {r4, r5, lr}
 	adds r5, r0, #0
 	adds r4, r1, #0
@@ -3875,8 +3875,8 @@ _02019E2E:
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_02019E40
-sub_02019E40: @ 0x02019E40
+	thumb_func_start mMsg_Copy
+mMsg_Copy: @ 0x02019E40
 	push {r4, r5, lr}
 	adds r5, r0, #0
 	adds r4, r1, #0
@@ -3898,8 +3898,8 @@ _02019E5E:
 	pop {r0}
 	bx r0
 
-	thumb_func_start sub_02019E64
-sub_02019E64: @ 0x02019E64
+	thumb_func_start mMsg_Fill
+mMsg_Fill: @ 0x02019E64
 	push {r4, lr}
 	adds r4, r1, #0
 	lsls r0, r0, #0x18
@@ -3926,7 +3926,7 @@ sub_02019E88: @ 0x02019E88
 	push {lr}
 	sub sp, #4
 	movs r0, #0xc0
-	bl sub_020292F4
+	bl RegisterRamReset
 	movs r0, #0
 	str r0, [sp]
 	ldr r1, _02019EDC @ =0x040000D4
@@ -4012,7 +4012,7 @@ sub_02019F0C: @ 0x02019F0C
 	ldr r1, _0201A054 @ =0x020102A0
 	str r1, [r2]
 	ldr r2, _0201A058 @ =0x04000E60
-	bl sub_020292EC
+	bl CpuSet
 	movs r2, #0
 	adds r7, r4, #0
 	adds r3, r7, #0
@@ -4079,24 +4079,24 @@ _02019F54:
 	movs r5, #0x80
 	lsls r5, r5, #3
 	adds r2, r5, #0
-	bl sub_020292E8
+	bl CpuFastSet
 	ldr r0, [r7]
 	ldr r2, _0201A08C @ =0x00002948
 	adds r0, r0, r2
 	ldr r1, _0201A090 @ =0x06010000
 	adds r2, r5, #0
-	bl sub_020292E8
+	bl CpuFastSet
 	ldr r0, [r7]
 	ldr r1, _0201A094 @ =0x00003948
 	adds r0, r0, r1
 	ldr r5, _0201A098 @ =0x02000220
 	adds r1, r5, #0
 	movs r2, #8
-	bl sub_020292E8
+	bl CpuFastSet
 	ldr r1, _0201A09C @ =0x05000220
 	adds r0, r5, #0
 	movs r2, #8
-	bl sub_020292E8
+	bl CpuFastSet
 	ldr r2, _0201A0A0 @ =0x0000082A
 	adds r4, r4, r2
 	strh r6, [r4]
@@ -4105,15 +4105,15 @@ _02019F54:
 	ldr r0, _0201A0A4 @ =0x03002FC0
 	ldr r1, _0201A0A8 @ =0x02001720
 	ldr r2, _0201A0AC @ =0x0200BF80
-	bl sub_0201974C
+	bl mMsg_InitWindow
 	ldr r0, _0201A0B0 @ =0x03003060
 	ldr r1, _0201A0B4 @ =0x02001940
 	ldr r2, _0201A0B8 @ =0x0200D180
-	bl sub_0201974C
+	bl mMsg_InitWindow
 	ldr r0, _0201A0BC @ =0x03002980
 	ldr r1, _0201A0C0 @ =0x02001B60
 	ldr r2, _0201A0C4 @ =0x0200E380
-	bl sub_0201974C
+	bl mMsg_InitWindow
 	bl sub_0201BF10
 	pop {r4, r5, r6, r7}
 	pop {r0}
@@ -4172,11 +4172,11 @@ sub_0201A0D4: @ 0x0201A0D4
 	mov r7, r8
 	push {r7}
 	sub sp, #4
-	ldr r0, _0201A1BC @ =sub_02019980
+	ldr r0, _0201A1BC @ =mFont_BlitGlyphToTiles
 	ldr r1, _0201A1C0 @ =0x03002810
 	movs r2, #0x58
-	bl sub_020292E8
-	bl sub_02019580
+	bl CpuFastSet
+	bl mMsg_Init
 	bl sub_02019CFC
 	ldr r4, _0201A1C4 @ =0x03001B50
 	ldr r0, _0201A1C8 @ =0x0000085F
@@ -4220,9 +4220,9 @@ _0201A116:
 	lsls r1, r1, #5
 	adds r0, r1, #0
 	strh r0, [r6]
-	bl sub_020292F8
+	bl SoundBiasReset
 	svc #3
-	bl sub_02029300
+	bl SoundBiasSet
 	mov r0, sp
 	ldrh r0, [r0]
 	strh r0, [r6]
@@ -4276,7 +4276,7 @@ _0201A1A8:
 	bl sub_02019C3C
 	b _0201A116
 	.align 2, 0
-_0201A1BC: .4byte sub_02019980
+_0201A1BC: .4byte mFont_BlitGlyphToTiles
 _0201A1C0: .4byte 0x03002810
 _0201A1C4: .4byte 0x03001B50
 _0201A1C8: .4byte 0x0000085F
@@ -4345,7 +4345,7 @@ sub_0201A218: @ 0x0201A218
 	ldr r1, _0201A280 @ =0x03003120
 	ldr r2, _0201A284 @ =0x01000010
 	mov r0, sp
-	bl sub_020292E8
+	bl CpuFastSet
 	strh r4, [r5]
 	add sp, #4
 	pop {r4, r5}
@@ -4788,7 +4788,7 @@ _0201A5B4:
 	ldr r2, _0201A5E4 @ =0x01000010
 	mov r0, sp
 	adds r1, r4, #0
-	bl sub_020292E8
+	bl CpuFastSet
 	movs r0, #1
 	rsbs r0, r0, #0
 	str r0, [r4, #0xc]
@@ -4866,7 +4866,7 @@ sub_0201A620: @ 0x0201A620
 	ldr r1, _0201A680 @ =0x03003120
 	ldr r2, _0201A684 @ =0x01000010
 	mov r0, sp
-	bl sub_020292E8
+	bl CpuFastSet
 	strh r4, [r5]
 	add sp, #4
 	pop {r4, r5}
@@ -4967,13 +4967,13 @@ sub_0201A714: @ 0x0201A714
 	cmp r0, #0
 	bne _0201A776
 	adds r0, r1, #0
-	bl sub_020191C4
+	bl mMsg_RequestAppearWait
 	lsls r0, r0, #0x18
 	asrs r0, r0, #0x18
 	cmp r0, #1
 	bne _0201A776
 	ldr r0, [r5, #0x14]
-	bl sub_02019708
+	bl mMsg_MainSetup_Window
 _0201A748:
 	movs r7, #1
 	b _0201A776
@@ -4989,13 +4989,13 @@ _0201A74C:
 	cmp r0, #1
 	beq _0201A748
 	adds r0, r1, #0
-	bl sub_0201919C
+	bl mMsg_RequestDisappearWait
 	lsls r0, r0, #0x18
 	asrs r4, r0, #0x18
 	cmp r4, #1
 	bne _0201A776
 	ldr r0, [r5, #0x14]
-	bl sub_02019708
+	bl mMsg_MainSetup_Window
 	strb r4, [r6]
 _0201A776:
 	adds r0, r7, #0
@@ -5387,7 +5387,7 @@ _0201AA78:
 	ldr r0, _0201AA90 @ =0x020000E0
 	ldr r1, _0201AA94 @ =0x050000E0
 	movs r2, #8
-	bl sub_020292E8
+	bl CpuFastSet
 	add sp, #0xc
 	pop {r4, r5, r6, r7}
 	pop {r0}
@@ -5552,7 +5552,7 @@ sub_0201ABBC: @ 0x0201ABBC
 	cmp r0, #0
 	bne _0201ABD8
 	adds r0, r1, #0
-	bl sub_020197A4
+	bl mMsg_Main_Window
 _0201ABD8:
 	bl sub_0201C5A0
 	pop {r0}
@@ -5914,7 +5914,7 @@ sub_0201AE40: @ 0x0201AE40
 _0201AE52:
 	ldr r0, _0201AE80 @ =0x03002980
 	adds r1, r2, #0
-	bl sub_02019140
+	bl mMsg_RequestAppear
 	lsls r0, r0, #0x18
 	asrs r0, r0, #0x18
 	adds r1, r4, #0
@@ -6113,13 +6113,13 @@ _0201AFD2:
 	lsls r1, r1, #2
 	add r1, sp
 	ldr r1, [r1]
-	bl sub_02019374
+	bl mMsg_ChangeMsgData
 	adds r6, r5, #0
 	adds r6, #0x58
 	cmp r0, #1
 	bne _0201B032
 	ldr r0, [r5, #0x14]
-	bl sub_0201915C
+	bl mMsg_RequestCursor
 	lsls r0, r0, #0x18
 	cmp r0, #0
 	beq _0201B032
@@ -6141,7 +6141,7 @@ _0201B008:
 	adds r0, r0, r3
 	strb r4, [r0]
 	ldr r0, [r5, #0x14]
-	bl sub_02019708
+	bl mMsg_MainSetup_Window
 	ldrb r0, [r6]
 	adds r1, r5, #0
 	adds r1, #0x53
@@ -6254,7 +6254,7 @@ _0201B0F2:
 	ldr r2, [r0, #0x50]
 	movs r0, #0
 	movs r1, #0x90
-	bl sub_020190C8
+	bl mMsg_CopyTilesToVram
 	ldr r0, _0201B120 @ =0x03001B50
 	ldr r1, _0201B124 @ =0x00000856
 	adds r0, r0, r1
@@ -6394,7 +6394,7 @@ sub_0201B1EC: @ 0x0201B1EC
 	ldr r5, _0201B234 @ =0x03003060
 	adds r0, r5, #0
 	movs r1, #0x15
-	bl sub_02019140
+	bl mMsg_RequestAppear
 	lsls r0, r0, #0x18
 	asrs r0, r0, #0x18
 	cmp r0, #1
@@ -6463,7 +6463,7 @@ _0201B254:
 	movs r3, #0
 	ldrsh r2, [r1, r3]
 	movs r1, #1
-	bl sub_0201941C
+	bl mMsg_CheckControlCode
 	cmp r0, #0
 	beq _0201B290
 	ldr r0, [r4, #0x14]
@@ -6564,12 +6564,12 @@ sub_0201B328: @ 0x0201B328
 	ble _0201B36C
 	ldr r0, [r4, #0x14]
 	movs r1, #0x17
-	bl sub_02019374
+	bl mMsg_ChangeMsgData
 	adds r5, r0, #0
 	cmp r5, #1
 	bne _0201B36C
 	ldr r0, [r4, #0x14]
-	bl sub_0201915C
+	bl mMsg_RequestCursor
 	lsls r0, r0, #0x18
 	cmp r0, #0
 	beq _0201B36C
@@ -6577,7 +6577,7 @@ sub_0201B328: @ 0x0201B328
 	strh r1, [r4, #0x2c]
 	ldr r0, [r4, #0x14]
 	str r1, [r0, #0x60]
-	bl sub_02019708
+	bl mMsg_MainSetup_Window
 	ldr r3, _0201B37C @ =0x00000851
 	adds r0, r6, r3
 	strb r5, [r0]
@@ -6627,7 +6627,7 @@ _0201B39E:
 	movs r3, #0
 	ldrsh r2, [r1, r3]
 	movs r1, #1
-	bl sub_0201941C
+	bl mMsg_CheckControlCode
 	cmp r0, #0
 	beq _0201B414
 	ldr r0, [r4, #0x14]
@@ -6737,7 +6737,7 @@ _0201B48C:
 	ldr r2, [r0, #0x50]
 	movs r0, #0
 	movs r1, #0x90
-	bl sub_020190C8
+	bl mMsg_CopyTilesToVram
 	strh r5, [r4, #0x2c]
 _0201B4A8:
 	pop {r4, r5, r6}
@@ -6871,7 +6871,7 @@ sub_0201B594: @ 0x0201B594
 	adds r0, r0, r1
 	ldr r1, _0201B63C @ =0x02000190
 	movs r2, #8
-	bl sub_020292EC
+	bl CpuSet
 	lsls r0, r5, #2
 	adds r0, r0, r5
 	lsls r0, r0, #1
@@ -6879,34 +6879,34 @@ sub_0201B594: @ 0x0201B594
 	adds r0, r0, r1
 	ldr r1, _0201B644 @ =0x020001D6
 	movs r2, #5
-	bl sub_020292EC
+	bl CpuSet
 	ldr r0, _0201B648 @ =0x02000180
 	ldr r1, _0201B64C @ =0x05000180
 	movs r2, #8
-	bl sub_020292E8
+	bl CpuFastSet
 	ldr r0, _0201B650 @ =0x020001C0
 	ldr r1, _0201B654 @ =0x050001C0
 	movs r2, #8
-	bl sub_020292E8
+	bl CpuFastSet
 	lsls r4, r5, #3
 	ldr r0, _0201B658 @ =0x02034EE4
 	adds r4, r4, r0
 	ldr r1, _0201B65C @ =0x02000102
 	adds r0, r4, #0
 	movs r2, #4
-	bl sub_020292EC
+	bl CpuSet
 	ldr r1, _0201B660 @ =0x02000122
 	adds r0, r4, #0
 	movs r2, #4
-	bl sub_020292EC
+	bl CpuSet
 	ldr r0, _0201B664 @ =0x02000100
 	ldr r1, _0201B668 @ =0x05000100
 	movs r2, #8
-	bl sub_020292E8
+	bl CpuFastSet
 	ldr r0, _0201B66C @ =0x02000120
 	ldr r1, _0201B670 @ =0x05000120
 	movs r2, #8
-	bl sub_020292E8
+	bl CpuFastSet
 	strb r5, [r7]
 _0201B616:
 	movs r0, #0x82
@@ -7036,7 +7036,7 @@ sub_0201B6FC: @ 0x0201B6FC
 	ldr r5, _0201B750 @ =0x03002980
 	adds r0, r5, #0
 	movs r1, #4
-	bl sub_02019140
+	bl mMsg_RequestAppear
 	lsls r0, r0, #0x18
 	asrs r0, r0, #0x18
 	cmp r0, #1
@@ -7096,7 +7096,7 @@ _0201B77E:
 	movs r3, #0
 	ldrsh r2, [r1, r3]
 	movs r1, #1
-	bl sub_0201941C
+	bl mMsg_CheckControlCode
 	cmp r0, #0
 	beq _0201B7A8
 	ldr r0, [r4, #0x14]
@@ -7121,16 +7121,16 @@ sub_0201B7B0: @ 0x0201B7B0
 	adds r4, r0, #0
 	ldr r0, [r4, #0x14]
 	movs r1, #0xf
-	bl sub_02019374
+	bl mMsg_ChangeMsgData
 	cmp r0, #1
 	bne _0201B80E
 	ldr r0, [r4, #0x14]
-	bl sub_0201915C
+	bl mMsg_RequestCursor
 	lsls r0, r0, #0x18
 	cmp r0, #0
 	beq _0201B80E
 	ldr r0, [r4, #0x14]
-	bl sub_02019708
+	bl mMsg_MainSetup_Window
 	adds r0, r4, #0
 	adds r0, #0x5a
 	ldrb r0, [r0]
@@ -7207,18 +7207,18 @@ _0201B86C:
 	bne _0201B904
 	ldr r0, [r4, #0x14]
 	adds r1, r5, #0
-	bl sub_02019374
+	bl mMsg_ChangeMsgData
 	cmp r0, #1
 	bne _0201B904
 	ldr r0, [r4, #0x14]
-	bl sub_0201915C
+	bl mMsg_RequestCursor
 	lsls r0, r0, #0x18
 	cmp r0, #0
 	beq _0201B904
 	ldr r0, [r4, #0x14]
-	bl sub_02019708
+	bl mMsg_MainSetup_Window
 	ldr r0, [r4, #0x14]
-	bl sub_02019330
+	bl mMsg_ClearText
 	adds r0, r4, #0
 	bl sub_0201B6D0
 	b _0201B904
@@ -7229,19 +7229,19 @@ _0201B8A2:
 	bne _0201B904
 	ldr r0, [r4, #0x14]
 	adds r1, r5, #0
-	bl sub_02019374
+	bl mMsg_ChangeMsgData
 	adds r5, r0, #0
 	cmp r5, #1
 	bne _0201B904
 	ldr r0, [r4, #0x14]
-	bl sub_0201915C
+	bl mMsg_RequestCursor
 	lsls r0, r0, #0x18
 	cmp r0, #0
 	beq _0201B904
 	ldr r0, [r4, #0x14]
-	bl sub_02019708
+	bl mMsg_MainSetup_Window
 	ldr r0, [r4, #0x14]
-	bl sub_02019330
+	bl mMsg_ClearText
 	adds r0, r4, #0
 	bl sub_0201B6D0
 	adds r0, r4, #0
@@ -7251,18 +7251,18 @@ _0201B8A2:
 _0201B8E0:
 	ldr r0, [r4, #0x14]
 	adds r1, r5, #0
-	bl sub_02019374
+	bl mMsg_ChangeMsgData
 	cmp r0, #1
 	bne _0201B904
 	ldr r0, [r4, #0x14]
-	bl sub_0201915C
+	bl mMsg_RequestCursor
 	lsls r0, r0, #0x18
 	cmp r0, #0
 	beq _0201B904
 	ldr r0, [r4, #0x14]
-	bl sub_02019708
+	bl mMsg_MainSetup_Window
 	ldr r0, [r4, #0x14]
-	bl sub_02019330
+	bl mMsg_ClearText
 _0201B904:
 	pop {r4, r5}
 	pop {r0}
@@ -7290,17 +7290,17 @@ sub_0201B91C: @ 0x0201B91C
 	movs r3, #0
 	ldrsh r2, [r1, r3]
 	movs r1, #1
-	bl sub_0201941C
+	bl mMsg_CheckControlCode
 	cmp r0, #0
 	beq _0201B95A
 	ldr r0, [r4, #0x14]
 	movs r1, #0x11
-	bl sub_02019374
+	bl mMsg_ChangeMsgData
 	adds r5, r0, #0
 	cmp r5, #1
 	bne _0201B95A
 	ldr r0, [r4, #0x14]
-	bl sub_0201915C
+	bl mMsg_RequestCursor
 	lsls r0, r0, #0x18
 	cmp r0, #0
 	beq _0201B95A
@@ -7308,7 +7308,7 @@ sub_0201B91C: @ 0x0201B91C
 	adds r0, #0x55
 	strb r5, [r0]
 	ldr r0, [r4, #0x14]
-	bl sub_02019708
+	bl mMsg_MainSetup_Window
 _0201B95A:
 	pop {r4, r5}
 	pop {r0}
@@ -7382,7 +7382,7 @@ _0201B9D8:
 	ldr r4, _0201BA40 @ =0x03002980
 	adds r0, r4, #0
 	movs r1, #0x12
-	bl sub_02019140
+	bl mMsg_RequestAppear
 	lsls r0, r0, #0x18
 	asrs r0, r0, #0x18
 	adds r2, r5, #0
@@ -7490,7 +7490,7 @@ _0201BA98:
 	ldr r2, [r0, #0x50]
 	movs r0, #0
 	movs r1, #0x90
-	bl sub_020190C8
+	bl mMsg_CopyTilesToVram
 	adds r7, r6, #0
 	adds r7, #0x6d
 	ldrb r0, [r7]
@@ -7977,7 +7977,7 @@ sub_0201BE68: @ 0x0201BE68
 	ldr r5, _0201BEAC @ =0x03002FC0
 	adds r0, r5, #0
 	movs r1, #0x1a
-	bl sub_02019140
+	bl mMsg_RequestAppear
 	lsls r0, r0, #0x18
 	asrs r0, r0, #0x18
 	cmp r0, #1
@@ -8070,7 +8070,7 @@ sub_0201BF10: @ 0x0201BF10
 	ldr r2, _0201BF54 @ =0x01000020
 	mov r0, sp
 	adds r1, r4, #0
-	bl sub_020292E8
+	bl CpuFastSet
 	adds r1, r4, #0
 	adds r1, #0x63
 	movs r0, #0xff
@@ -8540,7 +8540,7 @@ sub_0201C2E0: @ 0x0201C2E0
 	ldr r1, _0201C2F8 @ =0x03003250
 	ldr r2, _0201C2FC @ =0x01000120
 	mov r0, sp
-	bl sub_020292E8
+	bl CpuFastSet
 	add sp, #4
 	pop {r0}
 	bx r0
@@ -8593,7 +8593,7 @@ sub_0201C310: @ 0x0201C310
 	ldr r2, _0201C3C4 @ =0x01000018
 	mov r0, sp
 	adds r1, r7, #0
-	bl sub_020292E8
+	bl CpuFastSet
 	ldr r0, [r5]
 	str r0, [r7]
 	adds r0, r6, #4
@@ -8999,7 +8999,7 @@ sub_0201C5FC: @ 0x0201C5FC
 	ldr r0, _0201C660 @ =0x020002E0
 	ldr r1, _0201C664 @ =0x050002E0
 	movs r2, #8
-	bl sub_020292E8
+	bl CpuFastSet
 	add sp, #0x20
 	pop {r4, r5, r6}
 	pop {r0}
@@ -9248,7 +9248,7 @@ sub_0201C7E0: @ 0x0201C7E0
 	ldr r2, _0201C86C @ =0x0500000E
 	mov r0, sp
 	adds r1, r4, #0
-	bl sub_020292EC
+	bl CpuSet
 	movs r0, #1
 	rsbs r0, r0, #0
 	str r0, [r4, #0x18]
@@ -11753,7 +11753,7 @@ _0201DBEE:
 	lsls r1, r1, #0x13
 	movs r2, #0x80
 	lsls r2, r2, #2
-	bl sub_020292EC
+	bl CpuSet
 	ldr r2, _0201DCC4 @ =0x03001B50
 	movs r1, #0x84
 	lsls r1, r1, #4
@@ -14154,7 +14154,7 @@ _0201EE68:
 	adds r1, r4, #0
 	movs r2, #1
 	movs r3, #2
-	bl sub_020292F0
+	bl ObjAffineSet
 	ldr r6, _0201EEC8 @ =0x03002410
 	ldrh r0, [r4]
 	strh r0, [r6, #6]
@@ -14941,7 +14941,7 @@ _0201F440:
 	ldrsh r0, [r4, r2]
 	movs r2, #0x24
 	ldrsh r1, [r4, r2]
-	bl sub_020292E4
+	bl ArcTan2
 	lsls r0, r0, #0x10
 	lsrs r3, r0, #0x10
 	ldr r1, _0201F498 @ =0x020338F8
@@ -16085,7 +16085,7 @@ sub_0201FD1C: @ 0x0201FD1C
 	asrs r0, r0, #0x10
 	lsls r1, r1, #0x10
 	asrs r1, r1, #0x10
-	bl sub_020292E4
+	bl ArcTan2
 	lsls r0, r0, #0x10
 	lsrs r2, r0, #0x10
 	ldr r0, _0201FD70 @ =0x020338F8
@@ -21008,7 +21008,7 @@ _0202224C:
 	asrs r0, r0, #0x10
 	lsls r1, r1, #0x10
 	asrs r1, r1, #0x10
-	bl sub_020292E4
+	bl ArcTan2
 	lsls r0, r0, #0x10
 	lsrs r2, r0, #0x10
 	ldr r0, _020222BC @ =0x020338F8
@@ -28534,7 +28534,7 @@ _0202589C:
 	adds r1, r4, #0
 	movs r2, #1
 	movs r3, #2
-	bl sub_020292F0
+	bl ObjAffineSet
 	ldrh r0, [r4]
 	strh r0, [r6, #0x26]
 	ldrh r0, [r4, #2]
@@ -30703,7 +30703,7 @@ _02026A00:
 	strh r1, [r0]
 	ldr r2, _02026A30 @ =0x01000005
 	adds r1, r4, #0
-	bl sub_020292EC
+	bl CpuSet
 	add sp, #4
 	pop {r4}
 	pop {r0}
@@ -31303,7 +31303,7 @@ sub_02026E4C: @ 0x02026E4C
 	adds r0, r5, #0
 	adds r1, r4, #0
 	movs r2, #0xd8
-	bl sub_020292E8
+	bl CpuFastSet
 	ldr r0, _02026EF4 @ =0x03000598
 	str r4, [r0]
 	ldr r1, _02026EF8 @ =0x0300059C
@@ -32293,7 +32293,7 @@ sub_02027610: @ 0x02027610
 	ldr r1, _02027650 @ =0x03000864
 	ldr r2, _02027654 @ =0x010000B0
 	mov r0, sp
-	bl sub_020292E8
+	bl CpuFastSet
 	adds r4, #0x80
 	cmp r5, r4
 	beq _020276C8
@@ -33318,7 +33318,7 @@ _02027DC4:
 	ldr r0, [r4, #0x68]
 	adds r1, #0x20
 	movs r2, #8
-	bl sub_020292EC
+	bl CpuSet
 	ldr r0, [r4, #0x68]
 	str r0, [r6]
 _02027DE2:
@@ -35949,43 +35949,51 @@ _020291F4:
 	pop {r4, r5}
 	bx lr
 
-	thumb_func_start sub_020292E4
-sub_020292E4: @ 0x020292E4
+	@ AGB BIOS system-call wrappers from libagbsyscall.
+	thumb_func_start ArcTan2
+ArcTan2: @ 0x020292E4
 	svc #0xa
 	bx lr
+	thumb_func_end ArcTan2
 
-	thumb_func_start sub_020292E8
-sub_020292E8: @ 0x020292E8
+	thumb_func_start CpuFastSet
+CpuFastSet: @ 0x020292E8
 	svc #0xc
 	bx lr
+	thumb_func_end CpuFastSet
 
-	thumb_func_start sub_020292EC
-sub_020292EC: @ 0x020292EC
+	thumb_func_start CpuSet
+CpuSet: @ 0x020292EC
 	svc #0xb
 	bx lr
+	thumb_func_end CpuSet
 
-	thumb_func_start sub_020292F0
-sub_020292F0: @ 0x020292F0
+	thumb_func_start ObjAffineSet
+ObjAffineSet: @ 0x020292F0
 	svc #0xf
 	bx lr
+	thumb_func_end ObjAffineSet
 
-	thumb_func_start sub_020292F4
-sub_020292F4: @ 0x020292F4
+	thumb_func_start RegisterRamReset
+RegisterRamReset: @ 0x020292F4
 	svc #1
 	bx lr
+	thumb_func_end RegisterRamReset
 
-	thumb_func_start sub_020292F8
-sub_020292F8: @ 0x020292F8
+	thumb_func_start SoundBiasReset
+SoundBiasReset: @ 0x020292F8
 	movs r0, #0
 	svc #0x19
 	bx lr
+	thumb_func_end SoundBiasReset
 	.align 2, 0
 
-	thumb_func_start sub_02029300
-sub_02029300: @ 0x02029300
+	thumb_func_start SoundBiasSet
+SoundBiasSet: @ 0x02029300
 	movs r0, #1
 	svc #0x19
 	bx lr
+	thumb_func_end SoundBiasSet
 	.align 2, 0
 
 	thumb_func_start sub_02029308

@@ -17,6 +17,10 @@ void RegisterRamReset(u32 resetFlags);
 
 void VBlankIntrWait(void);
 
+void SoundBiasReset(void);
+
+void SoundBiasSet(void);
+
 u16 Sqrt(u32 num);
 
 u16 ArcTan2(s16 x, s16 y);

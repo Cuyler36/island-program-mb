@@ -1,0 +1,28 @@
+{
+  "min_version": "3.7.1",
+  "custom_make": "make",
+  "build_base": true,
+  "build_target": false,
+  "watch_patterns": [
+    "*.c",
+    "*.h",
+    "*.s",
+    "*.inc",
+    "*.json"
+  ],
+  "ignore_patterns": [
+    "payload/build/**/*"
+  ],
+  "units": [
+    {
+      "name": "payload/all",
+      "target_path": "payload/build/objdiff/all.target.o",
+      "base_path": "payload/build/payload/src/all.o",
+      "metadata": {
+        "complete": false,
+        "source_path": "payload/src/all.c",
+        "auto_generated": false
+      }
+    }
+  ]
+}

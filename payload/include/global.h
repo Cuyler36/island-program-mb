@@ -498,29 +498,19 @@ enum {
     mFont_CONT_CODE_SET_MESSAGE_CONTENTS_GLOOMY,
     mFont_CONT_CODE_SELECT_NO_B_CLOSE,
     mFont_CONT_CODE_SET_NEXT_MESSAGE_RANDOM_SECTION,
-    mFont_CONT_CODE_AGB_DUMMY0,
-    mFont_CONT_CODE_AGB_DUMMY1,
-    mFont_CONT_CODE_AGB_DUMMY2,
+    mFont_CONT_CODE_UNKNOWN_100,
+    mFont_CONT_CODE_UNKNOWN_101,
+    mFont_CONT_CODE_SET_TEMPORARY_COLOR,
     mFont_CONT_CODE_SPACE,
-    mFont_CONT_CODE_AGB_DUMMY3,
-    mFont_CONT_CODE_AGB_DUMMY4,
+    mFont_CONT_CODE_MOVE_DOWN,
+    mFont_CONT_CODE_RESTORE_CACHED_MESSAGE,
     mFont_CONT_CODE_MALE_FEMALE_CHECK,
-    mFont_CONT_CODE_AGB_DUMMY5,
-    mFont_CONT_CODE_AGB_DUMMY6,
-    mFont_CONT_CODE_AGB_DUMMY7,
-    mFont_CONT_CODE_AGB_DUMMY8,
-    mFont_CONT_CODE_AGB_DUMMY9,
-    mFont_CONT_CODE_AGB_DUMMY10,
-    mFont_CONT_CODE_PUT_STRING_ISLAND_NAME,
-    mFont_CONT_CODE_SET_CURSOR_JUST,
-    mFont_CONT_CODE_CLR_CURSOR_JUST,
-    mFont_CONT_CODE_CUT_ARTICLE,
-    mFont_CONT_CODE_CAPITAL_LETTER,
-    mFont_CONT_CODE_PUT_STRING_AM_PM,
-    mFont_CONT_CODE_SET_NEXT_MESSAGE_4,
-    mFont_CONT_CODE_SET_NEXT_MESSAGE_5,
-    mFont_CONT_CODE_SET_SELECT_STRING_5,
-    mFont_CONT_CODE_SET_SELECT_STRING_6,
+    mFont_CONT_CODE_SET_CHOICE_COUNT_2,
+    mFont_CONT_CODE_SET_CHOICE_COUNT_3,
+    mFont_CONT_CODE_SET_CHOICE_TEXT_0,
+    mFont_CONT_CODE_SET_CHOICE_TEXT_1,
+    mFont_CONT_CODE_SET_CHOICE_TEXT_2,
+    mFont_CONT_CODE_CHECK_CHOICE,
   
     mFont_CONT_CODE_NUM,
     mFont_CONT_CODE_END = 256
@@ -806,8 +796,8 @@ typedef struct GameState {
     u8 pad_014[0x814 - 0x14];
     vu16 unk_814; // thanks jiang
     u16 unk_816;
-    u16 unk_818;
-    u16 unk_81A;
+    u16 keys_held;
+    u16 keys_pressed;
     u16 unk_81C;
     u16 unk_81E;
     u16 unk_820;
@@ -824,7 +814,7 @@ typedef struct GameState {
     u16 unk_844;
     u16 unk_846;
     u16 unk_848;
-    u16 unk_84A;
+    u16 bg3_vofs;
     u8 unk_84C;
     u8 unk_84D;
     u8 unk_84E;
@@ -901,56 +891,107 @@ typedef struct unk_struct_03000E50 {
     u8 unk26;
 } unk_struct_03000E50;
 
-typedef struct m_msg_struct0_s {
-    int _00;
-    int _04;
-    u8 _08;
-    u8 _09;
-    u8 _0A;
-    u8 _0B;
-    int _0C;
-    u8 _10;
-    u8 _11;
-    u8 _12;
-    u8 _13;
-    u8 _14;
-    u8 _15;
-    u8 _16;
-    u8 _17;
-} m_msg_struct0_c;
+enum {
+    mMsg_MODE_HIDE = 1,
+    mMsg_MODE_APPEAR,
+    mMsg_MODE_CURSOR,
+    mMsg_MODE_NORMAL,
+    mMsg_MODE_CHOICE,
+    mMsg_MODE_DISAPPEAR,
+    mMsg_MODE_DISAPPEAR_WAIT,
+    mMsg_MODE_APPEAR_WAIT,
+};
 
-typedef struct m_msg_agb_s {
-    m_msg_struct0_c _00[3];
-    int _48;
-    int _4C;
-    u32* _50;
-    u8* code_p;
-    int _58;
-    int _5C;
-    int total_code;
-    int _64;
-    u32 _68;
-    s16 code_ofs;
-    s16 _6E;
-    u8 _70;
-    u8 mode;
-    u8 _72;
-    s8 _73;
-    s8 _74;
-    u8 _75;
-    s8 _76;
-    u8 _77;
-    u8 _78;
-    u8 _79;
-    u8 _7A;
-    u8 _7B;
-    u8 _7C;
-    u8 _7D;
-    u8 _7E;
-    u8 _7F;
-    u8 _80;
+#define mMsg_STATUS_KEEP_OPEN (1 << 1)
+#define mMsg_STATUS_END_REACHED (1 << 2)
+#define mMsg_STATUS_LAST_DELAY (1 << 8)
+
+typedef struct m_msg_choice_entry_s {
+    int line;
+    int x;
+    u8 text[10];
+    u8 length;
+    u8 _13[5];
+} mMsg_ChoiceEntry_c;
+
+/*
+ * Objects allocated by sub_0201C310 for the message UI.  Only the fields
+ * touched by the message code are known so far; the allocation is 0x60 bytes.
+ */
+typedef struct m_msg_sprite_s {
+    u32 _00;
+    u32 _04;
+    u32 _08;
+    u32 _0C;
+    u8 _10[4];
+    s32 _14;
+    u8 _18[0x14];
+    s32 _2C;
+    s32 _30;
+    u8 _34[0x23];
+    u8 _57;
+    u8 _58[8];
+} m_msg_sprite_c;
+
+/* Scratch description used while drawing one eight-row message glyph. */
+typedef struct mFont_GlyphDraw_s {
+    u8* tile_data;
+    u16 tile_offset;
+    u16 row;
+    u16 tile_stride;
+    u8 _0A[4];
+    u8 palette;
+    u8 _0F;
+    u8 glyph_lower_rows[8];
+    u8 glyph_upper_rows[8];
+} mFont_GlyphDraw_c;
+
+typedef struct mFont_ControlCodeInfo_s {
+    u8 size;
+    u8 _01;
+    u8 _02;
+    u8 _03;
+} mFont_ControlCodeInfo_c;
+
+typedef union mMsg_U32Bytes_u {
+    u32 word;
+    u8 bytes[4];
+} mMsg_U32Bytes_c;
+
+typedef struct mMsg_Window_s {
+    mMsg_ChoiceEntry_c choices[3];
+    m_msg_sprite_c* choice_cursor;
+    m_msg_sprite_c* continue_prompt;
+    u8* tile_data;
+    u8* text;
+    int next_message_id;
+    int message_id;
+    int text_delay_timer;
+    int end_timer;
+    u32 status_flags;
+    s16 text_offset;
+    s16 message_length;
+    s8 current_mode;
+    s8 requested_mode;
+    u8 saved_mode;
+    s8 tile_stride;
+    s8 text_row;
+    u8 text_start_x;
+    s8 transition_frame;
+    s8 selected_choice;
+    u8 text_x;
+    u8 force_next;
+    u8 lock_continue;
+    u8 cancel_continue;
+    u8 draw_enabled;
+    u8 temporary_color;
+    u8 temporary_color_length;
+    u8 choice_count;
+    u8 choice_index;
     u8 _81[0xA0 - 0x81];
-} M_MSG_AGB;
+} mMsg_Window_c;
+
+typedef void (*mMsg_Callback)(mMsg_Window_c*);
 
 
 #define DmaSetSrc(dmaNum, src)     \
@@ -1021,6 +1062,100 @@ extern GameState gGameState;
 extern u64 gUnk_30008D0[0x80];
 extern unk_struct_03000E30 gUnk_3000E30;
 extern unk_struct_03000E50 g03000E50;
-extern M_MSG_AGB gMsgAgb; // 0x03002A20
+void mFont_GetGlyphRows(void* lower_rows, void* upper_rows, u8 character);
+int mFont_GetGlyphWidth(u32 character);
+int mFont_GetCodeWidth(u32 character);
+int mMsg_ProcessControlCode(mMsg_Window_c* msg, s16* offset);
+s32 mMsg_CheckChoiceNext(mMsg_Window_c* msg);
+s32 mMsg_CheckChoicePrevious(mMsg_Window_c* msg);
+void mMsg_UpdateChoiceCursorPosition(mMsg_Window_c* msg);
+void mMsg_UpdateChoiceHighlight(mMsg_Window_c* msg);
+void mMsg_MainSetup_Choice(mMsg_Window_c* msg);
+void mMsg_Main_Choice(mMsg_Window_c* msg);
+void mMsg_MainSetup_DisappearWait(mMsg_Window_c* msg);
+void mMsg_Main_DisappearWait(mMsg_Window_c* msg);
+void mMsg_MainSetup_AppearWait(mMsg_Window_c* msg);
+void mMsg_Main_AppearWait(mMsg_Window_c* msg);
+void mMsg_CopyTilesToVram(s32 tile, s32 count, u8* tile_data);
+s32 mMsg_GetWindowScrollOffset(s8* frame);
+s8 mMsg_RequestMode(mMsg_Window_c* msg, s8 mode);
+s8 mMsg_RequestDisappear(mMsg_Window_c* msg);
+s8 mMsg_RequestAppear(mMsg_Window_c* msg, s32 message_id);
+s8 mMsg_RequestCursor(mMsg_Window_c* msg);
+s8 mMsg_RequestNormal(mMsg_Window_c* msg);
+s8 mMsg_RequestHide(mMsg_Window_c* msg);
+s8 mMsg_RequestChoice(mMsg_Window_c* msg);
+s8 mMsg_RequestDisappearWait(mMsg_Window_c* msg);
+s8 mMsg_RequestAppearWait(mMsg_Window_c* msg);
+s8 mMsg_GetMessageBody(u32 index, u8** data, u16* size);
+s16 mMsg_GetMessageLength(u8* text);
+s8 mFont_CodeSize_get(u8* code);
+s16 mMsg_LoadMessage(u8* text, s32 index);
+void mMsg_ClearText(mMsg_Window_c* msg);
+s32 mMsg_ChangeMsgData(mMsg_Window_c* msg, s32 index);
+void mMsg_SetTimer(mMsg_Window_c* msg, s32 frames);
+s32 mMsg_TimerDec(mMsg_Window_c* msg);
+void mMsg_SetEndTimer(mMsg_Window_c* msg, s32 frames);
+s32 mMsg_EndTimerDec(mMsg_Window_c* msg);
+void mMsg_DestroySprites(mMsg_Window_c* msg);
+s32 mMsg_CheckControlCode(u8* text, u8 type, s16 offset);
+s32 mMsg_ProcessText(mMsg_Window_c* msg, u8* tile_data, s32 max_characters);
+void mMsg_Init(void);
+void mMsg_MainSetup_Window(mMsg_Window_c* msg);
+void mMsg_InitWindow(mMsg_Window_c* msg, u8* text, u8* tile_data);
+void mMsg_Main_Window(mMsg_Window_c* msg);
+s32 mFont_DrawStringToTiles(u8* tile_data, u16* cursor, u32 packed_position,
+                            u16 glyph_height, u8* text, s32 length, u8 palette,
+                            u8 stop_at_newline, u8 fixed_width);
+void mFont_DrawCharToTiles(u8* tile_data, u16 tile_offset, u16 row,
+                           u16 tile_stride, u8 character, u8 palette, s32 width);
+void sub_020198B8(s8 index);
+void sub_02019910(u8 value, s8 index);
+void mFont_BlitGlyphToTiles(mFont_GlyphDraw_c* glyph, s32 width);
+s16 sub_02019ABC(s16 lhs, s16 rhs);
+s16 sub_02019AD8(s16 numerator, s16 denominator);
+u16 sub_02019AF0(GameState* state);
+void sub_02019B18(GameState* state, u32 seed);
+void sub_02019B1C(GameState* state, u16 target, u16 blend_control,
+                  u16 intensity);
+u16 sub_02019B58(GameState* state, u8 direction, u8 amount);
+void sub_02019BA8(u16* palette, u8 x, u8 y, u8* red, u8* green, u8* blue);
+void sub_02019BD8(u8 palette, u8 x, u8 y, u8 red, u8 green, u8 blue);
+void sub_02019C3C(void);
+void sub_02019C88(void);
+void sub_02019CC0(void);
+void sub_02019CFC(void);
+void sub_02019D28(void);
+void sub_02019D34(void);
+void sub_02019D40(void);
+void sub_02019D4C(void);
+void sub_02019D58(u16 value);
+void sub_02019D68(u16 value);
+void sub_02019D78(u16 value);
+void sub_02019D88(u16 value);
+void sub_02019D98(u16 value);
+void mMsg_ReplaceChar(u8* data, u8 from, u8 to, s32 length);
+s32 mMsg_TrimTrailingSpaces(u8* data, s32 length);
+s32 mMsg_StringsDiffer(u8* lhs, u8* rhs, s32 length);
+void mMsg_Copy(u8* src, u8* dest, s32 length);
+void mMsg_Fill(u8 value, u8* dest, s32 length);
+void sub_02019E88(void);
+
+void sub_0202930C(void* object, void (*callback)(void*));
+s32 sub_02029344(s32 numerator, s32 denominator);
+void* sub_020295E4(void* dest, void* src, u32 size);
+void* sub_02029644(void* dest, s32 value, u32 size);
+m_msg_sprite_c* sub_0201C310(u8 type, s32 x, s32 y, s32 param);
+void sub_0201C300(m_msg_sprite_c* sprite);
+void sub_020269C8(void);
+void sub_020269E0(void);
+void sub_02026A38(u16 value);
+void sub_02026B48(u16 value);
+void sub_02026BC8(u16 value);
+void sub_02026C10(u16 value);
+void sub_02026C68(u16 value);
+void sub_02026F0C(void);
+void sub_02026F18(void);
+void _intr(void);
 
 #endif

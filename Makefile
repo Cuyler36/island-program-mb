@@ -87,7 +87,7 @@ $(shell mkdir -p $(SUBDIRS:%=$(OBJ_DIR)/%))
 .DELETE_ON_ERROR:
 .SECONDEXPANSION:
 
-.PHONY: all rom clean compare tools cleantools mostlyclean payload
+.PHONY: all rom clean compare tools cleantools mostlyclean payload payload/build/payload/src/all.o
 
 ALL_ROMS := needle-loader-mb.gba
 
@@ -147,6 +147,14 @@ $(ROM): $(ELF)
 
 payload:
 	@$(MAKE) -C payload COMPARE=$(COMPARE) NONMATCHING=$(NONMATCHING)
+
+# objdiff passes the configured base object path to make. Forward that path to
+# the payload build and force a compile so header-only edits are reflected too.
+payload/build/payload/src/all.o:
+	@$(MAKE) -B -C payload \
+		DEVKITPRO=$(if $(wildcard /c/devkitPro),/c/devkitPro,$(DEVKITPRO)) \
+		DEVKITARM=$(if $(wildcard /c/devkitPro/devkitARM),/c/devkitPro/devkitARM,$(DEVKITARM)) \
+		build/payload/src/all.o
 
 $(PAYLOADLZ): payload
 	@:
