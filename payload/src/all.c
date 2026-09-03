@@ -723,7 +723,7 @@ static void mMsg_Main_Disappear(mMsg_Window_c* msg) {
 #define gMsgCodeBuffers ((u8*)0x02000400)
 #define gMsgTileBuffers ((u8*)0x02001D80)
 #define gMsgWindowTileData ((u8*)0x0200F580)
-#define gMsgVram ((u8*)0x06002000)
+#define gMsgVram ((u8 *)(BG_VRAM + TILE_OFFSET_4BPP(0x100)))
 #define gObjPaletteBuffer ((u16*)0x02000200)
 
 #define gMsgTwoChoiceHighlightTiles ((void**)0x0202AAC8)
@@ -1316,7 +1316,7 @@ void mMsg_Main_AppearWait(mMsg_Window_c *msg) {
 
 void mMsg_CopyTilesToVram(s32 tile, s32 count, u8 *tile_data) {
     if (count > 0) {
-        CpuFastSet(tile_data + (s32)(tile << 5), gMsgVram + (s32)(tile << 5), (count * 8) & 0x1FFFFF);
+        CpuFastSet(tile_data + (tile * 32), gMsgVram + (tile * 16) + (tile * 16), (count * 8) & 0x1FFFFF);
     }
 }
 
