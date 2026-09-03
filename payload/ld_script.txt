@@ -12,6 +12,14 @@ SECTIONS {
         asm/crt0.o(.text);
         src/all.o(.text);
         asm/all.o(.text);
+        asm/libgcc/_call_via_rX.o(.text);
+        asm/libgcc/_divsi3.o(.text);
+        asm/libgcc/_dvmd_tls.o(.text);
+        asm/libgcc/_modsi3.o(.text);
+        asm/libgcc/_udivsi3.o(.text);
+        asm/libgcc/_umodsi3.o(.text);
+        src/libc/memcpy.o(.text);
+        src/libc/memset.o(.text);
     } =0
 
     .rodata :

@@ -247,7 +247,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path("payload/build/objdiff/all_sections.target.s"),
+        default=Path("payload/build/objdiff/all.data.target.s"),
     )
     return parser
 

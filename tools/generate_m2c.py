@@ -55,6 +55,42 @@ ADDRESS_SYMBOLS = {
 
 FUNCTION_START_RE = re.compile(r"^\s*thumb_func_start\s+(\S+)\s*$")
 
+# These labels were emitted as functions by the original disassembly, but are
+# the jump table and case blocks owned by sub_02025210. Keeping them as function
+# starts prevents m2c from seeing the parent's shared epilogue.
+NON_FUNCTION_LABELS = {
+    "sub_02025244",
+    "sub_02025260",
+    "sub_02025268",
+    "sub_02025270",
+}
+
+SUB_02025210_JUMP_TABLE_ASM = """\
+sub_02025244: @ 0x02025244
+\tstrh r0, [r3, r1]
+\tlsls r2, r0, #8
+\tstrh r0, [r4, r1]
+\tlsls r2, r0, #8
+\tstrh r0, [r5, r1]
+\tlsls r2, r0, #8
+\tstrh r0, [r6, r1]
+\tlsls r2, r0, #8
+\tstrh r6, [r6, r1]
+\tlsls r2, r0, #8
+\tmovs r0, #5
+"""
+
+SUB_02025210_JUMP_TABLE_TYPED_ASM = """\
+_02025244: @ 0x02025244
+\t.4byte _02025258
+\t.4byte _02025260
+\t.4byte _02025268
+\t.4byte _02025270
+\t.4byte _02025276
+_02025258:
+\tmovs r0, #5
+"""
+
 
 def parse_args() -> argparse.Namespace:
     root = Path(__file__).resolve().parents[1]
@@ -78,6 +114,16 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Use the existing preprocessed all.i without rebuilding it first",
     )
+    parser.add_argument(
+        "--allow-errors",
+        action="store_true",
+        help="Write partial m2c output even when one or more functions report errors",
+    )
+    parser.add_argument(
+        "--valid-syntax",
+        action="store_true",
+        help="Emit m2c placeholder macros instead of deliberately invalid syntax",
+    )
     return parser.parse_args()
 
 
@@ -94,10 +140,29 @@ def select_functions(assembly: str, start: str, end: str) -> list[str]:
         raise SystemExit(f"function not found in payload/asm/all.s: {error}") from error
     if start_index > end_index:
         raise SystemExit(f"start function {start} occurs after end function {end}")
-    return functions[start_index : end_index + 1]
+    return [
+        function
+        for function in functions[start_index : end_index + 1]
+        if function not in NON_FUNCTION_LABELS
+    ]
 
 
 def symbolize_assembly(assembly: str) -> str:
+    if SUB_02025210_JUMP_TABLE_ASM not in assembly:
+        raise SystemExit("could not find the sub_02025210 jump table in payload/asm/all.s")
+    assembly = assembly.replace(
+        SUB_02025210_JUMP_TABLE_ASM, SUB_02025210_JUMP_TABLE_TYPED_ASM
+    )
+    assembly = assembly.replace(
+        "_02025240: .4byte 0x02025244", "_02025240: .4byte _02025244"
+    )
+    for label in NON_FUNCTION_LABELS:
+        assembly = re.sub(
+            rf"(?m)^\s*thumb_func_start\s+{re.escape(label)}\s*$\n?", "", assembly
+        )
+        assembly = re.sub(
+            rf"(?m)^{re.escape(label)}:", f"_{label.removeprefix('sub_') }:", assembly
+        )
     for address, symbol in ADDRESS_SYMBOLS.items():
         assembly = re.sub(
             rf"(?m)^(\s*[^@\n]*\.4byte\s+){re.escape(address)}(\s*)$",
@@ -167,12 +232,14 @@ def main() -> int:
     ]
     if args.stack_structs:
         command.append("--stack-structs")
+    if args.valid_syntax:
+        command.append("--valid-syntax")
     for function in functions:
         command.extend(("-f", function))
     command.append(str(typed_assembly_path))
 
     result = subprocess.run(command, cwd=root, capture_output=True, text=True)
-    if result.returncode != 0:
+    if result.returncode != 0 and not args.allow_errors:
         sys.stderr.write(result.stdout)
         sys.stderr.write(result.stderr)
         return result.returncode
@@ -200,11 +267,15 @@ def main() -> int:
     if result.stderr:
         sys.stderr.write(result.stderr)
     print(f"Generated {output_path.relative_to(root)} with {len(functions)} functions")
+    if result.returncode != 0:
+        print(f"m2c exited with status {result.returncode}; partial output was retained")
     if commit != TESTED_M2C_COMMIT:
         print(f"Note: tested with m2c {TESTED_M2C_COMMIT}, found {commit}")
-    if missing:
+    if missing and not args.allow_errors:
         print("Functions without emitted definitions: " + ", ".join(missing))
         return 1
+    if missing:
+        print("Functions without emitted definitions: " + ", ".join(missing))
     return 0
 
 

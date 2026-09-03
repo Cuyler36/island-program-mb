@@ -1141,10 +1141,6 @@ void mMsg_Copy(u8* src, u8* dest, s32 length);
 void mMsg_Fill(u8 value, u8* dest, s32 length);
 void sub_02019E88(void);
 
-void sub_0202930C(void* object, void (*callback)(void*));
-s32 sub_02029344(s32 numerator, s32 denominator);
-void* sub_020295E4(void* dest, void* src, u32 size);
-void* sub_02029644(void* dest, s32 value, u32 size);
 m_msg_sprite_c* sub_0201C310(u8 type, s32 x, s32 y, s32 param);
 void sub_0201C300(m_msg_sprite_c* sprite);
 void sub_020269C8(void);

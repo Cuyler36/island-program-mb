@@ -18,12 +18,109 @@
   ],
   "units": [
     {
-      "name": "payload/all",
-      "target_path": "payload/build/objdiff/all.target.o",
+      "name": "payload/text",
+      "target_path": "payload/build/objdiff/all.text.target.o",
+      "base_path": "payload/build/objdiff/all.base.o",
+      "scratch": {
+        "platform": "gba",
+        "compiler": "agbcc",
+        "c_flags": "-O2 -g -mthumb-interwork -fhex-asm -Wimplicit -Werror",
+        "ctx_path": "payload/build/payload/src/all.i",
+        "build_ctx": false
+      },
+      "metadata": {
+        "complete": false,
+        "source_path": "payload/src/all.c",
+        "auto_generated": false
+      }
+    },
+    {
+      "name": "payload/data",
+      "target_path": "payload/build/objdiff/all.data.target.o",
       "base_path": "payload/build/objdiff/all.base.o",
       "metadata": {
         "complete": false,
         "source_path": "payload/src/all.c",
+        "auto_generated": false
+      }
+    },
+    {
+      "name": "libgcc/_call_via_rX",
+      "target_path": "payload/build/objdiff/libgcc/_call_via_rX.o",
+      "base_path": "payload/build/payload/asm/libgcc/_call_via_rX.o",
+      "metadata": {
+        "complete": true,
+        "source_path": "payload/asm/libgcc/_call_via_rX.s",
+        "auto_generated": false
+      }
+    },
+    {
+      "name": "libgcc/_divsi3",
+      "target_path": "payload/build/objdiff/libgcc/_divsi3.o",
+      "base_path": "payload/build/payload/asm/libgcc/_divsi3.o",
+      "metadata": {
+        "complete": true,
+        "source_path": "payload/asm/libgcc/_divsi3.s",
+        "auto_generated": false
+      }
+    },
+    {
+      "name": "libgcc/_dvmd_tls",
+      "target_path": "payload/build/objdiff/libgcc/_dvmd_tls.o",
+      "base_path": "payload/build/payload/asm/libgcc/_dvmd_tls.o",
+      "metadata": {
+        "complete": true,
+        "source_path": "payload/asm/libgcc/_dvmd_tls.s",
+        "auto_generated": false
+      }
+    },
+    {
+      "name": "libgcc/_modsi3",
+      "target_path": "payload/build/objdiff/libgcc/_modsi3.o",
+      "base_path": "payload/build/payload/asm/libgcc/_modsi3.o",
+      "metadata": {
+        "complete": true,
+        "source_path": "payload/asm/libgcc/_modsi3.s",
+        "auto_generated": false
+      }
+    },
+    {
+      "name": "libgcc/_udivsi3",
+      "target_path": "payload/build/objdiff/libgcc/_udivsi3.o",
+      "base_path": "payload/build/payload/asm/libgcc/_udivsi3.o",
+      "metadata": {
+        "complete": true,
+        "source_path": "payload/asm/libgcc/_udivsi3.s",
+        "auto_generated": false
+      }
+    },
+    {
+      "name": "libgcc/_umodsi3",
+      "target_path": "payload/build/objdiff/libgcc/_umodsi3.o",
+      "base_path": "payload/build/payload/asm/libgcc/_umodsi3.o",
+      "metadata": {
+        "complete": true,
+        "source_path": "payload/asm/libgcc/_umodsi3.s",
+        "auto_generated": false
+      }
+    },
+    {
+      "name": "libc/memcpy",
+      "target_path": "payload/build/objdiff/libc/memcpy.o",
+      "base_path": "payload/build/payload/src/libc/memcpy.o",
+      "metadata": {
+        "complete": true,
+        "source_path": "payload/src/libc/memcpy.c",
+        "auto_generated": false
+      }
+    },
+    {
+      "name": "libc/memset",
+      "target_path": "payload/build/objdiff/libc/memset.o",
+      "base_path": "payload/build/payload/src/libc/memset.o",
+      "metadata": {
+        "complete": true,
+        "source_path": "payload/src/libc/memset.c",
         "auto_generated": false
       }
     }

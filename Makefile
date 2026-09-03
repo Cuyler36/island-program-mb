@@ -1,3 +1,7 @@
+ifneq (,$(wildcard /c/devkitPro/devkitARM))
+DEVKITPRO := /c/devkitPro
+DEVKITARM := /c/devkitPro/devkitARM
+endif
 TOOLCHAIN := $(DEVKITARM)
 COMPARE ?= 0
 
@@ -25,6 +29,7 @@ export AS := $(PREFIX)as
 endif
 export CPP := $(PREFIX)cpp
 export LD := $(PREFIX)ld
+export AR := $(PREFIX)ar
 export OBJCOPY := $(PREFIX)objcopy
 export OBJDUMP := $(PREFIX)objdump
 
@@ -32,7 +37,13 @@ PREPROC := tools/preproc/preproc
 SCANINC := tools/scaninc/scaninc
 GBAFIX := tools/gbafix/gbafix
 GBAGFX := tools/gbagfx/gbagfx
+ifeq ($(OS),Windows_NT)
+WINDOWS_LOCALAPPDATA := $(subst \,/,$(LOCALAPPDATA))
+WINDOWS_PYTHON := $(lastword $(sort $(wildcard $(WINDOWS_LOCALAPPDATA)/Programs/Python/Python*/python.exe)))
+PYTHON := $(if $(WINDOWS_PYTHON),$(WINDOWS_PYTHON),python3)
+else
 PYTHON := python3
+endif
 PERL := perl
 
 NAME := island-program-mb
@@ -153,32 +164,50 @@ payload:
 payload/build/payload/src/all.o:
 	@$(MAKE) -B -C payload DEVKITPRO=$(if $(wildcard /c/devkitPro),/c/devkitPro,$(DEVKITPRO)) DEVKITARM=$(if $(wildcard /c/devkitPro/devkitARM),/c/devkitPro/devkitARM,$(DEVKITARM)) build/payload/src/all.o
 
-# Build a target object for objdiff with the original text, the complete raw
-# data blob, and labels for the data/BSS objects whose addresses are known.
+# Forward the recovered archive-member source objects to the payload build.
+payload/build/payload/asm/libgcc/%.o: payload/asm/libgcc/%.s payload/Makefile asm/macros/function.inc
+	@$(MAKE) -C payload DEVKITPRO=$(if $(wildcard /c/devkitPro),/c/devkitPro,$(DEVKITPRO)) DEVKITARM=$(if $(wildcard /c/devkitPro/devkitARM),/c/devkitPro/devkitARM,$(DEVKITARM)) build/payload/asm/libgcc/$*.o
+
+payload/build/payload/src/libc/%.o: payload/src/libc/%.c payload/Makefile
+	@$(MAKE) -C payload DEVKITPRO=$(if $(wildcard /c/devkitPro),/c/devkitPro,$(DEVKITPRO)) DEVKITARM=$(if $(wildcard /c/devkitPro/devkitARM),/c/devkitPro/devkitARM,$(DEVKITARM)) build/payload/src/libc/$*.o
+
+# Build separate objdiff targets for the original text and the complete raw
+# data/BSS.  Keeping the sections in separate units avoids running objdiff's
+# expensive byte-level data comparison during normal text matching.
 OBJDIFF_DIR := payload/build/objdiff
 OBJDIFF_TEXT_OBJ := payload/build/payload/asm/all.o
-OBJDIFF_SECTIONS_ASM := $(OBJDIFF_DIR)/all_sections.target.s
-OBJDIFF_SECTIONS_OBJ := $(OBJDIFF_DIR)/all_sections.target.o
-OBJDIFF_RAW_TARGET := $(OBJDIFF_DIR)/all.raw.target.o
-OBJDIFF_TARGET := $(OBJDIFF_DIR)/all.target.o
+OBJDIFF_TEXT_TARGET := $(OBJDIFF_DIR)/all.text.target.o
+OBJDIFF_DATA_ASM := $(OBJDIFF_DIR)/all.data.target.s
+OBJDIFF_DATA_TARGET := $(OBJDIFF_DIR)/all.data.target.o
 OBJDIFF_COMPILED_BASE := payload/build/payload/src/all.o
 OBJDIFF_BASE := $(OBJDIFF_DIR)/all.base.o
 OBJDIFF_TEXT_DEPS := payload/asm/all.s asm/macros/function.inc constants/gba_constants.inc
+OBJDIFF_LIBGCC_NAMES := _call_via_rX _divsi3 _dvmd_tls _modsi3 _udivsi3 _umodsi3
+OBJDIFF_LIBC_NAMES := memcpy memset
+OBJDIFF_LIBGCC_TARGETS := $(addprefix $(OBJDIFF_DIR)/libgcc/,$(addsuffix .o,$(OBJDIFF_LIBGCC_NAMES)))
+OBJDIFF_LIBC_TARGETS := $(addprefix $(OBJDIFF_DIR)/libc/,$(addsuffix .o,$(OBJDIFF_LIBC_NAMES)))
 
 $(OBJDIFF_TEXT_OBJ): $(OBJDIFF_TEXT_DEPS)
 	@$(MAKE) -C payload DEVKITPRO=$(if $(wildcard /c/devkitPro),/c/devkitPro,$(DEVKITPRO)) DEVKITARM=$(if $(wildcard /c/devkitPro/devkitARM),/c/devkitPro/devkitARM,$(DEVKITARM)) build/payload/asm/all.o
 
-$(OBJDIFF_SECTIONS_ASM): tools/generate_objdiff_sections.py payload/data/data.bin $(OBJDIFF_TEXT_OBJ)
+$(OBJDIFF_TEXT_TARGET): $(OBJDIFF_TEXT_OBJ) tools/prepare_objdiff_target.py
+	@$(PYTHON) tools/prepare_objdiff_target.py $< $@
+
+$(OBJDIFF_DATA_ASM): tools/generate_objdiff_sections.py payload/data/data.bin $(OBJDIFF_TEXT_OBJ)
 	@$(PYTHON) tools/generate_objdiff_sections.py --text-object $(OBJDIFF_TEXT_OBJ) --data payload/data/data.bin --output $@
 
-$(OBJDIFF_SECTIONS_OBJ): $(OBJDIFF_SECTIONS_ASM)
+$(OBJDIFF_DATA_TARGET): $(OBJDIFF_DATA_ASM)
 	$(AS) $(ASFLAGS) -o $@ $<
 
-$(OBJDIFF_RAW_TARGET): $(OBJDIFF_TEXT_OBJ) $(OBJDIFF_SECTIONS_OBJ)
-	$(LD) -r -o $@ $^
+# Use the installed agbcc archives as the objdiff targets.  These paths and
+# filenames preserve the original library member boundaries exactly.
+$(OBJDIFF_LIBGCC_TARGETS): $(OBJDIFF_DIR)/libgcc/%.o: tools/agbcc/lib/libgcc.a
+	@mkdir -p $(@D)
+	@cd $(@D) && $(AR) x $(abspath $<) $*.o
 
-$(OBJDIFF_TARGET): $(OBJDIFF_RAW_TARGET) tools/prepare_objdiff_target.py
-	@$(PYTHON) tools/prepare_objdiff_target.py $< $@
+$(OBJDIFF_LIBC_TARGETS): $(OBJDIFF_DIR)/libc/%.o: tools/agbcc/lib/libc.a
+	@mkdir -p $(@D)
+	@cd $(@D) && $(AR) x $(abspath $<) $*.o
 
 # agbcc emits tentative globals such as gGameState as COMMON.  Assign them to
 # BSS in an objdiff-only relocatable link so they participate in data matching.

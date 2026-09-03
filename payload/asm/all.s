@@ -1016,7 +1016,7 @@ mMsg_ProcessControlCode: @ 0x0201892C
 	ldr r2, [r1]
 	adds r0, r3, #0
 	adds r1, r4, #0
-	bl sub_02029310
+	bl _call_via_r2
 	adds r2, r0, #0
 _0201895A:
 	adds r0, r2, #0
@@ -2684,7 +2684,7 @@ mMsg_Init: @ 0x02019580
 	ldr r1, _020196E0 @ =0x0202AD18
 	mov r0, sp
 	movs r2, #4
-	bl sub_020295E4
+	bl memcpy
 	movs r0, #0
 	mov sb, r0
 	mov r1, sp
@@ -2885,7 +2885,7 @@ mMsg_MainSetup_Window: @ 0x02019708
 	adds r0, r0, r6
 	ldr r1, [r0]
 	adds r0, r5, #0
-	bl sub_0202930C
+	bl _call_via_r1
 _02019742:
 	pop {r4, r5, r6}
 	pop {r0}
@@ -2954,7 +2954,7 @@ mMsg_Main_Window: @ 0x020197A4
 	cmp r1, #0
 	beq _020197C2
 	adds r0, r2, #0
-	bl sub_0202930C
+	bl _call_via_r1
 _020197C2:
 	pop {r0}
 	bx r0
@@ -3102,7 +3102,7 @@ sub_020198B8: @ 0x020198B8
 	adds r0, r5, #0
 	movs r1, #0
 	movs r2, #0xc
-	bl sub_02029644
+	bl memset
 	add r3, sp, #0x18
 	adds r1, r3, #0
 	ldr r0, _0201990C @ =0x0202AD28
@@ -3144,7 +3144,7 @@ sub_02019910: @ 0x02019910
 	mov r0, sp
 	movs r1, #0
 	movs r2, #0xc
-	bl sub_02029644
+	bl memset
 	add r2, sp, #0xc
 	adds r1, r2, #0
 	ldr r0, _0201997C @ =0x0202AD28
@@ -3386,7 +3386,7 @@ sub_02019AD8: @ 0x02019AD8
 	asrs r0, r0, #8
 	lsls r1, r1, #0x10
 	asrs r1, r1, #0x10
-	bl sub_02029344
+	bl __divsi3
 	lsls r0, r0, #0x10
 	asrs r0, r0, #0x10
 	pop {r1}
@@ -4936,7 +4936,7 @@ sub_0201A6C8: @ 0x0201A6C8
 	lsls r2, r2, #0x13
 	movs r1, #0x80
 	strh r1, [r2]
-	bl sub_02029308
+	bl _call_via_r0
 	pop {r0}
 	bx r0
 	.align 2, 0
@@ -5890,7 +5890,7 @@ sub_0201AE0C: @ 0x0201AE0C
 	cmp r1, #0
 	beq _0201AE34
 	adds r0, r4, #0
-	bl sub_0202930C
+	bl _call_via_r1
 	movs r0, #0
 	strh r0, [r4, #0x2c]
 _0201AE34:
@@ -6377,7 +6377,7 @@ sub_0201B1B8: @ 0x0201B1B8
 	cmp r1, #0
 	beq _0201B1E0
 	adds r0, r4, #0
-	bl sub_0202930C
+	bl _call_via_r1
 	movs r0, #0
 	strh r0, [r4, #0x2c]
 _0201B1E0:
@@ -6857,7 +6857,7 @@ sub_0201B594: @ 0x0201B594
 	ldr r6, _0201B630 @ =0x03001B50
 	ldr r0, [r6, #0x10]
 	ldr r1, _0201B634 @ =0x00034BC0
-	bl sub_020294AC
+	bl __udivsi3
 	lsls r0, r0, #0x18
 	lsrs r5, r0, #0x18
 	adds r7, r4, #0
@@ -7022,7 +7022,7 @@ sub_0201B6D0: @ 0x0201B6D0
 	cmp r1, #0
 	beq _0201B6F4
 	adds r0, r3, #0
-	bl sub_0202930C
+	bl _call_via_r1
 _0201B6F4:
 	pop {r0}
 	bx r0
@@ -7626,7 +7626,7 @@ sub_0201BB88: @ 0x0201BB88
 	cmp r1, #0
 	beq _0201BBAC
 	adds r0, r3, #0
-	bl sub_0202930C
+	bl _call_via_r1
 _0201BBAC:
 	pop {r0}
 	bx r0
@@ -8170,7 +8170,7 @@ _0201BFCC:
 	adds r1, r1, r0
 	ldr r1, [r1]
 	adds r0, r5, #0
-	bl sub_0202930C
+	bl _call_via_r1
 	adds r6, r5, #0
 	adds r6, #0x72
 	ldrb r7, [r6]
@@ -8220,7 +8220,7 @@ _0201C048:
 	adds r1, r1, r0
 	ldr r1, [r1]
 	adds r0, r5, #0
-	bl sub_0202930C
+	bl _call_via_r1
 	movs r2, #0
 	mov r8, r2
 	b _0201C186
@@ -8251,7 +8251,7 @@ _0201C074:
 	adds r1, r1, r0
 	ldr r1, [r1]
 	adds r0, r5, #0
-	bl sub_0202930C
+	bl _call_via_r1
 	b _0201C0C0
 	.align 2, 0
 _0201C0AC: .4byte 0x0202AFFC
@@ -8329,7 +8329,7 @@ _0201C106:
 	lsls r1, r1, #2
 	adds r1, r1, r2
 	ldr r1, [r1]
-	bl sub_0202930C
+	bl _call_via_r1
 	b _0201C172
 	.align 2, 0
 _0201C144: .4byte 0x0203E9A0
@@ -8382,7 +8382,7 @@ sub_0201C19C: @ 0x0201C19C
 	ldr r0, [r0, #0x18]
 	movs r1, #0xfa
 	lsls r1, r1, #2
-	bl sub_02029344
+	bl __divsi3
 	lsls r0, r0, #0x10
 	lsrs r0, r0, #0x10
 	pop {r1}
@@ -8633,7 +8633,7 @@ sub_0201C310: @ 0x0201C310
 	cmp r1, #0
 	beq _0201C3A8
 	adds r0, r7, #0
-	bl sub_0202930C
+	bl _call_via_r1
 _0201C3A8:
 	adds r4, r7, #0
 _0201C3AA:
@@ -8925,7 +8925,7 @@ _0201C5AC:
 	cmp r1, #0
 	beq _0201C5BE
 	adds r0, r4, #0
-	bl sub_0202930C
+	bl _call_via_r1
 _0201C5BE:
 	adds r6, #0x60
 	adds r4, #0x60
@@ -8945,7 +8945,7 @@ _0201C5D2:
 	cmp r1, #0
 	beq _0201C5E4
 	adds r0, r4, #0
-	bl sub_0202930C
+	bl _call_via_r1
 _0201C5E4:
 	adds r6, #0x60
 	adds r4, #0x60
@@ -8971,17 +8971,17 @@ sub_0201C5FC: @ 0x0201C5FC
 	ldr r1, _0201C654 @ =0x0202B37C
 	add r0, sp, #8
 	movs r2, #8
-	bl sub_020295E4
+	bl memcpy
 	add r5, sp, #0x10
 	ldr r1, _0201C658 @ =0x0202B384
 	adds r0, r5, #0
 	movs r2, #8
-	bl sub_020295E4
+	bl memcpy
 	add r4, sp, #0x18
 	ldr r1, _0201C65C @ =0x0202B38C
 	adds r0, r4, #0
 	movs r2, #8
-	bl sub_020295E4
+	bl memcpy
 	mov r0, sp
 	adds r0, r0, r6
 	adds r0, #8
@@ -9051,7 +9051,7 @@ sub_0201C69C: @ 0x0201C69C
 	ldr r1, _0201C6C4 @ =sub_0201C668
 	str r1, [r4, #0x10]
 	adds r0, r4, #0
-	bl sub_0202930C
+	bl _call_via_r1
 	pop {r4}
 	pop {r0}
 	bx r0
@@ -9071,7 +9071,7 @@ sub_0201C6CC: @ 0x0201C6CC
 	ldr r1, [r4, #0x10]
 	cmp r1, #0
 	beq _0201C6DA
-	bl sub_0202930C
+	bl _call_via_r1
 _0201C6DA:
 	ldr r1, _0201C6E8 @ =0x0202B378
 	adds r0, r4, #0
@@ -9139,7 +9139,7 @@ sub_0201C744: @ 0x0201C744
 	ldr r1, _0201C764 @ =sub_0201C740
 	str r1, [r4, #0x10]
 	adds r0, r4, #0
-	bl sub_0202930C
+	bl _call_via_r1
 	pop {r4}
 	pop {r0}
 	bx r0
@@ -9159,7 +9159,7 @@ sub_0201C76C: @ 0x0201C76C
 	ldr r1, [r4, #0x10]
 	cmp r1, #0
 	beq _0201C77A
-	bl sub_0202930C
+	bl _call_via_r1
 _0201C77A:
 	ldr r1, _0201C788 @ =0x0202B3DC
 	adds r0, r4, #0
@@ -10953,7 +10953,7 @@ sub_0201D550: @ 0x0201D550
 	ldr r0, _0201D5AC @ =0x03001B50
 	ldr r0, [r0, #0x10]
 	ldr r1, _0201D5B0 @ =0x00034BC0
-	bl sub_020294AC
+	bl __udivsi3
 	lsls r0, r0, #0x18
 	lsrs r5, r0, #0x18
 	ldr r0, _0201D5B4 @ =0x00000416
@@ -11006,7 +11006,7 @@ sub_0201D5C4: @ 0x0201D5C4
 	ldr r0, _0201D688 @ =0x03001B50
 	ldr r0, [r0, #0x10]
 	ldr r1, _0201D68C @ =0x00034BC0
-	bl sub_020294AC
+	bl __udivsi3
 	lsls r0, r0, #0x18
 	lsrs r5, r0, #0x18
 	ldr r1, _0201D690 @ =0x00000416
@@ -11406,7 +11406,7 @@ sub_0201D904: @ 0x0201D904
 	lsls r0, r0, #2
 	adds r0, r0, r1
 	ldr r0, [r0]
-	bl sub_02029308
+	bl _call_via_r0
 	ldr r0, _0201D940 @ =0x0000049B
 	adds r4, r4, r0
 	ldrb r0, [r4]
@@ -12297,7 +12297,7 @@ sub_0201E038: @ 0x0201E038
 	lsls r1, r1, #2
 	adds r1, r1, r0
 	ldr r0, [r1]
-	bl sub_02029308
+	bl _call_via_r0
 _0201E052:
 	pop {r0}
 	bx r0
@@ -12952,7 +12952,7 @@ sub_0201E538: @ 0x0201E538
 	lsls r1, r1, #2
 	adds r1, r1, r2
 	ldr r1, [r1]
-	bl sub_0202930C
+	bl _call_via_r1
 	pop {r0}
 	bx r0
 	.align 2, 0
@@ -13002,13 +13002,13 @@ _0201E586:
 	mov r0, r8
 	bl sub_02019AF0
 	movs r1, #0x21
-	bl sub_020293DC
+	bl __modsi3
 	movs r1, #0x10
 	subs r5, r1, r0
 	mov r0, r8
 	bl sub_02019AF0
 	movs r1, #0x11
-	bl sub_020293DC
+	bl __modsi3
 	adds r1, r0, #0
 	adds r1, #0x10
 	ldrh r0, [r6, #0xc]
@@ -13826,7 +13826,7 @@ _0201EBC2:
 	ldr r4, [r6]
 	adds r4, #0x10
 	movs r1, #0x21
-	bl sub_020293DC
+	bl __modsi3
 	subs r4, r4, r0
 	str r4, [r5]
 	mov r0, r8
@@ -13834,7 +13834,7 @@ _0201EBC2:
 	ldr r4, [r6, #4]
 	subs r4, #0x10
 	movs r1, #0x11
-	bl sub_020293DC
+	bl __modsi3
 	subs r4, r4, r0
 	str r4, [r5, #4]
 	adds r5, #0x4e
@@ -15430,7 +15430,7 @@ _0201F80E:
 	ldr r0, _0201F830 @ =0x03001B50
 	bl sub_02019AF0
 	adds r1, r5, #0
-	bl sub_020293DC
+	bl __modsi3
 	add r0, r8
 	ldrb r4, [r0]
 	adds r0, r4, #0
@@ -15904,7 +15904,7 @@ sub_0201FB9C: @ 0x0201FB9C
 	ldr r0, _0201FC24 @ =0x03001B50
 	bl sub_02019AF0
 	movs r1, #9
-	bl sub_020293DC
+	bl __modsi3
 	lsls r0, r0, #0x18
 	lsrs r7, r0, #0x18
 	mov r1, r8
@@ -16050,7 +16050,7 @@ _0201FCCE:
 	ldr r0, _0201FD08 @ =0x03001B50
 	bl sub_02019AF0
 	movs r1, #0x41
-	bl sub_020293DC
+	bl __modsi3
 	adds r0, #0x20
 	b _0201FD0E
 	.align 2, 0
@@ -17175,7 +17175,7 @@ _0202053C:
 	ldr r0, _0202057C @ =0x03001B50
 	bl sub_02019AF0
 	movs r1, #0x65
-	bl sub_020293DC
+	bl __modsi3
 	cmp r4, r0
 	bge _02020580
 	movs r0, #1
@@ -17733,7 +17733,7 @@ _02020980:
 	ldr r0, _020209D0 @ =0x03001B50
 	bl sub_02019AF0
 	movs r1, #0x65
-	bl sub_020293DC
+	bl __modsi3
 	cmp r5, r0
 	blt _020209D4
 	movs r0, #0xf1
@@ -18352,7 +18352,7 @@ _02020E46:
 	ldr r0, _02020EA0 @ =0x03001B50
 	bl sub_02019AF0
 	movs r1, #5
-	bl sub_020293DC
+	bl __modsi3
 	lsls r0, r0, #4
 	adds r0, #0x50
 	str r0, [r4, #4]
@@ -18374,7 +18374,7 @@ _02020E6E:
 	ldr r0, _02020EA0 @ =0x03001B50
 	bl sub_02019AF0
 	movs r1, #6
-	bl sub_020293DC
+	bl __modsi3
 	lsls r0, r0, #2
 	ldr r1, _02020EA4 @ =0x02033B30
 	adds r0, r0, r1
@@ -18457,7 +18457,7 @@ _02020F16:
 	ldr r0, _02020F38 @ =0x03001B50
 	bl sub_02019AF0
 	movs r1, #0x65
-	bl sub_020293DC
+	bl __modsi3
 	cmp r4, r0
 	blt _02020F4C
 	ldr r1, [r5]
@@ -18586,7 +18586,7 @@ _02021008:
 	ldr r0, _0202102C @ =0x03001B50
 	bl sub_02019AF0
 	movs r1, #0x65
-	bl sub_020293DC
+	bl __modsi3
 	cmp r4, r0
 	ble _02021048
 	ldr r1, [r5]
@@ -19044,7 +19044,7 @@ _02021356:
 	ldr r0, _020213D0 @ =0x03001B50
 	bl sub_02019AF0
 	movs r1, #0x65
-	bl sub_020293DC
+	bl __modsi3
 	cmp r0, #5
 	bgt _020213D4
 	bl sub_0201F368
@@ -19337,7 +19337,7 @@ _020215AC:
 	lsls r1, r1, #2
 	adds r1, r1, r0
 	ldr r0, [r1]
-	bl sub_02029308
+	bl _call_via_r0
 _020215BA:
 	pop {r4, r5}
 	pop {r0}
@@ -19574,7 +19574,7 @@ _0202177E:
 	ldr r0, _020217A4 @ =0x03001B50
 	bl sub_02019AF0
 	ldr r1, _020217A8 @ =0x00000151
-	bl sub_020293DC
+	bl __modsi3
 	adds r0, r6, r0
 	adds r1, r5, #0
 	adds r1, #0x58
@@ -20793,7 +20793,7 @@ _020220C0:
 	ldr r0, _020220E4 @ =0x03001B50
 	bl sub_02019AF0
 	movs r1, #0x65
-	bl sub_020293DC
+	bl __modsi3
 	lsls r0, r0, #0x10
 	lsrs r5, r0, #0x10
 	cmp r5, #0x3b
@@ -21417,7 +21417,7 @@ _0202258C:
 	ldr r0, _020225C8 @ =0x03001B50
 	bl sub_02019AF0
 	movs r1, #0x65
-	bl sub_020293DC
+	bl __modsi3
 	cmp r0, #0x18
 	ble _0202259E
 	b _020226BA
@@ -21655,7 +21655,7 @@ sub_0202275C: @ 0x0202275C
 	lsls r0, r0, #2
 	adds r0, r0, r1
 	ldr r0, [r0]
-	bl sub_02029308
+	bl _call_via_r0
 	pop {r0}
 	bx r0
 	.align 2, 0
@@ -22290,7 +22290,7 @@ sub_02022C10: @ 0x02022C10
 	lsls r0, r0, #2
 	adds r0, r0, r1
 	ldr r0, [r0]
-	bl sub_02029308
+	bl _call_via_r0
 	pop {r0}
 	bx r0
 	.align 2, 0
@@ -22358,7 +22358,7 @@ sub_02022C8C: @ 0x02022C8C
 	lsls r0, r0, #2
 	adds r0, r0, r1
 	ldr r0, [r0]
-	bl sub_02029308
+	bl _call_via_r0
 	pop {r0}
 	bx r0
 	.align 2, 0
@@ -22539,7 +22539,7 @@ _02022D98:
 	ldr r0, _02022E4C @ =0x03001B50
 	bl sub_02019AF0
 	movs r1, #0x6d
-	bl sub_020293DC
+	bl __modsi3
 	movs r1, #0x64
 	muls r0, r1, r0
 	ldrh r1, [r7]
@@ -23063,7 +23063,7 @@ _0202320A:
 	ldr r0, _0202322C @ =0x03001B50
 	bl sub_02019AF0
 	movs r1, #0x65
-	bl sub_020293DC
+	bl __modsi3
 	cmp r0, #0x31
 	bgt _02023234
 	ldr r0, _02023230 @ =0x0080609E
@@ -23685,7 +23685,7 @@ sub_020236B0: @ 0x020236B0
 	lsls r0, r0, #2
 	adds r0, r0, r1
 	ldr r0, [r0]
-	bl sub_02029308
+	bl _call_via_r0
 	pop {r0}
 	bx r0
 	.align 2, 0
@@ -24267,7 +24267,7 @@ sub_02023B38: @ 0x02023B38
 	lsls r0, r0, #2
 	adds r0, r0, r1
 	ldr r0, [r0]
-	bl sub_02029308
+	bl _call_via_r0
 	pop {r0}
 	bx r0
 	.align 2, 0
@@ -26601,7 +26601,7 @@ sub_02024A9C: @ 0x02024A9C
 _02024AA6:
 	ldr r1, [r5]
 	adds r0, r6, #0
-	bl sub_0202930C
+	bl _call_via_r1
 	cmp r0, #0
 	beq _02024ABC
 	adds r0, r4, #0
@@ -27021,7 +27021,7 @@ sub_02024DD0: @ 0x02024DD0
 	lsls r1, r1, #2
 	adds r1, r1, r2
 	ldr r1, [r1]
-	bl sub_0202930C
+	bl _call_via_r1
 	pop {r0}
 	bx r0
 	.align 2, 0
@@ -27930,7 +27930,7 @@ _020254B4:
 	ldr r0, _020254F4 @ =0x03001B50
 	bl sub_02019AF0
 	movs r1, #0x6d
-	bl sub_020293DC
+	bl __modsi3
 	movs r1, #0x64
 	muls r0, r1, r0
 	ldrh r1, [r6]
@@ -28089,7 +28089,7 @@ sub_020255F0: @ 0x020255F0
 	lsls r1, r1, #2
 	adds r1, r1, r2
 	ldr r1, [r1]
-	bl sub_0202930C
+	bl _call_via_r1
 	pop {r0}
 	bx r0
 	.align 2, 0
@@ -30449,7 +30449,7 @@ _02026806:
 	lsls r1, r1, #2
 	adds r1, r1, r0
 	ldr r0, [r1]
-	bl sub_02029308
+	bl _call_via_r0
 _02026814:
 	pop {r4}
 	pop {r0}
@@ -31163,7 +31163,7 @@ sub_02026D74: @ 0x02026D74
 	bne _02026DC6
 	adds r0, r4, #0
 	movs r1, #0xc
-	bl sub_02029524
+	bl __umodsi3
 	lsls r0, r0, #0x18
 	lsrs r0, r0, #0x18
 	cmp r0, #1
@@ -31190,7 +31190,7 @@ _02026DC2:
 _02026DC6:
 	adds r0, r4, #0
 	movs r1, #0xc
-	bl sub_02029524
+	bl __umodsi3
 	lsls r0, r0, #0x18
 	lsrs r0, r0, #0x18
 	cmp r0, #5
@@ -31901,7 +31901,7 @@ _0202732C:
 	movs r1, #0xa
 	ldrsh r0, [r4, r1]
 	ldrh r1, [r4, #8]
-	bl sub_02029344
+	bl __divsi3
 	strh r0, [r4, #0xa]
 _0202735A:
 	movs r5, #0xa
@@ -32075,7 +32075,7 @@ _02027472:
 	rsbs r1, r1, #0
 _0202748C:
 	adds r0, r2, #0
-	bl sub_02029344
+	bl __divsi3
 	lsls r0, r0, #0x10
 	lsrs r2, r0, #0x10
 	cmp r2, #0
@@ -32182,7 +32182,7 @@ _02027548:
 	subs r3, r4, r3
 	lsls r3, r3, #8
 	adds r0, r3, #0
-	bl sub_020294AC
+	bl __udivsi3
 	adds r3, r0, #0
 	subs r3, r4, r3
 _0202755A:
@@ -32224,7 +32224,7 @@ _02027594:
 	lsls r0, r0, #9
 	adds r1, r1, r0
 	adds r0, r3, #0
-	bl sub_020294AC
+	bl __udivsi3
 	adds r3, r0, #0
 	lsls r3, r3, #4
 	b _020275E8
@@ -32241,7 +32241,7 @@ _020275B0:
 	movs r2, #0x80
 	lsls r2, r2, #0xc
 	adds r1, r1, r2
-	bl sub_020294AC
+	bl __udivsi3
 	b _020275E2
 _020275CE:
 	movs r0, #0x80
@@ -32344,13 +32344,13 @@ _0202767C:
 	muls r2, r0, r2
 	adds r0, r2, #0
 	ldr r1, _020276BC @ =0x00002910
-	bl sub_020294AC
+	bl __udivsi3
 	adds r2, r0, #0
 	movs r0, #0xb0
 	muls r2, r0, r2
 	adds r0, r2, #0
 	movs r1, #0xb0
-	bl sub_020294AC
+	bl __udivsi3
 	adds r2, r0, #0
 	lsrs r2, r2, #5
 	adds r0, r5, #0
@@ -32405,7 +32405,7 @@ _020276E2:
 	lsls r4, r4, #2
 	adds r2, r0, r4
 	ldr r3, [r3]
-	bl sub_02029314
+	bl _call_via_r3
 	add sp, #4
 	pop {r4, r5, r6, r7}
 	pop {r0}
@@ -32808,7 +32808,7 @@ _020279E4:
 	beq _02027A10
 	ldrh r1, [r4, #0x30]
 	mov r0, r8
-	bl sub_020294AC
+	bl __udivsi3
 	b _02027A1E
 _02027A10:
 	movs r0, #0x32
@@ -32816,7 +32816,7 @@ _02027A10:
 	ldrh r4, [r4, #0x30]
 	adds r1, r1, r4
 	mov r0, r8
-	bl sub_02029344
+	bl __divsi3
 _02027A1E:
 	lsls r0, r0, #0x10
 	lsrs r0, r0, #0x10
@@ -32946,7 +32946,7 @@ _02027B14:
 	ldr r0, [r4, #0x38]
 	str r0, [r4, #0x3c]
 	ldr r1, [r4, #0x30]
-	bl sub_02029344
+	bl __divsi3
 	str r0, [r4, #0x3c]
 	ldrb r1, [r5, #0x1d]
 	movs r0, #4
@@ -33543,7 +33543,7 @@ _02027F7C:
 	subs r0, #1
 	adds r0, r0, r6
 	adds r1, r6, #0
-	bl sub_020294AC
+	bl __udivsi3
 	lsls r0, r0, #1
 	ldr r1, [sp, #0x14]
 	adds r5, r0, r1
@@ -33571,7 +33571,7 @@ _02027FA4:
 	ldr r1, [sp, #0x14]
 	ldr r2, [sp, #0x18]
 	adds r3, r5, #0
-	bl sub_02029318
+	bl _call_via_r4
 	adds r4, r0, #0
 	mov r0, r8
 	cmp r0, #0
@@ -33597,7 +33597,7 @@ _02027FD0:
 	ldr r1, [sp, #0x14]
 	ldr r2, [sp, #0x18]
 	adds r3, r5, #0
-	bl sub_02029318
+	bl _call_via_r4
 	adds r4, r0, #0
 	ldr r1, [sp, #0x24]
 	subs r4, r4, r1
@@ -33635,7 +33635,7 @@ _02028030:
 	subs r0, #1
 	adds r0, r0, r6
 	adds r1, r6, #0
-	bl sub_020294AC
+	bl __udivsi3
 	lsls r0, r0, #1
 	adds r5, r5, r0
 	movs r0, #1
@@ -33653,7 +33653,7 @@ _02028046:
 	ldr r1, [sp, #0x14]
 	ldr r2, [sp, #0x18]
 	adds r3, r5, #0
-	bl sub_02029318
+	bl _call_via_r4
 	adds r4, r0, #0
 	mov r1, r8
 	cmp r1, #0
@@ -34185,7 +34185,7 @@ sub_02028410: @ 0x02028410
 	ldrh r0, [r4, #0x34]
 	rsbs r0, r0, #0
 	adds r1, r3, #0
-	bl sub_02029344
+	bl __divsi3
 	strh r0, [r4, #0x36]
 _0202843E:
 	pop {r4}
@@ -34499,7 +34499,7 @@ _02028646:
 	lsrs r3, r3, #0x10
 	adds r0, r5, #0
 	adds r1, r6, #0
-	bl sub_02029324
+	bl _call_via_r7
 	b _02028680
 	.align 2, 0
 _02028670: .4byte 0x03000270
@@ -34805,7 +34805,7 @@ _02028902:
 	adds r0, #1
 	str r0, [r5]
 	adds r0, r5, #0
-	bl sub_02029310
+	bl _call_via_r2
 	b _02028A0C
 	.align 2, 0
 _0202891C: .4byte 0x03000274
@@ -35723,7 +35723,7 @@ _02028FC8: .4byte 0x03001918
 _02028FCC:
 	ldr r0, [r3, #8]
 	ldr r1, [r3, #4]
-	bl sub_0202930C
+	bl _call_via_r1
 	b _02028FF2
 _02028FD6:
 	ldr r1, _02028FDC @ =0x03000274
@@ -35995,587 +35995,3 @@ SoundBiasSet: @ 0x02029300
 	bx lr
 	thumb_func_end SoundBiasSet
 	.align 2, 0
-
-	thumb_func_start sub_02029308
-sub_02029308: @ 0x02029308
-	bx r0
-	nop
-
-	thumb_func_start sub_0202930C
-sub_0202930C: @ 0x0202930C
-	bx r1
-	nop
-
-	thumb_func_start sub_02029310
-sub_02029310: @ 0x02029310
-	bx r2
-	nop
-
-	thumb_func_start sub_02029314
-sub_02029314: @ 0x02029314
-	bx r3
-	nop
-
-	thumb_func_start sub_02029318
-sub_02029318: @ 0x02029318
-	bx r4
-	nop
-
-	thumb_func_start sub_0202931C
-sub_0202931C: @ 0x0202931C
-	bx r5
-	nop
-
-	thumb_func_start sub_02029320
-sub_02029320: @ 0x02029320
-	bx r6
-	nop
-
-	thumb_func_start sub_02029324
-sub_02029324: @ 0x02029324
-	bx r7
-	nop
-
-	thumb_func_start sub_02029328
-sub_02029328: @ 0x02029328
-	bx r8
-	nop
-
-	thumb_func_start sub_0202932C
-sub_0202932C: @ 0x0202932C
-	bx sb
-	nop
-
-	thumb_func_start sub_02029330
-sub_02029330: @ 0x02029330
-	bx sl
-	nop
-
-	thumb_func_start sub_02029334
-sub_02029334: @ 0x02029334
-	bx fp
-	nop
-
-	thumb_func_start sub_02029338
-sub_02029338: @ 0x02029338
-	bx ip
-	nop
-
-	thumb_func_start sub_0202933C
-sub_0202933C: @ 0x0202933C
-	bx sp
-	nop
-
-	thumb_func_start sub_02029340
-sub_02029340: @ 0x02029340
-	bx lr
-	nop
-
-	thumb_func_start sub_02029344
-sub_02029344: @ 0x02029344
-	cmp r1, #0
-	beq _020293CC
-	push {r4}
-	adds r4, r0, #0
-	eors r4, r1
-	mov ip, r4
-	movs r3, #1
-	movs r2, #0
-	cmp r1, #0
-	bpl _0202935A
-	rsbs r1, r1, #0
-_0202935A:
-	cmp r0, #0
-	bpl _02029360
-	rsbs r0, r0, #0
-_02029360:
-	cmp r0, r1
-	blo _020293BE
-	movs r4, #1
-	lsls r4, r4, #0x1c
-_02029368:
-	cmp r1, r4
-	bhs _02029376
-	cmp r1, r0
-	bhs _02029376
-	lsls r1, r1, #4
-	lsls r3, r3, #4
-	b _02029368
-_02029376:
-	lsls r4, r4, #3
-_02029378:
-	cmp r1, r4
-	bhs _02029386
-	cmp r1, r0
-	bhs _02029386
-	lsls r1, r1, #1
-	lsls r3, r3, #1
-	b _02029378
-_02029386:
-	cmp r0, r1
-	blo _0202938E
-	subs r0, r0, r1
-	orrs r2, r3
-_0202938E:
-	lsrs r4, r1, #1
-	cmp r0, r4
-	blo _0202939A
-	subs r0, r0, r4
-	lsrs r4, r3, #1
-	orrs r2, r4
-_0202939A:
-	lsrs r4, r1, #2
-	cmp r0, r4
-	blo _020293A6
-	subs r0, r0, r4
-	lsrs r4, r3, #2
-	orrs r2, r4
-_020293A6:
-	lsrs r4, r1, #3
-	cmp r0, r4
-	blo _020293B2
-	subs r0, r0, r4
-	lsrs r4, r3, #3
-	orrs r2, r4
-_020293B2:
-	cmp r0, #0
-	beq _020293BE
-	lsrs r3, r3, #4
-	beq _020293BE
-	lsrs r1, r1, #4
-	b _02029386
-_020293BE:
-	adds r0, r2, #0
-	mov r4, ip
-	cmp r4, #0
-	bpl _020293C8
-	rsbs r0, r0, #0
-_020293C8:
-	pop {r4}
-	mov pc, lr
-_020293CC:
-	push {lr}
-	bl sub_020293D8
-	movs r0, #0
-	pop {pc}
-	.align 2, 0
-
-	thumb_func_start sub_020293D8
-sub_020293D8: @ 0x020293D8
-	mov pc, lr
-	.align 2, 0
-
-	thumb_func_start sub_020293DC
-sub_020293DC: @ 0x020293DC
-	movs r3, #1
-	cmp r1, #0
-	beq _020294A0
-	bpl _020293E6
-	rsbs r1, r1, #0
-_020293E6:
-	push {r4}
-	push {r0}
-	cmp r0, #0
-	bpl _020293F0
-	rsbs r0, r0, #0
-_020293F0:
-	cmp r0, r1
-	blo _02029494
-	movs r4, #1
-	lsls r4, r4, #0x1c
-_020293F8:
-	cmp r1, r4
-	bhs _02029406
-	cmp r1, r0
-	bhs _02029406
-	lsls r1, r1, #4
-	lsls r3, r3, #4
-	b _020293F8
-_02029406:
-	lsls r4, r4, #3
-_02029408:
-	cmp r1, r4
-	bhs _02029416
-	cmp r1, r0
-	bhs _02029416
-	lsls r1, r1, #1
-	lsls r3, r3, #1
-	b _02029408
-_02029416:
-	movs r2, #0
-	cmp r0, r1
-	blo _0202941E
-	subs r0, r0, r1
-_0202941E:
-	lsrs r4, r1, #1
-	cmp r0, r4
-	blo _02029430
-	subs r0, r0, r4
-	mov ip, r3
-	movs r4, #1
-	rors r3, r4
-	orrs r2, r3
-	mov r3, ip
-_02029430:
-	lsrs r4, r1, #2
-	cmp r0, r4
-	blo _02029442
-	subs r0, r0, r4
-	mov ip, r3
-	movs r4, #2
-	rors r3, r4
-	orrs r2, r3
-	mov r3, ip
-_02029442:
-	lsrs r4, r1, #3
-	cmp r0, r4
-	blo _02029454
-	subs r0, r0, r4
-	mov ip, r3
-	movs r4, #3
-	rors r3, r4
-	orrs r2, r3
-	mov r3, ip
-_02029454:
-	mov ip, r3
-	cmp r0, #0
-	beq _02029462
-	lsrs r3, r3, #4
-	beq _02029462
-	lsrs r1, r1, #4
-	b _02029416
-_02029462:
-	movs r4, #0xe
-	lsls r4, r4, #0x1c
-	ands r2, r4
-	beq _02029494
-	mov r3, ip
-	movs r4, #3
-	rors r3, r4
-	tst r2, r3
-	beq _02029478
-	lsrs r4, r1, #3
-	adds r0, r0, r4
-_02029478:
-	mov r3, ip
-	movs r4, #2
-	rors r3, r4
-	tst r2, r3
-	beq _02029486
-	lsrs r4, r1, #2
-	adds r0, r0, r4
-_02029486:
-	mov r3, ip
-	movs r4, #1
-	rors r3, r4
-	tst r2, r3
-	beq _02029494
-	lsrs r4, r1, #1
-	adds r0, r0, r4
-_02029494:
-	pop {r4}
-	cmp r4, #0
-	bpl _0202949C
-	rsbs r0, r0, #0
-_0202949C:
-	pop {r4}
-	mov pc, lr
-_020294A0:
-	push {lr}
-	bl sub_020293D8
-	movs r0, #0
-	pop {pc}
-	.align 2, 0
-
-	thumb_func_start sub_020294AC
-sub_020294AC: @ 0x020294AC
-	cmp r1, #0
-	beq _0202951A
-	movs r3, #1
-	movs r2, #0
-	push {r4}
-	cmp r0, r1
-	blo _02029514
-	movs r4, #1
-	lsls r4, r4, #0x1c
-_020294BE:
-	cmp r1, r4
-	bhs _020294CC
-	cmp r1, r0
-	bhs _020294CC
-	lsls r1, r1, #4
-	lsls r3, r3, #4
-	b _020294BE
-_020294CC:
-	lsls r4, r4, #3
-_020294CE:
-	cmp r1, r4
-	bhs _020294DC
-	cmp r1, r0
-	bhs _020294DC
-	lsls r1, r1, #1
-	lsls r3, r3, #1
-	b _020294CE
-_020294DC:
-	cmp r0, r1
-	blo _020294E4
-	subs r0, r0, r1
-	orrs r2, r3
-_020294E4:
-	lsrs r4, r1, #1
-	cmp r0, r4
-	blo _020294F0
-	subs r0, r0, r4
-	lsrs r4, r3, #1
-	orrs r2, r4
-_020294F0:
-	lsrs r4, r1, #2
-	cmp r0, r4
-	blo _020294FC
-	subs r0, r0, r4
-	lsrs r4, r3, #2
-	orrs r2, r4
-_020294FC:
-	lsrs r4, r1, #3
-	cmp r0, r4
-	blo _02029508
-	subs r0, r0, r4
-	lsrs r4, r3, #3
-	orrs r2, r4
-_02029508:
-	cmp r0, #0
-	beq _02029514
-	lsrs r3, r3, #4
-	beq _02029514
-	lsrs r1, r1, #4
-	b _020294DC
-_02029514:
-	adds r0, r2, #0
-	pop {r4}
-	mov pc, lr
-_0202951A:
-	push {lr}
-	bl sub_020293D8
-	movs r0, #0
-	pop {pc}
-
-	thumb_func_start sub_02029524
-sub_02029524: @ 0x02029524
-	cmp r1, #0
-	beq _020295DA
-	movs r3, #1
-	cmp r0, r1
-	bhs _02029530
-	mov pc, lr
-_02029530:
-	push {r4}
-	movs r4, #1
-	lsls r4, r4, #0x1c
-_02029536:
-	cmp r1, r4
-	bhs _02029544
-	cmp r1, r0
-	bhs _02029544
-	lsls r1, r1, #4
-	lsls r3, r3, #4
-	b _02029536
-_02029544:
-	lsls r4, r4, #3
-_02029546:
-	cmp r1, r4
-	bhs _02029554
-	cmp r1, r0
-	bhs _02029554
-	lsls r1, r1, #1
-	lsls r3, r3, #1
-	b _02029546
-_02029554:
-	movs r2, #0
-	cmp r0, r1
-	blo _0202955C
-	subs r0, r0, r1
-_0202955C:
-	lsrs r4, r1, #1
-	cmp r0, r4
-	blo _0202956E
-	subs r0, r0, r4
-	mov ip, r3
-	movs r4, #1
-	rors r3, r4
-	orrs r2, r3
-	mov r3, ip
-_0202956E:
-	lsrs r4, r1, #2
-	cmp r0, r4
-	blo _02029580
-	subs r0, r0, r4
-	mov ip, r3
-	movs r4, #2
-	rors r3, r4
-	orrs r2, r3
-	mov r3, ip
-_02029580:
-	lsrs r4, r1, #3
-	cmp r0, r4
-	blo _02029592
-	subs r0, r0, r4
-	mov ip, r3
-	movs r4, #3
-	rors r3, r4
-	orrs r2, r3
-	mov r3, ip
-_02029592:
-	mov ip, r3
-	cmp r0, #0
-	beq _020295A0
-	lsrs r3, r3, #4
-	beq _020295A0
-	lsrs r1, r1, #4
-	b _02029554
-_020295A0:
-	movs r4, #0xe
-	lsls r4, r4, #0x1c
-	ands r2, r4
-	bne _020295AC
-	pop {r4}
-	mov pc, lr
-_020295AC:
-	mov r3, ip
-	movs r4, #3
-	rors r3, r4
-	tst r2, r3
-	beq _020295BA
-	lsrs r4, r1, #3
-	adds r0, r0, r4
-_020295BA:
-	mov r3, ip
-	movs r4, #2
-	rors r3, r4
-	tst r2, r3
-	beq _020295C8
-	lsrs r4, r1, #2
-	adds r0, r0, r4
-_020295C8:
-	mov r3, ip
-	movs r4, #1
-	rors r3, r4
-	tst r2, r3
-	beq _020295D6
-	lsrs r4, r1, #1
-	adds r0, r0, r4
-_020295D6:
-	pop {r4}
-	mov pc, lr
-_020295DA:
-	push {lr}
-	bl sub_020293D8
-	movs r0, #0
-	pop {pc}
-
-	thumb_func_start sub_020295E4
-sub_020295E4: @ 0x020295E4
-	push {r4, r5, lr}
-	adds r5, r0, #0
-	adds r4, r5, #0
-	adds r3, r1, #0
-	cmp r2, #0xf
-	bls _02029624
-	adds r0, r3, #0
-	orrs r0, r5
-	movs r1, #3
-	ands r0, r1
-	cmp r0, #0
-	bne _02029624
-	adds r1, r5, #0
-_020295FE:
-	ldm r3!, {r0}
-	stm r1!, {r0}
-	ldm r3!, {r0}
-	stm r1!, {r0}
-	ldm r3!, {r0}
-	stm r1!, {r0}
-	ldm r3!, {r0}
-	stm r1!, {r0}
-	subs r2, #0x10
-	cmp r2, #0xf
-	bhi _020295FE
-	cmp r2, #3
-	bls _02029622
-_02029618:
-	ldm r3!, {r0}
-	stm r1!, {r0}
-	subs r2, #4
-	cmp r2, #3
-	bhi _02029618
-_02029622:
-	adds r4, r1, #0
-_02029624:
-	subs r2, #1
-	movs r0, #1
-	rsbs r0, r0, #0
-	cmp r2, r0
-	beq _0202963E
-	adds r1, r0, #0
-_02029630:
-	ldrb r0, [r3]
-	strb r0, [r4]
-	adds r3, #1
-	adds r4, #1
-	subs r2, #1
-	cmp r2, r1
-	bne _02029630
-_0202963E:
-	adds r0, r5, #0
-	pop {r4, r5, pc}
-	.align 2, 0
-
-	thumb_func_start sub_02029644
-sub_02029644: @ 0x02029644
-	push {r4, r5, lr}
-	adds r5, r0, #0
-	adds r4, r1, #0
-	adds r3, r5, #0
-	cmp r2, #3
-	bls _0202968A
-	movs r0, #3
-	ands r0, r5
-	cmp r0, #0
-	bne _0202968A
-	adds r1, r5, #0
-	movs r0, #0xff
-	ands r4, r0
-	lsls r3, r4, #8
-	orrs r3, r4
-	lsls r0, r3, #0x10
-	orrs r3, r0
-	cmp r2, #0xf
-	bls _0202967E
-_0202966A:
-	stm r1!, {r3}
-	stm r1!, {r3}
-	stm r1!, {r3}
-	stm r1!, {r3}
-	subs r2, #0x10
-	cmp r2, #0xf
-	bhi _0202966A
-	b _0202967E
-_0202967A:
-	stm r1!, {r3}
-	subs r2, #4
-_0202967E:
-	cmp r2, #3
-	bhi _0202967A
-	adds r3, r1, #0
-	b _0202968A
-_02029686:
-	strb r4, [r3]
-	adds r3, #1
-_0202968A:
-	adds r0, r2, #0
-	subs r2, #1
-	cmp r0, #0
-	bne _02029686
-	adds r0, r5, #0
-	pop {r4, r5, pc}
-
-.align 2, 0

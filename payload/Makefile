@@ -43,8 +43,8 @@ OBJ_DIR := build/$(NAME)
 
 SHELL := /bin/bash -o pipefail
 
-C_SUBDIRS := src src/gflib src/libpmagb
-ASM_SUBDIRS := asm asm/gflib asm/libpmagb
+C_SUBDIRS := src src/gflib src/libpmagb src/libc
+ASM_SUBDIRS := asm asm/gflib asm/libpmagb asm/libgcc
 
 ASM_SRCS := $(foreach subdir,$(ASM_SUBDIRS),$(wildcard $(subdir)/*.s))
 ASM_OBJS := $(ASM_SRCS:%.s=$(OBJ_DIR)/%.o)
@@ -66,6 +66,9 @@ CPPFLAGS := -I ../tools/agbcc/include -iquote include -nostdinc -undef
 CFLAGS := -O2 -g -mthumb-interwork -fhex-asm -Wimplicit -Werror
 ASFLAGS := -mcpu=arm7tdmi -I include
 LIBS := -L../../../tools/agbcc/lib -lgcc -lc
+LIBC_CPPFLAGS := -DABORT_PROVIDED -DHAVE_GETTIMEOFDAY -D__thumb__ \
+                 -DARM_RDI_MONITOR -D__GNUC__ -DINTERNAL_NEWLIB \
+                 -D__USER_LABEL_PREFIX__=
 
 SUBDIRS := $(ASM_SUBDIRS) $(C_SUBDIRS) data sound sound/songs $(MID_SUBDIR)
 
@@ -126,6 +129,9 @@ $(OBJ_DIR)/asm/%.o: asm_dep = $(shell $(SCANINC) -I "include" -I "" $*.s)
 $(OBJ_DIR)/src/%.o: c_dep = $(shell $(SCANINC) -I "include" -I "" $*.c)
 $(OBJ_DIR)/data/%.o: data_dep = $(shell $(SCANINC) -I "include" -I "" $*.s)
 endif
+
+$(OBJ_DIR)/src/libc/memcpy.o $(OBJ_DIR)/src/libc/memset.o: CPPFLAGS += $(LIBC_CPPFLAGS)
+$(OBJ_DIR)/src/libc/memcpy.o $(OBJ_DIR)/src/libc/memset.o: CFLAGS := -O2 -fno-builtin
 
 $(ASM_OBJS): $(OBJ_DIR)/%.o: %.s $$(asm_dep)
 	$(AS) $(ASFLAGS) -o $@ $<
