@@ -40,7 +40,7 @@
       "base_path": "payload/build/objdiff/all.base.o",
       "metadata": {
         "complete": false,
-        "source_path": "payload/src/all.c",
+        "source_path": "payload/src/islander_anim.c",
         "auto_generated": false
       }
     },

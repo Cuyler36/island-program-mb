@@ -46,7 +46,8 @@ class DataObject:
     name: str
     offset: int
     size: int
-    pointer_table: bool = False
+    relocation_kind: str | None = None
+    global_symbol: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -63,12 +64,33 @@ DATA_OBJECTS = (
     DataObject("sMsgFontGlyphs", 0x0238, 0x1000),
     DataObject("sMsgSpaceGlyph", 0x1238, 0x0010),
     DataObject("sCachedMessageIds", 0x1248, 0x0024),
-    DataObject("sMsgControlCodeHandlers", 0x126C, 0x01C4, pointer_table=True),
+    DataObject("sMsgControlCodeHandlers", 0x126C, 0x01C4, "thumb_functions"),
     DataObject("gMsgWindowScrollOffsets", 0x148C, 0x0030),
     DataObject("sMsgControlCodeInfo", 0x14BC, 0x01C4),
+    DataObject("g_ItemDefinitions", 0x6164, 0x0420, global_symbol=True),
+    DataObject("sIslanderOamData", 0x6A94, 0x2668),
+    DataObject("sIslanderAnimFrames", 0x90FC, 0x08E0, "islander_frames"),
+    DataObject("sIslanderAnimFrameLists", 0x99DC, 0x060C, "islander_frame_list"),
+    DataObject("gIslanderAnimData", 0x9FE8, 0x0188, "islander_anim_table", True),
+    DataObject("sIslanderMoveAction11SubMoveProcs", 0xA1C8, 0x000C, "thumb_functions"),
+    DataObject("sIslanderFishingSubMoveProcs", 0xA1D4, 0x0020, "thumb_functions"),
+    DataObject("sIslanderReceiveItemSubMoveProcs", 0xA220, 0x000C, "thumb_functions"),
+    DataObject("gIslanderAnimMirrorFlags", 0xA42C, 0x0062, global_symbol=True),
+    DataObject("gMoveAction11ObjectAnimFrames", 0xA48F, 0x0009, global_symbol=True),
+    DataObject("gMoveAction11EmotionSpawnOffsets", 0xA748, 0x0004, global_symbol=True),
+    DataObject("gMoveAction11EntitySpawnParams", 0xA848, 0x009C, global_symbol=True),
+    DataObject("gIslanderFavoriteHours", 0xA90C, 0x0012, global_symbol=True),
+    DataObject("ISLANDER_FOOD_PREFERENCES", 0xA91E, 0x00AC, global_symbol=True),
     DataObject("gMsgTextData", 0xB90C, 0x07D2),
     DataObject("sMsgOffsets", 0xC0E0, 0x007C),
 )
+
+ISLANDER_OAM_ADDRESS = DATA_ADDRESS + 0x6A94
+ISLANDER_OAM_SIZE = 0x2668
+ISLANDER_FRAME_ADDRESS = DATA_ADDRESS + 0x90FC
+ISLANDER_FRAME_SIZE = 0x08E0
+ISLANDER_FRAME_LIST_ADDRESS = DATA_ADDRESS + 0x99DC
+ISLANDER_FRAME_LIST_SIZE = 0x060C
 
 BSS_OBJECTS = (
     BssObject("transfer_size", 0x03000000, 0x0004),
@@ -80,6 +102,11 @@ BSS_OBJECTS = (
     BssObject("gGameState", 0x03001B50, 0x0864, global_symbol=True),
     BssObject("gUnk3002410", 0x03002410, 0x0400),
     BssObject("sMsgWindows", 0x03002A20, 0x05A0),
+    BssObject("gIslandFieldWork", 0x03003710, 0x04A0, global_symbol=True),
+    BssObject("gIslandBuildings", 0x03003BB0, 0x0028, global_symbol=True),
+    BssObject("gFieldObjects", 0x03003C00, 0x05A0, global_symbol=True),
+    BssObject("gIslander", 0x030041A0, 0x00C0, global_symbol=True),
+    BssObject("gPlayer", 0x03004B80, 0x002C, global_symbol=True),
 )
 
 
@@ -174,6 +201,25 @@ def emit_symbol_header(lines: list[str], name: str, global_symbol: bool) -> None
     lines.extend((f"{directive} {name}", f".type {name}, %object", f"{name}:"))
 
 
+def emit_islander_pointer(
+    lines: list[str],
+    pointer: int,
+    target_address: int,
+    target_size: int,
+    target_symbol: str,
+) -> None:
+    if not target_address <= pointer < target_address + target_size:
+        raise ValueError(
+            f"pointer 0x{pointer:08X} is outside {target_symbol}"
+        )
+    addend = pointer - target_address
+    if addend % 4:
+        raise ValueError(
+            f"pointer 0x{pointer:08X} has an unaligned {target_symbol} addend"
+        )
+    lines.append(f"    .4byte {target_symbol} + 0x{addend:X}")
+
+
 def generate_assembly(text_object: Path, data_path: Path) -> str:
     data = data_path.read_bytes()
     if len(data) != EXPECTED_DATA_SIZE:
@@ -195,8 +241,8 @@ def generate_assembly(text_object: Path, data_path: Path) -> str:
         if obj.offset < cursor or obj.offset + obj.size > len(data):
             raise ValueError(f"invalid or overlapping data object {obj.name}")
         emit_incbin(lines, incbin_path, cursor, obj.offset - cursor)
-        emit_symbol_header(lines, obj.name, global_symbol=False)
-        if obj.pointer_table:
+        emit_symbol_header(lines, obj.name, obj.global_symbol)
+        if obj.relocation_kind == "thumb_functions":
             if obj.size % 4:
                 raise ValueError(f"pointer table {obj.name} is not word-sized")
             for pointer_offset in range(obj.offset, obj.offset + obj.size, 4):
@@ -209,6 +255,50 @@ def generate_assembly(text_object: Path, data_path: Path) -> str:
                         f"at target address 0x{DATA_ADDRESS + pointer_offset:08X}"
                     ) from error
                 lines.append(f"    .4byte {function_name}")
+        elif obj.relocation_kind == "islander_frames":
+            if obj.size % 8:
+                raise ValueError(f"frame table {obj.name} is not record-sized")
+            for pointer_offset in range(obj.offset, obj.offset + obj.size, 8):
+                pointer = struct.unpack_from("<I", data, pointer_offset)[0]
+                if pointer == 0xFFFF:
+                    lines.append("    .4byte 0xFFFF")
+                else:
+                    emit_islander_pointer(
+                        lines,
+                        pointer,
+                        ISLANDER_OAM_ADDRESS,
+                        ISLANDER_OAM_SIZE,
+                        "sIslanderOamData",
+                    )
+                emit_incbin(lines, incbin_path, pointer_offset + 4, 4)
+        elif obj.relocation_kind == "islander_frame_list":
+            if obj.size % 4:
+                raise ValueError(f"frame-list table {obj.name} is not word-sized")
+            for pointer_offset in range(obj.offset, obj.offset + obj.size, 4):
+                pointer = struct.unpack_from("<I", data, pointer_offset)[0]
+                emit_islander_pointer(
+                    lines,
+                    pointer,
+                    ISLANDER_FRAME_ADDRESS,
+                    ISLANDER_FRAME_SIZE,
+                    "sIslanderAnimFrames",
+                )
+        elif obj.relocation_kind == "islander_anim_table":
+            if obj.size % 4:
+                raise ValueError(f"animation table {obj.name} is not word-sized")
+            for pointer_offset in range(obj.offset, obj.offset + obj.size, 4):
+                pointer = struct.unpack_from("<I", data, pointer_offset)[0]
+                emit_islander_pointer(
+                    lines,
+                    pointer,
+                    ISLANDER_FRAME_LIST_ADDRESS,
+                    ISLANDER_FRAME_LIST_SIZE,
+                    "sIslanderAnimFrameLists",
+                )
+        elif obj.relocation_kind is not None:
+            raise ValueError(
+                f"unknown relocation kind {obj.relocation_kind!r} for {obj.name}"
+            )
         else:
             emit_incbin(lines, incbin_path, obj.offset, obj.size)
         lines.append(f".size {obj.name}, 0x{obj.size:X}")

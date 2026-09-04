@@ -3393,8 +3393,8 @@ sub_02019AD8: @ 0x02019AD8
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_02019AF0
-sub_02019AF0: @ 0x02019AF0
+	thumb_func_start rand_u16
+rand_u16: @ 0x02019AF0
 	adds r2, r0, #0
 	ldr r1, [r2, #0xc]
 	ldr r0, _02019B0C @ =0x41C64E6D
@@ -4293,8 +4293,8 @@ _0201A1F0: .4byte 0xFFFE0202
 _0201A1F4: .4byte 0x004F19FF
 _0201A1F8: .4byte 0xFFB0E601
 
-	thumb_func_start sub_0201A1FC
-sub_0201A1FC: @ 0x0201A1FC
+	thumb_func_start Swap32
+Swap32: @ 0x0201A1FC
 	sub sp, #4
 	mov r2, sp
 	ldrb r1, [r0, #3]
@@ -4361,8 +4361,8 @@ _0201A27C: .4byte 0x04000200
 _0201A280: .4byte 0x03003120
 _0201A284: .4byte 0x01000010
 
-	thumb_func_start sub_0201A288
-sub_0201A288: @ 0x0201A288
+	thumb_func_start JoybootHandler
+JoybootHandler: @ 0x0201A288
 	push {r4, r5, r6, r7, lr}
 	mov r7, r8
 	push {r7}
@@ -4669,7 +4669,7 @@ _0201A4D4:
 	cmp r0, r5
 	ble _0201A55C
 	add r0, sp, #4
-	bl sub_0201A1FC
+	bl Swap32
 	adds r3, r0, #0
 	ldr r0, _0201A514 @ =0x04000158
 	ldrh r1, [r0]
@@ -4806,7 +4806,7 @@ _0201A5E0: .4byte 0xFFFE0202
 _0201A5E4: .4byte 0x01000010
 _0201A5E8:
 	add r0, sp, #4
-	bl sub_0201A1FC
+	bl Swap32
 	ldr r1, _0201A614 @ =0x0202AFC4
 	ldr r1, [r1]
 	cmp r0, r1
@@ -7522,7 +7522,7 @@ _0201BAEA:
 	mov r0, r8
 	strh r0, [r6, #0x2c]
 	ldr r1, _0201BB18 @ =0x030023C0
-	ldr r0, _0201BB1C @ =sub_0201A288
+	ldr r0, _0201BB1C @ =JoybootHandler
 	str r0, [r1]
 	bl sub_0201A218
 _0201BB00:
@@ -7536,7 +7536,7 @@ _0201BB0C: .4byte 0x03001B50
 _0201BB10: .4byte 0x0000082A
 _0201BB14: .4byte 0x0000FEFF
 _0201BB18: .4byte 0x030023C0
-_0201BB1C: .4byte sub_0201A288
+_0201BB1C: .4byte JoybootHandler
 
 	thumb_func_start sub_0201BB20
 sub_0201BB20: @ 0x0201BB20
@@ -10547,7 +10547,7 @@ _0201D1FA:
 	adds r2, #0x24
 	adds r2, r2, r5
 	ldrh r0, [r2]
-	bl sub_02024A9C
+	bl Item_GetTypeIndex
 	movs r1, #0x80
 	lsls r1, r1, #8
 	ands r1, r0
@@ -10564,7 +10564,7 @@ _0201D230:
 	adds r0, #0x24
 	adds r0, r0, r5
 	ldrh r0, [r0]
-	bl sub_02024A9C
+	bl Item_GetTypeIndex
 	adds r6, r0, #0
 	cmp r6, #0x57
 	ble _0201D246
@@ -10737,7 +10737,7 @@ _0201D37E:
 	adds r2, r2, r7
 	adds r2, r2, r4
 	ldrh r0, [r2]
-	bl sub_02024A9C
+	bl Item_GetTypeIndex
 	movs r1, #0x80
 	lsls r1, r1, #8
 	ands r1, r0
@@ -10750,7 +10750,7 @@ _0201D3AC:
 	adds r0, r0, r1
 	adds r0, r0, r4
 	ldrh r0, [r0]
-	bl sub_02024A9C
+	bl Item_GetTypeIndex
 	adds r6, r0, #0
 	cmp r6, #0x57
 	ble _0201D3C2
@@ -10943,8 +10943,8 @@ _0201D544: .4byte 0x00001270
 _0201D548: .4byte 0x00000412
 _0201D54C: .4byte 0x0600C800
 
-	thumb_func_start sub_0201D550
-sub_0201D550: @ 0x0201D550
+	thumb_func_start UpdateHourlyPalette
+UpdateHourlyPalette: @ 0x0201D550
 	push {r4, r5, r6, r7, lr}
 	mov r7, r8
 	push {r7}
@@ -11049,7 +11049,7 @@ _0201D60E:
 	movs r0, #1
 	strb r0, [r1]
 	bl sub_02025D70
-	bl sub_02020B88
+	bl Islander_Init
 	ldr r0, _0201D6A4 @ =0x00000497
 	adds r1, r6, r0
 	movs r0, #4
@@ -11436,7 +11436,7 @@ sub_0201D94C: @ 0x0201D94C
 	ldr r7, _0201D9FC @ =0x030041A0
 	ldr r5, _0201DA00 @ =0x03004B80
 	ldr r6, _0201DA04 @ =0x03003710
-	bl sub_0201D550
+	bl UpdateHourlyPalette
 	ldr r0, _0201DA08 @ =0x03001B50
 	mov r8, r0
 	movs r1, #0x82
@@ -11504,7 +11504,7 @@ _0201D9D2:
 	adds r0, #1
 	lsls r0, r0, #0x18
 	lsrs r0, r0, #0x18
-	bl sub_02026C7C
+	bl ChangeEmotion
 	ldrh r1, [r4]
 	ldr r0, _0201DA1C @ =0x00000844
 	add r0, r8
@@ -12998,15 +12998,15 @@ _0201E586:
 	movs r7, #1
 	strb r7, [r2]
 	adds r0, r3, #0
-	bl sub_02024F08
+	bl Unk_Struct_Size54_ResetIdx
 	mov r0, r8
-	bl sub_02019AF0
+	bl rand_u16
 	movs r1, #0x21
 	bl __modsi3
 	movs r1, #0x10
 	subs r5, r1, r0
 	mov r0, r8
-	bl sub_02019AF0
+	bl rand_u16
 	movs r1, #0x11
 	bl __modsi3
 	adds r1, r0, #0
@@ -13820,9 +13820,9 @@ _0201EBC2:
 	movs r0, #1
 	strb r0, [r1]
 	adds r0, r2, #0
-	bl sub_02024F08
+	bl Unk_Struct_Size54_ResetIdx
 	mov r0, r8
-	bl sub_02019AF0
+	bl rand_u16
 	ldr r4, [r6]
 	adds r4, #0x10
 	movs r1, #0x21
@@ -13830,7 +13830,7 @@ _0201EBC2:
 	subs r4, r4, r0
 	str r4, [r5]
 	mov r0, r8
-	bl sub_02019AF0
+	bl rand_u16
 	ldr r4, [r6, #4]
 	subs r4, #0x10
 	movs r1, #0x11
@@ -14311,8 +14311,8 @@ _0201EFAC: .4byte 0x00000846
 _0201EFB0: .4byte 0x0202FEE0
 _0201EFB4: .4byte 0x0202FF78
 
-	thumb_func_start sub_0201EFB8
-sub_0201EFB8: @ 0x0201EFB8
+	thumb_func_start Islander_StoreItem
+Islander_StoreItem: @ 0x0201EFB8
 	push {r4, r5, r6, lr}
 	lsls r0, r0, #0x10
 	lsrs r3, r0, #0x10
@@ -14358,7 +14358,7 @@ _0201F008: .4byte 0x0202F7FC
 _0201F00C: .4byte 0x02034CF4
 _0201F010:
 	ldrh r0, [r1]
-	bl sub_02024AEC
+	bl Item_TypeToIslandItem
 _0201F016:
 	strh r0, [r4]
 	movs r0, #1
@@ -14377,8 +14377,8 @@ _0201F028:
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_0201F030
-sub_0201F030: @ 0x0201F030
+	thumb_func_start Islander_GetFishingItem
+Islander_GetFishingItem: @ 0x0201F030
 	push {r4, r5, r6, lr}
 	ldr r5, _0201F0A8 @ =0x030041A0
 	adds r0, r5, #0
@@ -14397,7 +14397,7 @@ sub_0201F030: @ 0x0201F030
 	adds r4, #8
 _0201F050:
 	ldr r0, _0201F0AC @ =0x03001B50
-	bl sub_02019AF0
+	bl rand_u16
 	adds r1, r0, #0
 	cmp r1, #0
 	bge _0201F05E
@@ -14453,7 +14453,7 @@ _0201F0BC:
 	ldrh r0, [r0]
 	adds r1, r1, r6
 	ldrh r1, [r1]
-	bl sub_0201EFB8
+	bl Islander_StoreItem
 	movs r0, #0
 	b _0201F0F0
 	.align 2, 0
@@ -14641,7 +14641,7 @@ _0201F1F0:
 	ldrh r0, [r0]
 	adds r1, r2, #0
 	str r2, [sp, #0x10]
-	bl sub_0201F6DC
+	bl CheckSurroundingCollision
 	ldr r3, [sp, #4]
 	str r3, [sp, #0xc]
 	ldr r2, [sp, #0x10]
@@ -14665,7 +14665,7 @@ _0201F262:
 	mov r0, sp
 	ldrh r0, [r0, #2]
 	adds r1, r6, #0
-	bl sub_0201F6DC
+	bl CheckSurroundingCollision
 	cmp r0, #0
 	bne _0201F28E
 	adds r1, r6, #0
@@ -14813,7 +14813,7 @@ _0201F378:
 	adds r0, r0, r1
 	ldrh r0, [r0]
 	ldr r1, [r4, #0x44]
-	bl sub_0201F6DC
+	bl CheckSurroundingCollision
 	cmp r0, #0
 	bne _0201F3D8
 	ldr r0, [r4]
@@ -14873,8 +14873,8 @@ _0201F3F0:
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_0201F3F8
-sub_0201F3F8: @ 0x0201F3F8
+	thumb_func_start Islander_ChangeMoveDir
+Islander_ChangeMoveDir: @ 0x0201F3F8
 	push {r4, r5, r6, r7, lr}
 	mov r7, sb
 	mov r6, r8
@@ -15030,7 +15030,7 @@ _0201F51C:
 	ldrb r0, [r1]
 	cmp r0, sb
 	beq _0201F528
-	bl sub_02020790
+	bl Islander_AdjustAnimForTool
 _0201F528:
 	movs r0, #0
 _0201F52A:
@@ -15193,8 +15193,8 @@ _0201F63A:
 	.align 2, 0
 _0201F65C: .4byte 0x0600A800
 
-	thumb_func_start sub_0201F660
-sub_0201F660: @ 0x0201F660
+	thumb_func_start WriteItemToTile
+WriteItemToTile: @ 0x0201F660
 	push {r4, r5, r6, r7, lr}
 	lsls r4, r1, #0x18
 	lsrs r5, r4, #0x18
@@ -15247,7 +15247,7 @@ _0201F6B0:
 	adds r3, r3, r0
 	adds r0, r3, #0
 	adds r1, r7, #0
-	bl sub_02020A0C
+	bl WriteItemTileToVRAM
 	pop {r4, r5, r6, r7}
 	pop {r0}
 	bx r0
@@ -15255,8 +15255,8 @@ _0201F6B0:
 _0201F6D4: .4byte 0x0600C800
 _0201F6D8: .4byte 0x03001B40
 
-	thumb_func_start sub_0201F6DC
-sub_0201F6DC: @ 0x0201F6DC
+	thumb_func_start CheckSurroundingCollision
+CheckSurroundingCollision: @ 0x0201F6DC
 	push {r4, r5, r6, lr}
 	adds r4, r1, #0
 	lsls r0, r0, #0x10
@@ -15428,7 +15428,7 @@ _0201F80E:
 	cmp r5, #0
 	beq _0201F834
 	ldr r0, _0201F830 @ =0x03001B50
-	bl sub_02019AF0
+	bl rand_u16
 	adds r1, r5, #0
 	bl __modsi3
 	add r0, r8
@@ -15529,7 +15529,7 @@ _0201F8CC:
 	str r2, [r4, #0x44]
 	ldrh r0, [r1]
 	adds r1, r2, #0
-	bl sub_0201F6DC
+	bl CheckSurroundingCollision
 	cmp r0, #0
 	bne _0201F8F4
 	movs r0, #1
@@ -15543,8 +15543,8 @@ _0201F8F6:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_0201F8FC
-sub_0201F8FC: @ 0x0201F8FC
+	thumb_func_start Islander_BuryRandomItem
+Islander_BuryRandomItem: @ 0x0201F8FC
 	push {r4, r5, r6, r7, lr}
 	mov r7, sl
 	mov r6, sb
@@ -15614,7 +15614,7 @@ _0201F96C:
 	adds r5, #0x10
 _0201F97E:
 	ldr r0, _0201F9C8 @ =0x03001B50
-	bl sub_02019AF0
+	bl rand_u16
 	adds r1, r0, #0
 	cmp r1, #0
 	bge _0201F98C
@@ -15794,7 +15794,7 @@ _0201FAD4:
 _0201FAE8: .4byte 0x00001270
 _0201FAEC:
 	ldrh r0, [r6]
-	bl sub_02024AEC
+	bl Item_TypeToIslandItem
 	lsls r0, r0, #0x10
 	lsrs r5, r0, #0x10
 _0201FAF6:
@@ -15882,8 +15882,8 @@ _0201FB84:
 _0201FB94: .4byte 0x03001B40
 _0201FB98: .4byte 0x00001918
 
-	thumb_func_start sub_0201FB9C
-sub_0201FB9C: @ 0x0201FB9C
+	thumb_func_start Islander_PlantRandomFlower
+Islander_PlantRandomFlower: @ 0x0201FB9C
 	push {r4, r5, r6, r7, lr}
 	mov r7, sb
 	mov r6, r8
@@ -15902,7 +15902,7 @@ sub_0201FB9C: @ 0x0201FB9C
 	mov r1, r8
 	str r0, [r1, #0x40]
 	ldr r0, _0201FC24 @ =0x03001B50
-	bl sub_02019AF0
+	bl rand_u16
 	movs r1, #9
 	bl __modsi3
 	lsls r0, r0, #0x18
@@ -16048,7 +16048,7 @@ _0201FCCE:
 	cmp r1, #0
 	bne _0201FD0C
 	ldr r0, _0201FD08 @ =0x03001B50
-	bl sub_02019AF0
+	bl rand_u16
 	movs r1, #0x41
 	bl __modsi3
 	adds r0, #0x20
@@ -16131,7 +16131,7 @@ _0201FD7A:
 	cmp r0, r2
 	beq _0201FD9C
 	strb r0, [r1]
-	bl sub_02020790
+	bl Islander_AdjustAnimForTool
 	movs r0, #0x20
 	strb r0, [r5]
 _0201FD9C:
@@ -16183,8 +16183,8 @@ _0201FDEE:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_0201FDF4
-sub_0201FDF4: @ 0x0201FDF4
+	thumb_func_start Islander_PlayAnim
+Islander_PlayAnim: @ 0x0201FDF4
 	push {r4, r5, lr}
 	lsls r0, r0, #0x18
 	lsrs r5, r0, #0x18
@@ -16247,8 +16247,8 @@ _0201FE66:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_0201FE6C
-sub_0201FE6C: @ 0x0201FE6C
+	thumb_func_start Islander_ClearStoredItem
+Islander_ClearStoredItem: @ 0x0201FE6C
 	push {r4, r5, r6, r7, lr}
 	mov r7, r8
 	push {r7}
@@ -16330,7 +16330,7 @@ _0201FEE4:
 	movs r0, #1
 	strb r0, [r2]
 	adds r0, r3, #0
-	bl sub_02024F08
+	bl Unk_Struct_Size54_ResetIdx
 	adds r0, r4, #0
 	adds r0, #0x40
 	strh r6, [r0]
@@ -16364,8 +16364,8 @@ _0201FF40:
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_0201FF48
-sub_0201FF48: @ 0x0201FF48
+	thumb_func_start SpawnEntity
+SpawnEntity: @ 0x0201FF48
 	push {r4, r5, r6, r7, lr}
 	mov r7, sl
 	mov r6, sb
@@ -16450,7 +16450,7 @@ _0201FFDA:
 	adds r4, r4, r0
 	movs r0, #0
 	adds r1, r4, #0
-	bl sub_0201F6DC
+	bl CheckSurroundingCollision
 	cmp r0, #0
 	beq _0201FFFA
 	b _02020104
@@ -16500,7 +16500,7 @@ _02020026:
 	adds r3, r0, r1
 	adds r0, r6, #0
 	str r3, [sp, #8]
-	bl sub_02024F08
+	bl Unk_Struct_Size54_ResetIdx
 	ldr r0, [r7]
 	asrs r0, r0, #8
 	subs r0, #8
@@ -17054,8 +17054,8 @@ _02020474: .4byte 0x0600A000
 _02020478: .4byte 0x000003FF
 _0202047C: .4byte 0x00007777
 
-	thumb_func_start sub_02020480
-sub_02020480: @ 0x02020480
+	thumb_func_start Islander_DecideTreeAction
+Islander_DecideTreeAction: @ 0x02020480
 	push {r4, r5, r6, r7, lr}
 	mov r7, sl
 	mov r6, sb
@@ -17173,7 +17173,7 @@ _0202053C:
 	adds r0, r0, r1
 	ldrb r4, [r0]
 	ldr r0, _0202057C @ =0x03001B50
-	bl sub_02019AF0
+	bl rand_u16
 	movs r1, #0x65
 	bl __modsi3
 	cmp r4, r0
@@ -17302,7 +17302,7 @@ _02020652:
 	adds r0, r0, r1
 	ldrh r0, [r0]
 	ldr r1, [r4, #0x44]
-	bl sub_0201F6DC
+	bl CheckSurroundingCollision
 	adds r2, r0, #0
 	cmp r2, #0
 	beq _02020650
@@ -17374,7 +17374,7 @@ _020206BC:
 	cmp r0, #1
 	beq _02020740
 _020206EA:
-	bl sub_02020480
+	bl Islander_DecideTreeAction
 	cmp r0, #0
 	bne _02020788
 _020206F2:
@@ -17446,15 +17446,15 @@ _02020778:
 	adds r1, #0x87
 	movs r0, #0x13
 	strb r0, [r1]
-	bl sub_020236D0
+	bl Islander_MoveAction20_Init
 _02020788:
 	pop {r4, r5, r6}
 	pop {r0}
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_02020790
-sub_02020790: @ 0x02020790
+	thumb_func_start Islander_AdjustAnimForTool
+Islander_AdjustAnimForTool: @ 0x02020790
 	push {lr}
 	ldr r3, _020207BC @ =0x030041A0
 	adds r0, r3, #0
@@ -17731,7 +17731,7 @@ _0202093A:
 	movs r5, #0x19
 _02020980:
 	ldr r0, _020209D0 @ =0x03001B50
-	bl sub_02019AF0
+	bl rand_u16
 	movs r1, #0x65
 	bl __modsi3
 	cmp r5, r0
@@ -17774,8 +17774,8 @@ _020209DA:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_020209E0
-sub_020209E0: @ 0x020209E0
+	thumb_func_start Islander_OnMoodChanged
+Islander_OnMoodChanged: @ 0x020209E0
 	push {lr}
 	ldr r1, _02020A04 @ =0x030041A0
 	ldr r2, _02020A08 @ =0x020338C4
@@ -17790,15 +17790,15 @@ sub_020209E0: @ 0x020209E0
 	adds r0, #1
 	lsls r0, r0, #0x18
 	lsrs r0, r0, #0x18
-	bl sub_02026C7C
+	bl ChangeEmotion
 	pop {r0}
 	bx r0
 	.align 2, 0
 _02020A04: .4byte 0x030041A0
 _02020A08: .4byte 0x020338C4
 
-	thumb_func_start sub_02020A0C
-sub_02020A0C: @ 0x02020A0C
+	thumb_func_start WriteItemTileToVRAM
+WriteItemTileToVRAM: @ 0x02020A0C
 	lsls r1, r1, #0x10
 	lsrs r1, r1, #0x10
 	strh r1, [r0]
@@ -17812,8 +17812,8 @@ sub_02020A0C: @ 0x02020A0C
 	strh r1, [r0, #2]
 	bx lr
 
-	thumb_func_start sub_02020A24
-sub_02020A24: @ 0x02020A24
+	thumb_func_start Item_GetItemIdFromTileId
+Item_GetItemIdFromTileId: @ 0x02020A24
 	push {r4, lr}
 	adds r4, r0, #0
 	ldr r1, _02020A64 @ =0x030041A0
@@ -17902,7 +17902,7 @@ _02020AAE:
 	adds r4, #0x8e
 	ldrb r0, [r4]
 	ldr r1, [r6, #0x44]
-	bl sub_0201F6DC
+	bl CheckSurroundingCollision
 	adds r2, r0, #0
 	ldr r0, [r6]
 	movs r1, #0xff
@@ -17948,7 +17948,7 @@ _02020B12:
 	adds r4, #0x72
 	ldrh r2, [r4]
 	ldr r3, _02020B48 @ =0x00006234
-	bl sub_0201F660
+	bl WriteItemToTile
 	adds r0, r6, #0
 	adds r0, #0x85
 	ldrb r1, [r0]
@@ -17984,7 +17984,7 @@ _02020B5A:
 	adds r1, #0x8d
 	strb r0, [r1]
 	strh r0, [r4]
-	bl sub_02020790
+	bl Islander_AdjustAnimForTool
 	movs r0, #1
 	b _02020B7E
 	.align 2, 0
@@ -17998,8 +17998,8 @@ _02020B7E:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_02020B88
-sub_02020B88: @ 0x02020B88
+	thumb_func_start Islander_Init
+Islander_Init: @ 0x02020B88
 	push {r4, r5, r6, r7, lr}
 	mov r7, r8
 	push {r7}
@@ -18174,12 +18174,12 @@ _02020CCA:
 	movs r0, #3
 	mov r1, ip
 	strb r0, [r1]
-	bl sub_020209E0
+	bl Islander_OnMoodChanged
 	ldrb r0, [r5]
 	adds r0, #1
 	lsls r0, r0, #0x18
 	lsrs r0, r0, #0x18
-	bl sub_02026C7C
+	bl ChangeEmotion
 	bl sub_02026BD8
 	movs r0, #0xfe
 	strb r0, [r6]
@@ -18199,8 +18199,8 @@ _02020D14: .4byte 0x03001B40
 _02020D18: .4byte 0x00001944
 _02020D1C: .4byte 0x02033F92
 
-	thumb_func_start sub_02020D20
-sub_02020D20: @ 0x02020D20
+	thumb_func_start Island_GetFloatingItem
+Island_GetFloatingItem: @ 0x02020D20
 	push {r4, lr}
 	ldr r0, _02020D7C @ =0x030041A0
 	mov ip, r0
@@ -18268,8 +18268,8 @@ _02020DA2:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_02020DA8
-sub_02020DA8: @ 0x02020DA8
+	thumb_func_start Islander_StepFlyingItem
+Islander_StepFlyingItem: @ 0x02020DA8
 	push {r4, r5, r6, r7, lr}
 	ldr r5, _02020DC8 @ =0x030041A0
 	adds r0, r5, #0
@@ -18302,7 +18302,7 @@ _02020DCC:
 	ldr r0, [r5, #0x3c]
 	cmp r0, #0
 	bne _02020EA8
-	bl sub_02020D20
+	bl Island_GetFloatingItem
 	adds r4, r0, #0
 	lsls r1, r4, #2
 	ldr r0, _02020E28 @ =0x02033B48
@@ -18311,7 +18311,7 @@ _02020DCC:
 	ldrh r3, [r6, #2]
 	movs r0, #0
 	movs r1, #1
-	bl sub_0201FF48
+	bl SpawnEntity
 	adds r4, r0, #0
 	cmp r4, #0
 	bne _02020E04
@@ -18323,7 +18323,7 @@ _02020E04:
 	ldr r0, _02020E2C @ =0x03004790
 	adds r4, r1, r0
 	ldr r0, _02020E30 @ =0x03001B50
-	bl sub_02019AF0
+	bl rand_u16
 	movs r1, #1
 	ands r1, r0
 	cmp r1, #0
@@ -18350,7 +18350,7 @@ _02020E38:
 _02020E46:
 	str r0, [r4, #0x14]
 	ldr r0, _02020EA0 @ =0x03001B50
-	bl sub_02019AF0
+	bl rand_u16
 	movs r1, #5
 	bl __modsi3
 	lsls r0, r0, #4
@@ -18372,7 +18372,7 @@ _02020E6E:
 	cmp r0, #4
 	bne _02020E8C
 	ldr r0, _02020EA0 @ =0x03001B50
-	bl sub_02019AF0
+	bl rand_u16
 	movs r1, #6
 	bl __modsi3
 	lsls r0, r0, #2
@@ -18455,7 +18455,7 @@ _02020EF8:
 	movs r4, #0x32
 _02020F16:
 	ldr r0, _02020F38 @ =0x03001B50
-	bl sub_02019AF0
+	bl rand_u16
 	movs r1, #0x65
 	bl __modsi3
 	cmp r4, r0
@@ -18478,7 +18478,7 @@ _02020F3C:
 _02020F44:
 	movs r0, #0xf
 	strb r0, [r7]
-	bl sub_02022C30
+	bl Islander_ReceiveItem_Init
 _02020F4C:
 	pop {r4, r5, r6, r7}
 	pop {r0}
@@ -18584,7 +18584,7 @@ _02020FF6:
 	movs r4, #0x32
 _02021008:
 	ldr r0, _0202102C @ =0x03001B50
-	bl sub_02019AF0
+	bl rand_u16
 	movs r1, #0x65
 	bl __modsi3
 	cmp r4, r0
@@ -18611,7 +18611,7 @@ _02021038:
 	adds r1, #0x87
 	movs r0, #0xd
 	strb r0, [r1]
-	bl sub_0202277C
+	bl Islander_Fishing_Init
 	movs r0, #1
 	b _0202104A
 _02021048:
@@ -19042,7 +19042,7 @@ _02021356:
 	cmp r1, r0
 	bne _020213D4
 	ldr r0, _020213D0 @ =0x03001B50
-	bl sub_02019AF0
+	bl rand_u16
 	movs r1, #0x65
 	bl __modsi3
 	cmp r0, #5
@@ -19129,7 +19129,7 @@ sub_020213DC: @ 0x020213DC
 	ldrb r1, [r5]
 	ldrh r2, [r2, #0x1a]
 	ldrh r3, [r3]
-	bl sub_0201F660
+	bl WriteItemToTile
 	ldrb r0, [r4]
 	cmp r0, #0
 	bne _02021438
@@ -19276,7 +19276,7 @@ _0202152A:
 	adds r5, r1, #0
 	ldr r1, _02021570 @ =0x00006234
 	adds r0, r6, #0
-	bl sub_02020A0C
+	bl WriteItemTileToVRAM
 	movs r0, #0
 	strb r0, [r4]
 	mov r1, r8
@@ -19289,7 +19289,7 @@ _0202152A:
 	ldrb r0, [r0]
 	cmp r0, #3
 	bne _0202155C
-	bl sub_02020790
+	bl Islander_AdjustAnimForTool
 _0202155C:
 	pop {r3, r4}
 	mov r8, r3
@@ -19312,7 +19312,7 @@ sub_02021574: @ 0x02021574
 	ldrb r0, [r0]
 	cmp r0, #0
 	beq _020215BA
-	bl sub_02020DA8
+	bl Islander_StepFlyingItem
 	adds r5, r4, #0
 	adds r5, #0x87
 	ldrb r1, [r5]
@@ -19379,8 +19379,8 @@ _020215F8:
 	.align 2, 0
 _02021604: .4byte 0x030041A0
 
-	thumb_func_start sub_02021608
-sub_02021608: @ 0x02021608
+	thumb_func_start Islander_MoveIndoorsOrOutdoors
+Islander_MoveIndoorsOrOutdoors: @ 0x02021608
 	push {r4, r5, r6, r7, lr}
 	mov r7, sl
 	mov r6, sb
@@ -19434,7 +19434,7 @@ _02021668:
 	bl sub_02026A38
 _02021674:
 	movs r0, #1
-	bl sub_0201FDF4
+	bl Islander_PlayAnim
 	cmp r0, #0
 	beq _02021710
 	adds r0, r4, #0
@@ -19493,9 +19493,9 @@ _020216CE:
 	movs r0, #6
 	strb r0, [r1]
 _020216EA:
-	bl sub_020209E0
+	bl Islander_OnMoodChanged
 	movs r0, #0
-	bl sub_0201FE6C
+	bl Islander_ClearStoredItem
 _020216F4:
 	subs r5, #1
 	cmp r5, #0
@@ -19540,7 +19540,7 @@ sub_02021720: @ 0x02021720
 	strb r6, [r0]
 	adds r0, #5
 	strb r6, [r0]
-	bl sub_02020790
+	bl Islander_AdjustAnimForTool
 	ldr r1, _0202176C @ =0x02033680
 	ldrb r0, [r4]
 	lsls r0, r0, #2
@@ -19572,7 +19572,7 @@ _0202177A:
 	lsls r6, r6, #1
 _0202177E:
 	ldr r0, _020217A4 @ =0x03001B50
-	bl sub_02019AF0
+	bl rand_u16
 	ldr r1, _020217A8 @ =0x00000151
 	bl __modsi3
 	adds r0, r6, r0
@@ -19721,7 +19721,7 @@ _020218A0:
 	strh r0, [r1]
 _020218A4:
 	movs r0, #0
-	bl sub_0201FDF4
+	bl Islander_PlayAnim
 _020218AA:
 	pop {r4, r5, r6}
 	pop {r0}
@@ -19763,7 +19763,7 @@ _020218E8:
 	adds r4, r5, #0
 	adds r4, #0x6e
 	ldrb r2, [r4]
-	bl sub_0201F3F8
+	bl Islander_ChangeMoveDir
 	mov r8, r4
 	cmp r0, #0
 	bne _020218FE
@@ -19985,7 +19985,7 @@ _02021A8E:
 	adds r1, #0x87
 	movs r0, #0x11
 	strb r0, [r1]
-	bl sub_02022F28
+	bl IslanderMoveAction_Dig
 	b _02021AB4
 _02021AA4:
 	ldr r0, [r5, #0x18]
@@ -20008,7 +20008,7 @@ _02021AB4:
 	b _02021ACC
 _02021AC6:
 	movs r0, #0
-	bl sub_0201FDF4
+	bl Islander_PlayAnim
 _02021ACC:
 	pop {r3, r4}
 	mov r8, r3
@@ -20057,7 +20057,7 @@ sub_02021AD8: @ 0x02021AD8
 	movs r3, #0x80
 	lsls r3, r3, #2
 	movs r2, #0
-	bl sub_0201F660
+	bl WriteItemToTile
 	b _02021B68
 	.align 2, 0
 _02021B2C: .4byte 0x030041A0
@@ -20087,7 +20087,7 @@ _02021B48:
 	movs r1, #0x80
 	lsls r1, r1, #2
 	adds r0, r2, #0
-	bl sub_02020A0C
+	bl WriteItemTileToVRAM
 _02021B68:
 	ldrb r0, [r4]
 	ldr r1, [r5]
@@ -20140,8 +20140,8 @@ _02021BA4:
 	.align 2, 0
 _02021BC8: .4byte 0x0202F7FC
 
-	thumb_func_start sub_02021BCC
-sub_02021BCC: @ 0x02021BCC
+	thumb_func_start Islander_ProcessFood
+Islander_ProcessFood: @ 0x02021BCC
 	push {r4, r5, r6, r7, lr}
 	mov r7, sl
 	mov r6, sb
@@ -20170,7 +20170,7 @@ sub_02021BCC: @ 0x02021BCC
 	bl sub_02026A38
 _02021C02:
 	movs r0, #1
-	bl sub_0201FDF4
+	bl Islander_PlayAnim
 	cmp r0, #0
 	bne _02021C0E
 	b _02021F8E
@@ -20573,12 +20573,12 @@ _02021EFE:
 	adds r0, r4, #0
 	adds r0, #0x95
 	ldrb r0, [r0]
-	bl sub_0201FE6C
+	bl Islander_ClearStoredItem
 _02021F08:
 	mov r2, sb
 	cmp r2, #1
 	beq _02021F30
-	bl sub_020209E0
+	bl Islander_OnMoodChanged
 	adds r1, r4, #0
 	adds r1, #0x90
 	ldrb r0, [r1]
@@ -20592,7 +20592,7 @@ _02021F08:
 	movs r0, #1
 	strb r0, [r1]
 	movs r0, #2
-	bl sub_02026C7C
+	bl ChangeEmotion
 _02021F30:
 	adds r1, r4, #0
 	adds r1, #0x6e
@@ -20604,7 +20604,7 @@ _02021F30:
 	subs r1, #0x12
 	movs r0, #7
 	strb r0, [r1]
-	bl sub_02021FA4
+	bl IslanderMoveAction_UpdateEmotion
 	b _02021F76
 _02021F4A:
 	ldr r0, [r4]
@@ -20614,7 +20614,7 @@ _02021F4A:
 	movs r3, #0x80
 	lsls r3, r3, #2
 	movs r2, #0
-	bl sub_0201F660
+	bl WriteItemToTile
 	adds r1, r4, #0
 	adds r1, #0x82
 	movs r0, #0
@@ -20652,8 +20652,8 @@ _02021F8E:
 	.align 2, 0
 _02021FA0: .4byte 0x02033680
 
-	thumb_func_start sub_02021FA4
-sub_02021FA4: @ 0x02021FA4
+	thumb_func_start IslanderMoveAction_UpdateEmotion
+IslanderMoveAction_UpdateEmotion: @ 0x02021FA4
 	push {r4, r5, lr}
 	ldr r4, _02021FE4 @ =0x030041A0
 	adds r1, r4, #0
@@ -20723,7 +20723,7 @@ _0202202E:
 	adds r0, #1
 	lsls r0, r0, #0x18
 	lsrs r0, r0, #0x18
-	bl sub_02026C7C
+	bl ChangeEmotion
 	ldrh r0, [r5, #4]
 	adds r1, r4, #0
 	adds r1, #0x8a
@@ -20743,7 +20743,7 @@ sub_02022054: @ 0x02022054
 	ldr r6, _020220BC @ =0x03003BC4
 	movs r5, #0
 	movs r0, #1
-	bl sub_0201FDF4
+	bl Islander_PlayAnim
 	cmp r0, #0
 	bne _02022068
 	b _020221B8
@@ -20780,18 +20780,18 @@ _02022068:
 	ldrh r3, [r0]
 	movs r0, #1
 	movs r1, #0
-	bl sub_0201FF48
+	bl SpawnEntity
 	cmp r0, #0
 	beq _02022118
 	movs r0, #0
-	bl sub_0201FE6C
+	bl Islander_ClearStoredItem
 	b _02022118
 	.align 2, 0
 _020220B8: .4byte 0x030041A0
 _020220BC: .4byte 0x03003BC4
 _020220C0:
 	ldr r0, _020220E4 @ =0x03001B50
-	bl sub_02019AF0
+	bl rand_u16
 	movs r1, #0x65
 	bl __modsi3
 	lsls r0, r0, #0x10
@@ -20802,7 +20802,7 @@ _020220C0:
 	movs r1, #0
 	movs r2, #0xb
 	movs r3, #8
-	bl sub_0201FF48
+	bl SpawnEntity
 	b _02022118
 	.align 2, 0
 _020220E4: .4byte 0x03001B50
@@ -20813,7 +20813,7 @@ _020220E8:
 	movs r1, #0
 	movs r2, #0x42
 	movs r3, #9
-	bl sub_0201FF48
+	bl SpawnEntity
 	b _02022118
 _020220FA:
 	cmp r5, #0x61
@@ -20822,14 +20822,14 @@ _020220FA:
 	movs r1, #0
 	movs r2, #0x43
 	movs r3, #0xa
-	bl sub_0201FF48
+	bl SpawnEntity
 	b _02022118
 _0202210C:
 	movs r0, #0
 	movs r1, #0
 	movs r2, #0x44
 	movs r3, #0xb
-	bl sub_0201FF48
+	bl SpawnEntity
 _02022118:
 	adds r1, r4, #0
 	adds r1, #0x99
@@ -20843,7 +20843,7 @@ _02022118:
 	subs r1, #0x10
 	movs r0, #0
 	strb r0, [r1]
-	bl sub_02020790
+	bl Islander_AdjustAnimForTool
 	ldr r1, _02022158 @ =0x02033680
 	adds r0, r4, #0
 	adds r0, #0x88
@@ -21063,7 +21063,7 @@ _020222D8:
 	mov r4, ip
 	strb r1, [r4]
 	strb r1, [r3]
-	bl sub_02020790
+	bl Islander_AdjustAnimForTool
 	movs r0, #0xa
 	strb r0, [r6]
 _020222F0:
@@ -21072,8 +21072,8 @@ _020222F0:
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_020222F8
-sub_020222F8: @ 0x020222F8
+	thumb_func_start Islander_CheckClickedOnTimer
+Islander_CheckClickedOnTimer: @ 0x020222F8
 	push {r4, r5, r6, r7, lr}
 	ldr r4, _02022340 @ =0x030041A0
 	adds r7, r4, #0
@@ -21123,7 +21123,7 @@ _02022344:
 	beq _0202235A
 	strb r5, [r2]
 _0202235A:
-	bl sub_020209E0
+	bl Islander_OnMoodChanged
 	adds r1, r4, #0
 	adds r1, #0x90
 	ldrb r0, [r1]
@@ -21161,7 +21161,7 @@ _02022398:
 	adds r1, #0x87
 	movs r0, #7
 	strb r0, [r1]
-	bl sub_02021FA4
+	bl IslanderMoveAction_UpdateEmotion
 _020223A6:
 	pop {r4, r5, r6, r7}
 	pop {r0}
@@ -21241,8 +21241,8 @@ _0202242C:
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_0202243C
-sub_0202243C: @ 0x0202243C
+	thumb_func_start Islander_MoveAction11_State0
+Islander_MoveAction11_State0: @ 0x0202243C
 	push {r4, r5, r6, lr}
 	ldr r5, _020224CC @ =0x030041A0
 	adds r0, r5, #0
@@ -21273,7 +21273,7 @@ sub_0202243C: @ 0x0202243C
 	strb r0, [r1]
 _02022474:
 	movs r0, #1
-	bl sub_0201FDF4
+	bl Islander_PlayAnim
 	cmp r0, #0
 	beq _020224C6
 	adds r1, r5, #0
@@ -21300,7 +21300,7 @@ _02022474:
 	adds r0, r5, #0
 	adds r0, #0x9b
 	strb r2, [r0]
-	bl sub_02020790
+	bl Islander_AdjustAnimForTool
 	strh r4, [r6]
 	adds r1, r5, #0
 	adds r1, #0x99
@@ -21319,8 +21319,8 @@ _020224CC: .4byte 0x030041A0
 _020224D0: .4byte 0x03003C00
 _020224D4: .4byte 0x02033B27
 
-	thumb_func_start sub_020224D8
-sub_020224D8: @ 0x020224D8
+	thumb_func_start Islander_MoveAction11_State1
+Islander_MoveAction11_State1: @ 0x020224D8
 	push {r4, r5, r6, r7, lr}
 	mov r7, sl
 	mov r6, sb
@@ -21337,7 +21337,7 @@ sub_020224D8: @ 0x020224D8
 	ldr r1, _0202252C @ =0x03003C00
 	adds r6, r0, r1
 	movs r0, #1
-	bl sub_0201FDF4
+	bl Islander_PlayAnim
 	cmp r0, #0
 	beq _0202253C
 	adds r0, r6, #0
@@ -21415,7 +21415,7 @@ _02022574:
 	b _020226BA
 _0202258C:
 	ldr r0, _020225C8 @ =0x03001B50
-	bl sub_02019AF0
+	bl rand_u16
 	movs r1, #0x65
 	bl __modsi3
 	cmp r0, #0x18
@@ -21475,7 +21475,7 @@ _020225FC:
 	ldrb r0, [r0]
 	adds r4, r4, r0
 	ldr r0, _02022658 @ =0x03001B50
-	bl sub_02019AF0
+	bl rand_u16
 	adds r1, r0, #0
 	cmp r1, #0
 	bge _02022618
@@ -21492,7 +21492,7 @@ _02022618:
 	ldrh r3, [r0, #2]
 	movs r0, #0
 	movs r1, #2
-	bl sub_0201FF48
+	bl SpawnEntity
 	adds r4, r0, #0
 	cmp r4, #0
 	beq _020226BA
@@ -21583,8 +21583,8 @@ _020226D0:
 _020226E0: .4byte 0x00003333
 _020226E4: .4byte 0x03004790
 
-	thumb_func_start sub_020226E8
-sub_020226E8: @ 0x020226E8
+	thumb_func_start Islander_MoveAction11_State2
+Islander_MoveAction11_State2: @ 0x020226E8
 	push {r4, r5, lr}
 	ldr r4, _02022758 @ =0x030041A0
 	adds r2, r4, #0
@@ -21622,7 +21622,7 @@ sub_020226E8: @ 0x020226E8
 	movs r0, #6
 	strb r0, [r1]
 _02022730:
-	bl sub_020209E0
+	bl Islander_OnMoodChanged
 _02022734:
 	ldr r0, [r4, #8]
 	str r0, [r4, #0x10]
@@ -21637,7 +21637,7 @@ _02022734:
 	subs r1, #2
 	movs r0, #0x59
 	strb r0, [r1]
-	bl sub_02021FA4
+	bl IslanderMoveAction_UpdateEmotion
 _02022752:
 	pop {r4, r5}
 	pop {r0}
@@ -21662,8 +21662,8 @@ sub_0202275C: @ 0x0202275C
 _02022774: .4byte 0x030041A0
 _02022778: .4byte 0x02033860
 
-	thumb_func_start sub_0202277C
-sub_0202277C: @ 0x0202277C
+	thumb_func_start Islander_Fishing_Init
+Islander_Fishing_Init: @ 0x0202277C
 	push {lr}
 	ldr r3, _02022794 @ =0x030041A0
 	adds r0, r3, #0
@@ -21711,12 +21711,12 @@ _0202279E:
 	.align 2, 0
 _020227D4: .4byte 0x02033680
 
-	thumb_func_start sub_020227D8
-sub_020227D8: @ 0x020227D8
+	thumb_func_start Islander_Fishing_State0
+Islander_Fishing_State0: @ 0x020227D8
 	push {r4, lr}
 	ldr r4, _020227F8 @ =0x030041A0
 	movs r0, #1
-	bl sub_0201FDF4
+	bl Islander_PlayAnim
 	cmp r0, #0
 	beq _02022834
 	adds r0, r4, #0
@@ -21780,12 +21780,12 @@ _0202284E:
 	.align 2, 0
 _02022854: .4byte 0x02033680
 
-	thumb_func_start sub_02022858
-sub_02022858: @ 0x02022858
+	thumb_func_start Islander_Fishing_State1
+Islander_Fishing_State1: @ 0x02022858
 	push {r4, lr}
 	ldr r4, _0202289C @ =0x030041A0
 	movs r0, #0
-	bl sub_0201FDF4
+	bl Islander_PlayAnim
 	adds r3, r4, #0
 	adds r3, #0x70
 	ldrh r0, [r3]
@@ -21818,8 +21818,8 @@ _02022896:
 	.align 2, 0
 _0202289C: .4byte 0x030041A0
 
-	thumb_func_start sub_020228A0
-sub_020228A0: @ 0x020228A0
+	thumb_func_start Islander_Fishing_State2
+Islander_Fishing_State2: @ 0x020228A0
 	push {r4, lr}
 	ldr r4, _020228C4 @ =0x030041A0
 	adds r1, r4, #0
@@ -21880,12 +21880,12 @@ _02022908:
 	.align 2, 0
 _02022910: .4byte 0x02033680
 
-	thumb_func_start sub_02022914
-sub_02022914: @ 0x02022914
+	thumb_func_start Islander_Fishing_State3
+Islander_Fishing_State3: @ 0x02022914
 	push {r4, lr}
 	ldr r4, _02022944 @ =0x030041A0
 	movs r0, #0
-	bl sub_0201FDF4
+	bl Islander_PlayAnim
 	adds r1, r4, #0
 	adds r1, #0x70
 	ldrh r0, [r1]
@@ -21927,7 +21927,7 @@ _0202294E:
 	adds r0, r4, #0
 	adds r0, #0x89
 	strb r1, [r0]
-	bl sub_0201F030
+	bl Islander_GetFishingItem
 	adds r1, r4, #0
 	adds r1, #0x6e
 	strh r0, [r1]
@@ -21945,12 +21945,12 @@ _0202298A:
 	.align 2, 0
 _02022990: .4byte 0x02033680
 
-	thumb_func_start sub_02022994
-sub_02022994: @ 0x02022994
+	thumb_func_start Islander_Fishing_State4
+Islander_Fishing_State4: @ 0x02022994
 	push {r4, r5, lr}
 	ldr r4, _020229D4 @ =0x030041A0
 	movs r0, #1
-	bl sub_0201FDF4
+	bl Islander_PlayAnim
 	cmp r0, #0
 	bne _020229A4
 	b _02022AD8
@@ -22092,7 +22092,7 @@ _02022AA2:
 _02022AA8:
 	strb r0, [r1]
 	adds r5, r1, #0
-	bl sub_020209E0
+	bl Islander_OnMoodChanged
 _02022AB0:
 	ldr r1, _02022AE0 @ =0x02033680
 	ldrb r0, [r5]
@@ -22121,12 +22121,12 @@ _02022AD8:
 	.align 2, 0
 _02022AE0: .4byte 0x02033680
 
-	thumb_func_start sub_02022AE4
-sub_02022AE4: @ 0x02022AE4
+	thumb_func_start Islander_Fishing_State5
+Islander_Fishing_State5: @ 0x02022AE4
 	push {r4, lr}
 	ldr r4, _02022B20 @ =0x030041A0
 	movs r0, #1
-	bl sub_0201FDF4
+	bl Islander_PlayAnim
 	cmp r0, #0
 	beq _02022B3C
 	ldr r0, [r4, #0x40]
@@ -22148,7 +22148,7 @@ sub_02022AE4: @ 0x02022AE4
 	subs r1, #9
 	movs r0, #7
 	strb r0, [r1]
-	bl sub_02021FA4
+	bl IslanderMoveAction_UpdateEmotion
 	b _02022B38
 	.align 2, 0
 _02022B20: .4byte 0x030041A0
@@ -22169,12 +22169,12 @@ _02022B3C:
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_02022B44
-sub_02022B44: @ 0x02022B44
+	thumb_func_start Islander_Fishing_State6
+Islander_Fishing_State6: @ 0x02022B44
 	push {r4, r5, lr}
 	ldr r4, _02022B78 @ =0x030041A0
 	movs r0, #1
-	bl sub_0201FDF4
+	bl Islander_PlayAnim
 	cmp r0, #0
 	beq _02022BD6
 	adds r1, r4, #0
@@ -22256,12 +22256,12 @@ _02022BD6:
 	.align 2, 0
 _02022BDC: .4byte 0x02033680
 
-	thumb_func_start sub_02022BE0
-sub_02022BE0: @ 0x02022BE0
+	thumb_func_start Islander_Fishing_State7
+Islander_Fishing_State7: @ 0x02022BE0
 	push {r4, lr}
 	ldr r4, _02022C0C @ =0x030041A0
 	movs r0, #1
-	bl sub_0201FDF4
+	bl Islander_PlayAnim
 	cmp r0, #0
 	beq _02022C04
 	movs r0, #1
@@ -22280,8 +22280,8 @@ _02022C04:
 	.align 2, 0
 _02022C0C: .4byte 0x030041A0
 
-	thumb_func_start sub_02022C10
-sub_02022C10: @ 0x02022C10
+	thumb_func_start IslanderMoveAction_Fishing
+IslanderMoveAction_Fishing: @ 0x02022C10
 	push {lr}
 	ldr r0, _02022C28 @ =0x030041A0
 	ldr r1, _02022C2C @ =0x0203386C
@@ -22297,8 +22297,8 @@ sub_02022C10: @ 0x02022C10
 _02022C28: .4byte 0x030041A0
 _02022C2C: .4byte 0x0203386C
 
-	thumb_func_start sub_02022C30
-sub_02022C30: @ 0x02022C30
+	thumb_func_start Islander_ReceiveItem_Init
+Islander_ReceiveItem_Init: @ 0x02022C30
 	push {lr}
 	ldr r2, _02022C4C @ =0x030041A0
 	adds r1, r2, #0
@@ -22348,8 +22348,8 @@ _02022C56:
 	.align 2, 0
 _02022C88: .4byte 0x02033680
 
-	thumb_func_start sub_02022C8C
-sub_02022C8C: @ 0x02022C8C
+	thumb_func_start IslanderMoveAction_ReceiveItem
+IslanderMoveAction_ReceiveItem: @ 0x02022C8C
 	push {lr}
 	ldr r0, _02022CA4 @ =0x030041A0
 	ldr r1, _02022CA8 @ =0x020338B8
@@ -22365,8 +22365,8 @@ sub_02022C8C: @ 0x02022C8C
 _02022CA4: .4byte 0x030041A0
 _02022CA8: .4byte 0x020338B8
 
-	thumb_func_start sub_02022CAC
-sub_02022CAC: @ 0x02022CAC
+	thumb_func_start Islander_DespawnFlyingItem
+Islander_DespawnFlyingItem: @ 0x02022CAC
 	push {r4, r5, r6, r7, lr}
 	mov r7, sb
 	mov r6, r8
@@ -22414,7 +22414,7 @@ _02022D00:
 	bl sub_02026A38
 _02022D0C:
 	movs r0, #1
-	bl sub_0201FDF4
+	bl Islander_PlayAnim
 	adds r5, r0, #0
 	cmp r5, #0
 	beq _02022D98
@@ -22537,7 +22537,7 @@ _02022D98:
 	ldr r0, _02022E48 @ =0x00002A30
 	strh r0, [r7]
 	ldr r0, _02022E4C @ =0x03001B50
-	bl sub_02019AF0
+	bl rand_u16
 	movs r1, #0x6d
 	bl __modsi3
 	movs r1, #0x64
@@ -22574,12 +22574,12 @@ _02022E48: .4byte 0x00002A30
 _02022E4C: .4byte 0x03001B50
 _02022E50: .4byte 0x0202F7FC
 
-	thumb_func_start sub_02022E54
-sub_02022E54: @ 0x02022E54
+	thumb_func_start Islander_StoreHeldItem
+Islander_StoreHeldItem: @ 0x02022E54
 	push {r4, lr}
 	ldr r4, _02022E84 @ =0x030041A0
 	movs r0, #1
-	bl sub_0201FDF4
+	bl Islander_PlayAnim
 	cmp r0, #0
 	beq _02022EB4
 	adds r0, r4, #0
@@ -22588,7 +22588,7 @@ sub_02022E54: @ 0x02022E54
 	adds r1, r4, #0
 	adds r1, #0x6e
 	ldrh r1, [r1]
-	bl sub_0201EFB8
+	bl Islander_StoreItem
 	adds r0, r4, #0
 	adds r0, #0x8b
 	ldrb r0, [r0]
@@ -22631,12 +22631,12 @@ _02022EB4:
 	.align 2, 0
 _02022EBC: .4byte 0x02033680
 
-	thumb_func_start sub_02022EC0
-sub_02022EC0: @ 0x02022EC0
+	thumb_func_start Islander_ProcessFishReceived
+Islander_ProcessFishReceived: @ 0x02022EC0
 	push {r4, lr}
 	ldr r4, _02022F04 @ =0x030041A0
 	movs r0, #1
-	bl sub_0201FDF4
+	bl Islander_PlayAnim
 	cmp r0, #0
 	beq _02022F20
 	movs r0, #1
@@ -22661,7 +22661,7 @@ sub_02022EC0: @ 0x02022EC0
 	subs r1, #9
 	movs r0, #7
 	strb r0, [r1]
-	bl sub_02021FA4
+	bl IslanderMoveAction_UpdateEmotion
 	b _02022F20
 	.align 2, 0
 _02022F04: .4byte 0x030041A0
@@ -22681,8 +22681,8 @@ _02022F20:
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_02022F28
-sub_02022F28: @ 0x02022F28
+	thumb_func_start IslanderMoveAction_Dig
+IslanderMoveAction_Dig: @ 0x02022F28
 	push {lr}
 	ldr r3, _02022F40 @ =0x030041A0
 	adds r0, r3, #0
@@ -22730,8 +22730,8 @@ _02022F4A:
 	.align 2, 0
 _02022F80: .4byte 0x02033680
 
-	thumb_func_start sub_02022F84
-sub_02022F84: @ 0x02022F84
+	thumb_func_start Islander_BuryItem_State0
+Islander_BuryItem_State0: @ 0x02022F84
 	push {r4, r5, r6, r7, lr}
 	mov r7, sb
 	mov r6, r8
@@ -22757,7 +22757,7 @@ sub_02022F84: @ 0x02022F84
 	bl sub_02026A38
 _02022FB4:
 	movs r0, #1
-	bl sub_0201FDF4
+	bl Islander_PlayAnim
 	cmp r0, #0
 	bne _02022FC0
 	b _02023110
@@ -22855,7 +22855,7 @@ _02023068:
 	add ip, r0
 	ldr r1, _0202309C @ =0x000012AC
 	mov r0, ip
-	bl sub_02020A0C
+	bl WriteItemTileToVRAM
 	mov r2, sb
 	cmp r2, #0
 	bne _020230D0
@@ -22943,8 +22943,8 @@ _02023110:
 	.align 2, 0
 _0202311C: .4byte 0x02033680
 
-	thumb_func_start sub_02023120
-sub_02023120: @ 0x02023120
+	thumb_func_start Islander_BuryItem_State1
+Islander_BuryItem_State1: @ 0x02023120
 	push {r4, r5, r6, r7, lr}
 	mov r7, sb
 	mov r6, r8
@@ -22956,7 +22956,7 @@ sub_02023120: @ 0x02023120
 	adds r0, #0x7a
 	ldrb r7, [r0]
 	movs r0, #1
-	bl sub_0201FDF4
+	bl Islander_PlayAnim
 	cmp r0, #0
 	bne _02023140
 	b _020232EC
@@ -23017,7 +23017,7 @@ _0202317E:
 	movs r0, #0
 	strb r0, [r2]
 _020231AE:
-	bl sub_020209E0
+	bl Islander_OnMoodChanged
 	adds r1, r5, #0
 	adds r1, #0x5a
 	ldrh r0, [r1]
@@ -23039,29 +23039,29 @@ _020231AE:
 	adds r0, #0x64
 	ldrh r6, [r0]
 	adds r0, r4, #0
-	bl sub_02020A24
+	bl Item_GetItemIdFromTileId
 	lsls r0, r0, #0x10
 	cmp r0, #0
 	beq _020231F4
 	adds r0, r4, #0
-	bl sub_02020A24
+	bl Item_GetItemIdFromTileId
 	lsls r0, r0, #0x10
 	lsrs r6, r0, #0x10
 	movs r0, #1
 	mov r8, r0
 _020231F4:
 	movs r0, #0
-	bl sub_0201FE6C
+	bl Islander_ClearStoredItem
 	b _02023254
 	.align 2, 0
 _020231FC: .4byte 0x00001270
 _02023200: .4byte 0x0202F7FC
 _02023204:
-	bl sub_0201FB9C
+	bl Islander_PlantRandomFlower
 	b _020232EC
 _0202320A:
 	ldr r0, _0202322C @ =0x03001B50
-	bl sub_02019AF0
+	bl rand_u16
 	movs r1, #0x65
 	bl __modsi3
 	cmp r0, #0x31
@@ -23069,7 +23069,7 @@ _0202320A:
 	ldr r0, _02023230 @ =0x0080609E
 	str r0, [r5, #0x40]
 	movs r0, #0x11
-	bl sub_02024AEC
+	bl Item_TypeToIslandItem
 	lsls r0, r0, #0x10
 	lsrs r6, r0, #0x10
 	b _02023254
@@ -23092,7 +23092,7 @@ _02023234:
 	movs r0, #6
 	strb r0, [r1]
 _02023250:
-	bl sub_020209E0
+	bl Islander_OnMoodChanged
 _02023254:
 	adds r0, r5, #0
 	adds r0, #0x7a
@@ -23179,12 +23179,12 @@ _020232F8: .4byte 0x00007777
 _020232FC: .4byte 0x03001B40
 _02023300: .4byte 0x00001918
 
-	thumb_func_start sub_02023304
-sub_02023304: @ 0x02023304
+	thumb_func_start Islander_BuryItem_State2
+Islander_BuryItem_State2: @ 0x02023304
 	push {r4, r5, lr}
 	ldr r4, _02023330 @ =0x030041A0
 	movs r0, #1
-	bl sub_0201FDF4
+	bl Islander_PlayAnim
 	cmp r0, #0
 	beq _020233D8
 	adds r0, r4, #0
@@ -23301,12 +23301,12 @@ _020233D8:
 	.align 2, 0
 _020233E0: .4byte 0x02033680
 
-	thumb_func_start sub_020233E4
-sub_020233E4: @ 0x020233E4
+	thumb_func_start Islander_BuryItem_State3
+Islander_BuryItem_State3: @ 0x020233E4
 	push {r4, r5, lr}
 	ldr r4, _02023444 @ =0x030041A0
 	movs r0, #1
-	bl sub_0201FDF4
+	bl Islander_PlayAnim
 	cmp r0, #0
 	beq _020234A6
 	adds r1, r4, #0
@@ -23343,12 +23343,12 @@ sub_020233E4: @ 0x020233E4
 	bne _02023438
 _02023432:
 	ldrh r0, [r5]
-	bl sub_0201F8FC
+	bl Islander_BuryRandomItem
 _02023438:
 	ldrh r0, [r5]
 	cmp r0, #0xf
 	bne _02023448
-	bl sub_0201FB9C
+	bl Islander_PlantRandomFlower
 	b _0202345E
 	.align 2, 0
 _02023444: .4byte 0x030041A0
@@ -23409,8 +23409,8 @@ _020234A6:
 	.align 2, 0
 _020234AC: .4byte 0x02033680
 
-	thumb_func_start sub_020234B0
-sub_020234B0: @ 0x020234B0
+	thumb_func_start Islander_BuryItem_State4
+Islander_BuryItem_State4: @ 0x020234B0
 	push {r4, r5, r6, r7, lr}
 	ldr r5, _020235C0 @ =0x030041A0
 	adds r0, r5, #0
@@ -23446,7 +23446,7 @@ _020234DE:
 	movs r1, #0x80
 	lsls r1, r1, #2
 	adds r0, r3, #0
-	bl sub_02020A0C
+	bl WriteItemTileToVRAM
 _020234F8:
 	adds r0, r5, #0
 	adds r0, #0x8a
@@ -23473,7 +23473,7 @@ _0202351C:
 	bl sub_02026A38
 _02023528:
 	movs r0, #1
-	bl sub_0201FDF4
+	bl Islander_PlayAnim
 	cmp r0, #0
 	beq _0202361E
 	movs r1, #0
@@ -23507,7 +23507,7 @@ _02023556:
 	adds r4, #0x7c
 	ldrh r1, [r4]
 	adds r0, r3, #0
-	bl sub_02020A0C
+	bl WriteItemTileToVRAM
 	adds r1, r5, #0
 	adds r1, #0x78
 	movs r6, #0
@@ -23544,7 +23544,7 @@ _0202358A:
 	subs r1, #9
 	movs r0, #7
 	strb r0, [r1]
-	bl sub_02021FA4
+	bl IslanderMoveAction_UpdateEmotion
 	b _0202361A
 	.align 2, 0
 _020235C0: .4byte 0x030041A0
@@ -23564,7 +23564,7 @@ _020235D0:
 	adds r4, r5, #0
 	adds r4, #0x8a
 	strb r6, [r4]
-	bl sub_02020790
+	bl Islander_AdjustAnimForTool
 	ldr r1, _02023624 @ =0x02033680
 	adds r0, r5, #0
 	adds r0, #0x88
@@ -23597,12 +23597,12 @@ _0202361E:
 	.align 2, 0
 _02023624: .4byte 0x02033680
 
-	thumb_func_start sub_02023628
-sub_02023628: @ 0x02023628
+	thumb_func_start Islander_BuryItem_State5
+Islander_BuryItem_State5: @ 0x02023628
 	push {r4, lr}
 	ldr r4, _02023654 @ =0x030041A0
 	movs r0, #1
-	bl sub_0201FDF4
+	bl Islander_PlayAnim
 	cmp r0, #0
 	beq _020236A6
 	adds r0, r4, #0
@@ -23675,8 +23675,8 @@ _020236A6:
 	.align 2, 0
 _020236AC: .4byte 0x02033680
 
-	thumb_func_start sub_020236B0
-sub_020236B0: @ 0x020236B0
+	thumb_func_start IslanderMoveAction_Bury
+IslanderMoveAction_Bury: @ 0x020236B0
 	push {lr}
 	ldr r0, _020236C8 @ =0x030041A0
 	ldr r1, _020236CC @ =0x0203388C
@@ -23692,8 +23692,8 @@ sub_020236B0: @ 0x020236B0
 _020236C8: .4byte 0x030041A0
 _020236CC: .4byte 0x0203388C
 
-	thumb_func_start sub_020236D0
-sub_020236D0: @ 0x020236D0
+	thumb_func_start Islander_MoveAction20_Init
+Islander_MoveAction20_Init: @ 0x020236D0
 	push {r4, lr}
 	ldr r0, _0202372C @ =0x030041A0
 	mov ip, r0
@@ -23744,8 +23744,8 @@ _0202372C: .4byte 0x030041A0
 _02023730: .4byte 0x02033680
 _02023734: .4byte 0x00002A30
 
-	thumb_func_start sub_02023738
-sub_02023738: @ 0x02023738
+	thumb_func_start Islander_MoveAction20_State0
+Islander_MoveAction20_State0: @ 0x02023738
 	push {r4, r5, lr}
 	ldr r5, _0202375C @ =0x030041A0
 	adds r0, r5, #0
@@ -23768,7 +23768,7 @@ sub_02023738: @ 0x02023738
 _0202375C: .4byte 0x030041A0
 _02023760:
 	movs r0, #0
-	bl sub_0201FDF4
+	bl Islander_PlayAnim
 	adds r0, r5, #0
 	adds r0, #0x80
 	ldrh r1, [r0]
@@ -23832,8 +23832,8 @@ _020237DC: .4byte 0x00000824
 _020237E0: .4byte 0x00000826
 _020237E4: .4byte 0x00000828
 
-	thumb_func_start sub_020237E8
-sub_020237E8: @ 0x020237E8
+	thumb_func_start Islander_MoveAction20_State1
+Islander_MoveAction20_State1: @ 0x020237E8
 	push {r4, r5, r6, lr}
 	ldr r0, _02023894 @ =0x030041A0
 	mov ip, r0
@@ -23936,8 +23936,8 @@ _020238B0: .4byte 0x00000844
 _020238B4: .4byte 0x00000846
 _020238B8: .4byte 0x0400004C
 
-	thumb_func_start sub_020238BC
-sub_020238BC: @ 0x020238BC
+	thumb_func_start Islander_MoveAction20_State2
+Islander_MoveAction20_State2: @ 0x020238BC
 	push {r4, r5, r6, r7, lr}
 	ldr r0, _02023944 @ =0x030041A0
 	mov ip, r0
@@ -23998,7 +23998,7 @@ sub_020238BC: @ 0x020238BC
 	subs r1, #9
 	movs r0, #7
 	strb r0, [r1]
-	bl sub_02021FA4
+	bl IslanderMoveAction_UpdateEmotion
 _02023938:
 	ldr r1, _02023964 @ =0x0400004C
 	ldrh r0, [r5]
@@ -24017,8 +24017,8 @@ _0202395C: .4byte 0x00000828
 _02023960: .4byte 0x0000049A
 _02023964: .4byte 0x0400004C
 
-	thumb_func_start sub_02023968
-sub_02023968: @ 0x02023968
+	thumb_func_start Islander_MoveAction20_State3
+Islander_MoveAction20_State3: @ 0x02023968
 	push {lr}
 	ldr r3, _02023990 @ =0x030041A0
 	adds r0, r3, #0
@@ -24043,8 +24043,8 @@ _0202398C:
 	.align 2, 0
 _02023990: .4byte 0x030041A0
 
-	thumb_func_start sub_02023994
-sub_02023994: @ 0x02023994
+	thumb_func_start Islander_MoveAction20_State4
+Islander_MoveAction20_State4: @ 0x02023994
 	push {r4, r5, r6, r7, lr}
 	mov r7, r8
 	push {r7}
@@ -24176,7 +24176,7 @@ _02023A80:
 _02023A90:
 	ldrh r0, [r4]
 	ldr r1, [r5, #0x44]
-	bl sub_0201F6DC
+	bl CheckSurroundingCollision
 	adds r6, r0, #0
 	cmp r6, #0
 	bne _02023AD6
@@ -24194,7 +24194,7 @@ _02023A90:
 	bhi _02023ABE
 	movs r0, #3
 	strb r0, [r1]
-	bl sub_020209E0
+	bl Islander_OnMoodChanged
 _02023ABE:
 	adds r0, r5, #0
 	adds r0, #0x99
@@ -24205,7 +24205,7 @@ _02023ABE:
 	adds r1, #0x87
 	movs r0, #7
 	strb r0, [r1]
-	bl sub_02021FA4
+	bl IslanderMoveAction_UpdateEmotion
 	b _02023B1E
 _02023AD6:
 	adds r0, r5, #0
@@ -24257,8 +24257,8 @@ _02023B2C: .4byte 0x00000824
 _02023B30: .4byte 0x00000826
 _02023B34: .4byte 0x00000828
 
-	thumb_func_start sub_02023B38
-sub_02023B38: @ 0x02023B38
+	thumb_func_start Islander_MoveAction20_Move
+Islander_MoveAction20_Move: @ 0x02023B38
 	push {lr}
 	ldr r0, _02023B50 @ =0x030041A0
 	ldr r1, _02023B54 @ =0x020338A4
@@ -24733,8 +24733,8 @@ _02023EBE:
 _02023ED0: .4byte 0x030023B0
 _02023ED4: .4byte 0x0000FFFF
 
-	thumb_func_start sub_02023ED8
-sub_02023ED8: @ 0x02023ED8
+	thumb_func_start Item_IsFossil
+Item_IsFossil: @ 0x02023ED8
 	push {lr}
 	lsls r0, r0, #0x10
 	lsrs r1, r0, #0x10
@@ -24762,8 +24762,8 @@ _02023F00: .4byte 0x00002511
 _02023F04: .4byte 0xFFFFE114
 _02023F08: .4byte 0x0000FEA6
 
-	thumb_func_start sub_02023F0C
-sub_02023F0C: @ 0x02023F0C
+	thumb_func_start Item_IsGyroid
+Item_IsGyroid: @ 0x02023F0C
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r3, #0
@@ -24787,8 +24787,8 @@ _02023F2C: .4byte 0xEA500000
 _02023F30: .4byte 0x01FB0000
 _02023F34: .4byte 0x0000FEA8
 
-	thumb_func_start sub_02023F38
-sub_02023F38: @ 0x02023F38
+	thumb_func_start Item_IsNES
+Item_IsNES: @ 0x02023F38
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -24811,8 +24811,8 @@ _02023F52:
 _02023F58: .4byte 0xE2580000
 _02023F5C: .4byte 0x0000FEA4
 
-	thumb_func_start sub_02023F60
-sub_02023F60: @ 0x02023F60
+	thumb_func_start Item_IsFurniture
+Item_IsFurniture: @ 0x02023F60
 	push {lr}
 	lsls r0, r0, #0x10
 	lsrs r2, r0, #0x10
@@ -24887,8 +24887,8 @@ _02023FF4: .4byte 0xFFFFE258
 _02023FF8: .4byte 0x0000FEA4
 _02023FFC: .4byte 0x0000FEA1
 
-	thumb_func_start sub_02024000
-sub_02024000: @ 0x02024000
+	thumb_func_start Item_IsApple
+Item_IsApple: @ 0x02024000
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -24903,8 +24903,8 @@ _02024010:
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_02024018
-sub_02024018: @ 0x02024018
+	thumb_func_start Item_IsOrange
+Item_IsOrange: @ 0x02024018
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -24919,8 +24919,8 @@ _02024026:
 	.align 2, 0
 _0202402C: .4byte 0x28040000
 
-	thumb_func_start sub_02024030
-sub_02024030: @ 0x02024030
+	thumb_func_start Item_IsPeach
+Item_IsPeach: @ 0x02024030
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -24935,8 +24935,8 @@ _0202403E:
 	.align 2, 0
 _02024044: .4byte 0x28030000
 
-	thumb_func_start sub_02024048
-sub_02024048: @ 0x02024048
+	thumb_func_start Item_IsPear
+Item_IsPear: @ 0x02024048
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -24951,8 +24951,8 @@ _02024056:
 	.align 2, 0
 _0202405C: .4byte 0x28020000
 
-	thumb_func_start sub_02024060
-sub_02024060: @ 0x02024060
+	thumb_func_start Item_IsCherry
+Item_IsCherry: @ 0x02024060
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -24967,8 +24967,8 @@ _0202406E:
 	.align 2, 0
 _02024074: .4byte 0x28010000
 
-	thumb_func_start sub_02024078
-sub_02024078: @ 0x02024078
+	thumb_func_start Item_IsTurnip
+Item_IsTurnip: @ 0x02024078
 	push {lr}
 	lsls r2, r0, #0x10
 	movs r3, #0
@@ -24991,8 +24991,8 @@ _02024098:
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_020240A0
-sub_020240A0: @ 0x020240A0
+	thumb_func_start Item_IsMushroom
+Item_IsMushroom: @ 0x020240A0
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -25007,8 +25007,8 @@ _020240AE:
 	.align 2, 0
 _020240B4: .4byte 0x28050000
 
-	thumb_func_start sub_020240B8
-sub_020240B8: @ 0x020240B8
+	thumb_func_start Item_IsCandy
+Item_IsCandy: @ 0x020240B8
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -25023,8 +25023,8 @@ _020240C6:
 	.align 2, 0
 _020240CC: .4byte 0x28060000
 
-	thumb_func_start sub_020240D0
-sub_020240D0: @ 0x020240D0
+	thumb_func_start Item_Is100Bells
+Item_Is100Bells: @ 0x020240D0
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -25039,8 +25039,8 @@ _020240DE:
 	.align 2, 0
 _020240E4: .4byte 0x21030000
 
-	thumb_func_start sub_020240E8
-sub_020240E8: @ 0x020240E8
+	thumb_func_start Item_Is1KBells
+Item_Is1KBells: @ 0x020240E8
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -25055,8 +25055,8 @@ _020240F8:
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_02024100
-sub_02024100: @ 0x02024100
+	thumb_func_start Item_Is10KBells
+Item_Is10KBells: @ 0x02024100
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -25071,8 +25071,8 @@ _0202410E:
 	.align 2, 0
 _02024114: .4byte 0x21010000
 
-	thumb_func_start sub_02024118
-sub_02024118: @ 0x02024118
+	thumb_func_start Item_Is30KBells
+Item_Is30KBells: @ 0x02024118
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -25087,8 +25087,8 @@ _02024126:
 	.align 2, 0
 _0202412C: .4byte 0x21020000
 
-	thumb_func_start sub_02024130
-sub_02024130: @ 0x02024130
+	thumb_func_start Item_IsFlowerBag
+Item_IsFlowerBag: @ 0x02024130
 	push {lr}
 	lsls r0, r0, #0x10
 	lsrs r1, r0, #0x10
@@ -25113,14 +25113,14 @@ _02024156:
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_0202415C
-sub_0202415C: @ 0x0202415C
+	thumb_func_start Item_IsSeedlingDiaryTicketGrabBag
+Item_IsSeedlingDiaryTicketGrabBag: @ 0x0202415C
 	push {r4, r5, r6, lr}
 	lsls r5, r0, #0x10
 	lsrs r4, r5, #0x10
 	movs r6, #0
 	adds r0, r4, #0
-	bl sub_02024130
+	bl Item_IsFlowerBag
 	cmp r0, #0
 	bne _02024198
 	movs r0, #0xf0
@@ -25151,8 +25151,8 @@ _02024198:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_020241A0
-sub_020241A0: @ 0x020241A0
+	thumb_func_start Item_IsNet
+Item_IsNet: @ 0x020241A0
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -25167,8 +25167,8 @@ _020241B0:
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_020241B8
-sub_020241B8: @ 0x020241B8
+	thumb_func_start Item_IsGoldenNet
+Item_IsGoldenNet: @ 0x020241B8
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -25183,8 +25183,8 @@ _020241C6:
 	.align 2, 0
 _020241CC: .4byte 0x22390000
 
-	thumb_func_start sub_020241D0
-sub_020241D0: @ 0x020241D0
+	thumb_func_start Item_IsAxe
+Item_IsAxe: @ 0x020241D0
 	push {lr}
 	lsls r0, r0, #0x10
 	lsrs r1, r0, #0x10
@@ -25222,8 +25222,8 @@ _0202420A:
 	.align 2, 0
 _02024210: .4byte 0x00002201
 
-	thumb_func_start sub_02024214
-sub_02024214: @ 0x02024214
+	thumb_func_start Item_IsGoldenAxe
+Item_IsGoldenAxe: @ 0x02024214
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -25238,8 +25238,8 @@ _02024222:
 	.align 2, 0
 _02024228: .4byte 0x223A0000
 
-	thumb_func_start sub_0202422C
-sub_0202422C: @ 0x0202422C
+	thumb_func_start Item_IsShovel
+Item_IsShovel: @ 0x0202422C
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -25254,8 +25254,8 @@ _0202423A:
 	.align 2, 0
 _02024240: .4byte 0x22020000
 
-	thumb_func_start sub_02024244
-sub_02024244: @ 0x02024244
+	thumb_func_start Item_IsGoldenShovel
+Item_IsGoldenShovel: @ 0x02024244
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -25270,8 +25270,8 @@ _02024252:
 	.align 2, 0
 _02024258: .4byte 0x223B0000
 
-	thumb_func_start sub_0202425C
-sub_0202425C: @ 0x0202425C
+	thumb_func_start Item_IsFishingRod
+Item_IsFishingRod: @ 0x0202425C
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -25286,8 +25286,8 @@ _0202426A:
 	.align 2, 0
 _02024270: .4byte 0x22030000
 
-	thumb_func_start sub_02024274
-sub_02024274: @ 0x02024274
+	thumb_func_start Item_IsGoldenRod
+Item_IsGoldenRod: @ 0x02024274
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -25302,8 +25302,8 @@ _02024282:
 	.align 2, 0
 _02024288: .4byte 0x223C0000
 
-	thumb_func_start sub_0202428C
-sub_0202428C: @ 0x0202428C
+	thumb_func_start Item_IsUmbrella
+Item_IsUmbrella: @ 0x0202428C
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -25326,8 +25326,8 @@ _020242A6:
 _020242AC: .4byte 0xDDFC0000
 _020242B0: .4byte 0x0000FEA9
 
-	thumb_func_start sub_020242B4
-sub_020242B4: @ 0x020242B4
+	thumb_func_start Item_IsPaint
+Item_IsPaint: @ 0x020242B4
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r1, #0
@@ -25344,8 +25344,8 @@ _020242C6:
 	.align 2, 0
 _020242CC: .4byte 0xDDD30000
 
-	thumb_func_start sub_020242D0
-sub_020242D0: @ 0x020242D0
+	thumb_func_start Item_IsBalloon
+Item_IsBalloon: @ 0x020242D0
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r1, #0
@@ -25362,8 +25362,8 @@ _020242E2:
 	.align 2, 0
 _020242E8: .4byte 0xDDBC0000
 
-	thumb_func_start sub_020242EC
-sub_020242EC: @ 0x020242EC
+	thumb_func_start Item_IsPinwheel
+Item_IsPinwheel: @ 0x020242EC
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r1, #0
@@ -25380,8 +25380,8 @@ _020242FE:
 	.align 2, 0
 _02024304: .4byte 0xDDB40000
 
-	thumb_func_start sub_02024308
-sub_02024308: @ 0x02024308
+	thumb_func_start Item_IsHandFan
+Item_IsHandFan: @ 0x02024308
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r1, #0
@@ -25398,8 +25398,8 @@ _0202431A:
 	.align 2, 0
 _02024320: .4byte 0xDDAC0000
 
-	thumb_func_start sub_02024324
-sub_02024324: @ 0x02024324
+	thumb_func_start Item_IsSignboard
+Item_IsSignboard: @ 0x02024324
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -25414,8 +25414,8 @@ _02024332:
 	.align 2, 0
 _02024338: .4byte 0x251E0000
 
-	thumb_func_start sub_0202433C
-sub_0202433C: @ 0x0202433C
+	thumb_func_start Item_IsShirt
+Item_IsShirt: @ 0x0202433C
 	push {r4, lr}
 	lsls r3, r0, #0x10
 	lsrs r0, r3, #0x10
@@ -25450,8 +25450,8 @@ _0202436C:
 	.align 2, 0
 _02024374: .4byte 0x0000FEAE
 
-	thumb_func_start sub_02024378
-sub_02024378: @ 0x02024378
+	thumb_func_start Item_IsCarpet
+Item_IsCarpet: @ 0x02024378
 	push {r4, lr}
 	lsls r3, r0, #0x10
 	lsrs r0, r3, #0x10
@@ -25486,8 +25486,8 @@ _020243A8:
 	.align 2, 0
 _020243B0: .4byte 0x0000FEAA
 
-	thumb_func_start sub_020243B4
-sub_020243B4: @ 0x020243B4
+	thumb_func_start Item_IsWallpaper
+Item_IsWallpaper: @ 0x020243B4
 	push {r4, lr}
 	lsls r3, r0, #0x10
 	lsrs r0, r3, #0x10
@@ -25522,8 +25522,8 @@ _020243E4:
 	.align 2, 0
 _020243EC: .4byte 0x0000FEAC
 
-	thumb_func_start sub_020243F0
-sub_020243F0: @ 0x020243F0
+	thumb_func_start Item_IsAirCheck
+Item_IsAirCheck: @ 0x020243F0
 	push {r4, lr}
 	lsls r2, r0, #0x10
 	lsrs r0, r2, #0x10
@@ -25555,8 +25555,8 @@ _0202441A:
 	.align 2, 0
 _02024424: .4byte 0x0000FEA7
 
-	thumb_func_start sub_02024428
-sub_02024428: @ 0x02024428
+	thumb_func_start Item_IsTrash
+Item_IsTrash: @ 0x02024428
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -25579,8 +25579,8 @@ _02024442:
 _02024448: .4byte 0xDAF20000
 _0202444C: .4byte 0x0000FEB2
 
-	thumb_func_start sub_02024450
-sub_02024450: @ 0x02024450
+	thumb_func_start Item_IsPitfall
+Item_IsPitfall: @ 0x02024450
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -25595,8 +25595,8 @@ _0202445E:
 	.align 2, 0
 _02024464: .4byte 0x25120000
 
-	thumb_func_start sub_02024468
-sub_02024468: @ 0x02024468
+	thumb_func_start Item_IsConchSeaShellIcon
+Item_IsConchSeaShellIcon: @ 0x02024468
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -25619,8 +25619,8 @@ _02024482:
 _02024488: .4byte 0xDAEB0000
 _0202448C: .4byte 0x0000251A
 
-	thumb_func_start sub_02024490
-sub_02024490: @ 0x02024490
+	thumb_func_start Item_IsLionsPawShellIcon
+Item_IsLionsPawShellIcon: @ 0x02024490
 	push {lr}
 	lsls r0, r0, #0x10
 	lsrs r1, r0, #0x10
@@ -25643,8 +25643,8 @@ _020244AC:
 	.align 2, 0
 _020244B4: .4byte 0x00002514
 
-	thumb_func_start sub_020244B8
-sub_020244B8: @ 0x020244B8
+	thumb_func_start Item_IsCoral
+Item_IsCoral: @ 0x020244B8
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -25659,8 +25659,8 @@ _020244C6:
 	.align 2, 0
 _020244CC: .4byte 0x251B0000
 
-	thumb_func_start sub_020244D0
-sub_020244D0: @ 0x020244D0
+	thumb_func_start Item_IsFlowerLeaves
+Item_IsFlowerLeaves: @ 0x020244D0
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r1, #0
@@ -25677,8 +25677,8 @@ _020244E2:
 	.align 2, 0
 _020244E8: .4byte 0xF7C40000
 
-	thumb_func_start sub_020244EC
-sub_020244EC: @ 0x020244EC
+	thumb_func_start Item_IsPurpleCosmos
+Item_IsPurpleCosmos: @ 0x020244EC
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -25693,8 +25693,8 @@ _020244FA:
 	.align 2, 0
 _02024500: .4byte 0x08490000
 
-	thumb_func_start sub_02024504
-sub_02024504: @ 0x02024504
+	thumb_func_start Item_IsBlueCosmos
+Item_IsBlueCosmos: @ 0x02024504
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -25709,8 +25709,8 @@ _02024512:
 	.align 2, 0
 _02024518: .4byte 0x084A0000
 
-	thumb_func_start sub_0202451C
-sub_0202451C: @ 0x0202451C
+	thumb_func_start Item_IsYellowCosmos
+Item_IsYellowCosmos: @ 0x0202451C
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -25725,8 +25725,8 @@ _0202452A:
 	.align 2, 0
 _02024530: .4byte 0x08480000
 
-	thumb_func_start sub_02024534
-sub_02024534: @ 0x02024534
+	thumb_func_start Item_IsRedTulips
+Item_IsRedTulips: @ 0x02024534
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -25741,8 +25741,8 @@ _02024542:
 	.align 2, 0
 _02024548: .4byte 0x084B0000
 
-	thumb_func_start sub_0202454C
-sub_0202454C: @ 0x0202454C
+	thumb_func_start Item_IsWhiteTulips
+Item_IsWhiteTulips: @ 0x0202454C
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -25757,8 +25757,8 @@ _0202455A:
 	.align 2, 0
 _02024560: .4byte 0x084C0000
 
-	thumb_func_start sub_02024564
-sub_02024564: @ 0x02024564
+	thumb_func_start Item_IsYellowTulips
+Item_IsYellowTulips: @ 0x02024564
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -25773,8 +25773,8 @@ _02024572:
 	.align 2, 0
 _02024578: .4byte 0x084D0000
 
-	thumb_func_start sub_0202457C
-sub_0202457C: @ 0x0202457C
+	thumb_func_start Item_IsWhitePansies
+Item_IsWhitePansies: @ 0x0202457C
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -25789,8 +25789,8 @@ _0202458A:
 	.align 2, 0
 _02024590: .4byte 0x08450000
 
-	thumb_func_start sub_02024594
-sub_02024594: @ 0x02024594
+	thumb_func_start Item_IsPurplePansies
+Item_IsPurplePansies: @ 0x02024594
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -25805,8 +25805,8 @@ _020245A2:
 	.align 2, 0
 _020245A8: .4byte 0x08460000
 
-	thumb_func_start sub_020245AC
-sub_020245AC: @ 0x020245AC
+	thumb_func_start Item_IsYellowPansies
+Item_IsYellowPansies: @ 0x020245AC
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -25821,8 +25821,8 @@ _020245BA:
 	.align 2, 0
 _020245C0: .4byte 0x08470000
 
-	thumb_func_start sub_020245C4
-sub_020245C4: @ 0x020245C4
+	thumb_func_start Item_IsCoconut
+Item_IsCoconut: @ 0x020245C4
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -25837,8 +25837,8 @@ _020245D2:
 	.align 2, 0
 _020245D8: .4byte 0x28070000
 
-	thumb_func_start sub_020245DC
-sub_020245DC: @ 0x020245DC
+	thumb_func_start Item_IsCabana
+Item_IsCabana: @ 0x020245DC
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -25853,8 +25853,8 @@ _020245EA:
 	.align 2, 0
 _020245F0: .4byte 0x58500000
 
-	thumb_func_start sub_020245F4
-sub_020245F4: @ 0x020245F4
+	thumb_func_start Item_IsIslanderHouse
+Item_IsIslanderHouse: @ 0x020245F4
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -25869,8 +25869,8 @@ _02024602:
 	.align 2, 0
 _02024608: .4byte 0x58510000
 
-	thumb_func_start sub_0202460C
-sub_0202460C: @ 0x0202460C
+	thumb_func_start Item_IsSapling
+Item_IsSapling: @ 0x0202460C
 	push {lr}
 	lsls r0, r0, #0x10
 	lsrs r1, r0, #0x10
@@ -25914,8 +25914,8 @@ _02024654:
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_0202465C
-sub_0202465C: @ 0x0202465C
+	thumb_func_start Item_IsSmallTree
+Item_IsSmallTree: @ 0x0202465C
 	push {lr}
 	lsls r0, r0, #0x10
 	lsrs r1, r0, #0x10
@@ -25959,8 +25959,8 @@ _020246A2:
 	.align 2, 0
 _020246A8: .4byte 0x00000801
 
-	thumb_func_start sub_020246AC
-sub_020246AC: @ 0x020246AC
+	thumb_func_start Item_IsMediumTree
+Item_IsMediumTree: @ 0x020246AC
 	push {lr}
 	lsls r0, r0, #0x10
 	lsrs r1, r0, #0x10
@@ -26004,8 +26004,8 @@ _020246F2:
 	.align 2, 0
 _020246F8: .4byte 0x00000802
 
-	thumb_func_start sub_020246FC
-sub_020246FC: @ 0x020246FC
+	thumb_func_start Item_IsLargeTree
+Item_IsLargeTree: @ 0x020246FC
 	push {lr}
 	lsls r0, r0, #0x10
 	lsrs r1, r0, #0x10
@@ -26049,8 +26049,8 @@ _02024742:
 	.align 2, 0
 _02024748: .4byte 0x00000803
 
-	thumb_func_start sub_0202474C
-sub_0202474C: @ 0x0202474C
+	thumb_func_start Item_IsFullyGrownTree
+Item_IsFullyGrownTree: @ 0x0202474C
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -26119,8 +26119,8 @@ _020247C8: .4byte 0x00000804
 _020247CC: .4byte 0xFFFFF7F7
 _020247D0: .4byte 0x00000831
 
-	thumb_func_start sub_020247D4
-sub_020247D4: @ 0x020247D4
+	thumb_func_start Item_IsDeadSapling
+Item_IsDeadSapling: @ 0x020247D4
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -26135,8 +26135,8 @@ _020247E2:
 	.align 2, 0
 _020247E8: .4byte 0x084E0000
 
-	thumb_func_start sub_020247EC
-sub_020247EC: @ 0x020247EC
+	thumb_func_start Item_IsFruitAppleTree
+Item_IsFruitAppleTree: @ 0x020247EC
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -26151,8 +26151,8 @@ _020247FA:
 	.align 2, 0
 _02024800: .4byte 0x080C0000
 
-	thumb_func_start sub_02024804
-sub_02024804: @ 0x02024804
+	thumb_func_start Item_IsFruitOrangeTree
+Item_IsFruitOrangeTree: @ 0x02024804
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -26167,8 +26167,8 @@ _02024812:
 	.align 2, 0
 _02024818: .4byte 0x08140000
 
-	thumb_func_start sub_0202481C
-sub_0202481C: @ 0x0202481C
+	thumb_func_start Item_IsFruitPeachTree
+Item_IsFruitPeachTree: @ 0x0202481C
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -26183,8 +26183,8 @@ _0202482A:
 	.align 2, 0
 _02024830: .4byte 0x081C0000
 
-	thumb_func_start sub_02024834
-sub_02024834: @ 0x02024834
+	thumb_func_start Item_IsPearFruitTree
+Item_IsPearFruitTree: @ 0x02024834
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -26199,8 +26199,8 @@ _02024842:
 	.align 2, 0
 _02024848: .4byte 0x08240000
 
-	thumb_func_start sub_0202484C
-sub_0202484C: @ 0x0202484C
+	thumb_func_start Item_IsFruitCherryTree
+Item_IsFruitCherryTree: @ 0x0202484C
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -26215,8 +26215,8 @@ _0202485A:
 	.align 2, 0
 _02024860: .4byte 0x082C0000
 
-	thumb_func_start sub_02024864
-sub_02024864: @ 0x02024864
+	thumb_func_start Item_IsSmallStump
+Item_IsSmallStump: @ 0x02024864
 	push {lr}
 	lsls r0, r0, #0x10
 	lsrs r0, r0, #0x10
@@ -26229,8 +26229,8 @@ _02024872:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_02024878
-sub_02024878: @ 0x02024878
+	thumb_func_start Item_IsMediumStump
+Item_IsMediumStump: @ 0x02024878
 	push {lr}
 	lsls r0, r0, #0x10
 	lsrs r0, r0, #0x10
@@ -26243,8 +26243,8 @@ _02024886:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_0202488C
-sub_0202488C: @ 0x0202488C
+	thumb_func_start Item_IsLargeStump
+Item_IsLargeStump: @ 0x0202488C
 	push {lr}
 	lsls r0, r0, #0x10
 	lsrs r0, r0, #0x10
@@ -26257,8 +26257,8 @@ _0202489A:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_020248A0
-sub_020248A0: @ 0x020248A0
+	thumb_func_start Item_IsFullyGrownStump
+Item_IsFullyGrownStump: @ 0x020248A0
 	push {lr}
 	lsls r0, r0, #0x10
 	lsrs r0, r0, #0x10
@@ -26271,8 +26271,8 @@ _020248AE:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_020248B4
-sub_020248B4: @ 0x020248B4
+	thumb_func_start Item_IsPalmSapling
+Item_IsPalmSapling: @ 0x020248B4
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -26287,8 +26287,8 @@ _020248C2:
 	.align 2, 0
 _020248C8: .4byte 0x08540000
 
-	thumb_func_start sub_020248CC
-sub_020248CC: @ 0x020248CC
+	thumb_func_start Item_IsSmallPalmTree
+Item_IsSmallPalmTree: @ 0x020248CC
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -26303,8 +26303,8 @@ _020248DA:
 	.align 2, 0
 _020248E0: .4byte 0x08550000
 
-	thumb_func_start sub_020248E4
-sub_020248E4: @ 0x020248E4
+	thumb_func_start Item_IsMediumPalmTree
+Item_IsMediumPalmTree: @ 0x020248E4
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -26319,8 +26319,8 @@ _020248F2:
 	.align 2, 0
 _020248F8: .4byte 0x08560000
 
-	thumb_func_start sub_020248FC
-sub_020248FC: @ 0x020248FC
+	thumb_func_start Item_IsLargePalmTree
+Item_IsLargePalmTree: @ 0x020248FC
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -26335,8 +26335,8 @@ _0202490A:
 	.align 2, 0
 _02024910: .4byte 0x08570000
 
-	thumb_func_start sub_02024914
-sub_02024914: @ 0x02024914
+	thumb_func_start Item_IsPalmTree
+Item_IsPalmTree: @ 0x02024914
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r1, #0
@@ -26353,8 +26353,8 @@ _02024926:
 	.align 2, 0
 _0202492C: .4byte 0xF7A80000
 
-	thumb_func_start sub_02024930
-sub_02024930: @ 0x02024930
+	thumb_func_start Item_IsDeadPalmSapling
+Item_IsDeadPalmSapling: @ 0x02024930
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -26369,8 +26369,8 @@ _0202493E:
 	.align 2, 0
 _02024944: .4byte 0x085C0000
 
-	thumb_func_start sub_02024948
-sub_02024948: @ 0x02024948
+	thumb_func_start Item_IsFruitPalmTree
+Item_IsFruitPalmTree: @ 0x02024948
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -26385,8 +26385,8 @@ _02024956:
 	.align 2, 0
 _0202495C: .4byte 0x085B0000
 
-	thumb_func_start sub_02024960
-sub_02024960: @ 0x02024960
+	thumb_func_start Item_IsSmallPalmStump
+Item_IsSmallPalmStump: @ 0x02024960
 	push {lr}
 	lsls r0, r0, #0x10
 	lsrs r0, r0, #0x10
@@ -26399,8 +26399,8 @@ _0202496E:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_02024974
-sub_02024974: @ 0x02024974
+	thumb_func_start Item_IsMediumPalmStump
+Item_IsMediumPalmStump: @ 0x02024974
 	push {lr}
 	lsls r0, r0, #0x10
 	lsrs r0, r0, #0x10
@@ -26413,8 +26413,8 @@ _02024982:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_02024988
-sub_02024988: @ 0x02024988
+	thumb_func_start Item_IsLargePalmStump
+Item_IsLargePalmStump: @ 0x02024988
 	push {lr}
 	lsls r0, r0, #0x10
 	lsrs r0, r0, #0x10
@@ -26427,8 +26427,8 @@ _02024996:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_0202499C
-sub_0202499C: @ 0x0202499C
+	thumb_func_start Item_IsFullyGrownPalmStump
+Item_IsFullyGrownPalmStump: @ 0x0202499C
 	push {lr}
 	lsls r0, r0, #0x10
 	lsrs r0, r0, #0x10
@@ -26441,8 +26441,8 @@ _020249AA:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_020249B0
-sub_020249B0: @ 0x020249B0
+	thumb_func_start Item_IsIslandFlag
+Item_IsIslandFlag: @ 0x020249B0
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -26457,8 +26457,8 @@ _020249BE:
 	.align 2, 0
 _020249C4: .4byte 0x584E0000
 
-	thumb_func_start sub_020249C8
-sub_020249C8: @ 0x020249C8
+	thumb_func_start Item_IsHole
+Item_IsHole: @ 0x020249C8
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -26481,8 +26481,8 @@ _020249E2:
 _020249E8: .4byte 0xFFEF0000
 _020249EC: .4byte 0x0000FEB0
 
-	thumb_func_start sub_020249F0
-sub_020249F0: @ 0x020249F0
+	thumb_func_start Item_IsBuriedPitfall
+Item_IsBuriedPitfall: @ 0x020249F0
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r1, #0
@@ -26499,8 +26499,8 @@ _02024A02:
 	.align 2, 0
 _02024A08: .4byte 0xFFD60000
 
-	thumb_func_start sub_02024A0C
-sub_02024A0C: @ 0x02024A0C
+	thumb_func_start Item_IsCedarSapling
+Item_IsCedarSapling: @ 0x02024A0C
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -26515,8 +26515,8 @@ _02024A1A:
 	.align 2, 0
 _02024A20: .4byte 0x085D0000
 
-	thumb_func_start sub_02024A24
-sub_02024A24: @ 0x02024A24
+	thumb_func_start Item_IsDeadCedarSapling
+Item_IsDeadCedarSapling: @ 0x02024A24
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -26531,8 +26531,8 @@ _02024A32:
 	.align 2, 0
 _02024A38: .4byte 0x08620000
 
-	thumb_func_start sub_02024A3C
-sub_02024A3C: @ 0x02024A3C
+	thumb_func_start Item_IsWeed
+Item_IsWeed: @ 0x02024A3C
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r1, #0
@@ -26549,8 +26549,8 @@ _02024A4E:
 	.align 2, 0
 _02024A54: .4byte 0xFFF80000
 
-	thumb_func_start sub_02024A58
-sub_02024A58: @ 0x02024A58
+	thumb_func_start Item_IsRock
+Item_IsRock: @ 0x02024A58
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -26575,8 +26575,8 @@ _02024A78:
 	.align 2, 0
 _02024A80: .4byte 0xFF9D0000
 
-	thumb_func_start sub_02024A84
-sub_02024A84: @ 0x02024A84
+	thumb_func_start Item_IsReserved
+Item_IsReserved: @ 0x02024A84
 	push {lr}
 	lsls r0, r0, #0x10
 	movs r2, #0
@@ -26591,8 +26591,8 @@ _02024A92:
 	.align 2, 0
 _02024A98: .4byte 0xFFFF0000
 
-	thumb_func_start sub_02024A9C
-sub_02024A9C: @ 0x02024A9C
+	thumb_func_start Item_GetTypeIndex
+Item_GetTypeIndex: @ 0x02024A9C
 	push {r4, r5, r6, lr}
 	lsls r0, r0, #0x10
 	lsrs r6, r0, #0x10
@@ -26621,8 +26621,8 @@ _02024AC8:
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_02024AD0
-sub_02024AD0: @ 0x02024AD0
+	thumb_func_start Item_GetItemFromTypeIndex
+Item_GetItemFromTypeIndex: @ 0x02024AD0
 	push {lr}
 	adds r1, r0, #0
 	cmp r1, #0x57
@@ -26640,8 +26640,8 @@ _02024AE4:
 	.align 2, 0
 _02024AE8: .4byte 0x02034204
 
-	thumb_func_start sub_02024AEC
-sub_02024AEC: @ 0x02024AEC
+	thumb_func_start Item_TypeToIslandItem
+Item_TypeToIslandItem: @ 0x02024AEC
 	push {lr}
 	adds r1, r0, #0
 	cmp r1, #0x11
@@ -26782,7 +26782,7 @@ sub_02024C08: @ 0x02024C08
 	ldr r0, _02024C3C @ =0x03004260
 	adds r4, r4, r0
 	ldr r0, _02024C40 @ =0x03001B50
-	bl sub_02019AF0
+	bl rand_u16
 	movs r0, #0
 	str r0, [r4, #8]
 	movs r0, #0x80
@@ -27158,8 +27158,8 @@ _02024EFC: .4byte 0x000001FF
 _02024F00: .4byte 0xFFFFFE00
 _02024F04: .4byte 0x00000846
 
-	thumb_func_start sub_02024F08
-sub_02024F08: @ 0x02024F08
+	thumb_func_start Unk_Struct_Size54_ResetIdx
+Unk_Struct_Size54_ResetIdx: @ 0x02024F08
 	push {lr}
 	movs r1, #0x54
 	muls r1, r0, r1
@@ -27262,7 +27262,7 @@ _02024FC4: .4byte 0x03003710
 _02024FC8: .4byte 0x02034CF4
 _02024FCC:
 	ldrh r0, [r1]
-	bl sub_02024AEC
+	bl Item_TypeToIslandItem
 	lsls r0, r0, #0x10
 	lsrs r5, r0, #0x10
 _02024FD6:
@@ -27585,36 +27585,28 @@ _02025238: .4byte 0x03004790
 _0202523C: .4byte 0x02034CE0
 _02025240: .4byte 0x02025244
 
-	thumb_func_start sub_02025244
-sub_02025244: @ 0x02025244
-	strh r0, [r3, r1]
-	lsls r2, r0, #8
-	strh r0, [r4, r1]
-	lsls r2, r0, #8
-	strh r0, [r5, r1]
-	lsls r2, r0, #8
-	strh r0, [r6, r1]
-	lsls r2, r0, #8
-	strh r6, [r6, r1]
-	lsls r2, r0, #8
+_02025244: @ jump table
+	.4byte 0x02025258
+	.4byte 0x02025260
+	.4byte 0x02025268
+	.4byte 0x02025270
+	.4byte 0x02025276
+_02025258:
 	movs r0, #5
 	bl sub_02026A38
 	b _02025276
 
-	thumb_func_start sub_02025260
-sub_02025260: @ 0x02025260
+_02025260:
 	movs r0, #6
 	bl sub_02026A38
 	b _02025276
 
-	thumb_func_start sub_02025268
-sub_02025268: @ 0x02025268
+_02025268:
 	movs r0, #7
 	bl sub_02026A38
 	b _02025276
 
-	thumb_func_start sub_02025270
-sub_02025270: @ 0x02025270
+_02025270:
 	movs r0, #8
 	bl sub_02026A38
 _02025276:
@@ -27928,7 +27920,7 @@ _020254B4:
 	ldr r0, _020254F0 @ =0x00002A30
 	strh r0, [r6]
 	ldr r0, _020254F4 @ =0x03001B50
-	bl sub_02019AF0
+	bl rand_u16
 	movs r1, #0x6d
 	bl __modsi3
 	movs r1, #0x64
@@ -28713,7 +28705,7 @@ _02025AE4:
 	ldr r5, _02025B60 @ =0x000003FF
 	adds r0, r7, #0
 	adds r1, r6, #0
-	bl sub_0201F6DC
+	bl CheckSurroundingCollision
 	cmp r0, #0
 	bne _02025B68
 	ldrh r0, [r6]
@@ -29895,7 +29887,7 @@ sub_020263A0: @ 0x020263A0
 	adds r0, r7, r1
 	strb r6, [r0]
 	movs r0, #2
-	bl sub_02024F08
+	bl Unk_Struct_Size54_ResetIdx
 	adds r1, r5, #0
 	adds r1, #0x40
 	movs r3, #0
@@ -29924,7 +29916,7 @@ sub_020263A0: @ 0x020263A0
 	movs r3, #0x80
 	lsls r3, r3, #2
 	movs r2, #0
-	bl sub_0201F660
+	bl WriteItemToTile
 	ldrb r0, [r4, #0x1e]
 	ldr r1, [r4]
 	bl sub_020262DC
@@ -30246,7 +30238,7 @@ _02026678:
 	mov r3, r8
 	ldrh r3, [r3]
 	mov ip, r3
-	bl sub_0201F660
+	bl WriteItemToTile
 	adds r0, r5, #0
 	adds r0, #0x28
 	ldrb r1, [r0]
@@ -30992,7 +30984,7 @@ _02026C28:
 	bne _02026C50
 	ldr r0, _02026C4C @ =0x03000052
 	ldrb r0, [r0]
-	bl sub_02026C7C
+	bl ChangeEmotion
 	b _02026C5A
 	.align 2, 0
 _02026C44: .4byte 0x03000050
@@ -31025,8 +31017,8 @@ sub_02026C68: @ 0x02026C68
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_02026C7C
-sub_02026C7C: @ 0x02026C7C
+	thumb_func_start ChangeEmotion
+ChangeEmotion: @ 0x02026C7C
 	push {r4, r5, r6, r7, lr}
 	lsls r0, r0, #0x18
 	lsrs r4, r0, #0x18
@@ -35980,6 +35972,7 @@ RegisterRamReset: @ 0x020292F4
 	bx lr
 	thumb_func_end RegisterRamReset
 
+	@ Ghidra name: SoundBiasZero (differs; retained the official BIOS wrapper name).
 	thumb_func_start SoundBiasReset
 SoundBiasReset: @ 0x020292F8
 	movs r0, #0
@@ -35988,6 +35981,7 @@ SoundBiasReset: @ 0x020292F8
 	thumb_func_end SoundBiasReset
 	.align 2, 0
 
+	@ Ghidra name: SoundBias200 (differs; retained the official BIOS wrapper name).
 	thumb_func_start SoundBiasSet
 SoundBiasSet: @ 0x02029300
 	movs r0, #1

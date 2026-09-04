@@ -164,6 +164,9 @@ payload:
 payload/build/payload/src/all.o:
 	@$(MAKE) -B -C payload DEVKITPRO=$(if $(wildcard /c/devkitPro),/c/devkitPro,$(DEVKITPRO)) DEVKITARM=$(if $(wildcard /c/devkitPro/devkitARM),/c/devkitPro/devkitARM,$(DEVKITARM)) build/payload/src/all.o
 
+payload/build/payload/src/islander_anim.o: payload/src/islander_anim.c payload/include/global.h payload/Makefile
+	@$(MAKE) -B -C payload DEVKITPRO=$(if $(wildcard /c/devkitPro),/c/devkitPro,$(DEVKITPRO)) DEVKITARM=$(if $(wildcard /c/devkitPro/devkitARM),/c/devkitPro/devkitARM,$(DEVKITARM)) build/payload/src/islander_anim.o
+
 # Forward the recovered archive-member source objects to the payload build.
 payload/build/payload/asm/libgcc/%.o: payload/asm/libgcc/%.s payload/Makefile asm/macros/function.inc
 	@$(MAKE) -C payload DEVKITPRO=$(if $(wildcard /c/devkitPro),/c/devkitPro,$(DEVKITPRO)) DEVKITARM=$(if $(wildcard /c/devkitPro/devkitARM),/c/devkitPro/devkitARM,$(DEVKITARM)) build/payload/asm/libgcc/$*.o
@@ -180,6 +183,7 @@ OBJDIFF_TEXT_TARGET := $(OBJDIFF_DIR)/all.text.target.o
 OBJDIFF_DATA_ASM := $(OBJDIFF_DIR)/all.data.target.s
 OBJDIFF_DATA_TARGET := $(OBJDIFF_DIR)/all.data.target.o
 OBJDIFF_COMPILED_BASE := payload/build/payload/src/all.o
+OBJDIFF_COMPILED_DATA_BASE := payload/build/payload/src/islander_anim.o
 OBJDIFF_BASE := $(OBJDIFF_DIR)/all.base.o
 OBJDIFF_TEXT_DEPS := payload/asm/all.s asm/macros/function.inc constants/gba_constants.inc
 OBJDIFF_LIBGCC_NAMES := _call_via_rX _divsi3 _dvmd_tls _modsi3 _udivsi3 _umodsi3
@@ -211,8 +215,8 @@ $(OBJDIFF_LIBC_TARGETS): $(OBJDIFF_DIR)/libc/%.o: tools/agbcc/lib/libc.a
 
 # agbcc emits tentative globals such as gGameState as COMMON.  Assign them to
 # BSS in an objdiff-only relocatable link so they participate in data matching.
-$(OBJDIFF_BASE): $(OBJDIFF_COMPILED_BASE)
-	$(LD) -r -d -o $@ $<
+$(OBJDIFF_BASE): $(OBJDIFF_COMPILED_BASE) $(OBJDIFF_COMPILED_DATA_BASE)
+	$(LD) -r -d -o $@ $^
 
 $(PAYLOADLZ): payload
 	@:

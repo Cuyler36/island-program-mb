@@ -633,7 +633,7 @@ typedef struct animal_home_s {
     /* 0x02 */ u8 block_z;     /* acre y position */
     /* 0x03 */ u8 ut_x;        /* unit x position */
     /* 0x04 */ u8 ut_z;        /* unit z position */
-} Anmhome_c;
+} __attribute__((packed)) Anmhome_c;
 
 /* sizeof(mQst_contest_info_u) == 4 */
 typedef union quest_contest_info_s {
@@ -712,6 +712,7 @@ typedef struct agb_anmmem_s {
     s8 friendship;
     u32 letter_info;
     mISL_Anmplmail_agb_c letter;
+    u8 __align[4];
 } mISL_Anmmem_agb_c;
 
 typedef struct agb_quest_base_s {
@@ -785,7 +786,10 @@ typedef struct island_agb_s {
     /* 0x397D */ u8 last_song_to_island; /* last song kapp'n sang for a male character */
     /* 0x397E */ u8 last_song_from_island; /* last song kapp'n sang for a female character */
     /* 0x397F */ u8 checksum;
-} Island_agb_c;
+  } Island_agb_c;
+
+/* Pointer to the island save/runtime image currently being edited. */
+extern Island_agb_c* gIslandData;
 
 
 typedef struct GameState {
@@ -838,6 +842,237 @@ typedef struct GameState {
     u8 unk_860;
 } GameState;
 
+/* Island field tile data and scene-wide runtime state. */
+/* sizeof(IslandFieldWork) == 0x4A0 */
+typedef struct IslandFieldWork {
+    /* 0x000 */ s32 bg3_scroll_y;
+    /* 0x004 */ s32 unk_004;
+    /* 0x008 */ s32 entity_dist_x;
+    /* 0x00C */ s32 entity_dist_y;
+    /* 0x010 */ u16 fg_tiles[2][256];
+    /* 0x410 */ u16 mosaic;
+    /* 0x412 */ u16 tile_render_scratch;
+    /* 0x414 */ u16 tile_id_scratch;
+    /* 0x416 */ u8 last_palette_hour;
+    /* 0x417 */ u8 entity_active[0x80];
+    /* 0x497 */ u8 palette_anim_timer;
+    /* 0x498 */ u8 palette_anim_frame;
+    /* 0x499 */ u8 unk_499;
+    /* 0x49A */ u8 special_tile_idx;
+    /* 0x49B */ u8 transition_state;
+    /* 0x49C */ u8 transition_proc_idx;
+    /* 0x49D */ u8 unk_49D;
+    /* 0x49E */ u8 gameplay_active;
+    /* 0x49F */ u8 pad_49F;
+} IslandFieldWork;
+
+typedef enum ItemType {
+    ITEM_TYPE_FOSSIL = 0x00,
+    ITEM_TYPE_FURNITURE = 0x01,
+    ITEM_TYPE_GYROID = 0x02,
+    ITEM_TYPE_APPLE = 0x03,
+    ITEM_TYPE_ORANGE = 0x04,
+    ITEM_TYPE_PEACH = 0x05,
+    ITEM_TYPE_PEAR = 0x06,
+    ITEM_TYPE_CHERRY = 0x07,
+    ITEM_TYPE_TURNIP = 0x08,
+    ITEM_TYPE_MUSHROOM = 0x09,
+    ITEM_TYPE_CANDY = 0x0A,
+    ITEM_TYPE_100_BELLS = 0x0B,
+    ITEM_TYPE_SEEDLING_DIARY_TICKET_GRAB_BAG = 0x0C,
+    ITEM_TYPE_SIGNBOARD = 0x0D,
+    ITEM_TYPE_SHIRT = 0x0E,
+    ITEM_TYPE_TRASH = 0x0F,
+    ITEM_TYPE_PITFALL = 0x10,
+    ITEM_TYPE_CONCH_SEA_SHELL_ICON = 0x11,
+    ITEM_TYPE_LIONS_PAW_SHELL_ICON = 0x12,
+    ITEM_TYPE_CORAL = 0x13,
+    ITEM_TYPE_PURPLE_COSMOS = 0x14,
+    ITEM_TYPE_BLUE_COSMOS = 0x15,
+    ITEM_TYPE_YELLOW_COSMOS = 0x16,
+    ITEM_TYPE_RED_TULIPS = 0x17,
+    ITEM_TYPE_WHITE_TULIPS = 0x18,
+    ITEM_TYPE_YELLOW_TULIPS = 0x19,
+    ITEM_TYPE_WHITE_PANSIES = 0x1A,
+    ITEM_TYPE_PURPLE_PANSIES = 0x1B,
+    ITEM_TYPE_YELLOW_PANSIES = 0x1C,
+    ITEM_TYPE_FLOWER_LEAVES = 0x1D,
+    ITEM_TYPE_COCONUT = 0x1E,
+    ITEM_TYPE_CABANA = 0x1F,
+    ITEM_TYPE_ISLANDER_HOUSE = 0x20,
+    ITEM_TYPE_SAPLING = 0x21,
+    ITEM_TYPE_SMALL_TREE = 0x22,
+    ITEM_TYPE_MEDIUM_TREE = 0x23,
+    ITEM_TYPE_LARGE_TREE = 0x24,
+    ITEM_TYPE_FULLY_GROWN_TREE = 0x25,
+    ITEM_TYPE_DEAD_SAPLING = 0x26,
+    ITEM_TYPE_FRUIT_APPLE_TREE = 0x27,
+    ITEM_TYPE_FRUIT_ORANGE_TREE = 0x28,
+    ITEM_TYPE_FRUIT_PEACH_TREE = 0x29,
+    ITEM_TYPE_FRUIT_PEAR_TREE = 0x2A,
+    ITEM_TYPE_FRUIT_CHERRY_TREE = 0x2B,
+    ITEM_TYPE_SMALL_STUMP = 0x2C,
+    ITEM_TYPE_MEDIUM_STUMP = 0x2D,
+    ITEM_TYPE_LARGE_STUMP = 0x2E,
+    ITEM_TYPE_FULLY_GROWN_STUMP = 0x2F,
+    ITEM_TYPE_PALM_SAPLING = 0x30,
+    ITEM_TYPE_SMALL_PALM_TREE = 0x31,
+    ITEM_TYPE_MEDIUM_PALM_TREE = 0x32,
+    ITEM_TYPE_LARGE_PALM_TREE = 0x33,
+    ITEM_TYPE_PALM_TREE = 0x34,
+    ITEM_TYPE_DEAD_PALM_SAPLING = 0x35,
+    ITEM_TYPE_FRUIT_PALM_TREE = 0x36,
+    ITEM_TYPE_SMALL_PALM_STUMP = 0x37,
+    ITEM_TYPE_MEDIUM_PALM_STUMP = 0x38,
+    ITEM_TYPE_LARGE_PALM_STUMP = 0x39,
+    ITEM_TYPE_FULLY_GROWN_PALM_STUMP = 0x3A,
+    ITEM_TYPE_ISLAND_FLAG = 0x3B,
+    ITEM_TYPE_HOLE = 0x3C,
+    ITEM_TYPE_BURIED_PITFALL = 0x3D,
+    ITEM_TYPE_CEDAR_SAPLING = 0x3E,
+    ITEM_TYPE_DEAD_CEDAR_SAPLING = 0x3F,
+    ITEM_TYPE_WEED = 0x40,
+    ITEM_TYPE_ROCK = 0x41,
+    ITEM_TYPE_1K_BELLS = 0x42,
+    ITEM_TYPE_10K_BELLS = 0x43,
+    ITEM_TYPE_30K_BELLS = 0x44,
+    ITEM_TYPE_NET = 0x45,
+    ITEM_TYPE_GOLDEN_NET = 0x46,
+    ITEM_TYPE_AXE = 0x47,
+    ITEM_TYPE_GOLDEN_AXE = 0x48,
+    ITEM_TYPE_SHOVEL = 0x49,
+    ITEM_TYPE_GOLDEN_SHOVEL = 0x4A,
+    ITEM_TYPE_FISHING_ROD = 0x4B,
+    ITEM_TYPE_GOLDEN_ROD = 0x4C,
+    ITEM_TYPE_UMBRELLA = 0x4D,
+    ITEM_TYPE_PAINT = 0x4E,
+    ITEM_TYPE_BALLOON = 0x4F,
+    ITEM_TYPE_PINWHEEL = 0x50,
+    ITEM_TYPE_HAND_FAN = 0x51,
+    ITEM_TYPE_CARPET = 0x52,
+    ITEM_TYPE_WALLPAPER = 0x53,
+    ITEM_TYPE_AIR_CHECK = 0x54,
+    ITEM_TYPE_NES = 0x55,
+    ITEM_TYPE_FLOWER_BAG = 0x56,
+    ITEM_TYPE_RESERVED = 0x57,
+    ITEM_TYPE_COUNT = 0x58
+} ItemType;
+
+#define IS_ITEM_TYPE_TOOL(type) ( \
+    ((type) == ITEM_TYPE_NET) || \
+    ((type) == ITEM_TYPE_GOLDEN_NET) || \
+    ((type) == ITEM_TYPE_AXE) || \
+    ((type) == ITEM_TYPE_GOLDEN_AXE) || \
+    ((type) == ITEM_TYPE_SHOVEL) || \
+    ((type) == ITEM_TYPE_GOLDEN_SHOVEL) || \
+    ((type) == ITEM_TYPE_FISHING_ROD) || \
+    ((type) == ITEM_TYPE_GOLDEN_ROD) || \
+    ((type) == ITEM_TYPE_UMBRELLA) || \
+    ((type) == ITEM_TYPE_PAINT) || \
+    ((type) == ITEM_TYPE_BALLOON) || \
+    ((type) == ITEM_TYPE_PINWHEEL) || \
+    ((type) == ITEM_TYPE_HAND_FAN))
+
+#define IS_ITEM_TYPE_FRUIT(type) ( \
+    ((type) == ITEM_TYPE_APPLE) || \
+    ((type) == ITEM_TYPE_ORANGE) || \
+    ((type) == ITEM_TYPE_PEACH) || \
+    ((type) == ITEM_TYPE_PEAR) || \
+    ((type) == ITEM_TYPE_CHERRY) || \
+    ((type) == ITEM_TYPE_COCONUT))
+
+/* Per-item-type field rendering and interaction data. */
+/* sizeof(ItemGroupStruct) == 0xC */
+typedef struct ItemGroupStruct {
+    /* 0x00 */ u16 field_tile_id;
+    /* 0x02 */ u16 field_entity_type;
+    /* 0x04 */ u16 held_item_oam_attr2;
+    /* 0x06 */ u16 default_generator_idx;
+    /* 0x08 */ u16 interaction_type;
+    /* 0x0A */ u16 unk_0A;
+} ItemGroupStruct;
+
+typedef enum IslandBuildingType {
+    ISLAND_BUILDING_CABANA = 0,
+    ISLAND_BUILDING_ISLANDER_HOUSE,
+    ISLAND_BUILDING_COUNT
+} IslandBuildingType;
+
+/* Runtime position and draw state for the cabana and Islander house. */
+/* sizeof(IslandBuilding) == 0x14 */
+typedef struct IslandBuilding {
+    /* 0x00 */ s32 x;
+    /* 0x04 */ s32 y;
+    /* 0x08 */ s32 interaction_x;
+    /* 0x0C */ s32 interaction_y;
+    /* 0x10 */ u8 tile_idx;
+    /* 0x11 */ u8 state;
+    /* 0x12 */ u8 pad_12[2];
+} IslandBuilding;
+
+enum {
+    FIELD_OBJECT_COUNT = 30
+};
+
+/* Runtime state for a field object such as a tree, flower, or rock. */
+/* sizeof(FieldObject) == 0x30 */
+typedef struct FieldObject {
+    /* 0x00 */ s32 x;
+    /* 0x04 */ s32 y;
+    /* 0x08 */ s32 _08;
+    /* 0x0C */ u16 type;
+    /* 0x0E */ u16 tile_idx;
+    /* 0x10 */ u16 _10;
+    /* 0x12 */ u16 _12;
+    /* 0x14 */ u16 _14;
+    /* 0x16 */ u16 _16;
+    /* 0x18 */ u16 _18;
+    /* 0x1A */ u16 _1A;
+    /* 0x1C */ u16 entity_id;
+    /* 0x1E */ u16 _1E;
+    /* 0x20 */ u16 _20;
+    /* 0x22 */ u16 _22;
+    /* 0x24 */ u8 layer;
+    /* 0x25 */ u8 anim_frame;
+    /* 0x26 */ u8 anim_counter;
+    /* 0x27 */ u8 anim_timer;
+    /* 0x28 */ u8 state;
+    /* 0x29 */ u8 x_flip;
+    /* 0x2A */ u8 state_timer;
+    /* 0x2B */ u8 _2B;
+    /* 0x2C */ u8 _2C;
+    /* 0x2D */ u8 _2D;
+    /* 0x2E */ u8 pad_2E[2];
+} FieldObject;
+
+/* State for the hand controlled by the player. */
+/* sizeof(Player) == 0x2C */
+typedef struct Player {
+    /* 0x00 */ s32 x;
+    /* 0x04 */ s32 y;
+    /* 0x08 */ s32 _08;
+    /* 0x0C */ s32 _0C;
+    /* 0x10 */ s32 _10;
+    /* 0x14 */ s32 _14;
+    /* 0x18 */ u16 held_item_oam_attr2;
+    /* 0x1A */ mActor_name_t held_item;
+    /* 0x1C */ u8 left_tile_idx;
+    /* 0x1D */ u8 right_tile_idx;
+    /* 0x1E */ u8 tile_idx;
+    /* 0x1F */ u8 state;
+    /* 0x20 */ u8 anim_id;
+    /* 0x21 */ u8 anim_frame;
+    /* 0x22 */ u8 anim_timer;
+    /* 0x23 */ u8 _23;
+    /* 0x24 */ u8 held_item_type_idx;
+    /* 0x25 */ u8 action_timer;
+    /* 0x26 */ u8 _26;
+    /* 0x27 */ u8 _27;
+    /* 0x28 */ u8 held_item_layer;
+    /* 0x29 */ u8 held_item_tile_idx;
+    /* 0x2A */ u8 pad_2A[2];
+} Player;
+
 typedef struct Entity {
     int x;
     int y;
@@ -868,6 +1103,11 @@ typedef struct Entity {
     u8 _52;
     u8 _53;
 } Entity;
+
+typedef struct EntitySpawnParams {
+    u16 type;
+    u16 param;
+} EntitySpawnParams;
 
 typedef struct unk_struct_03000E30 {
     s8 *unk0;
@@ -993,6 +1233,299 @@ typedef struct mMsg_Window_s {
 
 typedef void (*mMsg_Callback)(mMsg_Window_c*);
 
+/* OAM layout used by the islander animation data. */
+typedef struct islander_oam_data_s {
+    /* 0x00 */ u32 y : 8;
+    /* 0x01 */ u32 affine_mode : 2;
+    /* 0x01 */ u32 obj_mode : 2;
+    /* 0x01 */ u32 mosaic : 1;
+    /* 0x01 */ u32 bpp : 1;
+    /* 0x01 */ u32 shape : 2;
+    /* 0x02 */ u32 x : 9;
+    /* 0x03 */ u32 matrix_num : 3;
+    /* 0x03 */ u32 h_flip : 1;
+    /* 0x03 */ u32 v_flip : 1;
+    /* 0x03 */ u32 size : 2;
+    /* 0x04 */ u16 tile_num : 10;
+    /* 0x05 */ u16 priority : 2;
+    /* 0x05 */ u16 palette_num : 4;
+    /* 0x06 */ u16 affine_param;
+} IslanderOamData;
+
+/* sizeof(AnimFrameData) == 8 */
+typedef struct AnimFrameData {
+    /* 0x00 */ IslanderOamData* sprite_gfx_p;
+    /* 0x04 */ u16 duration;
+    /* 0x06 */ s8 action_flag;
+    /* 0x07 */ u8 pad;
+} AnimFrameData;
+
+typedef enum IslanderMoveAction_1 {
+    ActionInside=0,
+    ActionMoveIndoorsOrOutdoors=1,
+    ActionOutside=2,
+    MoveAction3=3,
+    MoveAction4=4,
+    MoveAction5=5,
+    ProcessFood=6,
+    MoveAction7=7,
+    MoveAction8=8,
+    MoveAction9=9,
+    CheckClickedOnTimer=10,
+    MoveAction11=11,
+    MoveAction12=12,
+    MoveAction13=13,
+    MoveActionFishing=14,
+    MoveActionReceiveItemInit=15,
+    MoveActionReceiveItem=16,
+    MoveActionDig=17,
+    MoveActionBury=18,
+    MoveAction19=19,
+    MoveAction20=20
+} IslanderMoveAction_1;
+
+typedef enum IslanderMoveAction20Phase {
+    ISLANDER_MOVE_ACTION20_PHASE_BEGIN = 0,
+    ISLANDER_MOVE_ACTION20_PHASE_ANIM_02,
+    ISLANDER_MOVE_ACTION20_PHASE_ANIM_06,
+    ISLANDER_MOVE_ACTION20_PHASE_ANIM_00,
+    ISLANDER_MOVE_ACTION20_PHASE_CHECK_POSITION,
+    ISLANDER_MOVE_ACTION20_PHASE_RESTART
+} IslanderMoveAction20Phase;
+
+typedef void (*IslanderBuryStateProc)(void);
+extern IslanderBuryStateProc IslanderSubMoveAction_BuryProcTbl[6];
+
+typedef enum IslanderEmotion {
+    ISLANDER_EMOTION_NEUTRAL = 0,
+    ISLANDER_EMOTION_ANGRY,
+    ISLANDER_EMOTION_SAD,
+    ISLANDER_EMOTION_HAPPY
+} IslanderEmotion;
+
+typedef union IslanderItemWork {
+    struct {
+        u16 type_idx;
+        u16 tile_no;
+    } held_item;
+    struct {
+        u16 phase;
+        u16 timer;
+    } move_action20;
+} __attribute__((packed, aligned(2))) IslanderItemWork;
+
+typedef enum IslanderAnim_1_e {
+    ISLANDER_ANIM_00=0,
+    ISLANDER_ANIM_01=1,
+    ISLANDER_ANIM_02=2,
+    ISLANDER_ANIM_03=3,
+    ISLANDER_ANIM_04=4,
+    ISLANDER_ANIM_05=5,
+    ISLANDER_ANIM_06=6,
+    ISLANDER_ANIM_07=7,
+    ISLANDER_ANIM_08=8,
+    ISLANDER_ANIM_09=9,
+    ISLANDER_ANIM_0A=10,
+    ISLANDER_ANIM_0B=11,
+    ISLANDER_ANIM_0C=12,
+    ISLANDER_ANIM_0D=13,
+    ISLANDER_ANIM_0E=14,
+    ISLANDER_ANIM_0F=15,
+    ISLANDER_ANIM_10=16,
+    ISLANDER_ANIM_11=17,
+    ISLANDER_ANIM_12=18,
+    ISLANDER_ANIM_13=19,
+    ISLANDER_ANIM_14=20,
+    ISLANDER_ANIM_15=21,
+    ISLANDER_ANIM_16=22,
+    ISLANDER_ANIM_17=23,
+    ISLANDER_ANIM_18=24,
+    ISLANDER_ANIM_19=25,
+    ISLANDER_ANIM_1A=26,
+    ISLANDER_ANIM_1B=27,
+    ISLANDER_ANIM_1C=28,
+    ISLANDER_ANIM_1D=29,
+    ISLANDER_ANIM_1E=30,
+    ISLANDER_ANIM_1F=31,
+    ISLANDER_ANIM_20=32,
+    ISLANDER_ANIM_21=33,
+    ISLANDER_ANIM_22=34,
+    ISLANDER_ANIM_23=35,
+    ISLANDER_ANIM_24=36,
+    ISLANDER_ANIM_25=37,
+    ISLANDER_ANIM_26=38,
+    ISLANDER_ANIM_27=39,
+    ISLANDER_ANIM_28=40,
+    ISLANDER_ANIM_29=41,
+    ISLANDER_ANIM_2A=42,
+    ISLANDER_ANIM_2B=43,
+    ISLANDER_ANIM_2C=44,
+    ISLANDER_ANIM_2D=45,
+    ISLANDER_ANIM_2E=46,
+    ISLANDER_ANIM_2F=47,
+    ISLANDER_ANIM_30=48,
+    ISLANDER_ANIM_31=49,
+    ISLANDER_ANIM_32=50,
+    ISLANDER_ANIM_33=51,
+    ISLANDER_ANIM_34=52,
+    ISLANDER_ANIM_35=53,
+    ISLANDER_ANIM_36=54,
+    ISLANDER_ANIM_37=55,
+    ISLANDER_ANIM_38=56,
+    ISLANDER_ANIM_39=57,
+    ISLANDER_ANIM_3A=58,
+    ISLANDER_ANIM_3B=59,
+    ISLANDER_ANIM_3C=60,
+    ISLANDER_ANIM_3D=61,
+    ISLANDER_ANIM_3E=62,
+    ISLANDER_ANIM_3F=63,
+    ISLANDER_ANIM_40=64,
+    ISLANDER_ANIM_41=65,
+    ISLANDER_ANIM_42=66,
+    ISLANDER_ANIM_43=67,
+    ISLANDER_ANIM_44=68,
+    ISLANDER_ANIM_45=69,
+    ISLANDER_ANIM_46=70,
+    ISLANDER_ANIM_47=71,
+    ISLANDER_ANIM_48=72,
+    ISLANDER_ANIM_49=73,
+    ISLANDER_ANIM_4A=74,
+    ISLANDER_ANIM_4B=75,
+    ISLANDER_ANIM_4C=76,
+    ISLANDER_ANIM_4D=77,
+    ISLANDER_ANIM_4E=78,
+    ISLANDER_ANIM_4F=79,
+    ISLANDER_ANIM_50=80,
+    ISLANDER_ANIM_51=81,
+    ISLANDER_ANIM_52=82,
+    ISLANDER_ANIM_53=83,
+    ISLANDER_ANIM_54=84,
+    ISLANDER_ANIM_55=85,
+    ISLANDER_ANIM_56=86,
+    ISLANDER_ANIM_57=87,
+    ISLANDER_ANIM_58=88,
+    ISLANDER_ANIM_59=89,
+    ISLANDER_ANIM_5A=90,
+    ISLANDER_ANIM_ANGRY=91,
+    ISLANDER_ANIM_SAD=92,
+    ISLANDER_ANIM_5D=93,
+    ISLANDER_ANIM_5E=94,
+    ISLANDER_ANIM_5F=95,
+    ISLANDER_ANIM_60=96,
+    ISLANDER_ANIM_61=97,
+    ISLANDER_ANIM_NUM=98
+} IslanderAnim_1_e;
+
+typedef void (*Islander_SUB_MOVE_PROC)(void);
+
+typedef struct IslanderFoodPreference {
+    u8 preferences[18][9];
+    u8 layout[9];
+} IslanderFoodPreference;
+
+typedef struct IslanderDirectionSector {
+    u16 max_angle;
+    u8 direction;
+    u8 pad;
+} IslanderDirectionSector;
+
+/* Maps an item type and Islander emotion to a base in the buried-item RNG table. */
+typedef struct BuriedItemRngTileGroup {
+    u16 item_type;
+    u16 generator_table_offsets[4];
+} __attribute__((packed, aligned(2))) BuriedItemRngTileGroup;
+
+typedef struct BuriedItemUpdateGroup {
+    u16 item_type;
+    mActor_name_t buried_item;
+} BuriedItemUpdateGroup;
+
+typedef struct ItemGeneratorDef {
+    mActor_name_t item;
+    u8 item_type;
+    u8 use_island_id;
+} ItemGeneratorDef;
+
+extern AnimFrameData** gIslanderAnimData[ISLANDER_ANIM_NUM];
+extern u8 gIslanderAnimMirrorFlags[ISLANDER_ANIM_NUM];
+extern u8 gMoveAction11ObjectAnimFrames[9];
+extern u8 gMoveAction11EmotionSpawnOffsets[4];
+extern EntitySpawnParams gMoveAction11EntitySpawnParams[39];
+extern u8 gIslanderFavoriteHours[18];
+extern IslanderFoodPreference ISLANDER_FOOD_PREFERENCES;
+extern IslanderDirectionSector gIslanderDirectionSectors[8];
+extern BuriedItemUpdateGroup gBuriedItemUpdateGroups[6];
+extern BuriedItemRngTileGroup gBuriedItemRngTileGroups[13];
+extern u8 gBuriedItemGeneratorIndices[0x120];
+extern ItemGeneratorDef gItemGeneratorDefs[38];
+
+/* sizeof(Islander_AGB) == 0xC0 */
+typedef struct Islander_AGB {
+    /* 0x00 */ s32 _00;
+    /* 0x04 */ s32 _04;
+    /* 0x08 */ s32 _08;
+    /* 0x0C */ s32 _0C;
+    /* 0x10 */ s32 _10;
+    /* 0x14 */ s32 _14;
+    /* 0x18 */ s32 _18;
+    /* 0x1C */ s32 _1C;
+    /* 0x20 */ s32 dir_x;
+    /* 0x24 */ s32 dir_y;
+    /* 0x28 */ s32 _28;
+    /* 0x2C */ s32 _2C;
+    /* 0x30 */ s32 _30;
+    /* 0x34 */ s32 _34;
+    /* 0x38 */ s32 _38;
+    /* 0x3C */ s32 _3C;
+    /* 0x40 */ s32 _40;
+    /* 0x44 */ s32 _44;
+    /* 0x48 */ u16 _48[4];
+    /* 0x50 */ u16 _50;
+    /* 0x52 */ u16 _52;
+    /* 0x54 */ u8 _54[4];
+    /* 0x58 */ u16 _58;
+    /* 0x5A */ u16 stored_item_tile_ids[5];
+    /* 0x64 */ mActor_name_t stored_items[5];
+    /* 0x6E */ IslanderItemWork item_work;
+    /* 0x72 */ u16 _72;
+    /* 0x74 */ u16 _74;
+    /* 0x76 */ u16 flying_item_spawn_timer;
+    /* 0x78 */ u16 _78;
+    /* 0x7A */ u16 world_state;
+    /* 0x7C */ u16 _7C[4];
+    /* 0x84 */ u8 _84;
+    /* 0x85 */ u8 _85;
+    /* 0x86 */ u8 _86;
+    /* 0x87 */ u8 move_proc_idx; /* IslanderMoveAction_1 */
+    /* 0x88 */ u8 anim_id; /* IslanderAnim_1_e */
+    /* 0x89 */ u8 anim_frame;
+    /* 0x8A */ u8 anim_timer;
+    /* 0x8B */ u8 _8B;
+    /* 0x8C */ u8 _8C;
+    /* 0x8D */ u8 state;
+    /* 0x8E */ u8 stand_on_tile_idx;
+    /* 0x8F */ u8 _8F;
+    /* 0x90 */ u8 emotion; /* EMOTION_TYPE */
+    /* 0x91 */ u8 _91[2];
+    /* 0x93 */ u8 mood;
+    /* 0x94 */ u8 _94[2];
+    /* 0x96 */ u8 islander_npc_idx;
+    /* 0x97 */ u8 emotion_anim_id; /* IslanderAnim_1_e */
+    /* 0x98 */ u8 click_cooldown_timer;
+    /* 0x99 */ u8 _99[3];
+    /* 0x9C */ u8 sub_move_action;
+    /* 0x9D */ u8 _9D;
+    /* 0x9E */ u8 floating_balloon_target_entity_id;
+    /* 0x9F */ u8 _9F;
+    /* 0xA0 */ u8 _A0;
+    /* 0xA1 */ u8 reward_adjust;
+    /* 0xA2 */ u8 _A2[8];
+    /* 0xAA */ u8 _AA[8];
+    /* 0xB2 */ u8 _B2[2];
+    /* 0xB4 */ u8 _B4;
+    /* 0xB5 */ u8 _B5[0xB];
+} Islander_AGB;
+
 
 #define DmaSetSrc(dmaNum, src)     \
 {                                                 \
@@ -1059,6 +1592,12 @@ extern u8* g02038000;
 extern u8* g02038200;
 extern u32* gUnk_30008C0;
 extern GameState gGameState;
+extern IslandFieldWork gIslandFieldWork;
+extern IslandBuilding gIslandBuildings[ISLAND_BUILDING_COUNT];
+extern FieldObject gFieldObjects[FIELD_OBJECT_COUNT];
+extern Player gPlayer;
+extern Entity g_EntityTable[12];
+extern ItemGroupStruct g_ItemDefinitions[ITEM_TYPE_COUNT];
 extern u64 gUnk_30008D0[0x80];
 extern unk_struct_03000E30 gUnk_3000E30;
 extern unk_struct_03000E50 g03000E50;
@@ -1114,7 +1653,7 @@ void sub_02019910(u8 value, s8 index);
 void mFont_BlitGlyphToTiles(mFont_GlyphDraw_c* glyph, s32 width);
 s16 sub_02019ABC(s16 lhs, s16 rhs);
 s16 sub_02019AD8(s16 numerator, s16 denominator);
-u16 sub_02019AF0(GameState* state);
+s32 rand_u16(GameState* state);
 void sub_02019B18(GameState* state, u32 seed);
 void sub_02019B1C(GameState* state, u16 target, u16 blend_control,
                   u16 intensity);
@@ -1152,6 +1691,8 @@ void sub_02026C10(u16 value);
 void sub_02026C68(u16 value);
 void sub_02026F0C(void);
 void sub_02026F18(void);
+extern u32 gIntrTable[];
+void _start(void);
 void _intr(void);
 
 #endif

@@ -133,6 +133,10 @@ endif
 $(OBJ_DIR)/src/libc/memcpy.o $(OBJ_DIR)/src/libc/memset.o: CPPFLAGS += $(LIBC_CPPFLAGS)
 $(OBJ_DIR)/src/libc/memcpy.o $(OBJ_DIR)/src/libc/memset.o: CFLAGS := -O2 -fno-builtin
 
+# The initial m2c reconstructions intentionally retain provisional pointer types.
+$(OBJ_DIR)/src/all.o: CFLAGS := $(filter-out -Werror,$(CFLAGS))
+$(OBJ_DIR)/src/all.o: asm/all_arm.inc asm/gflib/syscalls.inc
+
 $(ASM_OBJS): $(OBJ_DIR)/%.o: %.s $$(asm_dep)
 	$(AS) $(ASFLAGS) -o $@ $<
 
