@@ -2298,7 +2298,7 @@ void sub_0201E564(s32 arg0);
 void sub_0201E608(s32 arg0);
 void sub_0201E710(s32 arg0);
 void sub_0201EB48(s32 arg0);
-void sub_0201EC6C(s32 arg0);
+void FieldObject_UpdateTopple(s32 object_index);
 void FieldObject_Deactivate(s32 arg0);
 void FieldObject_DrawSprite(FieldObjectSpriteFrame *frame, s32 object_index);
 void FieldObject_Draw(s32 object_index);
@@ -2311,43 +2311,43 @@ void Islander_UpdateCollisionTiles(u8 direction);
 void WriteItemToTile(s32 x, u8 tile_idx, u16 item, u16 item_tile);
 s32 CheckSurroundingCollision(u16 arg0, u16 *arg1);
 s32 sub_0201F78C(u8 arg0);
-s32 sub_0201F844(u8 arg0);
+s32 Islander_CanMoveInDirection(u8 direction);
 void Islander_BuryRandomItem(s32 arg0);
 void Islander_PlantRandomFlower(void);
-void sub_0201FCB0(void);
-s32 sub_0201FD1C(s32 arg0, s32 arg1);
+void Islander_UpdateBlink(void);
+s32 Islander_FaceTargetAndCheckArrival(s32 arg0, s32 arg1);
 s32 Islander_PlayAnim(u8 arg0);
 void Islander_ClearStoredItem(s32 arg0);
-s32 sub_0201FED4(u8 arg0, u8 arg1);
-s32 SpawnEntity(u8 arg0, u8 arg1, u16 arg2, u16 arg3);
-s32 sub_02020118(void *arg0, s32 arg1, s32 arg2);
-s32 sub_0202029C(void *arg0);
+s32 Islander_SpawnReactionEffect(u8 arg0, u8 arg1);
+s32 SpawnEntity(u8 spawn_flag, u8 spawn_mode, u16 item_type, u16 item);
+s32 Islander_SelectTreeApproach(FieldObject *object, s32 right_x, s32 left_x);
+s32 Islander_SetupTreeApproach(FieldObject *object);
 s32 Islander_DecideTreeAction(void);
 void Islander_MoveWithCollision(void);
 void Islander_AdjustAnimForTool(void);
-s32 sub_020207C0(u8 arg0, s32 arg1);
-s32 sub_02020814(u8 arg0, s32 arg1);
-s32 sub_0202086C(void);
-s32 sub_020208BC(s32 arg0);
+s32 Islander_MoveTowardX(u8 keep_facing, s32 target);
+s32 Islander_MoveTowardY(u8 keep_facing, s32 target);
+s32 Islander_FindNearbyTree(void);
+s32 Islander_TryInteractWithBuriedItem(u8 layer);
 void Islander_OnMoodChanged(void);
-void WriteItemTileToVRAM(void *arg0, u16 arg1);
+void WriteItemTileToVRAM(u16 *tilemap, u16 tile_base);
 u16 Item_GetItemIdFromTileId(s32 arg0);
-s32 sub_02020A78(void);
+s32 Islander_TryDropTool(void);
 void Islander_Init(void);
 s32 Island_GetFloatingItem(void);
 void Islander_StepFlyingItem(void);
-s32 sub_02020F54(void);
-u16 sub_02021050(void);
-s32 sub_020210D4(void);
-s32 sub_020212F4(void);
+s32 Islander_TryStartFishing(void);
+u16 Islander_TakeCurrentTileItem(void);
+s32 Islander_TryInteractWithCurrentTile(void);
+s32 Islander_TryStartDigging(void);
 void RestoreHeldItemsToField(void);
-void sub_02021574(void);
+void Islander_UpdateMovement(void);
 void sub_020215D0(void);
 void Islander_MoveIndoorsOrOutdoors(void);
-void sub_02021720(void);
+void Islander_StartWandering(void);
 void sub_020217AC(void);
 void IslanderMoveAction_MoveToTarget(void);
-void sub_02021AD8(void);
+void Islander_StartFoodProcessing(void);
 void Islander_ProcessFood(void);
 void IslanderMoveAction_UpdateEmotion(void);
 void sub_02022054(void);
@@ -2388,7 +2388,7 @@ void Islander_MoveAction20_State2(void);
 void Islander_MoveAction20_State3(void);
 void Islander_MoveAction20_State4(void);
 void Islander_MoveAction20_Move(void);
-void sub_02023B58(void);
+void Islander_Draw(void);
 s32 Item_IsFossil(mActor_name_t arg0);
 s32 Item_IsGyroid(mActor_name_t arg0);
 s32 Item_IsNES(mActor_name_t arg0);
@@ -5243,6 +5243,7 @@ u8 sub_0201D904(void) {
     return 1U;
 }
 
+/* Original address: 0x0201D94C */
 void sub_0201D94C(void) {
     s32 temp_r1_11723;
     s32 temp_r1_11766;
@@ -5264,11 +5265,11 @@ void sub_0201D94C(void) {
     UpdateHourlyPalette();
     gGameState.unk_820 = 0x3E41;
     gGameState.unk_81C = 0x1006;
-    if (*(u8 *)0x03004224 != 1) {
+    if (gIslander._84 != 1) {
         temp_r0_11457 = sub_0201D800(0U);
         if (temp_r0_11457 == 0) {
-            gGameState.unk_840 = ((s32) (*(s32 *)((u8 *)((void *)0x03004B80) + (0))) >> 8) - 0x80;
-            temp_r0_11470 = ((s32) (*(s32 *)((u8 *)((void *)0x03004B80) + (4))) >> 8) - 0x50;
+            gGameState.unk_840 = ((s32) gPlayer.x >> 8) - 0x80;
+            temp_r0_11470 = ((s32) gPlayer.y >> 8) - 0x50;
             gGameState.unk_842 = temp_r0_11470;
             if (temp_r0_11470 & 0x800) {
                 gGameState.unk_842 = (u16) temp_r0_11457;
@@ -5282,62 +5283,62 @@ void sub_0201D94C(void) {
             if ((u32) gGameState.unk_840 > 0x100U) {
                 gGameState.unk_840 = 0x100;
             }
-            ChangeEmotion((u8) (*(u8 *)0x03004230 + 1));
+            ChangeEmotion((u8) (gIslander.emotion + 1));
             gGameState.unk_844 = gGameState.unk_840;
             gGameState.unk_846 = gGameState.unk_842;
-            *(s8 *)0x03003BAE = 1;
+            gIslandFieldWork.gameplay_active = 1;
             return;
         }
     }
     temp_r4_11537 = gGameState.unk_856;
-    if ((temp_r4_11537 == 1) && (*(u32 *)0x03004224 != 1)) {
+    if ((temp_r4_11537 == 1) && (gIslander._84 != 1)) {
         sub_02026C68(0x14U);
         sub_02026BD8();
-        *(u16 *)0x03003B20 = 0;
-        *(s8 *)0x03003BAD = 0;
-        *(u32 *)0x03003BAE = 0;
-        *(u8 *)0x03003BAB = temp_r4_11537;
-        *(u8 *)0x03003BAC = temp_r4_11537;
+        gIslandFieldWork.mosaic = 0;
+        gIslandFieldWork.unk_49D = 0;
+        gIslandFieldWork.gameplay_active = 0;
+        gIslandFieldWork.transition_state = temp_r4_11537;
+        gIslandFieldWork.transition_proc_idx = temp_r4_11537;
         return;
     }
     temp_r4_11576 = gGameState.unk_84E;
-    if ((temp_r4_11576 == 1) && (*(u32 *)0x03004224 != 1)) {
+    if ((temp_r4_11576 == 1) && (gIslander._84 != 1)) {
         sub_02026C68(0x14U);
         sub_02026BD8();
-        *(u32 *)0x03003B20 = 0U;
-        *(u32 *)0x03003BAD = 0;
-        *(u32 *)0x03003BAE = 0;
-        *(u32 *)0x03003BAB = temp_r4_11576;
-        *(u32 *)0x03003BAC = 2U;
+        gIslandFieldWork.mosaic = 0U;
+        gIslandFieldWork.unk_49D = 0;
+        gIslandFieldWork.gameplay_active = 0;
+        gIslandFieldWork.transition_state = temp_r4_11576;
+        gIslandFieldWork.transition_proc_idx = 2U;
         return;
     }
-    if ((2 & gGameState.keys_pressed) && (*(u32 *)0x03004224 != 1)) {
+    if ((2 & gGameState.keys_pressed) && (gIslander._84 != 1)) {
         temp_r4_11631 = 0x40 & gGameState.unk_824;
         if (temp_r4_11631 == 0) {
             sub_02026C68(0x14U);
             sub_02026BD8();
-            *(u32 *)0x03003B20 = temp_r4_11631;
-            *(u32 *)0x03003BAD = 0;
-            *(u32 *)0x03003BAE = 0;
-            *(u32 *)0x03003BAB = 1U;
-            *(u32 *)0x03003BAC = 3U;
+            gIslandFieldWork.mosaic = temp_r4_11631;
+            gIslandFieldWork.unk_49D = 0;
+            gIslandFieldWork.gameplay_active = 0;
+            gIslandFieldWork.transition_state = 1U;
+            gIslandFieldWork.transition_proc_idx = 3U;
             return;
         }
     }
-    if ((0xC000 & *(u16 *)0x0400000E) && (0xC000 & gGameState.unk_828)) {
+    if ((0xC000 & REG_BG3CNT) && (0xC000 & gGameState.unk_828)) {
         gGameState.unk_828 = (0xC000 ^ gGameState.unk_828) | 0x300;
-        if ((*(u8 *)((u8 *)(*(void **)0x03001B40) + (0x193A))) != 0) {
+        if (gIslandData->weather != 0) {
             sub_02026B48(0x26U);
         }
     }
-    temp_r0_11698 = *(u8 *)0x03003BA7 - 1;
-    *(u8 *)0x03003BA7 = temp_r0_11698;
+    temp_r0_11698 = gIslandFieldWork.palette_anim_timer - 1;
+    gIslandFieldWork.palette_anim_timer = temp_r0_11698;
     if ((temp_r0_11698 << 0x18) == 0) {
-        *(u8 *)0x03003BA7 = 8;
+        gIslandFieldWork.palette_anim_timer = 8;
         var_r5_11706 = (u16 *)0x02000000;
         var_r3_11707 = (u16 *)0x02000040;
         var_r4_11712 = 0;
-        var_r2_11717 = *(u8 *)0x03003BA8 << 0x14;
+        var_r2_11717 = gIslandFieldWork.palette_anim_frame << 0x14;
         do {
             temp_r1_11723 = (var_r2_11717 >> 0x10) * 2;
             *var_r5_11706 = *(u32 *)(0x0202F3FC + temp_r1_11723);
@@ -5347,39 +5348,39 @@ void sub_0201D94C(void) {
             var_r5_11706 += 2;
             var_r3_11707 += 2;
         } while (var_r4_11712 <= 0xF);
-        temp_r0_11741 = *(u32 *)0x03003BA8 + 1;
-        *(u32 *)0x03003BA8 = temp_r0_11741;
+        temp_r0_11741 = gIslandFieldWork.palette_anim_frame + 1;
+        gIslandFieldWork.palette_anim_frame = temp_r0_11741;
         if ((u32) temp_r0_11741 > 0xDU) {
-            *(u32 *)0x03003BA8 = 0U;
+            gIslandFieldWork.palette_anim_frame = 0U;
         }
     }
-    CpuSet((void *)0x02000000, (void *)0x05000000, 0x200U);
+    CpuSet((void *)0x02000000, (void *)PLTT, 0x200U);
     gGameState.unk_848 = gGameState.unk_840;
-    temp_r1_11766 = (*(s32 *)((u8 *)((void *)0x03003710) + (0))) + 0x40;
-    (*(s32 *)((u8 *)((void *)0x03003710) + (0))) = temp_r1_11766;
+    temp_r1_11766 = gIslandFieldWork.bg3_scroll_y + 0x40;
+    gIslandFieldWork.bg3_scroll_y = temp_r1_11766;
     gGameState.bg3_vofs = (u16) ((s32) (gGameState.unk_842 + temp_r1_11766) >> 8);
     sub_020267D0();
-    sub_02021574();
+    Islander_UpdateMovement();
     var_r4_11778 = 0;
     do {
-        if ((*(u8 *)((u8 *)((var_r4_11778 + 0x03003710)) + (0x42C))) == 1) {
+        if (gIslandFieldWork.entity_active[var_r4_11778 + 21] == 1) {
             sub_02024DD0(var_r4_11778);
         }
         var_r4_11778 += 1;
     } while (var_r4_11778 <= 0x1D);
     var_r4_11792 = 0;
     do {
-        if ((*(u8 *)((u8 *)((var_r4_11792 + 0x03003710)) + (0x44D))) == 1) {
+        if (gIslandFieldWork.entity_active[var_r4_11792 + 54] == 1) {
             sub_0201E538(var_r4_11792);
         }
         var_r4_11792 += 1;
     } while (var_r4_11792 <= 0x1D);
-    if ((*(u8 *)((u8 *)((void *)0x03003710) + (0x419))) == 1) {
+    if (gIslandFieldWork.entity_active[2] == 1) {
         sub_020255F0(2);
     }
     var_r4_11814 = 3;
     do {
-        if ((*(u8 *)((u8 *)((var_r4_11814 + 0x03003710)) + (0x41A))) == 1) {
+        if (gIslandFieldWork.entity_active[var_r4_11814 + 3] == 1) {
             sub_020255F0(var_r4_11814);
         }
         var_r4_11814 += 1;
@@ -5417,6 +5418,7 @@ void sub_0201DD64(void) {
     }
 }
 
+/* Original address: 0x0201DD94 */
 void sub_0201DD94(void) {
     s32 sp0;
     s32 sp4;
@@ -5431,26 +5433,26 @@ void sub_0201DD94(void) {
     s32 var_r8_12020;
     s32 var_sl_12008;
     u16 temp_r1_12058;
-    void *temp_r5_12029;
+    FieldObject *temp_r5_12029;
     void *var_r6_11978;
 
     gGameState.unk_860 = 0;
-    if (*(u8 *)0x03003B29 == 1) {
+    if (gIslandFieldWork.entity_active[2] == 1) {
         sub_020256D0(2);
     }
-    if ((*(u8 *)0x03004227 == 0x14) && (*(u8 *)0x03004224 == 2)) {
-        sub_02023B58();
+    if ((gIslander.move_proc_idx == 0x14) && (gIslander._84 == 2)) {
+        Islander_Draw();
     }
     var_r6_11978 = NULL;
     do {
-        if (*(u32 *)(0x03003B27 + (s32) var_r6_11978) == 1) {
+        if (gIslandFieldWork.entity_active[(s32) var_r6_11978] == 1) {
             sub_02026830();
         }
         var_r6_11978 += 1;
     } while ((s32) var_r6_11978 <= 1);
     var_r6_11991 = 3;
     do {
-        if ((*(u8 *)((u8 *)((var_r6_11991 + 0x03003710)) + (0x41A))) == 1) {
+        if (gIslandFieldWork.entity_active[var_r6_11991 + 3] == 1) {
             sub_020256D0(var_r6_11991);
         }
         var_r6_11991 += 1;
@@ -5462,20 +5464,20 @@ void sub_0201DD94(void) {
     var_r6_12013 = 0x1E;
 loop_14:
     var_r8_12020 = var_r6_12013 - 1;
-    if ((*(u8 *)((u8 *)((var_r6_12013 + 0x03003710)) + (0x44D))) != 1) {
+    if (gIslandFieldWork.entity_active[var_r6_12013 + 54] != 1) {
 
     } else {
         temp_r0_12027 = var_r6_12013 * 0x30;
-        temp_r5_12029 = temp_r0_12027 + 0x03003C00;
-        if ((var_sl_12008 == 0) && ((u32) (*(u8 *)((u8 *)((void *)0x03003BB0) + (0x10))) > (u32) (*(u16 *)((u8 *)(temp_r5_12029) + (0xE))))) {
+        temp_r5_12029 = &gFieldObjects[var_r6_12013];
+        if ((var_sl_12008 == 0) && ((u32) gIslandBuildings[0].tile_idx > (u32) temp_r5_12029->tile_idx)) {
             sub_0201E178(0, 0U);
             var_sl_12008 = 1;
         }
-        if ((sp0 == 0) && ((u32) (*(u8 *)((u8 *)((void *)0x03003BC4) + (0x10))) > (u32) (*(u16 *)((u8 *)(temp_r5_12029) + (0xE))))) {
+        if ((sp0 == 0) && ((u32) gIslandBuildings[1].tile_idx > (u32) temp_r5_12029->tile_idx)) {
             sub_0201E178(1, 2U);
             sp0 = 1;
         }
-        temp_r1_12058 = (*(u16 *)((u8 *)(temp_r5_12029) + (0x1C)));
+        temp_r1_12058 = temp_r5_12029->entity_id;
         var_r8_12020 = var_r6_12013 - 1;
         if (temp_r1_12058 != 0) {
             if (temp_r1_12058 != 0xFFFF) {
@@ -5483,26 +5485,26 @@ loop_14:
             } else {
                 var_r4_12083 = 0;
                 do {
-                    if ((*(u8 *)((u8 *)((var_r4_12083 + 0x03003710)) + (0x42C))) == 1) {
+                    if (gIslandFieldWork.entity_active[var_r4_12083 + 21] == 1) {
                         sub_02024DF8(var_r4_12083);
                     }
                     var_r4_12083 += 1;
                 } while (var_r4_12083 <= 2);
             }
         }
-        temp_r2_12102 = *(u32 *)(0x03003C00 + temp_r0_12027) - ((s32) (*(s32 *)((u8 *)((void *)0x030041A0) + (0))) >> 8);
-        (*(s32 *)((u8 *)((void *)0x03003710) + (8))) = temp_r2_12102;
-        temp_r3_12104 = (*(s32 *)((u8 *)((void *)0x030041A0) + (4)));
-        (*(s32 *)((u8 *)((void *)0x03003710) + (0xC))) = (s32) ((*(s32 *)((u8 *)(temp_r5_12029) + (4))) - (temp_r3_12104 >> 8));
+        temp_r2_12102 = gFieldObjects[var_r6_12013].x - ((s32) gIslander._00 >> 8);
+        gIslandFieldWork.entity_dist_x = temp_r2_12102;
+        temp_r3_12104 = gIslander._04;
+        gIslandFieldWork.entity_dist_y = (s32) (temp_r5_12029->y - (temp_r3_12104 >> 8));
         if (temp_r2_12102 < 0) {
-            (*(s32 *)((u8 *)((void *)0x03003710) + (8))) = (s32) (0 - temp_r2_12102);
+            gIslandFieldWork.entity_dist_x = (s32) (0 - temp_r2_12102);
         }
-        temp_r0_12114 = (*(s32 *)((u8 *)((void *)0x03003710) + (0xC)));
+        temp_r0_12114 = gIslandFieldWork.entity_dist_y;
         if (temp_r0_12114 < 0) {
-            (*(s32 *)((u8 *)((void *)0x03003710) + (0xC))) = (s32) (0 - temp_r0_12114);
+            gIslandFieldWork.entity_dist_y = (s32) (0 - temp_r0_12114);
         }
-        if (((s32) (*(s32 *)((u8 *)((void *)0x03003710) + (8))) <= 0x10) && ((s32) (*(s32 *)((u8 *)((void *)0x03003710) + (0xC))) <= 0x10) && ((s32) (0xF0 & (*(u16 *)((u8 *)(temp_r5_12029) + (0xE)))) < (s32) (((s32) (temp_r3_12104 + 0xD00) >> 8) & 0xF0)) && (sp4 == 0)) {
-            sub_02023B58();
+        if (((s32) gIslandFieldWork.entity_dist_x <= 0x10) && ((s32) gIslandFieldWork.entity_dist_y <= 0x10) && ((s32) (0xF0 & temp_r5_12029->tile_idx) < (s32) (((s32) (temp_r3_12104 + 0xD00) >> 8) & 0xF0)) && (sp4 == 0)) {
+            Islander_Draw();
             sp4 = 1;
         }
         FieldObject_Draw(var_r6_12013);
@@ -5518,49 +5520,48 @@ loop_14:
         sub_0201E178(1, 2U);
     }
     if (sp4 == 0) {
-        sub_02023B58();
+        Islander_Draw();
     }
     sub_0201E178(1, 1U);
     var_r6_12174 = 0;
     do {
-        if ((*(u8 *)((u8 *)((var_r6_12174 + 0x03003710)) + (0x41A))) == 1) {
+        if (gIslandFieldWork.entity_active[var_r6_12174 + 3] == 1) {
             sub_02025618(var_r6_12174);
         }
         var_r6_12174 += 1;
     } while (var_r6_12174 <= 0xB);
 }
 
+/* Original address: 0x0201DF9C */
 void sub_0201DF9C(s32 arg0, s32 arg1, s8 arg2, u8 arg3) {
     s32 temp_r0_12259;
     s32 temp_r1_12253;
-    s32 temp_r2_12209;
     s32 var_r0_12239;
-    void *temp_r2_12211;
+    IslandBuilding *temp_r2_12211;
 
-    temp_r2_12209 = arg0 * 0x14;
-    temp_r2_12211 = temp_r2_12209 + 0x03003BB0;
+    temp_r2_12211 = &gIslandBuildings[arg0];
     if ((arg1 << 0x18) == 0) {
-        (*(s32 *)((u8 *)(temp_r2_12211) + (4))) = (s32) ((0xFFF0 & arg2) + 0x10);
-        *(u32 *)(0x03003BB0 + temp_r2_12209) = (s32) (((0xF & arg2) * 0x10) + 0x10);
+        temp_r2_12211->y = (s32) ((0xFFF0 & arg2) + 0x10);
+        gIslandBuildings[arg0].x = (s32) (((0xF & arg2) * 0x10) + 0x10);
     } else {
-        (*(s32 *)((u8 *)(temp_r2_12211) + (4))) = (s32) ((0xFFF0 & arg2) + 8);
+        temp_r2_12211->y = (s32) ((0xFFF0 & arg2) + 8);
         if (arg3 == 0) {
             var_r0_12239 = ((0xF & arg2) * 0x10) + 8;
         } else {
             var_r0_12239 = ((0xF & arg2) * 0x10) + 0x108;
         }
-        *(u32 *)(0x03003BB0 + temp_r2_12209) = var_r0_12239;
-        temp_r1_12253 = *(u32 *)(0x03003BB0 + temp_r2_12209) << 8;
-        (*(s32 *)((u8 *)((void *)0x030041A0) + (0))) = temp_r1_12253;
-        temp_r0_12259 = ((*(s32 *)((u8 *)(temp_r2_12211) + (4))) << 8) + 0x100;
-        (*(s32 *)((u8 *)((void *)0x030041A0) + (4))) = temp_r0_12259;
-        (*(s32 *)((u8 *)((void *)0x030041A0) + (8))) = temp_r1_12253;
-        (*(s32 *)((u8 *)((void *)0x030041A0) + (0xC))) = temp_r0_12259;
-        (*(s32 *)((u8 *)(temp_r2_12211) + (8))) = (s32) (*(u32 *)(0x03003BB0 + temp_r2_12209) - 8);
-        (*(s32 *)((u8 *)(temp_r2_12211) + (0xC))) = (s32) ((*(s32 *)((u8 *)(temp_r2_12211) + (4))) - 4);
+        gIslandBuildings[arg0].x = var_r0_12239;
+        temp_r1_12253 = gIslandBuildings[arg0].x << 8;
+        gIslander._00 = temp_r1_12253;
+        temp_r0_12259 = (temp_r2_12211->y << 8) + 0x100;
+        gIslander._04 = temp_r0_12259;
+        gIslander._08 = temp_r1_12253;
+        gIslander._0C = temp_r0_12259;
+        temp_r2_12211->interaction_x = (s32) (gIslandBuildings[arg0].x - 8);
+        temp_r2_12211->interaction_y = (s32) (temp_r2_12211->y - 4);
     }
-    (*(s8 *)((u8 *)(temp_r2_12211) + (0x10))) = arg2;
-    (*(s8 *)((u8 *)(temp_r2_12211) + (0x11))) = 1;
+    temp_r2_12211->tile_idx = arg2;
+    temp_r2_12211->state = 1;
 }
 
 void sub_0201E030(void) {
@@ -6210,74 +6211,58 @@ loop_8:
     }
 }
 
-void sub_0201EC6C(s32 arg0) {
-    u16 temp_r0_13918;
-    u16 temp_r0_13942;
-    u16 temp_r0_13952;
-    u16 temp_r0_13975;
-    u16 temp_r0_13980;
-    u16 temp_r1_13962;
-    u16 temp_r3_13954;
-    u32 var_r4_13915;
-    u32 var_r5_13917;
-    u8 temp_r0_13898;
-    u8 temp_r0_13901;
-    u8 temp_r0_13995;
-    void *temp_r2_13895;
+/* Original address: 0x0201EC6C */
+void FieldObject_UpdateTopple(s32 object_index) {
+    FieldObject *object = &gFieldObjects[object_index];
+    u32 rotation_step;
+    u32 drop_angle;
+    u32 rotation_speed;
+    u32 rotation_threshold;
 
-    temp_r2_13895 = (arg0 * 0x30) + 0x03003C00;
-    temp_r0_13898 = (*(u8 *)((u8 *)(temp_r2_13895) + (0x27)));
-    if (temp_r0_13898 != 0) {
-        temp_r0_13901 = temp_r0_13898 - 1;
-        (*(u8 *)((u8 *)(temp_r2_13895) + (0x27))) = temp_r0_13901;
-        if (!(temp_r0_13901 & 1)) {
-            (*(u16 *)((u8 *)(temp_r2_13895) + (0x16))) = (u16) ((*(u16 *)((u8 *)(temp_r2_13895) + (0x16))) + 1);
+    if (object->anim_timer != 0) {
+        object->anim_timer--;
+        if (!(object->anim_timer & 1)) {
+            object->_16++;
         }
     } else {
-        var_r4_13915 = 0x200;
-        var_r5_13917 = 0xF200;
-        temp_r0_13918 = (*(u16 *)((u8 *)(temp_r2_13895) + (0xC)));
-        switch (temp_r0_13918) {                    /* irregular */
+        rotation_step = 0x200;
+        drop_angle = 0xF200;
+        switch (object->type) {
         case 14:
         case 3:
-            var_r4_13915 = 0x800;
-            var_r5_13917 = 0xE800;
+            rotation_step = 0x800;
+            drop_angle = 0xE800;
             break;
         case 4:
-            var_r4_13915 = 0x400;
-            var_r5_13917 = 0xF800;
+            rotation_step = 0x400;
+            drop_angle = 0xF800;
             break;
         }
-        temp_r0_13942 = var_r4_13915 + (*(u16 *)((u8 *)(temp_r2_13895) + (0x12)));
-        (*(u16 *)((u8 *)(temp_r2_13895) + (0x12))) = temp_r0_13942;
-        if ((u32) temp_r0_13942 > var_r4_13915) {
-            (*(u16 *)((u8 *)(temp_r2_13895) + (0x12))) = (u16) var_r4_13915;
+        rotation_speed = rotation_step + object->_12;
+        object->_12 = rotation_speed;
+        if ((u16)rotation_speed > rotation_step) {
+            object->_12 = rotation_step;
         }
-        temp_r0_13952 = (*(u16 *)((u8 *)(temp_r2_13895) + (0x10))) - (*(u16 *)((u8 *)(temp_r2_13895) + (0x12)));
-        (*(u16 *)((u8 *)(temp_r2_13895) + (0x10))) = temp_r0_13952;
-        temp_r3_13954 = (*(u16 *)((u8 *)(temp_r2_13895) + (0x14)));
-        if ((u32) temp_r0_13952 <= (u32) temp_r3_13954) {
-            temp_r1_13962 = (0xFF00 & temp_r3_13954) - var_r4_13915;
-            (*(u16 *)((u8 *)(temp_r2_13895) + (0x14))) = temp_r1_13962;
-            (*(u16 *)((u8 *)(temp_r2_13895) + (0x16))) = (u16) ((*(u16 *)((u8 *)(temp_r2_13895) + (0x16))) + 1);
-            if ((u32) temp_r1_13962 < var_r5_13917) {
-                (*(u16 *)((u8 *)(temp_r2_13895) + (0x18))) = (u16) ((*(u16 *)((u8 *)(temp_r2_13895) + (0x18))) + 1);
+        object->_10 -= object->_12;
+        if (object->_10 <= object->_14) {
+            rotation_threshold = (object->_14 & 0xFF00) - rotation_step;
+            object->_14 = rotation_threshold;
+            object->_16++;
+            if ((u16)rotation_threshold < drop_angle) {
+                object->_18++;
             }
-            temp_r0_13975 = (*(u16 *)((u8 *)(temp_r2_13895) + (0xC)));
-            if ((temp_r0_13975 != 3) && (temp_r0_13975 != 0xE)) {
-                temp_r0_13980 = (*(u16 *)((u8 *)(temp_r2_13895) + (0x1A)));
-                if ((u32) temp_r0_13980 <= 5U) {
-                    (*(u16 *)((u8 *)(temp_r2_13895) + (0x1A))) = (u16) (temp_r0_13980 + 1);
+            if (object->type != 3 && object->type != 14) {
+                if (object->_1A <= 5) {
+                    object->_1A++;
                 }
             }
         }
-        if ((u32) (*(u16 *)((u8 *)(temp_r2_13895) + (0x10))) <= 0xD000U) {
-            (*(u16 *)((u8 *)(temp_r2_13895) + (0x10))) = 0xD000U;
-            temp_r0_13995 = (*(u8 *)((u8 *)(temp_r2_13895) + (0x26))) + 1;
-            (*(u8 *)((u8 *)(temp_r2_13895) + (0x26))) = temp_r0_13995;
-            if ((u32) temp_r0_13995 > 0x20U) {
-                (*(s8 *)((u8 *)(temp_r2_13895) + (0x28))) = 4;
-                (*(s16 *)((u8 *)(temp_r2_13895) + (0x1C))) = 0;
+        if (object->_10 <= 0xD000) {
+            object->_10 = 0xD000;
+            object->anim_counter++;
+            if (object->anim_counter > 0x20) {
+                object->state = 4;
+                object->entity_id = 0;
             }
         }
     }
@@ -6496,7 +6481,8 @@ s32 Islander_SetupDigApproach(u8 tile_offset) {
     right_row = right_tile & 0xF0;
     right_col = right_tile & 0xF;
     right_tiles += right_row * 4;
-    right_info = right_col * 2 + right_tiles;
+    right_tiles += right_col * 2;
+    right_info = right_tiles;
     left_tiles += (left_tile & 0xF0) * 4;
     left_info = left_tiles + (left_tile & 0xF) * 2;
     if (CheckSurroundingCollision(items[0], right_info) != 0 ||
@@ -6561,12 +6547,27 @@ s32 Islander_CanDigHere(void) {
     return 1;
 }
 
+static inline IslanderDirectionSector *Islander_GetDirectionSector(u16 angle) {
+    IslanderDirectionSector *sectors = &gIslanderDirectionSectors[7];
+    s32 sector_idx;
+    if (angle < sectors->max_angle) {
+        sector_idx = 0;
+        sectors -= 7;
+        while (sector_idx <= 6 && angle > sectors[sector_idx].max_angle) {
+            sector_idx++;
+        }
+    } else {
+        sector_idx = 0;
+        sectors -= 7;
+    }
+    return &sectors[sector_idx];
+}
+
 /* Original address: 0x0201F3F8 */
 s32 Islander_ChangeMoveDir(s32 target_x, s32 target_y, u8 move_mode) {
     Islander_AGB *islander = &gIslander;
     u8 old_direction;
     u16 angle;
-    s32 sector_idx;
     u8 direction;
     u8 direction_diff;
     IslanderDirectionSector *sectors;
@@ -6588,40 +6589,28 @@ s32 Islander_ChangeMoveDir(s32 target_x, s32 target_y, u8 move_mode) {
     old_direction = islander->_8B;
     switch (move_mode) {
     case 0:
-        if (sub_020207C0(0, target_x)) {
-            sub_02020814(0, target_y);
+        if (Islander_MoveTowardX(0, target_x)) {
+            Islander_MoveTowardY(0, target_y);
             islander->dir_x = 0;
         } else {
             islander->dir_y = 0;
         }
         break;
     case 1:
-        if (sub_02020814(0, target_y)) {
-            sub_020207C0(0, target_x);
+        if (Islander_MoveTowardY(0, target_y)) {
+            Islander_MoveTowardX(0, target_x);
             islander->dir_y = 0;
         } else {
             islander->dir_x = 0;
         }
         break;
     default:
-        sub_020207C0(1, target_x);
-        sub_02020814(1, target_y);
+        Islander_MoveTowardX(1, target_x);
+        Islander_MoveTowardY(1, target_y);
         angle = ArcTan2((s16)islander->dir_x, (s16)islander->dir_y);
-        sectors = &gIslanderDirectionSectors[7];
-        if (angle < sectors->max_angle) {
-            sectors -= 7;
-            sector_idx = 0;
-            if (angle > sectors[0].max_angle) {
-                do {
-                    sector_idx++;
-                } while (sector_idx <= 6 && angle > sectors[sector_idx].max_angle);
-            }
-        } else {
-            sector_idx = 0;
-            sectors -= 7;
-        }
-        direction_diff = islander->_8B - sectors[sector_idx].direction;
-        direction = sectors[sector_idx].direction;
+        sectors = Islander_GetDirectionSector(angle);
+        direction_diff = islander->_8B - sectors->direction;
+        direction = sectors->direction;
         if (direction_diff & 0x80) {
             direction_diff = ~direction_diff;
             direction_diff++;
@@ -6727,82 +6716,82 @@ s32 CheckSurroundingCollision(u16 main_tile, u16 *tile_info) {
     return 0;
 }
 
-s32 sub_0201F78C(u8 arg0) {
-    s32 var_r4_15368;
-    s32 var_r4_15387;
-    u8 temp_r0_15386;
-    void *var_r1_15367;
-    void *var_r4_15395;
-    void *var_r4_15412;
-    void *var_r5_15413;
+/* Original address: 0x0201F78C */
+s32 sub_0201F78C(u8 allow_reverse) {
+    Islander_AGB *islander = &gIslander;
+    s32 direction;
+    s32 count;
 
-    var_r1_15367 = (void *)0x03004242;
-    var_r4_15368 = 7;
-    do {
-        (*(s8 *)((u8 *)(var_r1_15367) + (0))) = 0;
-        (*(u8 *)((u8 *)(var_r1_15367) + (8))) = (u8) ((*(u8 *)((u8 *)(var_r1_15367) + (8))) | 0xFF);
-        var_r1_15367 += 1;
-        var_r4_15368 -= 1;
-    } while (var_r4_15368 >= 0);
-    *(u32 *)(0x03004242 + *(u8 *)0x0300422B) = 1;
-    if (arg0 == 0) {
-        temp_r0_15386 = *(u8 *)0x0300422B;
-        var_r4_15387 = temp_r0_15386 + 4;
-        if (var_r4_15387 > 7) {
-            var_r4_15387 = temp_r0_15386 - 4;
-        }
-        *(u32 *)(0x03004242 + var_r4_15387) = 1;
+    for (direction = 0; direction < 8; direction++) {
+        islander->_A2[direction] = 0;
+        islander->_AA[direction] = 0xFF;
     }
-    var_r4_15395 = NULL;
-    do {
-        if ((*(u32 *)(0x03004242 + (s32) var_r4_15395) == 0) && (sub_0201F844((u8) var_r4_15395) == 0)) {
-            *(u32 *)(0x03004242 + (s32) var_r4_15395) = 1U;
+
+    islander->_A2[islander->_8B] = 1;
+    if (allow_reverse == 0) {
+        direction = islander->_8B + 4;
+        if (direction > 7) {
+            direction = islander->_8B - 4;
         }
-        var_r4_15395 += 1;
-    } while ((s32) var_r4_15395 <= 7);
-    var_r4_15412 = NULL;
-    var_r5_15413 = NULL;
-    do {
-        if (*(u32 *)(0x03004242 + (s32) var_r4_15412) == 0) {
-            *(u32 *)(0x0300424A + (s32) var_r5_15413) = (s8) var_r4_15412;
-            var_r5_15413 += 1;
-        }
-        var_r4_15412 += 1;
-    } while ((s32) var_r4_15412 <= 7);
-    if (var_r5_15413 != NULL) {
-        return *(u32 *)(0x0300424A + ((s32) rand_u16(&gGameState) % (s32) var_r5_15413));
+        islander->_A2[direction] = 1;
     }
-    return 0x777U;
-}
 
-s32 sub_0201F844(u8 arg0) {
-    s32 temp_r3_15467;
-    s32 var_r2_15501;
-    u16 *temp_r2_15527;
-    u16 *var_r1_15499;
-    u8 temp_r0_15456;
-    u8 temp_r4_15487;
+    for (direction = 0; direction < 8; direction++) {
+        if (islander->_A2[direction] == 0 && Islander_CanMoveInDirection(direction) == 0) {
+            islander->_A2[direction] = 1;
+        }
+    }
 
-    temp_r0_15456 = arg0;
-    temp_r3_15467 = (*(s32 *)((u8 *)((void *)0x030041A0) + (0))) + *(u32 *)(0x02033A2C + (temp_r0_15456 * 8));
-    temp_r4_15487 = ((temp_r3_15467 >> 0xC) & 0xF) | (((s32) ((*(s32 *)((u8 *)((void *)0x030041A0) + (4))) + (*(u32 *)(0x02033A2C + (((temp_r0_15456 * 2) + 1) * 4)) + 0x800)) >> 8) & ~0xF);
-    if (!(temp_r3_15467 & 0xFF0000)) {
-        var_r1_15499 = (void *)0x030041A0 + 0x48;
-        (*(u16 *)((u8 *)((void *)0x030041A0) + (0x48))) = (u16) *(u32 *)(0x03003720 + (temp_r4_15487 * 2));
-        var_r2_15501 = 0x0600A000;
+    direction = 0;
+    count = 0;
+    for (; direction < 8; direction++) {
+        if (islander->_A2[direction] == 0) {
+            islander->_AA[count] = direction;
+            count++;
+        }
+    }
+
+    if (count == 0) {
+        return 0x777;
     } else {
-        var_r1_15499 = (void *)0x030041A0 + 0x48;
-        (*(u16 *)((u8 *)((void *)0x030041A0) + (0x48))) = (u16) *(u32 *)(0x03003920 + (temp_r4_15487 * 2));
-        var_r2_15501 = 0x0600A800;
+        direction = islander->_AA[rand_u16(&gGameState) % count];
+        return direction;
     }
-    temp_r2_15527 = ((0xF0 & temp_r4_15487) * 8) + var_r2_15501 + ((0xF & temp_r4_15487) * 4);
-    (*(u16 **)((u8 *)((void *)0x030041A0) + (0x44))) = temp_r2_15527;
-    if (CheckSurroundingCollision(*var_r1_15499, temp_r2_15527) == 0) {
-        return 1;
-    }
-    return 0;
 }
 
+/* Original address: 0x02033A2C */
+extern s32 gIslanderMoveCollisionOffsets[16];
+
+/* Original address: 0x0201F844 */
+s32 Islander_CanMoveInDirection(u8 direction) {
+    Islander_AGB *islander = &gIslander;
+    IslandFieldWork *field = &gIslandFieldWork;
+    s32 offset_idx = direction * 2;
+    s32 x = islander->_00 + gIslanderMoveCollisionOffsets[offset_idx];
+    s32 y_offset = gIslanderMoveCollisionOffsets[offset_idx + 1] + 0x800;
+    s32 y = islander->_04 + y_offset;
+    s32 row = (y >> 8) & ~0xF;
+    u8 tile = ((x >> 12) & 0xF) | row;
+    u32 tilemap;
+
+    if ((x & 0xFF0000) == 0) {
+        islander->_48[0] = field->fg_tiles[0][tile];
+        tilemap = BG_SCREEN_ADDR(20);
+    } else {
+        islander->_48[0] = field->fg_tiles[1][tile];
+        tilemap = BG_SCREEN_ADDR(21);
+    }
+    tilemap = (tile & 0xF0) * 8 + tilemap;
+    tilemap += (tile & 0xF) * 4;
+    islander->_44 = (u16 *)tilemap;
+    if (CheckSurroundingCollision(islander->_48[0], (u16 *)tilemap) == 0) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+/* Original address: 0x0201F8FC */
 void Islander_BuryRandomItem(s32 item_type) {
     Islander_AGB *islander = &gIslander;
     IslandFieldWork *field = &gIslandFieldWork;
@@ -6889,507 +6878,364 @@ void Islander_BuryRandomItem(s32 item_type) {
         }
     }
 }
+
+/* Original address: 0x0201FB9C */
 void Islander_PlantRandomFlower(void) {
-    s32 temp_r3_15929;
-    s32 temp_r3_15966;
-    s32 var_r3_15946;
-    s32 var_r4_15944;
-    s32 var_r5_15931;
-    s32 var_r6_15940;
-    u16 *temp_r3_15986;
-    u32 temp_r4_15898;
-    u32 temp_r4_15933;
-    u32 temp_r4_15970;
-    u8 temp_r0_15897;
-    u8 temp_r6_15899;
-    u8 temp_r7_15909;
+    Islander_AGB *islander = &gIslander;
+    IslandFieldWork *field = &gIslandFieldWork;
+    u8 tile_idx = islander->world_state;
+    u8 flower;
 
-    temp_r0_15897 = *(u8 *)0x0300421A;
-    temp_r4_15898 = temp_r0_15897 << 0x18;
-    temp_r6_15899 = temp_r0_15897;
-    (*(s32 *)((u8 *)((void *)0x030041A0) + (0x40))) = 0x800000;
-    temp_r7_15909 = (u8) ((s32) rand_u16(&gGameState) % 9);
-    (*(s32 *)((u8 *)((void *)0x030041A0) + (0x40))) = (s32) ((*(s32 *)((u8 *)((void *)0x030041A0) + (0x40))) | 0x5344);
-    if (!(0x8000 & (u16) *(u8 *)0x0300421A)) {
-        *(u32 *)(0x03003720 + (temp_r6_15899 * 2)) = 0x7777;
-        temp_r3_15929 = *(s32 *)0x03001B40;
-        var_r5_15931 = 0xF & temp_r6_15899;
-        temp_r4_15933 = temp_r4_15898 >> 0x1C;
-        var_r6_15940 = temp_r7_15909 * 2;
-        *(u32 *)(temp_r3_15929 + 0x24 + ((var_r5_15931 * 2) + (temp_r4_15933 << 5))) = *(u32 *)(0x02033F80 + var_r6_15940);
-        var_r4_15944 = temp_r4_15933 * 2;
-        var_r3_15946 = temp_r3_15929 + 0x18F8;
+    islander->_40 = 0x800000;
+    flower = rand_u16(&gGameState) % 9;
+    islander->_40 |= 0x5344;
+    if ((islander->world_state & 0x8000) == 0) {
+        field->fg_tiles[0][tile_idx] = 0x7777;
+        gIslandData->fgblock[0][0].items[tile_idx >> 4][tile_idx & 0xF] = sIslanderFlowerItems[flower];
+        gIslandData->deposit[0][tile_idx >> 4] &= ~(1 << (tile_idx & 0xF));
     } else {
-        *(u32 *)(0x03003920 + (temp_r6_15899 * 2)) = 0x7777;
-        temp_r3_15966 = *(u32 *)0x03001B40;
-        var_r5_15931 = 0xF & temp_r6_15899;
-        temp_r4_15970 = temp_r4_15898 >> 0x1C;
-        var_r6_15940 = temp_r7_15909 * 2;
-        *(u32 *)(temp_r3_15966 + 0x224 + ((var_r5_15931 * 2) + (temp_r4_15970 << 5))) = *(u32 *)(0x02033F80 + var_r6_15940);
-        var_r4_15944 = temp_r4_15970 * 2;
-        var_r3_15946 = temp_r3_15966 + 0x1918;
+        field->fg_tiles[1][tile_idx] = 0x7777;
+        gIslandData->fgblock[0][1].items[tile_idx >> 4][tile_idx & 0xF] = sIslanderFlowerItems[flower];
+        gIslandData->deposit[1][tile_idx >> 4] &= ~(1 << (tile_idx & 0xF));
     }
-    temp_r3_15986 = var_r3_15946 + var_r4_15944;
-    *temp_r3_15986 &= ~(1 << var_r5_15931);
-    (*(u16 *)((u8 *)((void *)0x030041A0) + (0x7C))) = (u16) *(u32 *)(0x0202F8EC + ((var_r6_15940 + temp_r7_15909) * 4));
+    islander->_7C[0] = (g_ItemDefinitions + ITEM_TYPE_PURPLE_COSMOS)[flower].field_tile_id;
 }
 
-void sub_0201FCB0(void) {
-    u8 temp_r0_16019;
-    u8 temp_r1_16046;
-    u8 var_r0_16054;
+/* Original address: 0x0201FCB0 */
+void Islander_UpdateBlink(void) {
+    Islander_AGB *islander = &gIslander;
+    u8 direction = islander->_8B;
 
-    temp_r0_16019 = *(u8 *)0x0300422B;
-    if (((temp_r0_16019 == 0) || (temp_r0_16019 == 2) || (temp_r0_16019 == 1) || (temp_r0_16019 == 6) || (temp_r0_16019 == 7)) && (*(u8 *)0x03004230 == 0)) {
-        if (*(u8 *)0x03004232 == 0) {
-            temp_r1_16046 = (*(u8 *)0x03004231 + 1) & 1;
-            *(u8 *)0x03004231 = temp_r1_16046;
-            if (temp_r1_16046 == 0) {
-                var_r0_16054 = ((s32) rand_u16(&gGameState) % 65) + 0x20;
+    if ((direction == 0 || direction == 2 || direction == 1 || direction == 6 || direction == 7) && islander->emotion == 0) {
+        if (islander->_91[1] == 0) {
+            islander->_91[0] = (islander->_91[0] + 1) & 1;
+            if (islander->_91[0] == 0) {
+                islander->_91[1] = rand_u16(&gGameState) % 65 + 0x20;
             } else {
-                var_r0_16054 = 4;
+                islander->_91[1] = 4;
             }
-            *(u8 *)0x03004232 = var_r0_16054;
         }
-        *(u8 *)0x03004232 -= 1;
+        islander->_91[1]--;
     }
 }
 
-s32 sub_0201FD1C(s32 arg0, s32 arg1) {
-    s32 temp_r0_16078;
-    s32 temp_r0_16138;
-    s32 temp_r0_16144;
-    s32 temp_r1_16082;
-    s32 temp_r2_16160;
-    s32 var_r1_16095;
-    u16 temp_r2_16090;
-    u8 *var_r5_16098;
-    u8 temp_r0_16129;
+static inline s32 Islander_FindDirectionSector(u16 angle) {
+    s32 sector;
+    IslanderDirectionSector *sectors = &gIslanderDirectionSectors[7];
 
-    temp_r0_16078 = (s32) (arg0 - (*(s32 *)((u8 *)((void *)0x030041A0) + (0)))) >> 8;
-    (*(s32 *)((u8 *)((void *)0x030041A0) + (0x20))) = temp_r0_16078;
-    temp_r1_16082 = (s32) (arg1 - (*(s32 *)((u8 *)((void *)0x030041A0) + (4)))) >> 8;
-    (*(s32 *)((u8 *)((void *)0x030041A0) + (0x24))) = temp_r1_16082;
-    temp_r2_16090 = ArcTan2((s16) temp_r0_16078, (s16) temp_r1_16082);
-    if ((u32) temp_r2_16090 < (u32) *(u16 *)0x020338F8) {
-        var_r1_16095 = 0;
-        var_r5_16098 = (void *)0x030041A0 + 0x94;
-        if ((u32) temp_r2_16090 > (u32) *(u16 *)0x020338DC) {
-loop_3:
-            var_r1_16095 += 1;
-            if (var_r1_16095 <= 6) {
-                if ((u32) temp_r2_16090 <= (u32) *(u32 *)(0x020338DC + (var_r1_16095 * 4))) {
-
-                } else {
-                    goto loop_3;
-                }
+    if (angle < sectors->max_angle) {
+        sectors = gIslanderDirectionSectors;
+        for (sector = 0; sector < 7; sector++) {
+            if (angle <= sectors[sector].max_angle) {
+                break;
             }
         }
     } else {
-        var_r1_16095 = 0;
-        var_r5_16098 = (void *)0x030041A0 + 0x94;
+        sector = 0;
     }
-    if (*var_r5_16098 == 0) {
-        temp_r0_16129 = (*(u8 *)((u8 *)(((var_r1_16095 * 4) + 0x020338DC)) + (2)));
-        if (temp_r0_16129 != (*(u8 *)((u8 *)((void *)0x030041A0) + (0x8B)))) {
-            (*(u8 *)((u8 *)((void *)0x030041A0) + (0x8B))) = temp_r0_16129;
+    return sector;
+}
+
+/* Original address: 0x0201FD1C */
+s32 Islander_FaceTargetAndCheckArrival(s32 target_x, s32 target_y) {
+    Islander_AGB *islander = &gIslander;
+    u16 angle;
+    s32 sector;
+    s32 tile_y;
+
+    islander->dir_x = (target_x - islander->_00) >> 8;
+    islander->dir_y = (target_y - islander->_04) >> 8;
+    angle = ArcTan2(islander->dir_x, islander->dir_y);
+    sector = Islander_FindDirectionSector(angle);
+    if (islander->_94[0] == 0) {
+        if (gIslanderDirectionSectors[sector].direction != islander->_8B) {
+            islander->_8B = gIslanderDirectionSectors[sector].direction;
             Islander_AdjustAnimForTool();
-            *var_r5_16098 = 0x20;
+            islander->_94[0] = 0x20;
         }
     }
-    temp_r0_16138 = (*(s32 *)((u8 *)((void *)0x030041A0) + (0x20)));
-    if (temp_r0_16138 < 0) {
-        (*(s32 *)((u8 *)((void *)0x030041A0) + (0x20))) = (s32) (0 - temp_r0_16138);
+    if (islander->dir_x < 0) {
+        islander->dir_x = -islander->dir_x;
     }
-    temp_r0_16144 = (*(s32 *)((u8 *)((void *)0x030041A0) + (0x24)));
-    if (temp_r0_16144 < 0) {
-        (*(s32 *)((u8 *)((void *)0x030041A0) + (0x24))) = (s32) (0 - temp_r0_16144);
+    if (islander->dir_y < 0) {
+        islander->dir_y = -islander->dir_y;
     }
-    if (((s32) (*(s32 *)((u8 *)((void *)0x030041A0) + (0x20))) <= 1) && ((s32) (*(s32 *)((u8 *)((void *)0x030041A0) + (0x24))) <= 1)) {
-        temp_r2_16160 = ((s32) (*(s32 *)((u8 *)((void *)0x030041A0) + (4))) >> 8) & 0xFF0;
-        (*(s32 *)((u8 *)((void *)0x030041A0) + (0x24))) = temp_r2_16160;
-        (*(s32 *)((u8 *)((void *)0x030041A0) + (0x20))) = (s32) (((s32) (*(s32 *)((u8 *)((void *)0x030041A0) + (0))) >> 8) & 0xFF0);
-        (*(s8 *)((u8 *)((void *)0x030041A0) + (0x8E))) = (s8) temp_r2_16160;
-        (*(s8 *)((u8 *)((void *)0x030041A0) + (0x8E))) = (s8) (((s32) ((*(s32 *)((u8 *)((void *)0x030041A0) + (0x20))) & 0xF0) >> 4) | temp_r2_16160);
+    if (islander->dir_x <= 1 && islander->dir_y <= 1) {
+        tile_y = (islander->_04 >> 8) & 0xFF0;
+        islander->dir_y = tile_y;
+        islander->dir_x = (islander->_00 >> 8) & 0xFF0;
+        islander->stand_on_tile_idx = tile_y;
+        islander->stand_on_tile_idx = ((islander->dir_x & 0xF0) >> 4) | tile_y;
         return 1;
     }
     return 0;
 }
 
-s32 Islander_PlayAnim(u8 arg0) {
-    u8 temp_r0_16196;
+/* Original address: 0x0201FDF4 */
+s32 Islander_PlayAnim(u8 stop_at_end) {
+    Islander_AGB *islander = &gIslander;
+    AnimFrameData *frame;
 
-    temp_r0_16196 = *(u8 *)0x0300422A - 1;
-    *(u8 *)0x0300422A = temp_r0_16196;
-    if (temp_r0_16196 & 0x80) {
-        *(u8 *)0x03004229 += 1;
-        if ((*(u8 *)((u8 *)(*(u32 *)((*(u8 *)0x03004229 * 4) + *(u32 *)(0x02033680 + (*(u8 *)0x03004228 * 4)))) + (6))) == 0xFF) {
-            *(u8 *)0x03004229 = 0;
-            if (arg0 == 1) {
+    islander->anim_timer--;
+    if (islander->anim_timer & 0x80) {
+        islander->anim_frame++;
+        frame = gIslanderAnimData[islander->anim_id][islander->anim_frame];
+        if ((u8)frame->action_flag == 0xFF) {
+            islander->anim_frame = 0;
+            if (stop_at_end == 1) {
                 return 1;
             }
         }
-        *(u32 *)0x0300422A = (u8) (*(u16 *)((u8 *)(*(u32 *)((*(u8 *)0x03004229 * 4) + *(u32 *)(0x02033680 + (*(u8 *)0x03004228 * 4)))) + (4)));
-        goto block_5;
+        frame = gIslanderAnimData[islander->anim_id][islander->anim_frame];
+        islander->anim_timer = frame->duration;
     }
-block_5:
     return 0;
 }
 
-void Islander_ClearStoredItem(s32 arg0) {
-    s32 temp_r1_16285;
-    s32 temp_r2_16257;
-    s32 temp_r2_16272;
-    s32 temp_r7_16276;
-    s32 var_r1_16267;
-    u16 temp_r3_16282;
+/* Original address: 0x0201FE6C */
+void Islander_ClearStoredItem(s32 index) {
+    Islander_AGB *islander = &gIslander;
+    s32 i;
 
-    temp_r2_16257 = arg0 * 2;
-    *(u32 *)(0x030041FA + temp_r2_16257) = 0;
-    *(u32 *)(0x03004204 + temp_r2_16257) = 0;
-    var_r1_16267 = arg0;
-    if (var_r1_16267 <= 3) {
-        do {
-            temp_r2_16272 = var_r1_16267 * 2;
-            temp_r7_16276 = var_r1_16267 + 1;
-            if (*(u32 *)(0x030041FA + temp_r2_16272) == 0) {
-                temp_r3_16282 = *(u32 *)(0x03004204 + temp_r2_16272);
-                if (temp_r3_16282 == 0) {
-                    temp_r1_16285 = temp_r7_16276 * 2;
-                    *(u32 *)(0x030041FA + temp_r2_16272) = (u16) *(u32 *)(0x030041FA + temp_r1_16285);
-                    *(u32 *)(0x03004204 + temp_r2_16272) = (u16) *(u32 *)(0x03004204 + temp_r1_16285);
-                    *(u32 *)(0x030041FA + temp_r1_16285) = temp_r3_16282;
-                    *(u32 *)(0x03004204 + temp_r1_16285) = temp_r3_16282;
-                }
-            }
-            var_r1_16267 = temp_r7_16276;
-        } while (var_r1_16267 <= 3);
+    islander->stored_item_tile_ids[index] = 0;
+    islander->stored_items[index] = 0;
+    for (i = index; i < 4; i++) {
+        if (islander->stored_item_tile_ids[i] == 0 && islander->stored_items[i] == 0) {
+            islander->stored_item_tile_ids[i] = islander->stored_item_tile_ids[i + 1];
+            islander->stored_items[i] = islander->stored_items[i + 1];
+            islander->stored_item_tile_ids[i + 1] = 0;
+            islander->stored_items[i + 1] = 0;
+        }
     }
 }
 
-s32 sub_0201FED4(u8 arg0, u8 arg1) {
-    s32 temp_r1_16327;
-    s32 var_r3_16317;
-    void *temp_r0_16319;
-    void *temp_r4_16329;
+/* Original address: 0x0201FED4 */
+s32 Islander_SpawnReactionEffect(u8 effect, u8 duration) {
+    Islander_AGB *islander = &gIslander;
+    IslandFieldWork *field = &gIslandFieldWork;
+    s32 i;
+    Entity *entity;
 
-    var_r3_16317 = 3;
-loop_1:
-    temp_r0_16319 = var_r3_16317 + 0x03003710;
-    if ((*(u8 *)((u8 *)(temp_r0_16319) + (0x41A))) == 0) {
-        temp_r1_16327 = 0x54 * var_r3_16317;
-        temp_r4_16329 = temp_r1_16327 + 0x03004790;
-        (*(u8 *)((u8 *)(temp_r0_16319) + (0x41A))) = 1U;
-        Unk_Struct_Size54_ResetIdx(var_r3_16317);
-        (*(s16 *)((u8 *)(temp_r4_16329) + (0x40))) = (s16) arg1;
-        (*(u8 *)((u8 *)((temp_r4_16329 + 0x40)) + (0xB))) = arg0;
-        (*(s8 *)((u8 *)(temp_r4_16329) + (0x4E))) = 5;
-        *(u32 *)(0x03004790 + temp_r1_16327) = (s32) ((s32) (*(s32 *)((u8 *)((void *)0x030041A0) + (0))) >> 8);
-        (*(s32 *)((u8 *)(temp_r4_16329) + (4))) = (s32) ((s32) (*(s32 *)((u8 *)((void *)0x030041A0) + (4))) >> 8);
-        return 1;
+    for (i = 3; i < 12; i++) {
+        if (field->entity_active[i + 3] == 0) {
+            entity = &g_EntityTable[i];
+            field->entity_active[i + 3] = 1;
+            Unk_Struct_Size54_ResetIdx(i);
+            entity->_40 = duration;
+            entity->_4B = effect;
+            entity->type = 5;
+            entity->x = islander->_00 >> 8;
+            entity->y = islander->_04 >> 8;
+            return 1;
+        }
     }
-    var_r3_16317 += 1;
-    if (var_r3_16317 > 0xB) {
-        return 0;
-    }
-    goto loop_1;
+    return 0;
 }
 
-s32 SpawnEntity(u8 arg0, u8 arg1, u16 arg2, u16 arg3) {
-    s32 sp0;
-    s32 sp4;
-    void *sp8;
-    s32 temp_r1_16492;
-    s32 var_r4_16414;
-    s32 var_r6_16481;
-    u16 *temp_r4_16450;
-    u16 temp_r2_16382;
-    u16 temp_r3_16405;
-    u16 temp_r3_16431;
-    u32 temp_r2_16460;
-    u8 *var_r2_16399;
-    u8 temp_r1_16379;
-    u8 temp_r1_16442;
-    u8 temp_r2_16556;
-    u8 var_sb_16380;
-    void *temp_r3_16500;
-    void *temp_r4_16494;
-    void *var_r5_16482;
+static inline u16 Islander_GetTerrainTile(u16 *tilemap) {
+    return *tilemap & 0x3FF;
+}
 
-    sp0 = (s32) arg0;
-    temp_r1_16379 = arg1;
-    var_sb_16380 = temp_r1_16379;
-    temp_r2_16382 = arg2;
-    sp4 = (s32) arg3;
-    if (temp_r1_16379 == 0) {
-        if (!((*(s32 *)((u8 *)((void *)0x030041A0) + (0))) & 0xFF0000)) {
-            var_r2_16399 = (void *)0x030041A0 + 0x8E;
-            temp_r3_16405 = *(u32 *)(0x03003720 + ((*(u8 *)((u8 *)((void *)0x030041A0) + (0x8E))) * 2));
-            if ((temp_r3_16405 != 0xFFF) && (temp_r3_16405 != 0x3333)) {
-                goto block_27;
+/* Original address: 0x0201FF48 */
+s32 SpawnEntity(u8 spawn_flag, u8 spawn_mode, u16 item_type, u16 item) {
+    s32 active_idx;
+    s32 entity_idx;
+    Islander_AGB *islander = &gIslander;
+    IslandFieldWork *field = &gIslandFieldWork;
+    u16 *tilemap;
+    u16 tile;
+    u16 terrain_tile;
+    u8 tile_idx;
+    Entity *entity;
+    ItemGroupStruct *definition;
+
+    if (spawn_mode == 0) {
+        if (!(islander->_00 & 0xFF0000)) {
+            tile = field->fg_tiles[0][islander->stand_on_tile_idx];
+            if (tile != 0xFFF && tile != 0x3333) {
+                return 0;
             }
-            var_r4_16414 = 0x0600A000;
-            goto block_10;
-        }
-        var_r2_16399 = (void *)0x030041A0 + 0x8E;
-        temp_r3_16431 = *(u32 *)(0x03003920 + ((*(u8 *)((u8 *)((void *)0x030041A0) + (0x8E))) * 2));
-        if ((temp_r3_16431 != 0xFFF) && (temp_r3_16431 != 0x3333)) {
-            goto block_27;
-        }
-        var_r4_16414 = 0x0600A800;
-block_10:
-        temp_r1_16442 = *var_r2_16399;
-        temp_r4_16450 = var_r4_16414 + ((0xF0 & temp_r1_16442) * 8) + ((0xF & temp_r1_16442) * 4);
-        if (CheckSurroundingCollision(0U, temp_r4_16450) != 0) {
-            goto block_27;
-        }
-        temp_r2_16460 = 0x3FF & *temp_r4_16450;
-        if (temp_r2_16460 <= 5U) {
-            goto block_27;
-        }
-        if (((u32) (u16) (temp_r2_16460 - 0x10) > 5U) && (temp_r2_16460 <= 0xAFU)) {
-            goto block_16;
-        }
-        goto block_27;
-    }
-block_16:
-    if (var_sb_16380 == 2) {
-        var_sb_16380 = 0;
-    }
-    var_r6_16481 = 3;
-    var_r5_16482 = (void *)6;
-loop_19:
-    if (*(u32 *)(0x03003B27 + (s32) var_r5_16482) == 0) {
-        temp_r1_16492 = 0x54 * var_r6_16481;
-        temp_r4_16494 = temp_r1_16492 + 0x03004790;
-        temp_r3_16500 = (temp_r2_16382 * 0xC) + 0x0202F7FC;
-        sp8 = temp_r3_16500;
-        Unk_Struct_Size54_ResetIdx(var_r6_16481);
-        *(u32 *)(0x03004790 + temp_r1_16492) = (s32) (((s32) (*(s32 *)((u8 *)((void *)0x030041A0) + (0))) >> 8) - 8);
-        (*(s32 *)((u8 *)(temp_r4_16494) + (4))) = (s32) (((s32) (*(s32 *)((u8 *)((void *)0x030041A0) + (4))) >> 8) - 0x10);
-        if (var_sb_16380 == 0) {
-            (*(s8 *)((u8 *)(temp_r4_16494) + (0x4E))) = 7;
+            tilemap = (u16 *)BG_SCREEN_ADDR(20);
         } else {
-            (*(s8 *)((u8 *)(temp_r4_16494) + (0x4E))) = 9;
-            (*(s8 *)((u8 *)((void *)0x030041A0) + (0x9E))) = (s8) var_r6_16481;
-        }
-        *(u32 *)(0x03003B27 + (s32) var_r5_16482) = 1U;
-        (*(u16 *)((u8 *)(temp_r4_16494) + (0x28))) = temp_r2_16382;
-        (*(u16 *)((u8 *)(temp_r4_16494) + (0x32))) = (u16) (*(u16 *)((u8 *)(&sp0) + (4)));
-        (*(u8 *)((u8 *)(temp_r4_16494) + (0x4A))) = (u8) (*(u8 *)((u8 *)(&sp0) + (0)));
-        temp_r2_16556 = (*(u8 *)((u8 *)((void *)0x030041A0) + (0x8E)));
-        (*(s16 *)((u8 *)(temp_r4_16494) + (0x3C))) = (s16) temp_r2_16556;
-        if ((*(s32 *)((u8 *)((void *)0x030041A0) + (0))) & 0xFF0000) {
-            (*(s16 *)((u8 *)(temp_r4_16494) + (0x3C))) = (s16) (temp_r2_16556 | 0x1000);
-        }
-        (*(s16 *)((u8 *)(temp_r4_16494) + (0x3E))) = (s16) ((*(u16 *)((u8 *)(temp_r3_16500) + (4))) & 0x3FF);
-        (*(s8 *)((u8 *)(temp_r4_16494) + (0x50))) = (s8) ((u16) (*(u16 *)((u8 *)(temp_r3_16500) + (4))) >> 0xC);
-        return var_r6_16481;
-    }
-    var_r5_16482 += 1;
-    var_r6_16481 += 1;
-    if (var_r6_16481 > 0xB) {
-block_27:
-        return 0;
-    }
-    goto loop_19;
-}
-
-s32 sub_02020118(void *arg0, s32 arg1, s32 arg2) {
-    s32 *var_r2_16642;
-    s32 *var_r4_16644;
-    s32 temp_r0_16698;
-    s32 temp_r0_16710;
-    s32 temp_r0_16715;
-    s32 temp_r0_16723;
-    s32 temp_r1_16649;
-    s32 temp_r1_16724;
-    s32 temp_r2_16722;
-    s32 var_r0_16781;
-    s32 var_r5_16645;
-    u8 temp_r4_16767;
-    u8 temp_r4_16789;
-
-    (*(s32 *)((u8 *)((void *)0x030041A0) + (0x30))) = arg1;
-    (*(s32 *)((u8 *)((void *)0x030041A0) + (0x34))) = arg2;
-    if ((arg1 == 0) && (arg2 == 0)) {
-        return 0;
-    }
-    (*(s32 *)((u8 *)((void *)0x030041A0) + (0x14))) = (s32) (((0xF0 & (*(u16 *)((u8 *)(arg0) + (0xE)))) << 8) + 0x800);
-    (*(s16 *)((u8 *)((void *)0x030041A0) + (0x6E))) = 0;
-    if (((*(s32 *)((u8 *)((void *)0x030041A0) + (0x30))) != 0) && ((*(s32 *)((u8 *)((void *)0x030041A0) + (0x34))) != 0)) {
-        var_r2_16642 = (void *)0x030041A0 + 0x28;
-        var_r4_16644 = (void *)0x030041A0 + 0x30;
-        var_r5_16645 = 1;
-        do {
-            temp_r1_16649 = *var_r4_16644 - (*(s32 *)((u8 *)((void *)0x030041A0) + (0)));
-            *var_r2_16642 = temp_r1_16649;
-            if (temp_r1_16649 < 0) {
-                *var_r2_16642 = 0;
+            tile = field->fg_tiles[1][islander->stand_on_tile_idx];
+            if (tile != 0xFFF && tile != 0x3333) {
+                return 0;
             }
-            var_r2_16642 += 4;
-            var_r4_16644 += 4;
-            var_r5_16645 -= 1;
-        } while (var_r5_16645 >= 0);
-        (*(s32 *)((u8 *)((void *)0x030041A0) + (0x10))) = (s32) ((*(s32 *)((u8 *)((void *)0x030041A0) + (0x30))) + 0x500);
-        *(s8 *)0x03004239 = 0x40;
-        if ((s32) (*(s32 *)((u8 *)((void *)0x030041A0) + (0x28))) > (s32) (*(s32 *)((u8 *)((void *)0x030041A0) + (0x2C)))) {
-            (*(s32 *)((u8 *)((void *)0x030041A0) + (0x10))) = (s32) (*(s32 *)((u8 *)((void *)0x030041A0) + (0x34)));
-            *(s8 *)0x03004239 = 0x30;
-            (*(s32 *)((u8 *)((void *)0x030041A0) + (0x10))) = (s32) ((*(s32 *)((u8 *)((void *)0x030041A0) + (0x34))) + 0xA00);
+            tilemap = (u16 *)BG_SCREEN_ADDR(21);
         }
-        (*(s32 *)((u8 *)((void *)0x030041A0) + (0x18))) = 0;
-        (*(s32 *)((u8 *)((void *)0x030041A0) + (0x1C))) = 0;
-    } else {
-        (*(s32 *)((u8 *)((void *)0x030041A0) + (0x10))) = (s32) ((*(s32 *)((u8 *)((void *)0x030041A0) + (0x30))) + 0x500);
-        (*(s8 *)((u8 *)((void *)0x030041A0) + (0x99))) = 0x40;
-        temp_r0_16698 = (*(s32 *)((u8 *)((void *)0x030041A0) + (0x34)));
-        if (temp_r0_16698 != 0) {
-            (*(s32 *)((u8 *)((void *)0x030041A0) + (0x10))) = temp_r0_16698;
-            (*(s8 *)((u8 *)((void *)0x030041A0) + (0x99))) = 0x30;
-            (*(s32 *)((u8 *)((void *)0x030041A0) + (0x10))) = (s32) ((*(s32 *)((u8 *)((void *)0x030041A0) + (0x34))) + 0xA00);
+        tilemap += (0xF0 & islander->stand_on_tile_idx) * 4;
+        tilemap += (0xF & islander->stand_on_tile_idx) * 2;
+        if (CheckSurroundingCollision(0, tilemap) != 0) {
+            return 0;
         }
-        temp_r0_16710 = (*(s32 *)((u8 *)((void *)0x030041A0) + (0x10)));
-        (*(s32 *)((u8 *)((void *)0x030041A0) + (0x18))) = temp_r0_16710;
-        (*(s32 *)((u8 *)((void *)0x030041A0) + (0x1C))) = (s32) (*(s32 *)((u8 *)((void *)0x030041A0) + (0x14)));
-        temp_r0_16715 = temp_r0_16710 - (*(s32 *)((u8 *)((void *)0x030041A0) + (0)));
-        (*(s32 *)((u8 *)((void *)0x030041A0) + (0x10))) = temp_r0_16715;
-        if (temp_r0_16715 < 0) {
-            (*(s32 *)((u8 *)((void *)0x030041A0) + (0x10))) = (s32) (0 - temp_r0_16715);
+        terrain_tile = Islander_GetTerrainTile(tilemap);
+        if (terrain_tile <= 5U || (u16)(terrain_tile - 0x10) <= 5U || terrain_tile > 0xAFU) {
+            return 0;
         }
-        temp_r2_16722 = (*(s32 *)((u8 *)((void *)0x030041A0) + (0x1C)));
-        temp_r0_16723 = (*(s32 *)((u8 *)((void *)0x030041A0) + (4)));
-        temp_r1_16724 = temp_r2_16722 - temp_r0_16723;
-        (*(s32 *)((u8 *)((void *)0x030041A0) + (0x14))) = temp_r1_16724;
-        if (temp_r1_16724 < 0) {
-            (*(s32 *)((u8 *)((void *)0x030041A0) + (0x14))) = (s32) (0 - temp_r1_16724);
-        }
-        if (((s32) (*(s32 *)((u8 *)((void *)0x030041A0) + (0x10))) <= 0xFFF) && ((s32) (*(s32 *)((u8 *)((void *)0x030041A0) + (0x14))) <= 0xFFF)) {
-            (*(s32 *)((u8 *)((void *)0x030041A0) + (0x10))) = (s32) (*(s32 *)((u8 *)((void *)0x030041A0) + (0x18)));
-            (*(s32 *)((u8 *)((void *)0x030041A0) + (0x14))) = temp_r2_16722;
-            (*(s32 *)((u8 *)((void *)0x030041A0) + (0x18))) = 0;
-            (*(s32 *)((u8 *)((void *)0x030041A0) + (0x1C))) = 0;
-        } else {
-            (*(s32 *)((u8 *)((void *)0x030041A0) + (0x10))) = 0;
-            (*(s32 *)((u8 *)((void *)0x030041A0) + (0x14))) = 0;
-            if ((*(u8 *)((u8 *)(arg0) + (0x24))) != 0) {
-                (*(s32 *)((u8 *)((void *)0x030041A0) + (0x10))) = 0x10000;
-            }
-            if ((s32) ((*(s32 *)((u8 *)(arg0) + (4))) << 8) > temp_r0_16723) {
-                temp_r4_16767 = (u8) (*(u16 *)((u8 *)(arg0) + (0xE))) - 0x10;
-                (*(s32 *)((u8 *)((void *)0x030041A0) + (0x10))) = (s32) ((*(s32 *)((u8 *)((void *)0x030041A0) + (0x10))) | (((0xF & temp_r4_16767) << 0xC) + 0x800));
-                var_r0_16781 = ((temp_r4_16767 & 0xF0) << 8) + 0x0FFFF400;
+    }
+    if (spawn_mode == 2) {
+        spawn_mode = 0;
+    }
+    for (entity_idx = 3, active_idx = 6; entity_idx < 12; active_idx++, entity_idx++) {
+        if (field->entity_active[active_idx] == 0) {
+            entity = &g_EntityTable[entity_idx];
+            definition = &g_ItemDefinitions[item_type];
+            Unk_Struct_Size54_ResetIdx(entity_idx);
+            entity->x = (islander->_00 >> 8) - 8;
+            entity->y = (islander->_04 >> 8) - 0x10;
+            if (spawn_mode == 0) {
+                entity->type = 7;
             } else {
-                temp_r4_16789 = (u8) (*(u16 *)((u8 *)(arg0) + (0xE))) + 0x10;
-                (*(s32 *)((u8 *)((void *)0x030041A0) + (0x10))) = (s32) ((*(s32 *)((u8 *)((void *)0x030041A0) + (0x10))) | (((0xF & temp_r4_16789) << 0xC) + 0x800));
-                var_r0_16781 = ((temp_r4_16789 & 0xF0) << 8) + 0x800;
+                entity->type = 9;
+                islander->floating_balloon_target_entity_id = entity_idx;
             }
-            (*(s32 *)((u8 *)((void *)0x030041A0) + (0x14))) = var_r0_16781;
+            field->entity_active[active_idx] = 1;
+            entity->item_tile_no[0] = item_type;
+            entity->item[0] = item;
+            entity->_4A = spawn_flag;
+            tile_idx = islander->stand_on_tile_idx;
+            entity->_3C = tile_idx;
+            if (islander->_00 & 0xFF0000) {
+                entity->_3C = tile_idx | 0x1000;
+            }
+            entity->_3E = definition->held_item_oam_attr2 & 0x3FF;
+            entity->_50 = definition->held_item_oam_attr2 >> 12;
+            return entity_idx;
+        }
+    }
+    return 0;
+}
+
+/* Original address: 0x02020118 */
+s32 Islander_SelectTreeApproach(FieldObject *object, s32 right_x, s32 left_x) {
+    Islander_AGB *islander = &gIslander;
+    s32 i;
+    u8 tile_idx;
+
+    islander->tree_approach_x[0] = right_x;
+    islander->tree_approach_x[1] = left_x;
+    if (right_x == 0 && left_x == 0) {
+        return 0;
+    }
+    islander->_14 = ((0xF0 & object->tile_idx) << 8) + 0x800;
+    islander->item_work.held_item.type_idx = 0;
+    if (islander->tree_approach_x[0] != 0 && islander->tree_approach_x[1] != 0) {
+        for (i = 0; i < 2; i++) {
+            islander->tree_approach_work[i] = islander->tree_approach_x[i] - islander->_00;
+            if (islander->tree_approach_work[i] < 0) {
+                islander->tree_approach_work[i] = 0;
+            }
+        }
+        islander->_10 = islander->tree_approach_x[0] + 0x500;
+        islander->_99[0] = 0x40;
+        if (islander->tree_approach_work[0] > islander->tree_approach_work[1]) {
+            islander->_10 = islander->tree_approach_x[1];
+            islander->_99[0] = 0x30;
+            islander->_10 = islander->tree_approach_x[1] + 0xA00;
+        }
+        islander->_18 = 0;
+        islander->_1C = 0;
+    } else {
+        islander->_10 = islander->tree_approach_x[0] + 0x500;
+        islander->_99[0] = 0x40;
+        if (islander->tree_approach_x[1] != 0) {
+            islander->_10 = islander->tree_approach_x[1];
+            islander->_99[0] = 0x30;
+            islander->_10 = islander->tree_approach_x[1] + 0xA00;
+        }
+        islander->_18 = islander->_10;
+        islander->_1C = islander->_14;
+        islander->_10 -= islander->_00;
+        if (islander->_10 < 0) {
+            islander->_10 = -islander->_10;
+        }
+        islander->_14 = islander->_1C - islander->_04;
+        if (islander->_14 < 0) {
+            islander->_14 = -islander->_14;
+        }
+        if (islander->_10 <= 0xFFF && islander->_14 <= 0xFFF) {
+            islander->_10 = islander->_18;
+            islander->_14 = islander->_1C;
+            islander->_18 = 0;
+            islander->_1C = 0;
+        } else {
+            islander->_10 = 0;
+            islander->_14 = 0;
+            if (object->layer != 0) {
+                islander->_10 = 0x10000;
+            }
+            if ((object->y << 8) > islander->_04) {
+                tile_idx = object->tile_idx - 0x10;
+                islander->_10 |= ((0xF & tile_idx) << 12) + 0x800;
+                islander->_14 = ((tile_idx & 0xF0) << 8) + 0x0FFFF400;
+            } else {
+                tile_idx = object->tile_idx + 0x10;
+                islander->_10 |= ((0xF & tile_idx) << 12) + 0x800;
+                islander->_14 = ((tile_idx & 0xF0) << 8) + 0x800;
+            }
         }
     }
     return 1;
 }
 
-s32 sub_0202029C(void *arg0) {
-    u16 sp0;
-    s32 sp4;
-    s32 sp8;
-    void *spC;
-    s32 *var_r5_16987;
-    s32 temp_r0_16886;
-    s32 temp_r1_16833;
-    s32 temp_r1_16896;
-    s32 temp_r1_16921;
-    s32 temp_r1_16923;
-    s32 temp_r1_16933;
-    s32 temp_r2_16962;
-    s32 temp_r4_16995;
-    s32 temp_r6_16831;
-    s32 temp_r7_16830;
-    s32 var_r8_16989;
-    u16 *temp_r2_17001;
-    u16 *temp_r2_17007;
-    u16 *var_r6_16985;
-    u16 temp_r0_17017;
-    u16 temp_r2_16826;
-    u16 temp_r3_16883;
-    u8 temp_r2_16837;
-    void *temp_r3_16992;
-    void *var_r7_16984;
+/* Original address: 0x0202029C */
+s32 Islander_SetupTreeApproach(FieldObject *object) {
+    u16 tile_ids[2];
+    u32 tilemap_addresses[2];
+    Islander_AGB *islander = &gIslander;
+    IslandFieldWork *field = &gIslandFieldWork;
+    u32 tile_idx = object->tile_idx;
+    s32 column = 0xF & tile_idx;
+    s32 right_column = column + 1;
+    s32 side;
 
-    spC = arg0;
-    temp_r2_16826 = (*(u16 *)((u8 *)(spC) + (0xE)));
-    temp_r7_16830 = 0xF & temp_r2_16826;
-    temp_r6_16831 = temp_r7_16830 + 1;
-    (*(s32 *)((u8 *)((void *)0x030041A0) + (0x28))) = temp_r6_16831;
-    temp_r1_16833 = temp_r6_16831 << 0xC;
-    (*(s32 *)((u8 *)((void *)0x030041A0) + (0x30))) = temp_r1_16833;
-    temp_r2_16837 = (*(u8 *)((u8 *)(arg0) + (0x24)));
-    if (temp_r2_16837 == 0) {
-        sp4 = 0x0600A000;
-        (*(u16 *)((u8 *)(&sp0) + (0))) = *(u32 *)(0x03003720 + (((0xF0 & temp_r2_16826) + temp_r6_16831) * 2));
-        if (temp_r6_16831 == 0x10) {
-            (*(s32 *)((u8 *)((void *)0x030041A0) + (0x28))) = (s32) temp_r2_16837;
-            sp4 = 0x0600A800;
-            (*(u16 *)((u8 *)(&sp0) + (0))) = *(u32 *)(0x03003920 + ((0xF0 & temp_r2_16826) * 2));
-            (*(s32 *)((u8 *)((void *)0x030041A0) + (0x30))) = 0x10000;
+    islander->tree_approach_work[0] = right_column;
+    islander->tree_approach_x[0] = islander->tree_approach_work[0] << 12;
+    if (object->layer == 0) {
+        tilemap_addresses[0] = BG_SCREEN_ADDR(20);
+        tile_ids[0] = field->fg_tiles[0][(0xF0 & tile_idx) + islander->tree_approach_work[0]];
+        if (islander->tree_approach_work[0] == 0x10) {
+            islander->tree_approach_work[0] = 0;
+            tilemap_addresses[0] = BG_SCREEN_ADDR(21);
+            tile_ids[0] = field->fg_tiles[1][0xF0 & tile_idx];
+            islander->tree_approach_x[0] = 0x10000;
         }
-        (*(s32 *)((u8 *)((void *)0x030041A0) + (0x28))) = (s32) ((0xF0 & temp_r2_16826) + (*(s32 *)((u8 *)((void *)0x030041A0) + (0x28))));
-        temp_r3_16883 = (*(u16 *)((u8 *)(spC) + (0xE)));
-        temp_r0_16886 = (0xF & temp_r3_16883) - 1;
-        (*(s32 *)((u8 *)((void *)0x030041A0) + (0x2C))) = temp_r0_16886;
-        (*(s32 *)((u8 *)((void *)0x030041A0) + (0x34))) = (s32) (temp_r0_16886 << 0xC);
-        (*(s32 *)((u8 *)(&sp4) + (4))) = 0x0600A000;
-        temp_r1_16896 = (0xF0 & temp_r3_16883) + temp_r0_16886;
-        (*(u16 *)((u8 *)(&sp0) + (2))) = (u16) *(u32 *)(0x03003720 + (temp_r1_16896 * 2));
-        (*(s32 *)((u8 *)((void *)0x030041A0) + (0x2C))) = temp_r1_16896;
+        islander->tree_approach_work[0] = (0xF0 & tile_idx) + islander->tree_approach_work[0];
+        islander->tree_approach_work[1] = (0xF & object->tile_idx) - 1;
+        islander->tree_approach_x[1] = islander->tree_approach_work[1] << 12;
+        tilemap_addresses[1] = BG_SCREEN_ADDR(20);
+        tile_ids[1] = field->fg_tiles[0][(0xF0 & object->tile_idx) + islander->tree_approach_work[1]];
+        islander->tree_approach_work[1] = (0xF0 & object->tile_idx) + islander->tree_approach_work[1];
     } else {
-        (*(s32 *)((u8 *)((void *)0x030041A0) + (0x30))) = (s32) (temp_r1_16833 | 0x10000);
-        (*(s32 *)((u8 *)((void *)0x030041A0) + (0x34))) = 0x10000;
-        sp4 = 0x0600A800;
-        temp_r1_16921 = temp_r2_16826 & 0xF0;
-        temp_r1_16923 = temp_r1_16921 + temp_r6_16831;
-        (*(u16 *)((u8 *)(&sp0) + (0))) = *(u32 *)(0x03003920 + (temp_r1_16923 * 2));
-        (*(s32 *)((u8 *)((void *)0x030041A0) + (0x28))) = temp_r1_16923;
-        temp_r1_16933 = temp_r7_16830 - 1;
-        (*(s32 *)((u8 *)((void *)0x030041A0) + (0x2C))) = temp_r1_16933;
-        (*(s32 *)((u8 *)((void *)0x030041A0) + (0x34))) = (s32) ((temp_r1_16933 << 0xC) | 0x10000);
-        (*(s32 *)((u8 *)(&sp4) + (4))) = 0x0600A800;
-        (*(u16 *)((u8 *)(&sp0) + (2))) = (u16) *(u32 *)(0x03003920 + ((temp_r1_16921 + temp_r1_16933) * 2));
-        if ((u8) temp_r1_16933 == 0xFF) {
-            (*(s32 *)((u8 *)((void *)0x030041A0) + (0x2C))) = 0xF;
-            (*(s32 *)((u8 *)((void *)0x030041A0) + (0x34))) = 0;
-            sp8 = 0x0600A000;
-            temp_r2_16962 = (*(s32 *)((u8 *)((void *)0x030041A0) + (0x2C)));
-            (*(u16 *)((u8 *)(&sp0) + (2))) = (u16) *(u32 *)(0x03003720 + (((0xF0 & temp_r2_16826) + temp_r2_16962) * 2));
-            (*(s32 *)((u8 *)((void *)0x030041A0) + (0x34))) = (s32) (temp_r2_16962 << 0xC);
+        islander->tree_approach_x[0] |= 0x10000;
+        islander->tree_approach_x[1] = 0x10000;
+        tilemap_addresses[0] = BG_SCREEN_ADDR(21);
+        tile_ids[0] = field->fg_tiles[1][(tile_idx & 0xF0) + islander->tree_approach_work[0]];
+        islander->tree_approach_work[0] = (tile_idx & 0xF0) + islander->tree_approach_work[0];
+        islander->tree_approach_work[1] = column - 1;
+        islander->tree_approach_x[1] = (islander->tree_approach_work[1] << 12) | 0x10000;
+        tilemap_addresses[1] = BG_SCREEN_ADDR(21);
+        tile_ids[1] = field->fg_tiles[1][(tile_idx & 0xF0) + islander->tree_approach_work[1]];
+        if ((islander->tree_approach_work[1] & 0xFF) == 0xFF) {
+            islander->tree_approach_work[1] = 0xF;
+            islander->tree_approach_x[1] = 0;
+            tilemap_addresses[1] = BG_SCREEN_ADDR(20);
+            tile_ids[1] = field->fg_tiles[0][(0xF0 & tile_idx) + islander->tree_approach_work[1]];
+            islander->tree_approach_x[1] = islander->tree_approach_work[1] << 12;
         }
-        (*(s32 *)((u8 *)((void *)0x030041A0) + (0x2C))) = (s32) ((*(s32 *)((u8 *)((void *)0x030041A0) + (0x2C))) + temp_r1_16921);
+        islander->tree_approach_work[1] += tile_idx & 0xF0;
     }
-    var_r7_16984 = NULL;
-    var_r6_16985 = &sp0;
-    var_r5_16987 = (void *)0x030041A0 + 0x30;
-    var_r8_16989 = 1;
-    do {
-        temp_r3_16992 = (u8 *)&sp0 + (s32)var_r7_16984;
-        temp_r4_16995 = var_r7_16984 + 0x030041C8;
-        temp_r2_17001 = (*(u16 **)((u8 *)(temp_r3_16992) + (4))) + ((*(u32 *)(0x030041C8 + (s32) var_r7_16984) & 0xF0) * 8);
-        (*(u16 **)((u8 *)(temp_r3_16992) + (4))) = temp_r2_17001;
-        temp_r2_17007 = temp_r2_17001 + ((*(u32 *)(0x030041C8 + (s32) var_r7_16984) & 0xF) * 4);
-        (*(u16 **)((u8 *)(temp_r3_16992) + (4))) = temp_r2_17007;
-        if ((u32) (0x3FF & *temp_r2_17007) > 0x7FU) {
-            *var_r5_16987 = 0;
+    for (side = 0; side < 2; side++) {
+        tilemap_addresses[side] += (islander->tree_approach_work[side] & 0xF0) * 8;
+        tilemap_addresses[side] += (islander->tree_approach_work[side] & 0xF) * 4;
+        if ((*(u16 *)tilemap_addresses[side] & 0x3FF) > 0x7F) {
+            islander->tree_approach_x[side] = 0;
         }
-        temp_r0_17017 = *var_r6_16985;
-        if ((temp_r0_17017 == 0x7777) || (temp_r0_17017 == 0x1F) || (temp_r0_17017 == 0x20)) {
-            *var_r5_16987 = 0;
+        if (tile_ids[side] == 0x7777 || tile_ids[side] == 0x1F || tile_ids[side] == 0x20) {
+            islander->tree_approach_x[side] = 0;
         }
-        var_r7_16984 += 4;
-        var_r6_16985 += 2;
-        var_r5_16987 += 4;
-        var_r8_16989 -= 1;
-    } while (var_r8_16989 >= 0);
-    return sub_02020118(spC, (*(s32 *)((u8 *)((void *)0x030041A0) + (0x30))), (*(s32 *)((u8 *)((void *)0x030041A0) + (0x34))));
+    }
+    return Islander_SelectTreeApproach(object, islander->tree_approach_x[0], islander->tree_approach_x[1]);
 }
 
 /* Original address: 0x020338D2 */
@@ -7411,7 +7257,7 @@ s32 Islander_DecideTreeAction(void) {
         islander->_B5[0] = 0;
         return 0;
     }
-    tree = sub_0202086C();
+    tree = Islander_FindNearbyTree();
     if (tree == 0) {
         islander->_B5[0] = tree;
         return 0;
@@ -7440,7 +7286,7 @@ s32 Islander_DecideTreeAction(void) {
                 islander->_99[2] = i;
                 islander->item_work.held_item.type_idx = 0;
                 object = &gFieldObjects[islander->_99[2]];
-                approach = sub_0202029C(object);
+                approach = Islander_SetupTreeApproach(object);
                 if (approach != 0) {
                     islander->_8C = islander->_8B;
                     islander->move_proc_idx = 4;
@@ -7467,6 +7313,7 @@ s32 sIslanderMoveSteps[8][2] = {
     { 40, 0 },
     { 40, 40 },
 };
+
 
 /* Original address: 0x020205E0 */
 void Islander_MoveWithCollision(void) {
@@ -7527,7 +7374,7 @@ void Islander_MoveWithCollision(void) {
             if (collision != 0x777 && islander->_B2[0] <= 6) {
                 islander->_8B = collision;
                 islander->move_proc_idx = 2;
-                sub_02021720();
+                Islander_StartWandering();
                 return;
             }
         } else {
@@ -7547,44 +7394,36 @@ void Islander_MoveWithCollision(void) {
     }
 }
 
+/* Original address: 0x02020790 */
 void Islander_AdjustAnimForTool(void) {
     u32 var_r1_17464;
 
-    var_r1_17464 = 0xF & *(u8 *)0x0300422D;
+    var_r1_17464 = 0xF & gIslander.state;
     if (var_r1_17464 > 4U) {
         var_r1_17464 = (u32) (u16) (var_r1_17464 - 4);
     }
-    *(s8 *)0x03004228 = (var_r1_17464 * 8) + *(u8 *)0x0300422B;
+    gIslander.anim_id = (var_r1_17464 * 8) + gIslander._8B;
 }
 
-s32 sub_020207C0(u8 arg0, s32 arg1) {
-    s32 temp_r3_17492;
-    s32 var_r2_17493;
-    s8 *var_r1_17509;
-    s8 var_r0_17510;
-    u8 temp_r5_17489;
+/* Original address: 0x020207C0 */
+s32 Islander_MoveTowardX(u8 keep_facing, s32 target) {
+    Islander_AGB *islander = &gIslander;
+    s32 x = islander->_00;
+    s32 distance = target - x;
 
-    temp_r5_17489 = arg0;
-    temp_r3_17492 = *(s32 *)0x030041A0;
-    var_r2_17493 = arg1 - temp_r3_17492;
-    if (var_r2_17493 < 0) {
-        var_r2_17493 = 0 - var_r2_17493;
+    if (distance < 0) {
+        distance = -distance;
     }
-    if (var_r2_17493 > 0x100) {
-        if (arg1 > temp_r3_17492) {
-            *(s32 *)0x030041A0 = temp_r3_17492 + 0x40;
-            if (temp_r5_17489 == 0) {
-                var_r1_17509 = (s32 *)0x030041A0 + 0x8B;
-                var_r0_17510 = 6;
-                goto block_8;
+    if (distance > 0x100) {
+        if (target > x) {
+            islander->_00 = x + 0x40;
+            if (keep_facing == 0) {
+                islander->_8B = 6;
             }
         } else {
-            *(s32 *)0x030041A0 = temp_r3_17492 - 0x40;
-            if (temp_r5_17489 == 0) {
-                var_r1_17509 = (s32 *)0x030041A0 + 0x8B;
-                var_r0_17510 = 2;
-block_8:
-                *var_r1_17509 = var_r0_17510;
+            islander->_00 = x - 0x40;
+            if (keep_facing == 0) {
+                islander->_8B = 2;
             }
         }
         return 0;
@@ -7592,27 +7431,25 @@ block_8:
     return 1;
 }
 
-s32 sub_02020814(u8 arg0, s32 arg1) {
-    s32 temp_r3_17542;
-    s32 var_r2_17543;
-    u8 temp_r1_17539;
+/* Original address: 0x02020814 */
+s32 Islander_MoveTowardY(u8 keep_facing, s32 target) {
+    Islander_AGB *islander = &gIslander;
+    s32 y = islander->_04;
+    s32 distance = target - y;
 
-    temp_r1_17539 = arg0;
-    temp_r3_17542 = (*(s32 *)((u8 *)((void *)0x030041A0) + (4)));
-    var_r2_17543 = arg1 - temp_r3_17542;
-    if (var_r2_17543 < 0) {
-        var_r2_17543 = 0 - var_r2_17543;
+    if (distance < 0) {
+        distance = -distance;
     }
-    if (var_r2_17543 > 0x100) {
-        if (arg1 > temp_r3_17542) {
-            (*(s32 *)((u8 *)((void *)0x030041A0) + (4))) = (s32) (temp_r3_17542 + 0x40);
-            if (temp_r1_17539 == 0) {
-                (*(u8 *)((u8 *)((void *)0x030041A0) + (0x8B))) = temp_r1_17539;
+    if (distance > 0x100) {
+        if (target > y) {
+            islander->_04 = y + 0x40;
+            if (keep_facing == 0) {
+                islander->_8B = 0;
             }
         } else {
-            (*(s32 *)((u8 *)((void *)0x030041A0) + (4))) = (s32) (temp_r3_17542 - 0x40);
-            if (temp_r1_17539 == 0) {
-                (*(u8 *)((u8 *)((void *)0x030041A0) + (0x8B))) = 4U;
+            islander->_04 = y - 0x40;
+            if (keep_facing == 0) {
+                islander->_8B = 4;
             }
         }
         return 0;
@@ -7620,90 +7457,91 @@ s32 sub_02020814(u8 arg0, s32 arg1) {
     return 1;
 }
 
-s32 sub_0202086C(void) {
-    s32 var_r2_17590;
-    u16 temp_r1_17596;
+/* Original address: 0x0202086C */
+s32 Islander_FindNearbyTree(void) {
+    Islander_AGB *islander = &gIslander;
+    s32 i;
+    u16 item_type;
 
-    var_r2_17590 = 0;
-loop_1:
-    temp_r1_17596 = *(u32 *)(0x030041E8 + (var_r2_17590 * 2));
-    if (((u32) (u16) (temp_r1_17596 - 0x22) <= 3U) || ((u32) (u16) (temp_r1_17596 - 0x27) <= 4U) || ((u32) (u16) (temp_r1_17596 - 0x31) <= 3U) || (temp_r1_17596 == 0x36)) {
-        return var_r2_17590 + 1;
+    for (i = 0; i < 4; i++) {
+        item_type = islander->_48[i];
+        if ((item_type >= ITEM_TYPE_SMALL_TREE && item_type <= ITEM_TYPE_FULLY_GROWN_TREE) ||
+            (item_type >= ITEM_TYPE_FRUIT_APPLE_TREE && item_type <= ITEM_TYPE_FRUIT_CHERRY_TREE) ||
+            (item_type >= ITEM_TYPE_SMALL_PALM_TREE && item_type <= ITEM_TYPE_PALM_TREE) ||
+            item_type == ITEM_TYPE_FRUIT_PALM_TREE) {
+            return ++i;
+        }
     }
-    var_r2_17590 += 1;
-    if (var_r2_17590 > 3) {
-        return 0U;
-    }
-    goto loop_1;
+    return 0;
 }
 
-s32 sub_020208BC(s32 arg0) {
-    s32 temp_r1_17668;
-    s32 var_r0_17681;
-    s32 var_r1_17683;
-    s32 var_r5_17725;
-    u16 temp_r3_17698;
-    u16 temp_r6_17713;
-    u8 temp_r3_17642;
+/* Original address: 0x020208BC */
+s32 Islander_TryInteractWithBuriedItem(u8 layer) {
+    Islander_AGB *islander = &gIslander;
+    u8 *tile_idx = &islander->stand_on_tile_idx;
+    IslandFieldWork *field = &gIslandFieldWork;
+    Island_agb_c *island = gIslandData;
+    u32 tile;
+    ItemGroupStruct *definition;
+    u16 special_tile;
+    s32 chance;
+    s32 state;
 
-    temp_r3_17642 = *(u8 *)0x0300422E;
-    if (((s32) *(u32 *)(*(s32 *)0x03001B40 + 0x18F8 + (((temp_r3_17642 >> 4) * 2) + ((u32) (arg0 << 0x18) >> 0x13))) >> (0xF & temp_r3_17642)) & 1) {
-        if ((*(u16 *)0x03004218 == 0) && ((temp_r1_17668 = 0xF & *(u8 *)0x0300422D, (temp_r1_17668 == 3)) || (temp_r1_17668 == 7))) {
-            if (!((*(s32 *)((u8 *)((void *)0x030041A0) + (0))) & 0xFF0000)) {
-                var_r0_17681 = *(u8 *)0x0300422E * 2;
-                var_r1_17683 = 0x03003720;
+    if ((island->deposit[layer][*tile_idx >> 4] >> (0xF & *tile_idx)) & 1) {
+        if (islander->_78 == 0 &&
+            ((state = 0xF & islander->state) == 3 || state == 7)) {
+            if (!(islander->_00 & 0xFF0000)) {
+                tile = field->fg_tiles[0][*tile_idx];
             } else {
-                var_r0_17681 = *(u8 *)0x0300422E * 2;
-                var_r1_17683 = 0x03003920;
+                tile = field->fg_tiles[1][*tile_idx];
             }
-            temp_r3_17698 = *(u32 *)(var_r0_17681 + var_r1_17683);
-            if (temp_r3_17698 != 0xFFF) {
-                temp_r6_17713 = temp_r3_17698 & 0x8000;
-                if ((temp_r6_17713 == 0) && (temp_r3_17698 != 0x3333) && (temp_r3_17698 != 0x7777) && ((*(u16 *)((u8 *)(((temp_r3_17698 * 0xC) + 0x0202F7FC)) + (8))) != 0xFFF)) {
-                    var_r5_17725 = 0x32;
-                    if ((*(u8 *)((u8 *)((void *)0x030041A0) + (0xA1))) == 1) {
-                        var_r5_17725 = 0x19;
+            definition = &g_ItemDefinitions[tile];
+            if (tile != 0xFFF) {
+                special_tile = tile & 0x8000;
+                if (special_tile == 0 && tile != 0x3333 && tile != 0x7777 &&
+                    definition->interaction_type != 0xFFF) {
+                    chance = 50;
+                    if (islander->reward_adjust == 1) {
+                        chance = 25;
                     }
-                    if ((var_r5_17725 >= (s32) ((s32) rand_u16(&gGameState) % 101)) && ((Islander_SetupDigApproach(0xF1U) << 0x10) != 0)) {
-                        (*(s32 *)((u8 *)((void *)0x030041A0) + (8))) = (s32) (*(s32 *)((u8 *)((void *)0x030041A0) + (0x10)));
-                        (*(s32 *)((u8 *)((void *)0x030041A0) + (0xC))) = (s32) (*(s32 *)((u8 *)((void *)0x030041A0) + (0x14)));
-                        (*(u16 *)((u8 *)((void *)0x030041A0) + (0x7C))) = temp_r6_17713;
-                        (*(s16 *)((u8 *)((void *)0x030041A0) + (0x6E))) = 2;
-                        (*(s8 *)((u8 *)(((void *)0x030041A0 + 0x6E)) + (0x19))) = 4;
+                    if (chance >= (s32)rand_u16(&gGameState) % 101 &&
+                        (u16)Islander_SetupDigApproach(0xF1) != 0) {
+                        islander->_08 = islander->_10;
+                        islander->_0C = islander->_14;
+                        islander->_7C[0] = 0;
+                        islander->item_work.held_item.type_idx = 2;
+                        islander->move_proc_idx = 4;
                         IslanderMoveAction_MoveToTarget();
                         return 2;
                     }
-                    goto block_17;
                 }
             }
-            goto block_17;
         }
-block_17:
         return 1;
     }
     return 0;
 }
 
+/* Original address: 0x020209E0 */
 void Islander_OnMoodChanged(void) {
-    u16 temp_r0_17787;
+    Islander_AGB *islander = &gIslander;
+    u16 *emotions = sIslanderMoodEmotions;
+    u16 emotion = emotions[islander->mood];
 
-    temp_r0_17787 = *(u32 *)(0x020338C4 + (*(u8 *)0x03004233 * 2));
-    *(s8 *)0x03004230 = (s8) temp_r0_17787;
-    ChangeEmotion((u8) (temp_r0_17787 + 1));
+    islander->emotion = emotion;
+    ChangeEmotion(emotion + 1);
 }
 
-void WriteItemTileToVRAM(void *arg0, u16 arg1) {
-    u16 temp_r1_17803;
-    void *temp_r0_17805;
-
-    temp_r1_17803 = arg1;
-    (*(u16 *)((u8 *)(arg0) + (0))) = temp_r1_17803;
-    temp_r0_17805 = arg0 + 2;
-    (*(s16 *)((u8 *)(arg0) + (2))) = (s16) (temp_r1_17803 + 1);
-    (*(s16 *)((u8 *)(temp_r0_17805) + (0x3E))) = (s16) (temp_r1_17803 + 2);
-    (*(s16 *)((u8 *)((temp_r0_17805 + 0x3E)) + (2))) = (s16) (temp_r1_17803 + 3);
+/* Original address: 0x02020A0C */
+void WriteItemTileToVRAM(u16 *tilemap, u16 tile_base) {
+    *tilemap++ = tile_base;
+    *tilemap = tile_base + 1;
+    tilemap += 31;
+    tilemap[0] = tile_base + 2;
+    tilemap[1] = tile_base + 3;
 }
 
+/* Original address: 0x02020A24 */
 u16 Item_GetItemIdFromTileId(s32 item_type) {
     Islander_AGB *islander = &gIslander;
     BuriedItemUpdateGroup *buried_item_update;
@@ -7717,7 +7555,7 @@ u16 Item_GetItemIdFromTileId(s32 item_type) {
 
         for (i = 0; i < ARRAY_COUNT(gBuriedItemUpdateGroups); i++) {
             buried_item_update = &gBuriedItemUpdateGroups[i];
-            if (item_type == buried_item_update->item_type) {
+            if (buried_item_update->item_type == item_type) {
                 break;
             }
         }
@@ -7728,374 +7566,250 @@ u16 Item_GetItemIdFromTileId(s32 item_type) {
     return EMPTY_NO;
 }
 
-s32 sub_02020A78(void) {
-    s32 var_r0_17916;
-    s32 var_r0_17961;
-    s32 var_r1_17918;
-    s32 var_r1_17963;
-    s32 var_r8_17871;
-    s8 *var_r2_17959;
-    s8 temp_r2_17906;
-    u16 *temp_r2_17933;
-    u32 temp_r1_17877;
-    u32 var_r5_17876;
-    u32 var_r5_17887;
+/* Original address: 0x02020A78 */
+s32 Islander_TryDropTool(void) {
+    Islander_AGB *islander = &gIslander;
+    IslandFieldWork *field = &gIslandFieldWork;
+    s32 placed = 0;
+    u16 tile = islander->state & 0xF;
+    u32 tool = tile;
+    s32 collision;
 
-    var_r8_17871 = 0;
-    var_r5_17876 = 0xF & *(u8 *)0x0300422D;
-    temp_r1_17877 = var_r5_17876;
-    if (var_r5_17876 > 4U) {
-        var_r5_17876 = (u32) (u16) (var_r5_17876 - 4);
+    if (tile > 4) {
+        tile -= 4;
     }
-    var_r5_17887 = (u32) ((var_r5_17876 << 0x11) + 0x80430000) >> 0x10;
-    if (temp_r1_17877 > 4U) {
-        var_r5_17887 = (u32) (u16) (var_r5_17887 + 1);
+    tile = tile * 2 + 0x8043;
+    if (tool > 4) {
+        tile++;
     }
     if (Islander_CanDigHere() != 0) {
-        Islander_UpdateCollisionTiles(*(u8 *)0x0300422B);
-        temp_r2_17906 = CheckSurroundingCollision((u16) *(u8 *)0x0300422E, (*(u16 **)((u8 *)((void *)0x030041A0) + (0x44))));
-        if (!((*(s32 *)((u8 *)((void *)0x030041A0) + (0))) & 0xFF0000)) {
-            if (temp_r2_17906 == 0) {
-                var_r0_17916 = *(u8 *)0x0300422E * 2;
-                var_r1_17918 = 0x03003720;
-                goto block_10;
+        Islander_UpdateCollisionTiles(islander->_8B);
+        collision = CheckSurroundingCollision(islander->stand_on_tile_idx, islander->_44);
+        if ((islander->_00 & 0xFF0000) == 0) {
+            if (collision == 0) {
+                if (field->fg_tiles[0][islander->stand_on_tile_idx] == 0xFFF) {
+                    field->fg_tiles[0][islander->stand_on_tile_idx] = tile;
+                    placed = 1;
+                }
             }
-        } else if (temp_r2_17906 == 0) {
-            var_r0_17916 = *(u8 *)0x0300422E * 2;
-            var_r1_17918 = 0x03003920;
-block_10:
-            temp_r2_17933 = var_r0_17916 + var_r1_17918;
-            if (*temp_r2_17933 == 0xFFF) {
-                *temp_r2_17933 = (u16) var_r5_17887;
-                var_r8_17871 = 1;
+        } else if (collision == 0) {
+            if (field->fg_tiles[1][islander->stand_on_tile_idx] == 0xFFF) {
+                field->fg_tiles[1][islander->stand_on_tile_idx] = tile;
+                placed = 1;
             }
         }
-        if (var_r8_17871 == 1) {
-            WriteItemToTile((*(s32 *)((u8 *)((void *)0x030041A0) + (0))), *(u8 *)0x0300422E, (*(u16 *)((u8 *)((void *)0x030041A0) + (0x72))), 0x6234U);
-            if ((*(u8 *)((u8 *)((void *)0x030041A0) + (0x85))) == 0) {
-                var_r2_17959 = (void *)0x030041A0 + 0x86;
-                var_r0_17961 = (*(u8 *)((u8 *)((void *)0x030041A0) + (0x86))) * 2;
-                var_r1_17963 = 0x03003720;
+        if (placed == 1) {
+            WriteItemToTile(islander->_00, islander->stand_on_tile_idx, islander->_72, 0x6234);
+            if (islander->_85 == 0) {
+                field->fg_tiles[0][islander->_86] = 0xFFF;
             } else {
-                var_r2_17959 = (void *)0x030041A0 + 0x86;
-                var_r0_17961 = (*(u8 *)((u8 *)((void *)0x030041A0) + (0x86))) * 2;
-                var_r1_17963 = 0x03003920;
+                field->fg_tiles[1][islander->_86] = 0xFFF;
             }
-            *(u32 *)(var_r1_17963 + var_r0_17961) = 0xFFF;
-            *var_r2_17959 = 0;
-            (*(u8 *)((u8 *)((void *)0x030041A0) + (0x85))) = 0U;
-            (*(s8 *)((u8 *)((void *)0x030041A0) + (0x8D))) = 0;
-            (*(u16 *)((u8 *)((void *)0x030041A0) + (0x72))) = 0U;
+            islander->_86 = 0;
+            islander->_85 = 0;
+            islander->state = 0;
+            islander->_72 = 0;
             Islander_AdjustAnimForTool();
             return 1;
         }
-        goto block_17;
     }
-block_17:
     return 0;
 }
 
+/* Original address: 0x02020B88 */
 void Islander_Init(void) {
-    s16 *temp_r1_18121;
-    s16 *var_r0_18161;
-    s16 *var_r1_18163;
-    s32 var_r2_18139;
-    s32 var_r2_18164;
-    void *temp_r1_18026;
-    void *temp_r1_18031;
-    void *temp_r1_18033;
-    void *temp_r1_18035;
-    void *temp_r1_18037;
-    void *temp_r1_18039;
-    void *temp_r1_18041;
-    void *temp_r1_18043;
-    void *temp_r1_18047;
-    void *temp_r1_18051;
-    void *temp_r1_18053;
-    void *temp_r1_18055;
-    void *temp_r1_18057;
-    void *temp_r1_18059;
-    void *temp_r1_18061;
-    void *temp_r1_18063;
-    void *temp_r1_18065;
-    void *temp_r1_18070;
-    void *temp_r1_18072;
-    void *temp_r1_18074;
-    void *temp_r1_18076;
-    void *temp_r1_18080;
-    void *temp_r1_18082;
-    void *temp_r1_18084;
-    void *temp_r1_18088;
-    void *temp_r1_18090;
-    void *temp_r1_18094;
-    void *temp_r1_18096;
-    void *temp_r1_18098;
-    void *temp_r1_18105;
-    void *temp_r1_18107;
-    void *temp_r1_18109;
-    void *temp_r1_18113;
-    void *temp_r1_18115;
-    void *temp_r1_18117;
-    void *var_r3_18021;
+    Islander_AGB *islander = &gIslander;
+    s32 i;
 
-    (*(s32 *)((u8 *)((void *)0x030041A0) + (0))) = 0;
-    (*(s32 *)((u8 *)((void *)0x030041A0) + (4))) = 0;
-    (*(s32 *)((u8 *)((void *)0x030041A0) + (8))) = 0;
-    (*(s32 *)((u8 *)((void *)0x030041A0) + (0xC))) = 0;
-    (*(s32 *)((u8 *)((void *)0x030041A0) + (0x10))) = 0;
-    (*(s32 *)((u8 *)((void *)0x030041A0) + (0x14))) = 0;
-    (*(s32 *)((u8 *)((void *)0x030041A0) + (0x18))) = 0;
-    (*(s32 *)((u8 *)((void *)0x030041A0) + (0x1C))) = 0;
-    (*(s32 *)((u8 *)((void *)0x030041A0) + (0x38))) = 0;
-    (*(s32 *)((u8 *)((void *)0x030041A0) + (0x3C))) = 0;
-    (*(s32 *)((u8 *)((void *)0x030041A0) + (0x20))) = 0;
-    (*(s32 *)((u8 *)((void *)0x030041A0) + (0x24))) = 0;
-    var_r3_18021 = (void *)0x030041A0 + 0x48;
-    (*(s16 *)((u8 *)((void *)0x030041A0) + (0x48))) = 0;
-    (*(s32 *)((u8 *)((void *)0x030041A0) + (0x44))) = 0;
-    temp_r1_18026 = (void *)0x030041A0 + 0x85;
-    (*(s8 *)((u8 *)((void *)0x030041A0) + (0x85))) = 0;
-    (*(s8 *)((u8 *)(temp_r1_18026) + (1))) = 0;
-    (*(s32 *)((u8 *)((void *)0x030041A0) + (0x40))) = 0;
-    temp_r1_18031 = (temp_r1_18026 + 1) - 0x2E;
-    (*(s16 *)((u8 *)(temp_r1_18031) + (0))) = 0;
-    temp_r1_18033 = temp_r1_18031 + 0x2F;
-    (*(s8 *)((u8 *)(temp_r1_18031) + (0x2F))) = 0;
-    temp_r1_18035 = temp_r1_18033 + 1;
-    (*(s8 *)((u8 *)(temp_r1_18033) + (1))) = 0;
-    temp_r1_18037 = temp_r1_18035 + 1;
-    (*(s8 *)((u8 *)(temp_r1_18035) + (1))) = 0;
-    temp_r1_18039 = temp_r1_18037 + 1;
-    (*(s8 *)((u8 *)(temp_r1_18037) + (1))) = 0;
-    temp_r1_18041 = temp_r1_18039 + 1;
-    (*(s8 *)((u8 *)(temp_r1_18039) + (1))) = 0;
-    temp_r1_18043 = temp_r1_18041 + 1;
-    (*(s8 *)((u8 *)(temp_r1_18041) + (1))) = 0;
-    (*(s8 *)((u8 *)(temp_r1_18043) + (1))) = 0;
-    temp_r1_18047 = (temp_r1_18043 + 1) - 0x1B;
-    (*(s16 *)((u8 *)(temp_r1_18047) + (0))) = 0;
-    (*(s8 *)((u8 *)(temp_r1_18047) + (0x1C))) = 0;
-    temp_r1_18051 = (temp_r1_18047 + 0x1C) - 0x14;
-    (*(s16 *)((u8 *)(temp_r1_18051) + (0))) = 0;
-    temp_r1_18053 = temp_r1_18051 + 0x15;
-    (*(s8 *)((u8 *)(temp_r1_18051) + (0x15))) = 0;
-    temp_r1_18055 = temp_r1_18053 + 1;
-    (*(s8 *)((u8 *)(temp_r1_18053) + (1))) = 0;
-    temp_r1_18057 = temp_r1_18055 + 1;
-    (*(s8 *)((u8 *)(temp_r1_18055) + (1))) = 0;
-    temp_r1_18059 = temp_r1_18057 + 1;
-    (*(s8 *)((u8 *)(temp_r1_18057) + (1))) = 0;
-    temp_r1_18061 = temp_r1_18059 + 1;
-    (*(s8 *)((u8 *)(temp_r1_18059) + (1))) = 0;
-    temp_r1_18063 = temp_r1_18061 + 1;
-    (*(s8 *)((u8 *)(temp_r1_18061) + (1))) = 0;
-    temp_r1_18065 = temp_r1_18063 + 1;
-    (*(s8 *)((u8 *)(temp_r1_18063) + (1))) = 0;
-    (*(u8 *)((u8 *)((void *)0x030041A0) + (0x96))) = 0U;
-    temp_r1_18070 = temp_r1_18065 + 2;
-    (*(s8 *)((u8 *)(temp_r1_18065) + (2))) = 0;
-    temp_r1_18072 = temp_r1_18070 + 1;
-    (*(s8 *)((u8 *)(temp_r1_18070) + (1))) = 0;
-    temp_r1_18074 = temp_r1_18072 + 1;
-    (*(s8 *)((u8 *)(temp_r1_18072) + (1))) = 0;
-    temp_r1_18076 = temp_r1_18074 + 1;
-    (*(s8 *)((u8 *)(temp_r1_18074) + (1))) = 0;
-    (*(s8 *)((u8 *)(temp_r1_18076) + (1))) = 0;
-    temp_r1_18080 = (temp_r1_18076 + 1) - 0x2D;
-    (*(s16 *)((u8 *)(temp_r1_18080) + (0))) = 0;
-    temp_r1_18082 = temp_r1_18080 + 2;
-    (*(s16 *)((u8 *)(temp_r1_18080) + (2))) = 0;
-    temp_r1_18084 = temp_r1_18082 + 0x2C;
-    (*(s8 *)((u8 *)(temp_r1_18082) + (0x2C))) = 0;
-    (*(s8 *)((u8 *)(temp_r1_18084) + (1))) = 0;
-    temp_r1_18088 = (temp_r1_18084 + 1) - 0x29;
-    (*(s16 *)((u8 *)(temp_r1_18088) + (0))) = 0;
-    temp_r1_18090 = temp_r1_18088 + 0x2A;
-    (*(s8 *)((u8 *)(temp_r1_18088) + (0x2A))) = 0;
-    (*(s8 *)((u8 *)(temp_r1_18090) + (1))) = 0;
-    temp_r1_18094 = (temp_r1_18090 + 1) - 0x23;
-    (*(s16 *)((u8 *)(temp_r1_18094) + (0))) = 0;
-    temp_r1_18096 = temp_r1_18094 + 4;
-    (*(s16 *)((u8 *)(temp_r1_18094) + (4))) = 0;
-    temp_r1_18098 = temp_r1_18096 + 4;
-    (*(s8 *)((u8 *)(temp_r1_18096) + (4))) = 0;
-    (*(s8 *)((u8 *)(temp_r1_18098) + (0x1C))) = 0;
-    (*(u8 *)((u8 *)((void *)0x030041A0) + (0xA1))) = 0U;
-    temp_r1_18105 = (temp_r1_18098 + 0x1C) - 0x1E;
-    (*(s16 *)((u8 *)(temp_r1_18105) + (0))) = 0;
-    temp_r1_18107 = temp_r1_18105 + 0x30;
-    (*(s8 *)((u8 *)(temp_r1_18105) + (0x30))) = 0;
-    temp_r1_18109 = temp_r1_18107 + 2;
-    (*(s8 *)((u8 *)(temp_r1_18107) + (2))) = 0;
-    (*(s8 *)((u8 *)(temp_r1_18109) + (1))) = 0;
-    temp_r1_18113 = (temp_r1_18109 + 1) - 2;
-    (*(s8 *)((u8 *)(temp_r1_18113) + (0))) = 0;
-    temp_r1_18115 = temp_r1_18113 + 3;
-    (*(s8 *)((u8 *)(temp_r1_18113) + (3))) = 0;
-    temp_r1_18117 = temp_r1_18115 + 1;
-    (*(s8 *)((u8 *)(temp_r1_18115) + (1))) = 0;
-    (*(s8 *)((u8 *)(temp_r1_18117) + (1))) = 0;
-    temp_r1_18121 = (temp_r1_18117 + 1) - 0x40;
-    *temp_r1_18121 = 0x78;
-    *(temp_r1_18121 - 2) = 0x2A30;
-    (*(u8 *)((u8 *)((void *)0x030041A0) + (0x96))) = (u8) (*(s32 *)((u8 *)(*(void **)0x03001B40) + (0x1944)));
-    (*(u8 *)((u8 *)((void *)0x030041A0) + (0xA1))) = (u8) *(u32 *)(0x02033F92 + (*(u8 *)((u8 *)((void *)0x030041A0) + (0x96))));
-    var_r2_18139 = 3;
-    do {
-        (*(s16 *)((u8 *)(var_r3_18021) + (0))) = 0;
-        (*(s16 *)((u8 *)(var_r3_18021) + (8))) = 0;
-        var_r3_18021 += 2;
-        var_r2_18139 -= 1;
-    } while (var_r2_18139 >= 0);
-    var_r0_18161 = (void *)0x030041A0 + 0x64;
-    var_r1_18163 = (void *)0x030041A0 + 0x5A;
-    var_r2_18164 = 4;
-    do {
-        *var_r1_18163 = 0;
-        *var_r0_18161 = 0;
-        var_r0_18161 += 2;
-        var_r1_18163 += 2;
-        var_r2_18164 -= 1;
-    } while (var_r2_18164 >= 0);
-    *(s8 *)0x03004233 = 3;
+    islander->_00 = 0;
+    islander->_04 = 0;
+    islander->_08 = 0;
+    islander->_0C = 0;
+    islander->_10 = 0;
+    islander->_14 = 0;
+    islander->_18 = 0;
+    islander->_1C = 0;
+    islander->_38 = 0;
+    islander->_3C = 0;
+    islander->dir_x = 0;
+    islander->dir_y = 0;
+    islander->_48[0] = 0;
+    islander->_44 = 0;
+    islander->_85 = 0;
+    islander->_86 = 0;
+    islander->_40 = 0;
+    islander->_58 = 0;
+    islander->move_proc_idx = 0;
+    islander->anim_id = 0;
+    islander->anim_frame = 0;
+    islander->anim_timer = 0;
+    islander->_8B = 0;
+    islander->_8C = 0;
+    islander->state = 0;
+    islander->_72 = 0;
+    islander->stand_on_tile_idx = 0;
+    islander->world_state = 0;
+    islander->_8F = 0;
+    islander->emotion = 0;
+    islander->_91[0] = 0;
+    islander->_91[1] = 0;
+    islander->mood = 0;
+    islander->_94[0] = 0;
+    islander->_94[1] = 0;
+    islander->islander_npc_idx = 0;
+    islander->emotion_anim_id = 0;
+    islander->click_cooldown_timer = 0;
+    islander->_99[0] = 0;
+    islander->_99[1] = 0;
+    islander->_99[2] = 0;
+    islander->item_work.held_item.type_idx = 0;
+    islander->item_work.held_item.tile_no = 0;
+    islander->sub_move_action = 0;
+    islander->_9D = 0;
+    islander->_74 = 0;
+    islander->floating_balloon_target_entity_id = 0;
+    islander->_9F = 0;
+    islander->_7C[0] = 0;
+    islander->_7C[2] = 0;
+    islander->_84 = 0;
+    islander->_A0 = 0;
+    islander->reward_adjust = 0;
+    islander->_7C[3] = 0;
+    islander->_B2[0] = 0;
+    islander->_B4 = 0;
+    islander->_B5[0] = 0;
+    islander->_B2[1] = 0;
+    islander->_B5[1] = 0;
+    islander->_B5[2] = 0;
+    islander->_B5[3] = 0;
+
+    islander->_78 = 0x78;
+    islander->flying_item_spawn_timer = 0x2A30;
+    islander->islander_npc_idx = gIslandData->npc_idx;
+    islander->reward_adjust = sIslanderRewardAdjust[islander->islander_npc_idx];
+    for (i = 0; i < 4; i++) {
+        islander->_48[i] = 0;
+        islander->surrounding_tile_indices[i] = 0;
+    }
+    for (i = 0; i < 5; i++) {
+        islander->stored_item_tile_ids[i] = 0;
+        islander->stored_items[i] = 0;
+    }
+    islander->mood = 3;
     Islander_OnMoodChanged();
-    ChangeEmotion((u8) ((*(u8 *)((u8 *)((void *)0x030041A0) + (0x90))) + 1));
+    ChangeEmotion(islander->emotion + 1);
     sub_02026BD8();
-    (*(s8 *)((u8 *)((void *)0x030041A0) + (0x8A))) = 0xFE;
-    (*(s8 *)((u8 *)((void *)0x030041A0) + (0x88))) = 0x60;
-    *(s8 *)0x03004227 = 0;
+    islander->anim_timer = 0xFE;
+    islander->anim_id = ISLANDER_ANIM_60;
+    islander->move_proc_idx = 0;
 }
 
+/* Original address: 0x02020D20 */
 s32 Island_GetFloatingItem(void) {
-    s32 temp_r0_18246;
-    s32 temp_r1_18212;
-    s32 temp_r1_18220;
-    s32 temp_r2_18233;
-    u16 temp_r2_18225;
+    Islander_AGB *islander = &gIslander;
+    IslandFieldWork *field = &gIslandFieldWork;
+    s32 *index = &sFloatingItemIndex;
 
-    temp_r1_18212 = *(u8 *)0x03004236 * 7;
-    *(s32 *)0x03000020 = temp_r1_18212;
-    temp_r1_18220 = temp_r1_18212 + *(u32 *)(0x02033DC8 + *(u8 *)0x03003B26);
-    *(s32 *)0x03000020 = temp_r1_18220;
-    temp_r2_18225 = *(u32 *)(0x02033DE4 + (temp_r1_18220 * 2));
-    *(s32 *)0x03000020 = (s32) temp_r2_18225;
-    temp_r2_18233 = temp_r2_18225 + *(u32 *)(0x02033DE0 + *(u8 *)0x03004230);
-    *(s32 *)0x03000020 = temp_r2_18233;
-    if ((0xF & *(u8 *)0x0300422D) == 5) {
-        *(s32 *)0x03000020 = temp_r2_18233 + 0x14;
+    *index = islander->islander_npc_idx * 7;
+    *index += sFloatingItemHourOffsets[field->last_palette_hour];
+    *index = sFloatingItemBaseIndices[*index];
+    *index += gMoveAction11EmotionSpawnOffsets[islander->emotion];
+    if ((islander->state & 0xF) == 5) {
+        *index += 20;
     }
-    temp_r0_18246 = *(s32 *)0x03000020;
-    if (temp_r0_18246 > 0x9F) {
+    if (*index >= 160) {
         return 0;
     }
-    if (temp_r0_18246 > 0xA0) {
-        *(s32 *)0x03000020 = 0;
+    if (*index > 160) {
+        *index = 0;
     }
-    return *(s32 *)0x03000020;
+    return *index;
 }
 
+/* Original address: 0x02020DA8 */
 void Islander_StepFlyingItem(void) {
-    s32 temp_r0_18314;
-    s32 temp_r0_18378;
-    s32 temp_r0_18435;
-    s32 temp_r1_18307;
-    s32 temp_r1_18322;
-    s32 temp_r1_18416;
-    s32 temp_r2_18424;
-    s32 var_r0_18335;
-    s32 var_r4_18368;
-    s32 var_r4_18449;
-    u16 *var_r5_18367;
-    u16 *var_r7_18365;
-    u16 temp_r0_18284;
-    u16 temp_r6_18403;
-    u16 var_r0_18371;
-    u16 var_r1_18370;
-    void *temp_r4_18324;
-    void *temp_r6_18309;
-    void *var_r6_18363;
+    Islander_AGB *islander = &gIslander;
+    Entity *balloon;
+    s32 i;
+    u16 *items;
+    EntitySpawnParams *params;
+    u16 *tile_ids;
+    u16 tile;
+    u16 item;
+    s32 chance;
 
-    if (*(u8 *)0x03004227 == 0x10) {
+    if (islander->move_proc_idx == 16) {
         return;
     }
-    temp_r0_18284 = *(u16 *)0x03004216;
-    if (temp_r0_18284 != 0) {
-        *(u16 *)0x03004216 = temp_r0_18284 - 1;
+    if (islander->flying_item_spawn_timer != 0) {
+        islander->flying_item_spawn_timer--;
         return;
     }
-    if ((*(u16 *)0x03004202 == 0) && ((*(s32 *)((u8 *)((void *)0x030041A0) + (0x38))) == 0) && ((*(s32 *)((u8 *)((void *)0x030041A0) + (0x3C))) == 0)) {
-        temp_r1_18307 = Island_GetFloatingItem() * 4;
-        temp_r6_18309 = temp_r1_18307 + 0x02033B48;
-        temp_r0_18314 = SpawnEntity(0U, 1U, *(u32 *)(0x02033B48 + temp_r1_18307), (*(u16 *)((u8 *)(temp_r6_18309) + (2))));
-        if (temp_r0_18314 == 0) {
+    if (islander->stored_item_tile_ids[4] == 0 && islander->_38 == 0 && islander->_3C == 0) {
+        i = Island_GetFloatingItem();
+        params = &sFlyingItemParams[i];
+        i = SpawnEntity(0, 1, params->type, params->param);
+        if (i == 0) {
             return;
         }
-        temp_r1_18322 = 0x54 * temp_r0_18314;
-        temp_r4_18324 = temp_r1_18322 + 0x03004790;
-        if (!(1 & rand_u16(&gGameState))) {
-            *(u32 *)(0x03004790 + temp_r1_18322) = 0x10;
-            (*(s32 *)((u8 *)(temp_r4_18324) + (0x18))) = 0x18;
-            var_r0_18335 = 0x1D1;
+        balloon = &g_EntityTable[i];
+        if ((rand_u16(&gGameState) & 1) == 0) {
+            balloon->x = 16;
+            balloon->_18 = 24;
+            balloon->_14 = 465;
         } else {
-            *(u32 *)(0x03004790 + temp_r1_18322) = 0x1D0;
-            (*(s32 *)((u8 *)(temp_r4_18324) + (0x18))) = -0x18;
-            var_r0_18335 = 0xF;
+            balloon->x = 464;
+            balloon->_18 = -24;
+            balloon->_14 = 15;
         }
-        (*(s32 *)((u8 *)(temp_r4_18324) + (0x14))) = var_r0_18335;
-        (*(s32 *)((u8 *)(temp_r4_18324) + (4))) = (s32) ((((s32) rand_u16(&gGameState) % 5) * 0x10) + 0x50);
-        (*(s32 *)((u8 *)((void *)0x030041A0) + (0x38))) = (s32) *(u32 *)(0x03004790 + temp_r1_18322);
-        (*(s32 *)((u8 *)((void *)0x030041A0) + (0x3C))) = (s32) (*(s32 *)((u8 *)(temp_r4_18324) + (4)));
-        var_r6_18363 = temp_r6_18309 + 4;
-        var_r7_18365 = temp_r4_18324 + 0x34;
-        var_r5_18367 = temp_r4_18324 + 0x2A;
-        var_r4_18368 = 3;
+        balloon->y = (rand_u16(&gGameState) % 5) * 16 + 80;
+        islander->_38 = balloon->x;
+        islander->_3C = balloon->y;
+        params++;
+        items = &balloon->item[1];
+        tile_ids = &balloon->item_tile_no[1];
+        i = 3;
         do {
-            var_r1_18370 = (*(u16 *)((u8 *)(var_r6_18363) + (0)));
-            var_r0_18371 = (*(u16 *)((u8 *)(var_r6_18363) + (2)));
-            if (var_r0_18371 == 4) {
-                temp_r0_18378 = ((s32) rand_u16(&gGameState) % 6) * 4;
-                var_r1_18370 = *(u32 *)(0x02033B30 + temp_r0_18378);
-                var_r0_18371 = (*(u16 *)((u8 *)((temp_r0_18378 + 0x02033B30)) + (2)));
+            tile = params->type;
+            item = params->param;
+            if (item == 4) {
+                EntitySpawnParams *fruit = &sFlyingItemFruitParams[rand_u16(&gGameState) % 6];
+                tile = fruit->type;
+                item = fruit->param;
             }
-            *var_r5_18367 = var_r1_18370;
-            *var_r7_18365 = var_r0_18371;
-            var_r7_18365 += 2;
-            var_r5_18367 += 2;
-            var_r4_18368 -= 1;
-            var_r6_18363 += 4;
-        } while (var_r4_18368 >= 0);
-        return;
-    }
-    if ((*(u8 *)((u8 *)((void *)0x030041A0) + (0x87))) == 3) {
-        temp_r6_18403 = *(u16 *)0x03004202;
-        if (temp_r6_18403 != 0) {
-            (*(s8 *)((u8 *)((void *)0x030041A0) + (0x9E))) = 0;
+            *tile_ids = tile;
+            *items = item;
+            items++;
+            tile_ids++;
+            i--;
+            params++;
+        } while (i >= 0);
+    } else if (islander->move_proc_idx == 3) {
+        if (islander->stored_item_tile_ids[4] != 0) {
+            islander->floating_balloon_target_entity_id = 0;
             return;
         }
-        temp_r1_18416 = 0xF & (*(u8 *)((u8 *)((void *)0x030041A0) + (0x8D)));
-        if ((temp_r1_18416 == 1) || (temp_r1_18416 == 5)) {
-            temp_r2_18424 = (*(s32 *)((u8 *)((void *)0x030041A0) + (0x38))) - (*(s32 *)((u8 *)((void *)0x030041A0) + (0)));
-            (*(s32 *)((u8 *)((void *)0x030041A0) + (0x20))) = temp_r2_18424;
-            (*(s32 *)((u8 *)((void *)0x030041A0) + (0x24))) = (s32) ((*(s32 *)((u8 *)((void *)0x030041A0) + (0x3C))) - (*(s32 *)((u8 *)((void *)0x030041A0) + (4))));
-            if (temp_r2_18424 < 0) {
-                (*(s32 *)((u8 *)((void *)0x030041A0) + (0x20))) = (s32) (0 - temp_r2_18424);
+        if ((islander->state & 0xF) == 1 || (islander->state & 0xF) == 5) {
+            islander->dir_x = islander->_38 - islander->_00;
+            islander->dir_y = islander->_3C - islander->_04;
+            if (islander->dir_x < 0) {
+                islander->dir_x = -islander->dir_x;
             }
-            temp_r0_18435 = (*(s32 *)((u8 *)((void *)0x030041A0) + (0x24)));
-            if (temp_r0_18435 < 0) {
-                (*(s32 *)((u8 *)((void *)0x030041A0) + (0x24))) = (s32) (0 - temp_r0_18435);
+            if (islander->dir_y < 0) {
+                islander->dir_y = -islander->dir_y;
             }
-            if (((s32) (*(s32 *)((u8 *)((void *)0x030041A0) + (0x20))) <= 0x1000) && ((s32) (*(s32 *)((u8 *)((void *)0x030041A0) + (0x24))) <= 0x1000)) {
-                var_r4_18449 = 0x64;
-                if ((*(u8 *)((u8 *)((void *)0x030041A0) + (0xA1))) == 1) {
-                    var_r4_18449 = 0x32;
+            if (islander->dir_x <= 0x1000 && islander->dir_y <= 0x1000) {
+                chance = 100;
+                if (islander->reward_adjust == 1) {
+                    chance = 50;
                 }
-                if (var_r4_18449 >= (s32) ((s32) rand_u16(&gGameState) % 101)) {
-                    if ((s32) (*(s32 *)((u8 *)((void *)0x030041A0) + (0))) > (s32) (*(s32 *)((u8 *)((void *)0x030041A0) + (0x38)))) {
-                        (*(s8 *)((u8 *)((void *)0x030041A0) + (0x8B))) = (s8) temp_r6_18403;
+                if (chance >= rand_u16(&gGameState) % 101) {
+                    if (islander->_00 > islander->_38) {
+                        islander->_8B = 0;
                     } else {
-                        (*(s8 *)((u8 *)((void *)0x030041A0) + (0x8B))) = 1;
+                        islander->_8B = 1;
                     }
-                    (*(u8 *)((u8 *)((void *)0x030041A0) + (0x87))) = MoveActionReceiveItemInit;
+                    islander->move_proc_idx = MoveActionReceiveItemInit;
                     Islander_ReceiveItem_Init();
                 }
             }
@@ -8103,269 +7817,215 @@ void Islander_StepFlyingItem(void) {
     }
 }
 
-s32 sub_02020F54(void) {
-    s32 temp_r1_18502;
-    s32 var_r1_18543;
-    s32 var_r2_18522;
-    s32 var_r3_18544;
-    s32 var_r4_18578;
-    s32 var_r7_18492;
-    s8 temp_r1_18595;
-    u16 *var_r2_18542;
-    u32 var_r4_18521;
+/* Original address: 0x02020F54 */
+s32 Islander_TryStartFishing(void) {
+    u16 tile;
+    u16 *tilemap;
+    s32 i;
+    s32 water_tiles;
+    s32 chance;
+    Islander_AGB *islander = &gIslander;
+    s32 can_fish = 0;
 
-    var_r7_18492 = 0;
-    if ((*(u16 *)0x03004214 == 0) && ((temp_r1_18502 = 0xF & *(u8 *)0x0300422D, (temp_r1_18502 == 4)) || (temp_r1_18502 == 8))) {
-        if (!((*(s32 *)((u8 *)((void *)0x030041A0) + (0))) & 0xFF0000)) {
-            var_r4_18521 = (u32) (((*(u8 *)((u8 *)((void *)0x030041A0) + (0x8E))) << 0x10) + 0xE0000) >> 0x10;
-            var_r2_18522 = 0x0600A000;
+    if (islander->_74 == 0 && ((islander->state & 0xF) == 4 || (islander->state & 0xF) == 8)) {
+        if (!(islander->_00 & 0xFF0000)) {
+            tile = islander->stand_on_tile_idx - 2;
+            tile += 16;
+            tilemap = (u16 *)BG_SCREEN_ADDR(20);
         } else {
-            var_r4_18521 = (*(u8 *)((u8 *)((void *)0x030041A0) + (0x8E))) + 0x12;
-            var_r2_18522 = 0x0600A800;
+            tile = islander->stand_on_tile_idx + 18;
+            tilemap = (u16 *)BG_SCREEN_ADDR(21);
         }
-        var_r2_18542 = var_r2_18522 + ((0xF0 & var_r4_18521) * 8) + ((var_r4_18521 & 0xF) * 4);
-        var_r1_18543 = 0;
-        var_r3_18544 = 0;
+        tilemap += (tile & 0xF0) * 4;
+        tilemap += (tile & 0xF) * 2;
+        i = 0;
+        water_tiles = 0;
         do {
-            if ((0x3FF & *var_r2_18542) == 0xF6) {
-                var_r3_18544 += 1;
+            tile = *tilemap & 0x3FF;
+            if (tile == 0xF6) {
+                water_tiles++;
             }
-            switch (var_r1_18543) {                 /* irregular */
-            case 0:
-            case 2:
-                var_r2_18542 += 2;
-                break;
-            case 1:
-                var_r2_18542 += 0x3E;
-                break;
+            if (i == 0 || i == 2) {
+                tilemap++;
+            } else if (i == 1) {
+                tilemap += 31;
             }
-            var_r1_18543 += 1;
-        } while (var_r1_18543 <= 3);
-        if (var_r3_18544 > 3) {
-            var_r7_18492 = 1;
+            i++;
+        } while (i < 4);
+        if (water_tiles > 3) {
+            can_fish = 1;
         }
-        if (var_r7_18492 != 0) {
-            var_r4_18578 = 0x19;
-            if ((*(u8 *)((u8 *)((void *)0x030041A0) + (0xA1))) == 1) {
-                var_r4_18578 = 0x32;
+        if (can_fish != 0) {
+            chance = 25;
+            if (islander->reward_adjust == 1) {
+                chance = 50;
             }
-            if (var_r4_18578 > (s32) ((s32) rand_u16(&gGameState) % 101)) {
-                temp_r1_18595 = (*(s32 *)((u8 *)((void *)0x030041A0) + (0))) & 0xFF0000;
-                if (temp_r1_18595 == 0) {
-                    (*(s8 *)((u8 *)((void *)0x030041A0) + (0x8B))) = temp_r1_18595;
+            if (chance > rand_u16(&gGameState) % 101) {
+                if (!(islander->_00 & 0xFF0000)) {
+                    islander->_8B = 0;
                 } else {
-                    (*(s8 *)((u8 *)((void *)0x030041A0) + (0x8B))) = 1;
+                    islander->_8B = 1;
                 }
-                (*(s8 *)((u8 *)((void *)0x030041A0) + (0x87))) = 0xD;
+                islander->move_proc_idx = MoveAction13;
                 Islander_Fishing_Init();
                 return 1;
             }
-            goto block_25;
         }
-        goto block_25;
     }
-block_25:
     return 0;
 }
 
-u16 sub_02021050(void) {
-    s32 var_r0_18651;
-    s32 var_r2_18652;
-    u8 temp_r1_18645;
-    u8 temp_r1_18671;
+/* Original address: 0x02021050 */
+u16 Islander_TakeCurrentTileItem(void) {
+    Islander_AGB *islander = &gIslander;
+    IslandFieldWork *field = &gIslandFieldWork;
+    u16 item;
 
-    if (!((*(s32 *)((u8 *)((void *)0x030041A0) + (0))) & 0xFF0000)) {
-        *(u32 *)(0x03003720 + ((*(u8 *)((u8 *)((void *)0x030041A0) + (0x8E))) * 2)) = 0x7777;
-        temp_r1_18645 = (*(u8 *)((u8 *)((void *)0x030041A0) + (0x8E)));
-        var_r0_18651 = ((0xF & temp_r1_18645) * 2) + ((temp_r1_18645 >> 4) << 5);
-        var_r2_18652 = *(s32 *)0x03001B40 + 0x24;
+    if (!(islander->_00 & 0xFF0000)) {
+        field->fg_tiles[0][islander->stand_on_tile_idx] = 0x7777;
+        item = gIslandData->fgblock[0][0].items[islander->stand_on_tile_idx >> 4][islander->stand_on_tile_idx & 0xF];
     } else {
-        *(u32 *)(0x03003920 + ((*(u8 *)((u8 *)((void *)0x030041A0) + (0x8E))) * 2)) = 0x7777;
-        temp_r1_18671 = (*(u8 *)((u8 *)((void *)0x030041A0) + (0x8E)));
-        var_r0_18651 = ((0xF & temp_r1_18671) * 2) + ((temp_r1_18671 >> 4) << 5);
-        var_r2_18652 = *(u32 *)0x03001B40 + 0x224;
+        field->fg_tiles[1][islander->stand_on_tile_idx] = 0x7777;
+        item = gIslandData->fgblock[0][1].items[islander->stand_on_tile_idx >> 4][islander->stand_on_tile_idx & 0xF];
     }
-    return *(u32 *)(var_r2_18652 + var_r0_18651);
+    return item;
 }
 
-s32 sub_020210D4(void) {
-    s32 temp_r0_18796;
-    s32 temp_r1_18707;
-    s32 temp_r1_18716;
-    s32 temp_r1_18904;
-    s32 temp_r2_18813;
-    s32 var_r0_18728;
-    s32 var_r0_18786;
-    s32 var_r0_18887;
-    s32 var_r1_18726;
-    s32 var_r1_18889;
-    s32 var_r3_18937;
-    u16 *var_r2_18938;
-    u16 temp_r1_18833;
-    u16 temp_r6_18743;
-    u16 var_sl_18702;
-    u8 *var_r2_18724;
-    void *temp_r2_18846;
-    void *temp_r2_18922;
-    void *temp_r2_18929;
-    void *temp_r5_18774;
+/* Original address: 0x020210D4 */
+s32 Islander_TryInteractWithCurrentTile(void) {
+    Islander_AGB *islander = &gIslander;
+    IslandFieldWork *field = &gIslandFieldWork;
+    u16 item = 0;
+    u16 tile;
+    ItemGroupStruct *definition;
+    s32 state;
+    s32 result;
+    s32 slot;
 
-    var_sl_18702 = 0;
-    temp_r1_18707 = 0xF & *(u8 *)0x0300422D;
-    if ((temp_r1_18707 != 0) && (temp_r1_18707 != 3) && (temp_r1_18707 != 7)) {
-        goto block_42;
+    state = islander->state & 0xF;
+    if (state != 0 && state != 3 && state != 7) {
+        return 0;
     }
-    temp_r1_18716 = (*(s32 *)((u8 *)((void *)0x030041A0) + (0)));
-    if (!(0xFF0000 & temp_r1_18716)) {
-        var_r2_18724 = (void *)0x030041A0 + 0x8E;
-        var_r1_18726 = (*(u8 *)((u8 *)((void *)0x030041A0) + (0x8E))) * 2;
-        var_r0_18728 = 0x03003720;
+    if (!(islander->_00 & 0xFF0000)) {
+        tile = field->fg_tiles[0][islander->stand_on_tile_idx];
     } else {
-        var_r2_18724 = (void *)0x030041A0 + 0x8E;
-        var_r1_18726 = (*(u8 *)((u8 *)((void *)0x030041A0) + (0x8E))) * 2;
-        var_r0_18728 = 0x03003920;
+        tile = field->fg_tiles[1][islander->stand_on_tile_idx];
     }
-    temp_r6_18743 = *(u32 *)(var_r0_18728 + var_r1_18726);
-    if (temp_r6_18743 == 0xFFF) {
-        goto block_42;
+    if (tile == 0xFFF) {
+        return 0;
     }
-    if (temp_r6_18743 & 0x8000) {
-        goto block_42;
+    if (tile & 0x8000) {
+        return 0;
     }
-    if (temp_r6_18743 == 0x7777) {
-        goto block_42;
+    if (tile == 0x7777) {
+        return 0;
     }
-    if (temp_r6_18743 == 0x3333) {
-        goto block_42;
+    if (tile == 0x3333) {
+        return 0;
     }
-    temp_r5_18774 = (temp_r6_18743 * 0xC) + 0x0202F7FC;
-    if ((*(u16 *)((u8 *)(temp_r5_18774) + (4))) == 0xFFF) {
-        goto block_42;
+    definition = &g_ItemDefinitions[tile];
+    if (definition->held_item_oam_attr2 == 0xFFF) {
+        return 0;
     }
-    if (!(0xFF0000 & temp_r1_18716)) {
-        var_r0_18786 = 0;
+    if (!(islander->_00 & 0xFF0000)) {
+        result = Islander_TryInteractWithBuriedItem(0);
     } else {
-        var_r0_18786 = 1;
+        result = Islander_TryInteractWithBuriedItem(1);
     }
-    temp_r0_18796 = sub_020208BC(var_r0_18786);
-    if (temp_r0_18796 == 2) {
-        goto block_46;
+    if (result == 2) {
+        return 1;
     }
-    if (temp_r0_18796 == 1) {
-        goto block_42;
+    if (result == 1) {
+        return 0;
     }
-    (*(u8 *)((u8 *)((void *)0x030041A0) + (0xB6))) = 0U;
-    temp_r2_18813 = 0xF & (*(u8 *)((u8 *)((void *)0x030041A0) + (0x8D)));
-    if ((temp_r2_18813 == 3) || (temp_r2_18813 == 7)) {
-        if (((*(u16 *)((u8 *)((void *)0x030041A0) + (0x62))) == 0) && ((u32) (u16) ((*(u16 *)((u8 *)(temp_r5_18774) + (8))) - 7) > 7U)) {
-            goto block_34;
+
+    islander->_B5[1] = 0;
+    if ((islander->state & 0xF) == 3 || (islander->state & 0xF) == 7) {
+        if (islander->stored_item_tile_ids[4] != 0 ||
+            (definition->interaction_type >= 7 && definition->interaction_type <= 14)) {
+            return 0;
         }
-        goto block_42;
-    }
-    temp_r1_18833 = (*(u16 *)((u8 *)(temp_r5_18774) + (8)));
-    if ((u32) (u16) (temp_r1_18833 - 5) > 1U) {
-        if ((u32) (u16) (temp_r1_18833 - 7) <= 7U) {
-            temp_r2_18846 = (void *)0x030041A0 + 0x72;
-            (*(u16 *)((u8 *)((void *)0x030041A0) + (0x72))) = sub_02021050();
-            (*(u8 *)((u8 *)((void *)0x030041A0) + (0xB6))) = (u8) temp_r6_18743;
-            (*(u8 *)((u8 *)(temp_r2_18846) + (0x14))) = 0U;
-            (*(s8 *)((u8 *)((void *)0x030041A0) + (0x85))) = 0;
-            (*(u8 *)((u8 *)(temp_r2_18846) + (0x14))) = (u8) *var_r2_18724;
-            if ((*(s32 *)((u8 *)((void *)0x030041A0) + (0))) & 0xFF0000) {
-                (*(s8 *)((u8 *)((void *)0x030041A0) + (0x85))) = 1;
-                goto block_35;
+        item = Islander_TakeCurrentTileItem();
+    } else if (!(definition->interaction_type >= 5 && definition->interaction_type <= 6)) {
+        if (definition->interaction_type >= 7 && definition->interaction_type <= 14) {
+            islander->_72 = Islander_TakeCurrentTileItem();
+            islander->_B5[1] = tile;
+            islander->_86 = 0;
+            islander->_85 = 0;
+            islander->_86 = islander->stand_on_tile_idx;
+            if (islander->_00 & 0xFF0000) {
+                islander->_85 = 1;
             }
-            goto block_36;
-            goto block_38;
-        }
-        if ((*(u16 *)((u8 *)((void *)0x030041A0) + (0x62))) == 0) {
-block_34:
-            var_sl_18702 = sub_02021050();
-            goto block_35;
-        }
-        goto block_42;
-    }
-block_35:
-    if (!((*(s32 *)((u8 *)((void *)0x030041A0) + (0))) & 0xFF0000)) {
-block_36:
-        var_r0_18887 = *var_r2_18724 * 2;
-        var_r1_18889 = 0x03003720;
-    } else {
-        var_r0_18887 = *var_r2_18724 * 2;
-        var_r1_18889 = 0x03003920;
-    }
-block_38:
-    *(u32 *)(var_r1_18889 + var_r0_18887) = 0x7777;
-    temp_r1_18904 = (*(s32 *)((u8 *)((void *)0x030041A0) + (0))) & 0xFF0000;
-    (*(s32 *)((u8 *)((void *)0x030041A0) + (0x10))) = temp_r1_18904;
-    (*(s32 *)((u8 *)((void *)0x030041A0) + (0x10))) = (s32) (temp_r1_18904 | (((0xF & *var_r2_18724) << 0xC) + 0x800));
-    (*(s32 *)((u8 *)((void *)0x030041A0) + (0x14))) = (s32) (((0xF0 & *var_r2_18724) << 8) + 0x800);
-    temp_r2_18922 = (void *)0x030041A0 + 0x6E;
-    (*(s16 *)((u8 *)((void *)0x030041A0) + (0x6E))) = 2;
-    (*(s8 *)((u8 *)(temp_r2_18922) + (0x2B))) = 0x10;
-    temp_r2_18929 = (temp_r2_18922 + 0x2B) - 0x12;
-    (*(s8 *)((u8 *)(temp_r2_18929) + (0))) = 4;
-    (*(s8 *)((u8 *)(temp_r2_18929) + (0x19))) = 0;
-    if (var_sl_18702 != 0) {
-        var_r3_18937 = 0;
-        var_r2_18938 = (temp_r2_18929 + 0x19) - 0x46;
-loop_40:
-        if (*var_r2_18938 != 0) {
-            var_r2_18938 += 2;
-            var_r3_18937 += 1;
-            if (var_r3_18937 > 4) {
-block_42:
+        } else {
+            if (islander->stored_item_tile_ids[4] != 0) {
                 return 0;
             }
-            goto loop_40;
+            item = Islander_TakeCurrentTileItem();
         }
-        *var_r2_18938 = temp_r6_18743 + 1;
-        *(u32 *)((void *)0x030041A0 + 0x64 + (var_r3_18937 * 2)) = var_sl_18702;
-        (*(s8 *)((u8 *)((void *)0x030041A0) + (0x95))) = (s8) var_r3_18937;
-        goto block_46;
     }
-    if ((*(u8 *)((u8 *)((void *)0x030041A0) + (0xB6))) == 0) {
-        (*(s8 *)((u8 *)(temp_r2_18929) + (0x19))) = (s8) (temp_r6_18743 + 1);
+
+    if (!(islander->_00 & 0xFF0000)) {
+        field->fg_tiles[0][islander->stand_on_tile_idx] = 0x7777;
+    } else {
+        field->fg_tiles[1][islander->stand_on_tile_idx] = 0x7777;
     }
-block_46:
-    return 1;
+    islander->_10 = islander->_00 & 0xFF0000;
+    islander->_10 |= ((islander->stand_on_tile_idx & 0xF) << 12) + 0x800;
+    islander->_14 = ((islander->stand_on_tile_idx & 0xF0) << 8) + 0x800;
+    islander->item_work.held_item.type_idx = 2;
+    islander->_99[0] = 0x10;
+    islander->move_proc_idx = 4;
+    islander->_A0 = 0;
+    if (item != 0) {
+        for (slot = 0; slot < 5; slot++) {
+            if (islander->stored_item_tile_ids[slot] == 0) {
+                islander->stored_item_tile_ids[slot] = tile + 1;
+                islander->stored_items[slot] = item;
+                islander->_94[1] = slot;
+                return 1;
+            }
+        }
+    } else {
+        if (islander->_B5[1] == 0) {
+            islander->_A0 = tile + 1;
+        }
+        return 1;
+    }
+    return 0;
 }
 
-s32 sub_020212F4(void) {
-    s32 temp_r1_19002;
-    s32 var_r0_19024;
-    s32 var_r1_19022;
-    u8 *var_r2_19020;
-    u8 temp_r0_18992;
+/* Original address: 0x020212F4 */
+s32 Islander_TryStartDigging(void) {
+    Islander_AGB *islander = &gIslander;
+    IslandFieldWork *field = &gIslandFieldWork;
+    s32 tile;
+    u8 *standing_tile;
 
-    temp_r0_18992 = *(u8 *)0x03004230;
-    if (((temp_r0_18992 == 3) || (temp_r0_18992 == 1)) && ((temp_r1_19002 = 0xF & *(u8 *)0x0300422D, (temp_r1_19002 == 3)) || (temp_r1_19002 == 7)) && (*(u16 *)0x03004218 == 0)) {
-        if (!((*(s32 *)((u8 *)((void *)0x030041A0) + (0))) & 0xFF0000)) {
-            var_r2_19020 = (void *)0x030041A0 + 0x8E;
-            var_r1_19022 = (*(u8 *)((u8 *)((void *)0x030041A0) + (0x8E))) * 2;
-            var_r0_19024 = 0x03003720;
+    if ((islander->emotion == ISLANDER_EMOTION_HAPPY || islander->emotion == ISLANDER_EMOTION_ANGRY) &&
+        ((islander->state & 0xF) == 3 || (islander->state & 0xF) == 7) && islander->_78 == 0) {
+        if (!(islander->_00 & 0xFF0000)) {
+            standing_tile = &islander->stand_on_tile_idx;
+            tile = field->fg_tiles[0][*standing_tile];
         } else {
-            var_r2_19020 = (void *)0x030041A0 + 0x8E;
-            var_r1_19022 = (*(u8 *)((u8 *)((void *)0x030041A0) + (0x8E))) * 2;
-            var_r0_19024 = 0x03003920;
+            standing_tile = &islander->stand_on_tile_idx;
+            tile = field->fg_tiles[1][*standing_tile];
         }
-        if ((*(u32 *)(var_r0_19024 + var_r1_19022) == 0xFFF) && ((s32) ((s32) rand_u16(&gGameState) % 101) <= 5) && (Islander_CanDigHere() != 0) && ((Islander_SetupDigApproach(0xF1U) << 0x10) != 0)) {
-            (*(s32 *)((u8 *)((void *)0x030041A0) + (8))) = (s32) (*(s32 *)((u8 *)((void *)0x030041A0) + (0x10)));
-            (*(s32 *)((u8 *)((void *)0x030041A0) + (0xC))) = (s32) (*(s32 *)((u8 *)((void *)0x030041A0) + (0x14)));
-            (*(s8 *)((u8 *)((void *)0x030041A0) + (0xB7))) = 0;
-            (*(u8 *)((u8 *)((void *)0x030041A0) + (0xB8))) = (u8) *var_r2_19020;
-            if ((*(s32 *)((u8 *)((void *)0x030041A0) + (0))) & 0xFF0000) {
-                (*(s8 *)((u8 *)((void *)0x030041A0) + (0xB7))) = 1;
+        if (tile == 0xFFF && rand_u16(&gGameState) % 101 <= 5 &&
+            Islander_CanDigHere() != 0 && (u16)Islander_SetupDigApproach(0xF1) != 0) {
+            islander->_08 = islander->_10;
+            islander->_0C = islander->_14;
+            islander->_B5[2] = 0;
+            islander->_B5[3] = *standing_tile;
+            if (islander->_00 & 0xFF0000) {
+                islander->_B5[2] = 1;
             }
-            (*(s16 *)((u8 *)((void *)0x030041A0) + (0x7C))) = 0;
-            (*(s16 *)((u8 *)((void *)0x030041A0) + (0x6E))) = 2;
-            (*(s8 *)((u8 *)(((void *)0x030041A0 + 0x6E)) + (0x19))) = 4;
+            islander->_7C[0] = 0;
+            islander->item_work.held_item.type_idx = 2;
+            islander->move_proc_idx = MoveAction4;
             IslanderMoveAction_MoveToTarget();
             return 2;
         }
-        goto block_15;
     }
-block_15:
     return 0;
 }
 
@@ -8427,190 +8087,169 @@ void RestoreHeldItemsToField(void) {
         }
     }
 }
-void sub_02021574(void) {
-    u8 temp_r1_19318;
+/* Original address: 0x02021574 */
+void Islander_UpdateMovement(void) {
+    Islander_AGB *islander = &gIslander;
 
-    if ((*(u8 *)0x03003BAE != 0) && ((Islander_StepFlyingItem(), temp_r1_19318 = *(u8 *)0x03004227, ((u32) (u8) (temp_r1_19318 - 9) <= 1U)) || (*(u8 *)0x03004238 == 0))) {
-        if (temp_r1_19318 == 3) {
-            Islander_MoveWithCollision();
+    if (gIslandFieldWork.gameplay_active != 0) {
+        Islander_StepFlyingItem();
+        if ((islander->move_proc_idx >= MoveAction9 && islander->move_proc_idx <= CheckClickedOnTimer) ||
+            islander->click_cooldown_timer == 0) {
+            if (islander->move_proc_idx == MoveAction3) {
+                Islander_MoveWithCollision();
+            }
+            IslanderMoveProcTable[islander->move_proc_idx]();
         }
-        ((void (*)(void))*(u32 *)(0x0203380C + (*(u8 *)0x03004227 * 4)))();
     }
 }
 
+/* Original address: 0x020215D0 */
 void sub_020215D0(void) {
-    *(s8 *)0x0300422A = 0;
-    (*(s8 *)((u8 *)((void *)0x03004229) + (0))) = 0;
-    (*(s32 *)((u8 *)((void *)0x030041A0) + (0x10))) = 0;
-    (*(s32 *)((u8 *)((void *)0x030041A0) + (0x14))) = 0;
-    (*(s8 *)((u8 *)((void *)0x03004229) + (2))) = 0;
-    if ((*(u8 *)((u8 *)((void *)0x030041A0) + (0x88))) == 0x60) {
-        *(s8 *)0x0300422A = 0xFE;
+    gIslander.anim_timer = 0;
+    gIslander.anim_frame = 0;
+    gIslander._10 = 0;
+    gIslander._14 = 0;
+    gIslander._8B = 0;
+    if (gIslander.anim_id == 0x60) {
+        gIslander.anim_timer = 0xFE;
     }
-    (*(s8 *)((u8 *)((void *)0x030041A0) + (0x87))) = 1;
+    gIslander.move_proc_idx = 1;
 }
 
+/* Original address: 0x02021608 */
 void Islander_MoveIndoorsOrOutdoors(void) {
-    s32 temp_r0_19452;
-    s32 var_r5_19479;
-    u8 temp_r0_19394;
-    u8 temp_r0_19487;
-    u8 temp_r5_19442;
+    Islander_AGB *islander = &gIslander;
+    IslandBuilding *house = &gIslandBuildings[ISLAND_BUILDING_ISLANDER_HOUSE];
+    s32 i;
+    u8 anim_id;
 
-    temp_r0_19394 = *(u8 *)0x0300422A;
-    if (temp_r0_19394 != 0xFE) {
-        if (temp_r0_19394 == 0) {
-            if (*(u8 *)0x03004228 == 0x5F) {
-                if (*(u8 *)0x03004229 == 8) {
-                    sub_02026A38(1U);
+    if (islander->anim_timer != 0xFE) {
+        if (islander->anim_timer == 0) {
+            if (islander->anim_id == ISLANDER_ANIM_5F) {
+                if (islander->anim_frame == 8) {
+                    sub_02026A38(1);
                 }
-                if (*(u8 *)0x03004229 == 0x13) {
-                    sub_02026A38(0xEU);
+                if (islander->anim_frame == 0x13) {
+                    sub_02026A38(0xE);
                 }
             } else {
-                if (*(u32 *)0x03004229 == 1) {
-                    sub_02026A38(1U);
+                if (islander->anim_frame == 1) {
+                    sub_02026A38(1);
                 }
-                if (*(u32 *)0x03004229 == 0xB) {
-                    sub_02026A38(0xEU);
+                if (islander->anim_frame == 0xB) {
+                    sub_02026A38(0xE);
                 }
             }
         }
-        if (Islander_PlayAnim(1U) != 0) {
-            temp_r5_19442 = *(u32 *)0x03004228;
-            if (temp_r5_19442 == 0x60) {
-                (*(s8 *)((u8 *)((void *)0x03003BC4) + (0x11))) = 1;
-                temp_r0_19452 = (*(s32 *)((u8 *)((void *)0x030041A0) + (4))) + 0x1200;
-                (*(s32 *)((u8 *)((void *)0x030041A0) + (4))) = temp_r0_19452;
-                (*(s32 *)((u8 *)((void *)0x030041A0) + (0xC))) = temp_r0_19452;
-                (*(u8 *)((u8 *)((void *)0x030041A0) + (0x94))) = temp_r5_19442;
-                (*(s8 *)((u8 *)((void *)0x030041A0) + (0x87))) = 2;
-                sub_02021720();
-                (*(s8 *)((u8 *)((void *)0x030041A0) + (0x9A))) = 0x40;
-                (*(s16 *)((u8 *)((void *)0x030041A0) + (0x58))) = (s16) temp_r5_19442;
-                return;
-            }
-            var_r5_19479 = 4;
-            do {
-                if ((*(u16 *)((u8 *)((void *)0x030041A0) + (0x5A))) != 0) {
-                    temp_r0_19487 = (*(u8 *)((u8 *)((void *)0x030041A0) + (0x93))) + 1;
-                    (*(u8 *)((u8 *)((void *)0x030041A0) + (0x93))) = temp_r0_19487;
-                    if ((u32) temp_r0_19487 > 6U) {
-                        (*(u8 *)((u8 *)((void *)0x030041A0) + (0x93))) = 6U;
+        if (Islander_PlayAnim(1) != 0) {
+            anim_id = islander->anim_id;
+            if (anim_id == ISLANDER_ANIM_60) {
+                house->state = 1;
+                islander->_04 += 0x1200;
+                islander->_0C = islander->_04;
+                islander->_94[0] = anim_id;
+                islander->move_proc_idx = ActionOutside;
+                Islander_StartWandering();
+                islander->_99[1] = 0x40;
+                islander->_58 = 0x60;
+            } else {
+                for (i = 0; i < 5; i++) {
+                    if (islander->stored_item_tile_ids[0] != 0) {
+                        islander->mood++;
+                        if (islander->mood > 6) {
+                            islander->mood = 6;
+                        }
+                        Islander_OnMoodChanged();
+                        Islander_ClearStoredItem(0);
                     }
-                    Islander_OnMoodChanged();
-                    Islander_ClearStoredItem(0);
                 }
-                var_r5_19479 -= 1;
-            } while (var_r5_19479 >= 0);
-            (*(s8 *)((u8 *)((void *)0x030041A0) + (0x8A))) = 0xFE;
-            *(u32 *)0x03004228 = 0x60U;
-            *(s8 *)0x03004227 = 0;
-            (*(s8 *)((u8 *)((void *)0x03003BC4) + (0x11))) = 1;
+                islander->anim_timer = 0xFE;
+                islander->anim_id = ISLANDER_ANIM_60;
+                islander->move_proc_idx = ActionInside;
+                house->state = 1;
+            }
         }
     }
 }
+/* Original address: 0x02021720 */
+void Islander_StartWandering(void) {
+    Islander_AGB *islander = &gIslander;
+    s32 base_duration = 0;
+    AnimFrameData *anim;
 
-void sub_02021720(void) {
-    s32 var_r6_19528;
-    u8 temp_r0_19552;
-    void *temp_r0_19535;
-    void *temp_r0_19537;
-    void *temp_r4_19549;
-
-    var_r6_19528 = 0;
-    *(u8 *)0x03004228 = 0;
-    (*(s8 *)((u8 *)((void *)0x03004229) + (0))) = 0;
-    temp_r0_19535 = (void *)0x03004229 + 1;
-    (*(s8 *)((u8 *)((void *)0x03004229) + (1))) = 0;
-    temp_r0_19537 = temp_r0_19535 + 7;
-    (*(s8 *)((u8 *)(temp_r0_19535) + (7))) = 0;
-    (*(s8 *)((u8 *)(temp_r0_19537) + (1))) = 0;
-    (*(s8 *)((u8 *)((temp_r0_19537 + 1)) + (5))) = 0;
+    islander->anim_id = ISLANDER_ANIM_00;
+    islander->anim_frame = 0;
+    islander->anim_timer = 0;
+    islander->_91[0] = 0;
+    islander->_91[1] = 0;
+    islander->emotion_anim_id = ISLANDER_ANIM_00;
     Islander_AdjustAnimForTool();
-    temp_r4_19549 = **(u32 **)(0x02033680 + (*(u8 *)0x03004228 * 4));
-    temp_r0_19552 = *(u8 *)0x03004230;
-    if ((s32) temp_r0_19552 <= 2) {
-        if ((s32) temp_r0_19552 < 1) {
-            if (temp_r0_19552 != 0) {
-
-            } else {
-                goto block_5;
-            }
-        } else {
-            var_r6_19528 = 0x100;
-        }
-    } else if (temp_r0_19552 == 3) {
-block_5:
-        var_r6_19528 = 0x180;
+    anim = *gIslanderAnimData[islander->anim_id];
+    switch (islander->emotion) {
+    case ISLANDER_EMOTION_NEUTRAL:
+    case ISLANDER_EMOTION_HAPPY:
+        base_duration = 0x180;
+        break;
+    case ISLANDER_EMOTION_ANGRY:
+    case ISLANDER_EMOTION_SAD:
+        base_duration = 0x100;
+        break;
     }
-    (*(s16 *)((u8 *)((void *)0x030041F8) + (0))) = (s16) (var_r6_19528 + ((s32) rand_u16(&gGameState) % 337));
-    (*(s8 *)((u8 *)((void *)0x030041F8) + (0x32))) = (s8) (*(u16 *)((u8 *)(temp_r4_19549) + (4)));
-    *(u32 *)(((void *)0x030041F8 + 0x32) - 3) = 3;
+    islander->_58 = base_duration + rand_u16(&gGameState) % 337;
+    islander->anim_timer = anim->duration;
+    islander->move_proc_idx = MoveAction3;
 }
 
+/* Original address: 0x020217AC */
 void sub_020217AC(void) {
-    s32 temp_r0_19664;
-    u16 temp_r0_19603;
-    u16 temp_r0_19611;
-    u16 temp_r0_19627;
-    u16 temp_r0_19699;
-    u16 temp_r1_19642;
-    u8 temp_r0_19619;
-    u8 temp_r0_19703;
+    Islander_AGB *islander = &gIslander;
+    s32 direction = 0;
 
-    sub_0201FCB0();
-    temp_r0_19603 = *(u16 *)0x0300421E;
-    if (temp_r0_19603 != 0) {
-        *(u16 *)0x0300421E = temp_r0_19603 - 1;
+    Islander_UpdateBlink();
+    if (islander->_7C[1] != 0) {
+        islander->_7C[1]--;
     }
-    temp_r0_19611 = *(u16 *)0x03004218;
-    if (temp_r0_19611 != 0) {
-        *(u16 *)0x03004218 = temp_r0_19611 - 1;
+    if (islander->_78 != 0) {
+        islander->_78--;
     }
-    temp_r0_19619 = *(u8 *)0x03004234;
-    if (temp_r0_19619 != 0) {
-        *(u8 *)0x03004234 = temp_r0_19619 - 1;
+    if (islander->_94[0] != 0) {
+        islander->_94[0]--;
     }
-    temp_r0_19627 = *(u16 *)0x03004214;
-    if (temp_r0_19627 != 0) {
-        *(u16 *)0x03004214 = temp_r0_19627 - 1;
+    if (islander->_74 != 0) {
+        islander->_74--;
     }
-    if (0xF & *(u8 *)0x0300422D) {
-        temp_r1_19642 = *(u16 *)0x03004222;
-        if ((u32) temp_r1_19642 > 0x1C20U) {
-            if (sub_02020A78() != 0) {
-                *(u16 *)0x03004222 = 0;
+    if (islander->state & 0xF) {
+        if (islander->_7C[3] > 0x1C20) {
+            if (Islander_TryDropTool() != 0) {
+                islander->_7C[3] = 0;
             }
         } else {
-            *(u16 *)0x03004222 = temp_r1_19642 + 1;
+            islander->_7C[3]++;
         }
     }
-    if ((sub_020210D4() == 0) && (sub_02020F54() == 0) && (temp_r0_19664 = sub_020212F4(), (temp_r0_19664 == 0))) {
-        if (((*(s32 *)((u8 *)((void *)0x030041A0) + (0x10))) != 0) && ((*(s32 *)((u8 *)((void *)0x030041A0) + (0x14))) != 0) && (sub_0201FD1C((*(s32 *)((u8 *)((void *)0x030041A0) + (0x10))), (*(s32 *)((u8 *)((void *)0x030041A0) + (0x14)))) != 0)) {
-            if ((u32) (*(u16 *)((u8 *)((void *)0x030041A0) + (0x58))) <= 0x5FU) {
-                (*(u16 *)((u8 *)((void *)0x030041A0) + (0x58))) = 0x60U;
+    if (Islander_TryInteractWithCurrentTile() == 0 && Islander_TryStartFishing() == 0 && Islander_TryStartDigging() == 0) {
+        if (islander->_10 != 0 && islander->_14 != 0 &&
+            Islander_FaceTargetAndCheckArrival(islander->_10, islander->_14) != 0) {
+            if (islander->_58 < 0x60) {
+                islander->_58 = 0x60;
             }
-            (*(s32 *)((u8 *)((void *)0x030041A0) + (0x10))) = temp_r0_19664;
-            (*(s32 *)((u8 *)((void *)0x030041A0) + (0x14))) = temp_r0_19664;
+            islander->_10 = 0;
+            islander->_14 = 0;
         }
-        if (((*(u8 *)((u8 *)((void *)0x030041A0) + (0x90))) != 3) || ((*(s32 *)((u8 *)((void *)0x030041A0) + (0x14))) == 0)) {
-            temp_r0_19699 = (*(u16 *)((u8 *)((void *)0x030041A0) + (0x58)));
-            if (temp_r0_19699 == 0) {
-                temp_r0_19703 = sub_0201F78C(0U);
-                if (temp_r0_19703 != 0x777) {
-                    (*(u8 *)((u8 *)((void *)0x030041A0) + (0x8B))) = temp_r0_19703;
-                    (*(s8 *)((u8 *)((void *)0x030041A0) + (0x87))) = 2;
-                    sub_02021720();
+        if (islander->emotion != ISLANDER_EMOTION_HAPPY || islander->_14 == 0) {
+            if (islander->_58 == 0) {
+                direction = sub_0201F78C(0);
+                if (direction != 0x777) {
+                    islander->_8B = direction;
+                    islander->move_proc_idx = ActionOutside;
+                    Islander_StartWandering();
                     return;
                 }
-                goto block_28;
+            } else {
+                islander->_58--;
             }
-            (*(u16 *)((u8 *)((void *)0x030041A0) + (0x58))) = (u16) (temp_r0_19699 - 1);
-            goto block_28;
         }
-block_28:
-        Islander_PlayAnim(0U);
+        Islander_PlayAnim(0);
     }
 }
 
@@ -8621,7 +8260,7 @@ void IslanderMoveAction_MoveToTarget(void) {
     FieldObject *object = NULL;
     s32 continue_moving = 0;
 
-    sub_0201FCB0();
+    Islander_UpdateBlink();
     if (islander->_14 & 0xFFFF0000) {
         islander->_14 &= 0xFFFF;
     }
@@ -8636,7 +8275,7 @@ void IslanderMoveAction_MoveToTarget(void) {
         switch (islander->_99[0]) {
         case 0x10:
             islander->move_proc_idx = MoveAction5;
-            sub_02021AD8();
+            Islander_StartFoodProcessing();
             break;
         case 0x20:
             islander->_00 = islander->_10;
@@ -8692,7 +8331,7 @@ void IslanderMoveAction_MoveToTarget(void) {
             islander->_04 = islander->_14;
             sub_0201F78C(1);
             islander->move_proc_idx = ActionOutside;
-            sub_02021720();
+            Islander_StartWandering();
             break;
         case 0x60:
             islander->_8B = 0;
@@ -8741,49 +8380,48 @@ void IslanderMoveAction_MoveToTarget(void) {
 }
 
 
-void sub_02021AD8(void) {
-    s32 var_r2_20071;
-    u16 var_r0_20110;
-    u8 *var_r4_20055;
-    u8 temp_r1_20078;
-    u8 var_r1_20116;
-    void *temp_r1_20096;
+/* Original address: 0x02021AD8 */
+void Islander_StartFoodProcessing(void) {
+    Islander_AGB *islander = &gIslander;
+    u8 *anim_id = &islander->anim_id;
+    u8 *tilemap;
+    u8 initial_frame = 0;
+    u32 item_type_idx;
 
-    (*(s8 *)((u8 *)((void *)0x03004229) + (0))) = 0;
-    *(s8 *)0x0300422A = 0;
-    (*(s8 *)((u8 *)((void *)0x03004229) + (8))) = 0;
-    (*(s8 *)((u8 *)(((void *)0x03004229 + 8)) + (1))) = 0;
-    *(s8 *)0x03004228 = 0x56;
-    *(s8 *)0x0300422A = (s8) (*(u16 *)((u8 *)(**(void ***)0x020337D8) + (4)));
-    if (!(*(s32 *)0x03004224 & 0xFFFF00)) {
-        var_r4_20055 = (void *)0x030041A0 + 0x8E;
-        WriteItemToTile((*(s32 *)((u8 *)((void *)0x030041A0) + (0))), (*(u8 *)((u8 *)((void *)0x030041A0) + (0x8E))), 0U, 0x200U);
+    islander->anim_frame = initial_frame;
+    islander->anim_timer = 0;
+    islander->_91[0] = 0;
+    islander->_91[1] = 0;
+    islander->anim_id = ISLANDER_ANIM_56;
+    islander->anim_timer = gIslanderAnimData[*anim_id][0]->duration;
+    if (islander->_85 == 0 && islander->_86 == 0) {
+        WriteItemToTile(islander->_00, islander->stand_on_tile_idx, 0, 0x200);
     } else {
-        var_r2_20071 = 0x0600C800;
-        if (!((*(s32 *)((u8 *)((void *)0x030041A0) + (0))) & 0xFF0000)) {
-            var_r2_20071 = 0x0600C000;
+        if ((islander->_00 & 0xFF0000) == 0) {
+            tilemap = (u8 *)BG_SCREEN_ADDR(24);
+        } else {
+            tilemap = (u8 *)BG_SCREEN_ADDR(25);
         }
-        var_r4_20055 = (void *)0x030041A0 + 0x8E;
-        temp_r1_20078 = (*(u8 *)((u8 *)((void *)0x030041A0) + (0x8E)));
-        WriteItemTileToVRAM(var_r2_20071 + ((0xF0 & temp_r1_20078) * 8) + ((0xF & temp_r1_20078) * 4), 0x200U);
+        tilemap = (0xF0 & islander->stand_on_tile_idx) * 8 + tilemap;
+        tilemap = (0xF & islander->stand_on_tile_idx) * 4 + tilemap;
+        WriteItemTileToVRAM(tilemap, 0x200);
     }
-    sub_020262DC(*var_r4_20055, (*(s32 *)((u8 *)((void *)0x030041A0) + (0))));
-    temp_r1_20096 = (void *)0x030041A0 + 0xA0;
-    if ((*(u8 *)((u8 *)((void *)0x030041A0) + (0xA0))) == 0) {
-        if ((*(u8 *)((u8 *)(temp_r1_20096) + (0x16))) == 0) {
-            var_r0_20110 = *(u32 *)(((temp_r1_20096 + 0x16) - 0x5C) + ((*(u8 *)((u8 *)((void *)0x030041A0) + (0x95))) * 2));
-            goto block_10;
+    sub_020262DC(islander->stand_on_tile_idx, islander->_00);
+
+    if (islander->_A0 == 0) {
+        if (islander->_B5[1] == 0) {
+            item_type_idx = islander->stored_item_tile_ids[islander->_94[1]] - 1;
+        } else {
+            item_type_idx = islander->_B5[1];
         }
-        var_r1_20116 = (*(u8 *)((u8 *)(temp_r1_20096) + (0x16)));
     } else {
-        var_r0_20110 = (u16) (*(u8 *)((u8 *)((void *)0x030041A0) + (0xA0)));
-block_10:
-        var_r1_20116 = var_r0_20110 - 1;
+        item_type_idx = islander->_A0 - 1;
     }
-    (*(s32 *)((u8 *)((void *)0x030041A0) + (0x40))) = (s32) ((*(u16 *)((u8 *)(((var_r1_20116 * 0xC) + 0x0202F7FC)) + (4))) | 0x800000);
-    (*(s8 *)((u8 *)((void *)0x030041A0) + (0x87))) = 6;
+    islander->_40 = (item_type_idx + g_ItemDefinitions)->held_item_oam_attr2 | 0x800000;
+    islander->move_proc_idx = ProcessFood;
 }
 
+/* Original address: 0x02021BCC */
 void Islander_ProcessFood(void) {
     Islander_AGB *islander = &gIslander;
     IslandFieldWork *field = &gIslandFieldWork;
@@ -8791,7 +8429,6 @@ void Islander_ProcessFood(void) {
     u32 item_type_idx;
     s32 result;
     s32 i;
-    u8 *pending_food;
 
     if (islander->anim_id == ISLANDER_ANIM_56) {
         if (islander->anim_timer == 0) {
@@ -8805,12 +8442,11 @@ void Islander_ProcessFood(void) {
     }
 
     result = 0;
-    pending_food = &islander->_A0;
     if (islander->_A0 == 0) {
-        if (islander->_B2[4] == 0) {
+        if (islander->_B5[1] == 0) {
             item_type_idx = islander->stored_item_tile_ids[islander->_94[1]] - 1;
         } else {
-            item_type_idx = islander->_B2[4];
+            item_type_idx = islander->_B5[1];
         }
     } else {
         item_type_idx = islander->_A0 - 1;
@@ -8831,22 +8467,21 @@ void Islander_ProcessFood(void) {
     case ISLANDER_ANIM_57: {
         u8 *food_preferences;
         u8 *food_preference_layout;
-        u8 *stand_on_tile_idx;
 
         islander->_40 = 0;
         if ((islander->_00 & 0xFF0000) == 0) {
-            stand_on_tile_idx = &islander->stand_on_tile_idx;
             field->fg_tiles[0][islander->stand_on_tile_idx] = 0xFFF;
         } else {
-            stand_on_tile_idx = &islander->stand_on_tile_idx;
             field->fg_tiles[1][islander->stand_on_tile_idx] = 0xFFF;
         }
 
-        food_preferences = ISLANDER_FOOD_PREFERENCES.preferences;
+        i = 0;
+        food_preferences = (u8 *)&ISLANDER_FOOD_PREFERENCES;
         food_preference_layout = food_preferences + sizeof(ISLANDER_FOOD_PREFERENCES.preferences);
-        for (i = 0; i < 9; i++) {
+        for (; i < 9; i++) {
             if (item_type_idx == food_preference_layout[i]) {
-                u8 preference = food_preferences[islander->islander_npc_idx * 9 + i];
+                u8 preference_idx = islander->islander_npc_idx * 9 + i;
+                u8 preference = food_preferences[preference_idx];
 
                 islander->mood += preference;
                 if ((preference & 0x80) == 0) {
@@ -8856,14 +8491,11 @@ void Islander_ProcessFood(void) {
                 }
                 break;
             }
-            food_preference_layout++;
         }
 
         result = 3;
         if (islander->mood & 0x80) {
             islander->mood = 0;
-            // islander->_A0 = 0;
-            goto temp;
         } else if (islander->mood > 5) {
             if ((islander->_00 & 0xFF0000) == 0) {
                 field->fg_tiles[0][islander->stand_on_tile_idx] = 0x3333;
@@ -8871,10 +8503,9 @@ void Islander_ProcessFood(void) {
                 field->fg_tiles[1][islander->stand_on_tile_idx] = 0x3333;
             }
             islander->mood = 6;
-        } else {
-temp:
-            islander->_A0 = 0;
+            break;
         }
+        islander->_A0 = 0;
         break;
     }
 
@@ -8963,7 +8594,7 @@ temp:
         islander->_7C[3] = 0;
         islander->_94[0] = 0x20;
         islander->move_proc_idx = ActionOutside;
-        sub_02021720();
+        Islander_StartWandering();
         break;
     }
 
@@ -9081,9 +8712,10 @@ void sub_02022054(void) {
 
     sub_0201F78C(1);
     islander->move_proc_idx = ActionOutside;
-    sub_02021720();
+    Islander_StartWandering();
 }
 
+/* Original address: 0x020221C0 */
 void sub_020221C0(void) {
     Islander_AGB *islander = &gIslander;
     IslandFieldWork *field = &gIslandFieldWork;
@@ -9100,27 +8732,28 @@ void sub_020221C0(void) {
         }
 
         if ((tile_id == 0xFFF) || (tile_id == 0x3333) || (tile_id == 0x7777) ||
-            (g_ItemDefinitions[tile_id].held_item_oam_attr2 == 0xFFF)) {
+            ((g_ItemDefinitions + tile_id)->held_item_oam_attr2 == 0xFFF)) {
             islander->move_proc_idx = ActionOutside;
-            sub_02021720();
+            Islander_StartWandering();
             return;
         }
     }
 
-    sub_0201FED4(0, 0x30);
+    Islander_SpawnReactionEffect(0, 0x30);
     islander->click_cooldown_timer = 0x30;
     islander->_94[0] = 0x60;
     islander->dir_x = (islander->_10 - islander->_00) >> 8;
     islander->dir_y = (islander->_14 - islander->_04) >> 8;
     angle = ArcTan2((s16)islander->dir_x, (s16)islander->dir_y);
 
-    if (angle < gIslanderDirectionSectors[7].max_angle) {
+    sector = &gIslanderDirectionSectors[7];
+    if (angle < sector->max_angle) {
         sector_idx = 0;
-        sector = gIslanderDirectionSectors;
+        sector -= 7;
         if (angle > sector->max_angle) {
             do {
-                sector++;
                 sector_idx++;
+                sector++;
             } while ((sector_idx <= 6) && (angle > sector->max_angle));
         }
     } else {
@@ -9145,10 +8778,10 @@ void Islander_CheckClickedOnTimer(void) {
             state = islander->state;
             if (state & 0x40) {
                 islander->state = state - 0x40;
-                sub_02020A78();
+                Islander_TryDropTool();
             }
             islander->move_proc_idx = ActionOutside;
-            sub_02021720();
+            Islander_StartWandering();
             return;
         }
 
@@ -9162,7 +8795,7 @@ void Islander_CheckClickedOnTimer(void) {
         if ((islander->emotion == ISLANDER_EMOTION_NEUTRAL) ||
             (islander->emotion == ISLANDER_EMOTION_HAPPY)) {
             islander->_8B = 0;
-            sub_0201FED4(1, 0x30);
+            Islander_SpawnReactionEffect(1, 0x30);
             islander->click_cooldown_timer = 0x30;
             return;
         }
@@ -9389,7 +9022,7 @@ void Islander_Fishing_State1(void) {
         islander->anim_frame = 0;
         islander->item_work.held_item.tile_no = 0x30;
         islander->item_work.held_item.type_idx = timer;
-        sub_0201FED4(0, 0x30);
+        Islander_SpawnReactionEffect(0, 0x30);
         islander->sub_move_action = 2;
     }
 }
@@ -9470,7 +9103,7 @@ void Islander_Fishing_State4(void) {
             if (islander->mood > 6) {
                 islander->mood = 6;
             }
-            sub_0201FED4(3, 0x30);
+            Islander_SpawnReactionEffect(3, 0x30);
             if (islander->_8B == 0) {
                 islander->anim_id = ISLANDER_ANIM_3F;
             } else {
@@ -9502,7 +9135,7 @@ void Islander_Fishing_State5(void) {
             IslanderMoveAction_UpdateEmotion();
         } else {
             islander->move_proc_idx = ActionOutside;
-            sub_02021720();
+            Islander_StartWandering();
         }
         islander->_40 = 0;
     }
@@ -9544,7 +9177,7 @@ void Islander_Fishing_State7(void) {
         sub_0201F78C(1);
         islander->_40 = 0;
         islander->move_proc_idx = ActionOutside;
-        sub_02021720();
+        Islander_StartWandering();
     }
 }
 
@@ -9603,7 +9236,7 @@ void Islander_DespawnFlyingItem(void) {
 
     if (islander->_40 == 0) {
         islander->move_proc_idx = ActionOutside;
-        sub_02021720();
+        Islander_StartWandering();
         return;
     }
     anim_timer_value = islander->anim_timer;
@@ -9633,7 +9266,7 @@ void Islander_DespawnFlyingItem(void) {
             } else {
                 islander->anim_id = ISLANDER_ANIM_52;
             }
-            sub_0201FED4(3, 0x30);
+            Islander_SpawnReactionEffect(3, 0x30);
         }
         anim_data = *gIslanderAnimData[islander->anim_id];
         islander->anim_frame = 0;
@@ -9692,7 +9325,7 @@ void Islander_ProcessFishReceived(void) {
         }
         islander->_40 = 0;
         islander->move_proc_idx = ActionOutside;
-        sub_02021720();
+        Islander_StartWandering();
     }
 }
 
@@ -9885,7 +9518,7 @@ void Islander_BuryItem_State2(void) {
             } else {
                 islander->anim_id = ISLANDER_ANIM_36;
             }
-            sub_0201FED4(3, 0x30);
+            Islander_SpawnReactionEffect(3, 0x30);
         }
         islander->anim_timer = (*gIslanderAnimData[islander->anim_id])->duration;
         islander->anim_frame = 0;
@@ -10063,7 +9696,7 @@ void Islander_MoveAction20_State0(void) {
     islander->_7C[2]--;
     if (islander->anim_timer == 0) {
         if (islander->anim_frame == 2) {
-            sub_0201FED4(4, 0x20);
+            Islander_SpawnReactionEffect(4, 0x20);
             sub_02026A38(0x25);
         }
     }
@@ -10158,7 +9791,7 @@ void Islander_MoveAction20_State4(void) {
 
     switch ((IslanderMoveAction20Phase)islander->item_work.move_action20.phase) {
     case ISLANDER_MOVE_ACTION20_PHASE_BEGIN:
-        sub_0201FED4(1, 0x30);
+        Islander_SpawnReactionEffect(1, 0x30);
         islander->anim_frame = 0;
         islander->anim_timer = 0;
         islander->item_work.move_action20.phase++;
@@ -10239,41 +9872,31 @@ void Islander_MoveAction20_Move(void) {
     sub_move_procs[(u8)islander->sub_move_action]();
 }
 
-void sub_02023B58(void) {
-    register Islander_AGB* islander asm("ip") = (Islander_AGB*)0x030041A0;
-    register u32 tile_mask asm("sl");
+/* Original address: 0x02023B58 */
+void Islander_Draw(void) {
+    Islander_AGB* islander = &gIslander;
     IslanderOamData* source;
-    volatile s32 sprite_count;
-    s32 dir_y;
-    Islander_AGB* initial;
+    s32 sprite_count;
 
-    dir_y = islander->_04 >> 8;
-    initial = islander;
-    initial->dir_y = dir_y;
-    initial->dir_x = initial->_00 >> 8;
+    islander->dir_y = islander->_04 >> 8;
+    islander->dir_x = islander->_00 >> 8;
     source = gIslanderAnimData[islander->anim_id][islander->anim_frame]->sprite_gfx_p;
 
     if (islander->anim_timer == 0xFE) {
         return;
     }
 
-    {
-        register s32 initial_sprite_count asm("r2") = 0;
-        sprite_count = initial_sprite_count;
-    }
+    sprite_count = 0;
     if (source->affine_param == 0xFFFF) {
         return;
     }
 
-    tile_mask = 0xFFFFFC00;
     do {
-        register u8* oam_count asm("r1") = (u8*)0x030023B0;
-        IslanderOamData* oam = &((IslanderOamData*)0x03002410)[*oam_count];
-        s32 next_sprite_count;
+        IslanderOamData* oam = &((IslanderOamData*)gUnk3002410)[gGameState.unk_860];
         u32 x;
         u8 state;
 
-        oam->y = source->y + islander->dir_y - ((GameState*)0x03001B50)->unk_846;
+        oam->y = source->y + islander->dir_y - gGameState.unk_846;
         oam->obj_mode = source->obj_mode;
         oam->bpp = source->bpp;
         oam->shape = source->shape;
@@ -10287,34 +9910,26 @@ void sub_02023B58(void) {
             oam->h_flip = source->h_flip ^ TRUE;
             x = ~x;
             x++;
-            if ((*(u32*)oam & 0xC000C000) == 0x40000000) {
+            if (oam->shape == 0 && oam->size == 1) {
                 x -= 16;
             } else {
                 x -= 8;
             }
         }
 
-        {
-            register Islander_AGB* x_islander asm("r2") = islander;
-            oam->x = x + x_islander->dir_x - ((GameState*)0x03001B50)->unk_844;
-        }
+        oam->x = x + islander->dir_x - gGameState.unk_844;
         oam->priority = 1;
         oam->palette_num = source->palette_num;
         oam->tile_num = source->tile_num;
 
         {
-            register u32 tile_override asm("r3") = islander->_40;
+            u32 tile_override = islander->_40;
 
             if ((tile_override & 0xFFFF0000) != 0 && (tile_override & 0xFFFF) != 0 &&
                 oam->tile_num == ((tile_override >> 16) & 0xFFFF)) {
-                oam->tile_num = tile_override & 0xFFF;
-                {
-                    register Islander_AGB* palette_islander asm("r2") = islander;
-                    u32 palette_override = palette_islander->_40;
-                    u32 palette_bits = (palette_override & 0xF000) >> 8;
-
-                    *(u8*)((u8*)oam + 5) = (*(u8*)((u8*)oam + 5) & 0xF) | palette_bits;
-                }
+                tile_override &= 0xFFF;
+                oam->tile_num = tile_override;
+                oam->palette_num = (islander->_40 & 0xF000) >> 12;
             }
         }
 
@@ -10324,9 +9939,7 @@ void sub_02023B58(void) {
         }
 
         if ((u8)(islander->move_proc_idx - MoveAction3) <= 1) {
-            u8 substate = islander->_8B;
-
-            if (substate == 0) {
+            if (islander->_8B == 0) {
                 if (source->tile_num == 0x40 || source->tile_num == 0x42) {
                     switch (islander->emotion) {
                     case 0:
@@ -10348,9 +9961,7 @@ void sub_02023B58(void) {
                     }
                 }
             } else {
-                u8 adjusted_substate = substate - 1;
-
-                if ((adjusted_substate <= 1 || substate == 6 || substate == 7) &&
+                if (((islander->_8B >= 1 && islander->_8B <= 2) || islander->_8B == 6 || islander->_8B == 7) &&
                     (source->tile_num == 0 || source->tile_num == 2)) {
                     switch (islander->emotion) {
                     case 0:
@@ -10374,14 +9985,10 @@ void sub_02023B58(void) {
             }
         }
 
-        {
-            register u8* oam_count_out asm("r3") = (u8*)0x030023B0;
-            (*oam_count_out)++;
-        }
-        next_sprite_count = sprite_count + 1;
-        sprite_count = next_sprite_count;
+        gGameState.unk_860++;
+        sprite_count++;
         source++;
-        if (next_sprite_count > 0x21) {
+        if (sprite_count > 0x21) {
             return;
         }
     } while (source->affine_param != 0xFFFF);
@@ -12059,10 +11666,10 @@ void sub_020253A8(s32 arg0) {
     (*(s8 *)((u8 *)(temp_r1_27774) + (0x4E))) = 0xA;
 }
 
+/* Original address: 0x02025400 */
 void sub_02025400(s32 arg0) {
     s16 temp_r0_28034;
     s32 temp_r0_27941;
-    s32 temp_r1_27824;
     s32 temp_r2_27833;
     s32 temp_r2_27989;
     s32 temp_r2_28035;
@@ -12072,86 +11679,85 @@ void sub_02025400(s32 arg0) {
     u16 var_r4_27830;
     u8 temp_r0_27980;
     u8 temp_r0_28047;
-    void *temp_r1_28012;
-    void *temp_r3_27826;
+    ItemGroupStruct *temp_r1_28012;
+    Entity *temp_r3_27826;
     void *temp_r4_27995;
 
-    temp_r1_27824 = 0x54 * arg0;
-    temp_r3_27826 = temp_r1_27824 + 0x03004790;
+    temp_r3_27826 = &g_EntityTable[arg0];
     var_r4_27830 = 0;
-    temp_r2_27833 = (*(s32 *)((u8 *)(temp_r3_27826) + (0xC))) + (*(s32 *)((u8 *)(temp_r3_27826) + (0x18)));
-    (*(s32 *)((u8 *)(temp_r3_27826) + (0xC))) = temp_r2_27833;
-    *(u32 *)(0x03004790 + temp_r1_27824) = (s32) (temp_r2_27833 >> 8);
-    (*(s32 *)((u8 *)(temp_r3_27826) + (4))) = (s32) ((((s32) (*(s32 *)((u8 *)(temp_r3_27826) + (0x10))) >> 8) - (*(s32 *)((u8 *)(temp_r3_27826) + (0x24)))) + ((s32) (*(s32 *)((u8 *)(temp_r3_27826) + (8))) >> 8));
-    (*(s32 *)((u8 *)((void *)0x030041A0) + (0x38))) = temp_r2_27833;
-    (*(s32 *)((u8 *)((void *)0x030041A0) + (0x3C))) = (s32) (*(s32 *)((u8 *)(temp_r3_27826) + (0x10)));
-    (*(s32 *)((u8 *)(temp_r3_27826) + (8))) = (s32) ((*(s32 *)((u8 *)(temp_r3_27826) + (8))) + (*(s32 *)((u8 *)(temp_r3_27826) + (0x20))));
-    if ((s32) (*(s32 *)((u8 *)(temp_r3_27826) + (0x18))) >= 0) {
-        if ((s32) *(u32 *)(0x03004790 + temp_r1_27824) > (s32) (*(s32 *)((u8 *)(temp_r3_27826) + (0x14)))) {
+    temp_r2_27833 = temp_r3_27826->_0C + temp_r3_27826->_18;
+    temp_r3_27826->_0C = temp_r2_27833;
+    g_EntityTable[arg0].x = (s32) (temp_r2_27833 >> 8);
+    temp_r3_27826->y = (s32) ((((s32) temp_r3_27826->_10 >> 8) - temp_r3_27826->_24) + ((s32) temp_r3_27826->_08 >> 8));
+    gIslander._38 = temp_r2_27833;
+    gIslander._3C = (s32) temp_r3_27826->_10;
+    temp_r3_27826->_08 = (s32) (temp_r3_27826->_08 + temp_r3_27826->_20);
+    if ((s32) temp_r3_27826->_18 >= 0) {
+        if ((s32) g_EntityTable[arg0].x > (s32) temp_r3_27826->_14) {
             goto block_4;
         }
-    } else if ((s32) *(u32 *)(0x03004790 + temp_r1_27824) < (s32) (*(s32 *)((u8 *)(temp_r3_27826) + (0x14)))) {
+    } else if ((s32) g_EntityTable[arg0].x < (s32) temp_r3_27826->_14) {
 block_4:
         var_r4_27830 = 1;
     }
-    if (((*(u16 *)((u8 *)((void *)0x030041A0) + (0x62))) != 0) || (var_r4_27830 != 0)) {
-        (*(u16 *)((u8 *)(temp_r3_27826) + (0x42))) = (u16) ((*(u16 *)((u8 *)(temp_r3_27826) + (0x42))) + 0xFFFFF900);
-        temp_r4_27891 = (*(u16 *)((u8 *)(temp_r3_27826) + (0x44))) + 0x10;
-        (*(u16 *)((u8 *)(temp_r3_27826) + (0x44))) = temp_r4_27891;
-        temp_r5_27893 = (*(s32 *)((u8 *)(temp_r3_27826) + (0x24)));
+    if ((gIslander.stored_item_tile_ids[4] != 0) || (var_r4_27830 != 0)) {
+        temp_r3_27826->_42 = (u16) (temp_r3_27826->_42 + 0xFFFFF900);
+        temp_r4_27891 = temp_r3_27826->_44 + 0x10;
+        temp_r3_27826->_44 = temp_r4_27891;
+        temp_r5_27893 = temp_r3_27826->_24;
         if ((temp_r5_27893 > 0) && !(temp_r4_27891 & 0x10)) {
-            (*(s32 *)((u8 *)(temp_r3_27826) + (0x24))) = (s32) (temp_r5_27893 - 1);
+            temp_r3_27826->_24 = (s32) (temp_r5_27893 - 1);
         }
-        if ((u32) (*(u16 *)((u8 *)(temp_r3_27826) + (0x44))) <= 0x300U) {
+        if ((u32) temp_r3_27826->_44 <= 0x300U) {
             return;
         }
-        (*(u16 *)((u8 *)(temp_r3_27826) + (0x44))) = 0x300U;
-        (*(u16 *)((u8 *)(temp_r3_27826) + (0x42))) = 0U;
-        (*(u16 *)((u8 *)((void *)0x030041A0) + (0x76))) = 0x2A30U;
-        (*(u16 *)((u8 *)((void *)0x030041A0) + (0x76))) = (u16) ((0x64 * ((s32) rand_u16(&gGameState) % 109)) + (*(u16 *)((u8 *)((void *)0x030041A0) + (0x76))));
-        (*(s32 *)((u8 *)((void *)0x030041A0) + (0x38))) = 0;
-        (*(s32 *)((u8 *)((void *)0x030041A0) + (0x3C))) = 0;
-        (*(s8 *)((u8 *)((arg0 + 0x03003710)) + (0x41A))) = 0;
+        temp_r3_27826->_44 = 0x300U;
+        temp_r3_27826->_42 = 0U;
+        gIslander.flying_item_spawn_timer = 0x2A30U;
+        gIslander.flying_item_spawn_timer = (u16) ((0x64 * ((s32) rand_u16(&gGameState) % 109)) + gIslander.flying_item_spawn_timer);
+        gIslander._38 = 0;
+        gIslander._3C = 0;
+        gIslandFieldWork.entity_active[arg0 + 3] = 0;
         return;
     }
-    temp_r0_27941 = (*(s32 *)((u8 *)(temp_r3_27826) + (0x24)));
+    temp_r0_27941 = temp_r3_27826->_24;
     if (temp_r0_27941 <= 0x17) {
-        (*(s32 *)((u8 *)(temp_r3_27826) + (0x24))) = (s32) (temp_r0_27941 + 1);
+        temp_r3_27826->_24 = (s32) (temp_r0_27941 + 1);
     }
-    (*(u16 *)((u8 *)(temp_r3_27826) + (0x42))) = (u16) ((*(u16 *)((u8 *)(temp_r3_27826) + (0x42))) + 0x700);
-    temp_r0_27959 = (*(u16 *)((u8 *)(temp_r3_27826) + (0x44))) - 0x10;
-    (*(u16 *)((u8 *)(temp_r3_27826) + (0x44))) = temp_r0_27959;
+    temp_r3_27826->_42 = (u16) (temp_r3_27826->_42 + 0x700);
+    temp_r0_27959 = temp_r3_27826->_44 - 0x10;
+    temp_r3_27826->_44 = temp_r0_27959;
     if ((u32) temp_r0_27959 <= 0xFFU) {
-        (*(u16 *)((u8 *)(temp_r3_27826) + (0x44))) = 0x100U;
-        (*(u16 *)((u8 *)(temp_r3_27826) + (0x42))) = var_r4_27830;
-        if ((*(u8 *)((u8 *)(temp_r3_27826) + (0x4D))) == 0) {
-            (*(u8 *)((u8 *)(temp_r3_27826) + (0x4D))) = 0x10U;
-            temp_r0_27980 = (*(u8 *)((u8 *)(temp_r3_27826) + (0x4C))) + 1;
-            (*(u8 *)((u8 *)(temp_r3_27826) + (0x4C))) = temp_r0_27980;
+        temp_r3_27826->_44 = 0x100U;
+        temp_r3_27826->_42 = var_r4_27830;
+        if (temp_r3_27826->_4D == 0) {
+            temp_r3_27826->_4D = 0x10U;
+            temp_r0_27980 = temp_r3_27826->item_tile_frame + 1;
+            temp_r3_27826->item_tile_frame = temp_r0_27980;
             if ((u32) temp_r0_27980 > 4U) {
-                (*(u8 *)((u8 *)(temp_r3_27826) + (0x4C))) = 0U;
+                temp_r3_27826->item_tile_frame = 0U;
             }
-            temp_r2_27989 = (*(u8 *)((u8 *)(temp_r3_27826) + (0x4C))) * 2;
-            temp_r4_27995 = temp_r3_27826 + 0x28;
-            if ((*(u32 *)(temp_r3_27826 + 0x32 + temp_r2_27989) == 0) && (*(u32 *)(temp_r4_27995 + temp_r2_27989) == 0)) {
-                (*(u8 *)((u8 *)(temp_r3_27826) + (0x4C))) = 0U;
+            temp_r2_27989 = temp_r3_27826->item_tile_frame * 2;
+            temp_r4_27995 = (u8 *)temp_r3_27826 + 0x28;
+            if ((*(u32 *)((u8 *)temp_r3_27826 + 0x32 + temp_r2_27989) == 0) && (*(u32 *)(temp_r4_27995 + temp_r2_27989) == 0)) {
+                temp_r3_27826->item_tile_frame = 0U;
             }
-            temp_r1_28012 = (*(u32 *)(temp_r4_27995 + ((*(u8 *)((u8 *)(temp_r3_27826) + (0x4C))) * 2)) * 0xC) + 0x0202F7FC;
-            (*(s16 *)((u8 *)(temp_r3_27826) + (0x3E))) = (s16) (0x3FF & (*(u16 *)((u8 *)(temp_r1_28012) + (4))));
-            (*(s8 *)((u8 *)(temp_r3_27826) + (0x50))) = (s8) ((u16) (*(u16 *)((u8 *)(temp_r1_28012) + (4))) >> 0xC);
+            temp_r1_28012 = &g_ItemDefinitions[g_EntityTable[arg0].item_tile_no[g_EntityTable[arg0].item_tile_frame]];
+            temp_r3_27826->_3E = (s16) (0x3FF & temp_r1_28012->held_item_oam_attr2);
+            temp_r3_27826->_50 = (s8) ((u16) temp_r1_28012->held_item_oam_attr2 >> 0xC);
         }
-        (*(u8 *)((u8 *)(temp_r3_27826) + (0x4D))) = (u8) ((*(u8 *)((u8 *)(temp_r3_27826) + (0x4D))) - 1);
+        temp_r3_27826->_4D = (u8) (temp_r3_27826->_4D - 1);
     }
-    temp_r0_28034 = *(u32 *)(0x0202AD34 + ((*(u16 *)((u8 *)(temp_r3_27826) + (0x46))) * 2));
+    temp_r0_28034 = *(u32 *)(0x0202AD34 + (temp_r3_27826->_46 * 2));
     temp_r2_28035 = temp_r0_28034 >> 2;
-    (*(s32 *)((u8 *)(temp_r3_27826) + (0x20))) = temp_r2_28035;
+    temp_r3_27826->_20 = temp_r2_28035;
     if (temp_r0_28034 & 0x8000) {
-        (*(s32 *)((u8 *)(temp_r3_27826) + (0x20))) = (s32) (temp_r2_28035 | 0xFFFF0000);
+        temp_r3_27826->_20 = (s32) (temp_r2_28035 | 0xFFFF0000);
     }
-    temp_r0_28047 = (*(u16 *)((u8 *)(temp_r3_27826) + (0x46))) + 4;
-    (*(u16 *)((u8 *)(temp_r3_27826) + (0x46))) = (u16) temp_r0_28047;
+    temp_r0_28047 = temp_r3_27826->_46 + 4;
+    temp_r3_27826->_46 = (u16) temp_r0_28047;
     if (temp_r0_28047 == 0) {
-        (*(s32 *)((u8 *)(temp_r3_27826) + (0x20))) = (s32) temp_r0_28047;
+        temp_r3_27826->_20 = (s32) temp_r0_28047;
     }
 }
 
@@ -12284,6 +11890,7 @@ loop_15:
     }
 }
 
+/* Original address: 0x020259C8 */
 s32 sub_020259C8(void) {
     s32 temp_r0_28606;
     s32 temp_r0_28665;
@@ -12303,57 +11910,57 @@ s32 sub_020259C8(void) {
 
     var_r6_28561 = NULL;
     var_r7_28562 = 0;
-    temp_r2_28567 = (*(s32 *)((u8 *)((void *)0x03004B80) + (0x10)));
-    (*(u8 *)((u8 *)((void *)0x03004B80) + (0x1E))) = (u8) (((*(s32 *)((u8 *)((void *)0x03004B80) + (0x14))) & ~0xF) | ((s32) (0xF0 & temp_r2_28567) >> 4));
+    temp_r2_28567 = gPlayer._10;
+    gPlayer.tile_idx = (u8) ((gPlayer._14 & ~0xF) | ((s32) (0xF0 & temp_r2_28567) >> 4));
     if (!(temp_r2_28567 & 0xFF00)) {
-        temp_r2_28578 = (*(u8 *)((u8 *)((void *)0x03004B80) + (0x1E)));
-        temp_r3_28583 = *(u32 *)(0x03003720 + (temp_r2_28578 * 2));
+        temp_r2_28578 = gPlayer.tile_idx;
+        temp_r3_28583 = gIslandFieldWork.fg_tiles[0][temp_r2_28578];
         if ((temp_r3_28583 != 0xFFF) && (temp_r3_28583 != 0x7777)) {
             goto block_37;
         }
-        if ((*(u8 *)0x03004257 == 0) && ((*(u8 *)((u8 *)((void *)0x03004B80) + (0x1E))) == *(u8 *)0x03004258)) {
+        if ((gIslander._B5[2] == 0) && (gPlayer.tile_idx == gIslander._B5[3])) {
             goto block_37;
         }
         temp_r0_28606 = temp_r2_28578 * 2;
-        if ((*(u32 *)(0x03003720 + temp_r0_28606) == 0xFFF) || (((*(u8 *)((u8 *)((void *)0x03004B80) + (0x28))) == 0) && (temp_r2_28578 == (*(u8 *)((u8 *)((void *)0x03004B80) + (0x29)))))) {
-            *(u32 *)(0x03003720 + temp_r0_28606) = 0xFFFU;
-            var_r7_28562 = *(u32 *)(0x03003720 + ((*(u8 *)((u8 *)((void *)0x03004B80) + (0x1E))) * 2));
-            var_r6_28628 = 0x0600A000;
+        if ((gIslandFieldWork.fg_tiles[0][(temp_r0_28606) / 2] == 0xFFF) || ((gPlayer.held_item_layer == 0) && (temp_r2_28578 == gPlayer.held_item_tile_idx))) {
+            gIslandFieldWork.fg_tiles[0][(temp_r0_28606) / 2] = 0xFFFU;
+            var_r7_28562 = gIslandFieldWork.fg_tiles[0][gPlayer.tile_idx];
+            var_r6_28628 = BG_SCREEN_ADDR(20);
             goto block_20;
         }
         goto block_21;
     }
-    temp_r2_28638 = (*(u8 *)((u8 *)((void *)0x03004B80) + (0x1E)));
-    temp_r1_28644 = *(u32 *)(0x03003920 + (temp_r2_28638 * 2));
+    temp_r2_28638 = gPlayer.tile_idx;
+    temp_r1_28644 = gIslandFieldWork.fg_tiles[1][temp_r2_28638];
     if ((temp_r1_28644 != 0xFFF) && (temp_r1_28644 != 0x7777)) {
         goto block_37;
     }
-    if ((*(u32 *)0x03004257 == 0) || ((*(u8 *)((u8 *)((void *)0x03004B80) + (0x1E))) != *(u32 *)0x03004258)) {
+    if ((gIslander._B5[2] == 0) || (gPlayer.tile_idx != gIslander._B5[3])) {
         temp_r0_28665 = temp_r2_28638 * 2;
-        if ((*(u32 *)(0x03003920 + temp_r0_28665) == 0xFFF) || (((*(u8 *)((u8 *)((void *)0x03004B80) + (0x28))) != 0) && (temp_r2_28638 == (*(u8 *)((u8 *)((void *)0x03004B80) + (0x29)))))) {
-            *(u32 *)(0x03003920 + temp_r0_28665) = 0xFFFU;
-            var_r7_28562 = *(u32 *)(0x03003920 + ((*(u8 *)((u8 *)((void *)0x03004B80) + (0x1E))) * 2));
-            var_r6_28628 = 0x0600A800;
+        if ((gIslandFieldWork.fg_tiles[1][(temp_r0_28665) / 2] == 0xFFF) || ((gPlayer.held_item_layer != 0) && (temp_r2_28638 == gPlayer.held_item_tile_idx))) {
+            gIslandFieldWork.fg_tiles[1][(temp_r0_28665) / 2] = 0xFFFU;
+            var_r7_28562 = gIslandFieldWork.fg_tiles[1][gPlayer.tile_idx];
+            var_r6_28628 = BG_SCREEN_ADDR(21);
 block_20:
-            var_r6_28561 = ((0xF0 & (*(u8 *)((u8 *)((void *)0x03004B80) + (0x1E)))) * 8) + var_r6_28628 + (((*(u8 *)((u8 *)((void *)0x03004B80) + (0x1E))) & 0xF) * 4);
+            var_r6_28561 = ((0xF0 & gPlayer.tile_idx) * 8) + var_r6_28628 + ((gPlayer.tile_idx & 0xF) * 4);
         }
 block_21:
         if (CheckSurroundingCollision(var_r7_28562, var_r6_28561) == 0) {
             temp_r0_28707 = *var_r6_28561;
             temp_r2_28709 = 0x3FF & temp_r0_28707;
             if (((temp_r2_28709 > 5U) && ((u32) (u16) (temp_r2_28709 - 0x10) > 5U) && (temp_r2_28709 != 0x82) && (temp_r2_28709 <= 0xAFU)) || ((0x3FF & temp_r0_28707) == 0x13)) {
-                temp_r3_28735 = (*(s32 *)((u8 *)((void *)0x03003BC4) + (8))) - (((s32) (*(s32 *)((u8 *)((void *)0x03004B80) + (0))) >> 8) - 8);
-                (*(s32 *)((u8 *)((void *)0x03004B80) + (0x10))) = temp_r3_28735;
-                (*(s32 *)((u8 *)((void *)0x03004B80) + (0x14))) = (s32) ((*(s32 *)((u8 *)((void *)0x03003BC4) + (0xC))) - ((s32) (*(s32 *)((u8 *)((void *)0x03004B80) + (4))) >> 8));
+                temp_r3_28735 = gIslandBuildings[1].interaction_x - (((s32) gPlayer.x >> 8) - 8);
+                gPlayer._10 = temp_r3_28735;
+                gPlayer._14 = (s32) (gIslandBuildings[1].interaction_y - ((s32) gPlayer.y >> 8));
                 if (temp_r3_28735 < 0) {
-                    (*(s32 *)((u8 *)((void *)0x03004B80) + (0x10))) = (s32) (0 - temp_r3_28735);
+                    gPlayer._10 = (s32) (0 - temp_r3_28735);
                 }
-                temp_r0_28747 = (*(s32 *)((u8 *)((void *)0x03004B80) + (0x14)));
+                temp_r0_28747 = gPlayer._14;
                 if (temp_r0_28747 < 0) {
-                    (*(s32 *)((u8 *)((void *)0x03004B80) + (0x14))) = (s32) (0 - temp_r0_28747);
+                    gPlayer._14 = (s32) (0 - temp_r0_28747);
                 }
-                if ((s32) (*(s32 *)((u8 *)((void *)0x03004B80) + (0x10))) <= 0x20) {
-                    if ((s32) (*(s32 *)((u8 *)((void *)0x03004B80) + (0x14))) > 0x20) {
+                if ((s32) gPlayer._10 <= 0x20) {
+                    if ((s32) gPlayer._14 > 0x20) {
                         goto block_36;
                     }
                     goto block_37;
@@ -12373,6 +11980,7 @@ block_37:
     return 1;
 }
 
+/* Original address: 0x02025B94 */
 s32 sub_02025B94(s32 arg0, s32 arg1, u16 arg2) {
     s32 temp_r1_28802;
     s32 var_r0_28814;
@@ -12381,14 +11989,14 @@ s32 sub_02025B94(s32 arg0, s32 arg1, u16 arg2) {
     u16 temp_r2_28799;
 
     temp_r2_28799 = arg2;
-    temp_r1_28802 = (*(s32 *)((u8 *)((void *)0x03004B80) + (0)));
-    var_r3_28804 = temp_r1_28802 - *(s32 *)0x030041A0;
+    temp_r1_28802 = gPlayer.x;
+    var_r3_28804 = temp_r1_28802 - gIslander._00;
     if (var_r3_28804 < 0) {
         var_r3_28804 = 0 - var_r3_28804;
     }
     if (var_r3_28804 <= 0x2FFF) {
         var_r3_28812 = temp_r1_28802 - arg0;
-        var_r0_28814 = (*(s32 *)((u8 *)((void *)0x03004B80) + (4))) - arg1;
+        var_r0_28814 = gPlayer.y - arg1;
         if (var_r3_28812 < 0) {
             var_r3_28812 = 0 - var_r3_28812;
         }
@@ -12404,60 +12012,62 @@ block_10:
     return 0;
 }
 
+/* Original address: 0x02025BEC */
 s32 sub_02025BEC(void) {
-    *(u8 *)0x03004BA6 = 0;
-    if (sub_02025B94((*(s32 *)((u8 *)((void *)0x03003BC4) + (8))) << 8, (*(s32 *)((u8 *)((void *)0x03003BC4) + (0xC))) << 8, 0x10U) != 0) {
-        *(u8 *)0x03004BA6 = 1;
+    gPlayer._26 = 0;
+    if (sub_02025B94(gIslandBuildings[1].interaction_x << 8, gIslandBuildings[1].interaction_y << 8, 0x10U) != 0) {
+        gPlayer._26 = 1;
     }
-    if (*(u8 *)0x03004227 == 1) {
-        if ((*(u8 *)0x03004BA6 != 0) && (*(u8 *)0x0300422A == 0xFE)) {
-            *(u8 *)0x0300422A = 4;
-            (*(s8 *)((u8 *)((void *)0x03003BC4) + (0x11))) = 0;
-            *(u8 *)0x03004BA6 = 0;
+    if (gIslander.move_proc_idx == 1) {
+        if ((gPlayer._26 != 0) && (gIslander.anim_timer == 0xFE)) {
+            gIslander.anim_timer = 4;
+            gIslandBuildings[1].state = 0;
+            gPlayer._26 = 0;
         }
         return 1;
     }
     return 0;
 }
 
+/* Original address: 0x02025C4C */
 s8 sub_02025C4C(void) {
     u8 *var_r8_28909;
     u8 temp_r1_28939;
 
-    if (*(u8 *)0x0300423A == 0) {
-        var_r8_28909 = (u8 *)0x03004227;
-        if (*(u8 *)0x03004227 == 3) {
-            (*(s32 *)((u8 *)((void *)0x030041A0) + (0x10))) = (s32) (*(s32 *)((u8 *)((void *)0x03004B80) + (0)));
-            (*(s32 *)((u8 *)((void *)0x030041A0) + (0x14))) = (s32) (*(s32 *)((u8 *)((void *)0x03004B80) + (4)));
+    if (gIslander._99[1] == 0) {
+        var_r8_28909 = &gIslander.move_proc_idx;
+        if (gIslander.move_proc_idx == 3) {
+            gIslander._10 = (s32) gPlayer.x;
+            gIslander._14 = (s32) gPlayer.y;
             goto block_3;
         }
         goto block_8;
     }
 block_3:
-    var_r8_28909 = (void *)0x030041A0 + 0x87;
-    if ((*(u8 *)((u8 *)((void *)0x030041A0) + (0x87))) == 3) {
-        if (sub_02025B94((*(s32 *)((u8 *)((void *)0x030041A0) + (0))), (*(s32 *)((u8 *)((void *)0x030041A0) + (4))), 8U) != 0) {
-            (*(s8 *)((u8 *)((void *)0x030041A0) + (0x97))) = 1;
-            sub_0201FED4(2U, 0x30U);
-            temp_r1_28939 = (*(u8 *)((u8 *)((void *)0x030041A0) + (0x8D)));
+    var_r8_28909 = &gIslander.move_proc_idx;
+    if (gIslander.move_proc_idx == 3) {
+        if (sub_02025B94(gIslander._00, gIslander._04, 8U) != 0) {
+            gIslander.emotion_anim_id = 1;
+            Islander_SpawnReactionEffect(2U, 0x30U);
+            temp_r1_28939 = gIslander.state;
             if (temp_r1_28939 != 0) {
-                (*(u8 *)((u8 *)((void *)0x030041A0) + (0x8D))) = (u8) (0x40 | temp_r1_28939);
-                (*(s8 *)((u8 *)((void *)0x030041A0) + (0x97))) = 0;
+                gIslander.state = (u8) (0x40 | temp_r1_28939);
+                gIslander.emotion_anim_id = 0;
             }
-            (*(s8 *)((u8 *)((void *)0x03004B80) + (0x26))) = 0;
-            (*(u8 *)((u8 *)((void *)0x030041A0) + (0x87))) = 0xAU;
-            (*(s8 *)((u8 *)((void *)0x030041A0) + (0x98))) = 0x30;
-            (*(s8 *)((u8 *)((void *)0x03004B80) + (0x1F))) = 0;
+            gPlayer._26 = 0;
+            gIslander.move_proc_idx = 0xAU;
+            gIslander.click_cooldown_timer = 0x30;
+            gPlayer.state = 0;
             sub_02025F60();
             return 1;
         }
         goto block_12;
     }
 block_8:
-    if ((*var_r8_28909 == 0x14) && ((*(u8 *)((u8 *)((void *)0x030041A0) + (0x9C))) == 0) && (sub_02025B94((*(s32 *)((u8 *)((void *)0x030041A0) + (0))), (*(s32 *)((u8 *)((void *)0x030041A0) + (4))), 0x10U) != 0)) {
+    if ((*var_r8_28909 == 0x14) && (gIslander.sub_move_action == 0) && (sub_02025B94(gIslander._00, gIslander._04, 0x10U) != 0)) {
         sub_02026A38(3U);
-        (*(s8 *)((u8 *)((void *)0x030041A0) + (0x84))) = 2;
-        (*(s8 *)((u8 *)((void *)0x03004B80) + (0x1F))) = 2;
+        gIslander._84 = 2;
+        gPlayer.state = 2;
         sub_020263A0();
         return 1;
     }
@@ -12465,15 +12075,16 @@ block_12:
     return 0;
 }
 
+/* Original address: 0x02025D1C */
 s8 sub_02025D1C(void) {
     u8 temp_r0_29010;
 
-    if ((*(u8 *)0x03004227 == 3) && ((temp_r0_29010 = *(u8 *)0x0300422D, (temp_r0_29010 == 1)) || (temp_r0_29010 == 5)) && (sub_02025B94((*(s32 *)((u8 *)((void *)0x030041A0) + (0x38))), (*(s32 *)((u8 *)((void *)0x030041A0) + (0x3C))), 0x10U) != 0)) {
-        *(u8 *)0x03004227 = 9;
-        (*(s32 *)((u8 *)((void *)0x030041A0) + (0x10))) = (s32) (*(s32 *)((u8 *)((void *)0x030041A0) + (0x38)));
-        (*(s32 *)((u8 *)((void *)0x030041A0) + (0x14))) = (s32) (*(s32 *)((u8 *)((void *)0x030041A0) + (0x3C)));
-        (*(s8 *)((u8 *)((void *)0x030041A0) + (0x97))) = 0;
-        (*(s8 *)((u8 *)((void *)0x030041A0) + (0x9F))) = 1;
+    if ((gIslander.move_proc_idx == 3) && ((temp_r0_29010 = gIslander.state, (temp_r0_29010 == 1)) || (temp_r0_29010 == 5)) && (sub_02025B94(gIslander._38, gIslander._3C, 0x10U) != 0)) {
+        gIslander.move_proc_idx = 9;
+        gIslander._10 = (s32) gIslander._38;
+        gIslander._14 = (s32) gIslander._3C;
+        gIslander.emotion_anim_id = 0;
+        gIslander._9F = 1;
         return 1;
     }
     return 0;
@@ -12519,6 +12130,7 @@ void sub_02025D70(void) {
     (*(s8 *)((u8 *)((void *)0x03004B80) + (0x1F))) = 0;
 }
 
+/* Original address: 0x02025DC8 */
 void sub_02025DC8(void) {
     s32 temp_r2_29106;
     s32 temp_r2_29140;
@@ -12528,50 +12140,50 @@ void sub_02025DC8(void) {
     u16 temp_r0_29249;
 
     if (0x400040 & (*(s32 *)((u8 *)(&gGameState) + (0x818)))) {
-        temp_r2_29106 = (*(s32 *)((u8 *)((void *)0x03004B80) + (4)));
-        (*(s32 *)((u8 *)((void *)0x03004B80) + (4))) = (s32) (temp_r2_29106 + 0xFFFFFE80);
+        temp_r2_29106 = gPlayer.y;
+        gPlayer.y = (s32) (temp_r2_29106 + 0xFFFFFE80);
         if (0x100 & gGameState.keys_held) {
-            (*(s32 *)((u8 *)((void *)0x03004B80) + (4))) = (s32) (temp_r2_29106 + 0xFFFFFD00);
+            gPlayer.y = (s32) (temp_r2_29106 + 0xFFFFFD00);
         }
-        if ((s32) (*(s32 *)((u8 *)((void *)0x03004B80) + (4))) <= 0xE00) {
-            (*(s32 *)((u8 *)((void *)0x03004B80) + (4))) = 0xE00;
+        if ((s32) gPlayer.y <= 0xE00) {
+            gPlayer.y = 0xE00;
         }
     } else if ((*(s32 *)((u8 *)(&gGameState) + (0x818))) & 0x800080) {
-        temp_r2_29140 = (*(s32 *)((u8 *)((void *)0x03004B80) + (4)));
-        (*(s32 *)((u8 *)((void *)0x03004B80) + (4))) = (s32) (temp_r2_29140 + 0x180);
+        temp_r2_29140 = gPlayer.y;
+        gPlayer.y = (s32) (temp_r2_29140 + 0x180);
         if (0x100 & gGameState.keys_held) {
-            (*(s32 *)((u8 *)((void *)0x03004B80) + (4))) = (s32) (temp_r2_29140 + 0x300);
+            gPlayer.y = (s32) (temp_r2_29140 + 0x300);
         }
-        if (*(u8 *)0x03004224 == 0) {
+        if (gIslander._84 == 0) {
             var_r0_29162 = 0xF7FF;
         } else {
             var_r0_29162 = 0xE7FF;
         }
-        if ((*(s32 *)((u8 *)((void *)0x03004B80) + (4))) > var_r0_29162) {
-            (*(s32 *)((u8 *)((void *)0x03004B80) + (4))) = (s32) (var_r0_29162 + 1);
+        if (gPlayer.y > var_r0_29162) {
+            gPlayer.y = (s32) (var_r0_29162 + 1);
         }
     }
     if (0x200020 & (*(s32 *)((u8 *)(&gGameState) + (0x818)))) {
-        temp_r2_29183 = (*(s32 *)((u8 *)((void *)0x03004B80) + (0)));
-        (*(s32 *)((u8 *)((void *)0x03004B80) + (0))) = (s32) (temp_r2_29183 + 0xFFFFFE80);
+        temp_r2_29183 = gPlayer.x;
+        gPlayer.x = (s32) (temp_r2_29183 + 0xFFFFFE80);
         if (0x100 & gGameState.keys_held) {
-            (*(s32 *)((u8 *)((void *)0x03004B80) + (0))) = (s32) (temp_r2_29183 + 0xFFFFFD00);
+            gPlayer.x = (s32) (temp_r2_29183 + 0xFFFFFD00);
         }
-        if ((s32) (*(s32 *)((u8 *)((void *)0x03004B80) + (0))) <= 0x600) {
-            (*(s32 *)((u8 *)((void *)0x03004B80) + (0))) = 0x600;
+        if ((s32) gPlayer.x <= 0x600) {
+            gPlayer.x = 0x600;
         }
     } else if ((*(s32 *)((u8 *)(&gGameState) + (0x818))) & 0x100010) {
-        temp_r2_29215 = (*(s32 *)((u8 *)((void *)0x03004B80) + (0)));
-        (*(s32 *)((u8 *)((void *)0x03004B80) + (0))) = (s32) (temp_r2_29215 + 0x180);
+        temp_r2_29215 = gPlayer.x;
+        gPlayer.x = (s32) (temp_r2_29215 + 0x180);
         if (0x100 & gGameState.keys_held) {
-            (*(s32 *)((u8 *)((void *)0x03004B80) + (0))) = (s32) (temp_r2_29215 + 0x300);
+            gPlayer.x = (s32) (temp_r2_29215 + 0x300);
         }
-        if ((s32) (*(s32 *)((u8 *)((void *)0x03004B80) + (0))) > 0x1DFFF) {
-            (*(s32 *)((u8 *)((void *)0x03004B80) + (0))) = 0x1E000;
+        if ((s32) gPlayer.x > 0x1DFFF) {
+            gPlayer.x = 0x1E000;
         }
     }
-    gGameState.unk_840 = ((s32) (*(s32 *)((u8 *)((void *)0x03004B80) + (0))) >> 8) - 0x80;
-    temp_r0_29249 = ((s32) (*(s32 *)((u8 *)((void *)0x03004B80) + (4))) >> 8) - 0x50;
+    gGameState.unk_840 = ((s32) gPlayer.x >> 8) - 0x80;
+    temp_r0_29249 = ((s32) gPlayer.y >> 8) - 0x50;
     gGameState.unk_842 = temp_r0_29249;
     if (temp_r0_29249 & 0x800) {
         gGameState.unk_842 = 0;
@@ -12825,38 +12437,39 @@ block_6:
     sub_0202622C(temp_r4_29762, arg1, (*(u8 *)((u8 *)((void *)0x03004B80) + (0x1C))), 1, 0);
 }
 
+/* Original address: 0x020263A0 */
 void sub_020263A0(void) {
     s32 temp_r0_29892;
     u16 temp_r2_29900;
 
-    *(s8 *)0x03004BA0 = 1;
-    *(s8 *)0x03004BA3 = 0;
-    *(s8 *)0x03004BA1 = 0;
-    *(s8 *)0x03004BA2 = (s8) (*(u16 *)((u8 *)(*(*(void ***)((u8 *)((void *)0x02034ED4) + (4)))) + (4)));
-    if (*(u8 *)0x03004224 == 0) {
-        *(s8 *)0x03003B29 = 1;
+    gPlayer.anim_id = 1;
+    gPlayer._23 = 0;
+    gPlayer.anim_frame = 0;
+    gPlayer.anim_timer = (s8) (*(u16 *)((u8 *)(*(*(void ***)((u8 *)((void *)0x02034ED4) + (4)))) + (4)));
+    if (gIslander._84 == 0) {
+        gIslandFieldWork.entity_active[2] = 1;
         Unk_Struct_Size54_ResetIdx(2);
-        *(s16 *)0x03004878 = 0x30;
-        temp_r0_29892 = (*(s32 *)((u8 *)((void *)0x03004B80) + (0)));
-        (*(s32 *)((u8 *)((void *)0x03004838) + (0))) = (s32) ((temp_r0_29892 >> 8) - 8);
-        (*(s32 *)((u8 *)((void *)0x03004838) + (4))) = (s32) (((s32) (*(s32 *)((u8 *)((void *)0x03004B80) + (4))) >> 8) - 2);
-        temp_r2_29900 = (*(u16 *)((u8 *)((void *)0x03004B80) + (0x18)));
-        (*(s16 *)((u8 *)((void *)0x03004838) + (0x3E))) = (s16) (0x3FF & temp_r2_29900);
-        (*(s8 *)((u8 *)((void *)0x03004838) + (0x50))) = (s8) ((u32) (temp_r2_29900 << 0x10) >> 0x1C);
-        *(u32 *)(((void *)0x03004838 + 0x50) - 1) = 0;
-        WriteItemToTile(temp_r0_29892, (*(u8 *)((u8 *)((void *)0x03004B80) + (0x1E))), 0U, 0x200U);
-        sub_020262DC((*(u8 *)((u8 *)((void *)0x03004B80) + (0x1E))), (*(s32 *)((u8 *)((void *)0x03004B80) + (0))));
+        g_EntityTable[2]._40 = 0x30;
+        temp_r0_29892 = gPlayer.x;
+        g_EntityTable[2].x = (s32) ((temp_r0_29892 >> 8) - 8);
+        g_EntityTable[2].y = (s32) (((s32) gPlayer.y >> 8) - 2);
+        temp_r2_29900 = gPlayer.held_item_oam_attr2;
+        g_EntityTable[2]._3E = (s16) (0x3FF & temp_r2_29900);
+        g_EntityTable[2]._50 = (s8) ((u32) (temp_r2_29900 << 0x10) >> 0x1C);
+        g_EntityTable[2]._4F = 0;
+        WriteItemToTile(temp_r0_29892, gPlayer.tile_idx, 0U, 0x200U);
+        sub_020262DC(gPlayer.tile_idx, gPlayer.x);
     } else {
-        (*(s32 *)((u8 *)((void *)0x030041A0) + (0))) = (s32) (*(s32 *)((u8 *)((void *)0x03004B80) + (0)));
-        (*(s32 *)((u8 *)((void *)0x030041A0) + (4))) = (s32) ((*(s32 *)((u8 *)((void *)0x03004B80) + (4))) + 0x1200);
+        gIslander._00 = (s32) gPlayer.x;
+        gIslander._04 = (s32) (gPlayer.y + 0x1200);
     }
-    (*(s8 *)((u8 *)((void *)0x03004B80) + (0x25))) = 0x20;
-    (*(s8 *)((u8 *)((void *)0x03004B80) + (0x1F))) = 3;
+    gPlayer.action_timer = 0x20;
+    gPlayer.state = 3;
 }
 
+/* Original address: 0x02026464 */
 void sub_02026464(void) {
     s32 var_r0_30005;
-    u16 temp_r0_29958;
     u16 var_r0_30102;
     u8 temp_r0_29971;
     u8 temp_r0_29974;
@@ -12865,32 +12478,31 @@ void sub_02026464(void) {
     void *temp_r1_30029;
     void *temp_r1_30092;
 
-    if (*(u8 *)0x03004224 == 0) {
-        temp_r0_29958 = (*(u16 *)((u8 *)((void *)0x03004B80) + (0x28)));
-        if (temp_r0_29958 == 0) {
-            (*(s8 *)((u8 *)((void *)0x03004B80) + (0x1F))) = (s8) temp_r0_29958;
+    if (gIslander._84 == 0) {
+        if (gPlayer.held_item_layer == 0 && gPlayer.held_item_tile_idx == 0) {
+            gPlayer.state = 0;
             sub_02025F60();
             return;
         }
     }
-    temp_r0_29971 = (*(u8 *)((u8 *)((void *)0x03004B80) + (0x25)));
-    if (((temp_r0_29971 == 0) || (temp_r0_29974 = temp_r0_29971 - 1, (*(u8 *)((u8 *)((void *)0x03004B80) + (0x25))) = temp_r0_29974, ((temp_r0_29974 << 0x18) == 0))) && (1 & gGameState.keys_pressed)) {
-        if (*(u32 *)0x03004224 != 0) {
-            (*(s32 *)((u8 *)((void *)0x03004B80) + (0x10))) = (s32) ((((s32) (*(s32 *)((u8 *)((void *)0x03004B80) + (0))) >> 8) - 8) & 0xFF0);
-            var_r0_30005 = (((s32) (*(s32 *)((u8 *)((void *)0x03004B80) + (4))) >> 8) + 0x18) & 0xFF0;
+    temp_r0_29971 = gPlayer.action_timer;
+    if (((temp_r0_29971 == 0) || (temp_r0_29974 = temp_r0_29971 - 1, gPlayer.action_timer = temp_r0_29974, ((temp_r0_29974 << 0x18) == 0))) && (1 & gGameState.keys_pressed)) {
+        if (gIslander._84 != 0) {
+            gPlayer._10 = (s32) ((((s32) gPlayer.x >> 8) - 8) & 0xFF0);
+            var_r0_30005 = (((s32) gPlayer.y >> 8) + 0x18) & 0xFF0;
         } else {
-            (*(s32 *)((u8 *)((void *)0x03004B80) + (0x10))) = (s32) ((*(s32 *)((u8 *)((void *)0x03004838) + (0))) + 8);
-            var_r0_30005 = (*(s32 *)((u8 *)((void *)0x03004838) + (4))) + 8;
+            gPlayer._10 = (s32) (g_EntityTable[2].x + 8);
+            var_r0_30005 = g_EntityTable[2].y + 8;
         }
-        (*(s32 *)((u8 *)((void *)0x03004B80) + (0x14))) = var_r0_30005;
+        gPlayer._14 = var_r0_30005;
         if (sub_020259C8() == 0) {
             sub_02026A38(4U);
-            (*(s8 *)((u8 *)((void *)0x03004B80) + (0x1F))) = 4;
+            gPlayer.state = 4;
             sub_020265A8();
             return;
         }
-        temp_r1_30029 = (void *)0x03004B80 + 0x20;
-        (*(u8 *)((u8 *)((void *)0x03004B80) + (0x20))) = 3U;
+        temp_r1_30029 = &gPlayer.anim_id;
+        gPlayer.anim_id = 3U;
         (*(s8 *)((u8 *)(temp_r1_30029) + (1))) = 0;
         (*(s8 *)((u8 *)((temp_r1_30029 + 1)) + (1))) = (s8) (*(u16 *)((u8 *)(*(*(void ***)((u8 *)((void *)0x02034ED4) + (0xC)))) + (4)));
         sub_02026A38(0x12U);
@@ -12898,21 +12510,21 @@ void sub_02026464(void) {
     }
 block_12:
     sub_02025DC8();
-    if (*(u32 *)0x03004224 == 0) {
-        (*(s16 *)((u8 *)((void *)0x03004838) + (0x40))) = 0x30;
-        (*(s32 *)((u8 *)((void *)0x03004838) + (0))) = (s32) (((s32) (*(s32 *)((u8 *)((void *)0x03004B80) + (0))) >> 8) - 8);
-        (*(s32 *)((u8 *)((void *)0x03004838) + (4))) = (s32) (((s32) (*(s32 *)((u8 *)((void *)0x03004B80) + (4))) >> 8) - 2);
+    if (gIslander._84 == 0) {
+        g_EntityTable[2]._40 = 0x30;
+        g_EntityTable[2].x = (s32) (((s32) gPlayer.x >> 8) - 8);
+        g_EntityTable[2].y = (s32) (((s32) gPlayer.y >> 8) - 2);
     } else {
-        (*(s32 *)((u8 *)((void *)0x030041A0) + (0))) = (s32) (*(s32 *)((u8 *)((void *)0x03004B80) + (0)));
-        (*(s32 *)((u8 *)((void *)0x030041A0) + (4))) = (s32) ((*(s32 *)((u8 *)((void *)0x03004B80) + (4))) + 0x1200);
+        gIslander._00 = (s32) gPlayer.x;
+        gIslander._04 = (s32) (gPlayer.y + 0x1200);
     }
-    temp_r0_30074 = (*(u8 *)((u8 *)((void *)0x03004B80) + (0x22)));
+    temp_r0_30074 = gPlayer.anim_timer;
     if (temp_r0_30074 == 0) {
-        (*(u8 *)((u8 *)((void *)0x03004B80) + (0x21))) = (u8) ((*(u8 *)((u8 *)((void *)0x03004B80) + (0x21))) + 1);
-        temp_r4_30088 = (*(u8 *)((u8 *)((void *)0x03004B80) + (0x21)));
-        temp_r1_30092 = *(u32 *)((temp_r4_30088 * 4) + *(u32 *)(0x02034ED4 + ((*(u8 *)((u8 *)((void *)0x03004B80) + (0x20))) * 4)));
+        gPlayer.anim_frame = (u8) (gPlayer.anim_frame + 1);
+        temp_r4_30088 = gPlayer.anim_frame;
+        temp_r1_30092 = *(u32 *)((temp_r4_30088 * 4) + *(u32 *)(0x02034ED4 + (gPlayer.anim_id * 4)));
         if ((*(u8 *)((u8 *)(temp_r1_30092) + (6))) == 0xFF) {
-            (*(u8 *)((u8 *)((void *)0x03004B80) + (0x21))) = (u8) (temp_r4_30088 - 1);
+            gPlayer.anim_frame = (u8) (temp_r4_30088 - 1);
             return;
         }
         var_r0_30102 = (*(u16 *)((u8 *)(temp_r1_30092) + (4)));
@@ -12920,7 +12532,7 @@ block_12:
     }
     var_r0_30102 = temp_r0_30074 - 1;
 block_20:
-    (*(u8 *)((u8 *)((void *)0x03004B80) + (0x22))) = (u8) var_r0_30102;
+    gPlayer.anim_timer = (u8) var_r0_30102;
 }
 
 void sub_020265A8(void) {
@@ -12930,12 +12542,13 @@ void sub_020265A8(void) {
     (*(s8 *)((u8 *)((void *)0x03004B80) + (0x1F))) = 5;
 }
 
+/* Original address: 0x020265D4 */
 void sub_020265D4(void) {
     s32 temp_r3_30338;
     s32 var_r0_30247;
     s32 var_r0_30272;
-    s32 var_r1_30249;
-    s32 var_r1_30274;
+    u16 *var_r1_30249;
+    u16 *var_r1_30274;
     s32 var_r1_30347;
     s32 var_r2_30340;
     s32 var_sb_30147;
@@ -12945,99 +12558,101 @@ void sub_020265D4(void) {
     u8 temp_r0_30304;
     u8 temp_r2_30363;
     void *temp_r1_30205;
-    void *temp_r8_30230;
+    ItemGroupStruct *temp_r8_30230;
 
     var_sb_30147 = 0;
-    if ((*(u8 *)0x03004224 == 0) && ((*(u16 *)((u8 *)((void *)0x03004B80) + (0x28))) == 0)) {
-        (*(s8 *)((u8 *)((void *)0x03004B80) + (0x1F))) = 0;
+    if ((gIslander._84 == 0) && (gPlayer.held_item_layer == 0 && gPlayer.held_item_tile_idx == 0)) {
+        gPlayer.state = 0;
         sub_02025F60();
         return;
     }
-    temp_r0_30167 = (*(u8 *)((u8 *)((void *)0x03004B80) + (0x22)));
+    temp_r0_30167 = gPlayer.anim_timer;
     if (temp_r0_30167 != 0) {
-        (*(u8 *)((u8 *)((void *)0x03004B80) + (0x22))) = (u8) (temp_r0_30167 - 1);
-        if (((*(s32 *)((u8 *)((void *)0x03004B80) + (0x20))) & 0xFFFF00) != 0x300) {
+        gPlayer.anim_timer = (u8) (temp_r0_30167 - 1);
+        if (gPlayer.anim_frame != 3 || gPlayer.anim_timer != 0) {
             return;
         }
-        *(s8 *)0x03003B29 = 0;
+        gIslandFieldWork.entity_active[2] = 0;
         return;
     }
-    (*(u8 *)((u8 *)((void *)0x03004B80) + (0x21))) = (u8) ((*(u8 *)((u8 *)((void *)0x03004B80) + (0x21))) + 1);
-    temp_r1_30205 = *(u32 *)(((*(u8 *)((u8 *)((void *)0x03004B80) + (0x21))) * 4) + *(u32 *)(0x02034ED4 + ((u8) (*(s32 *)((u8 *)((void *)0x03004B80) + (0x20))) * 4)));
+    gPlayer.anim_frame = (u8) (gPlayer.anim_frame + 1);
+    temp_r1_30205 = *(u32 *)((gPlayer.anim_frame * 4) + *(u32 *)(0x02034ED4 + ((u8) gPlayer.anim_id * 4)));
     if ((*(u8 *)((u8 *)(temp_r1_30205) + (6))) != 0xFF) {
-        (*(u8 *)((u8 *)((void *)0x03004B80) + (0x22))) = (u8) (*(u16 *)((u8 *)(temp_r1_30205) + (4)));
+        gPlayer.anim_timer = (u8) (*(u16 *)((u8 *)(temp_r1_30205) + (4)));
         return;
     }
-    if (*(u32 *)0x03004224 != 0) {
-        *(u32 *)0x03004224 = 1U;
+    if (gIslander._84 != 0) {
+        gIslander._84 = 1U;
     } else {
-        temp_r8_30230 = ((*(u8 *)((u8 *)((void *)0x03004B80) + (0x24))) * 0xC) + 0x0202F7FC;
-        WriteItemToTile((*(s32 *)((u8 *)((void *)0x03004B80) + (0))), (*(u8 *)((u8 *)((void *)0x03004B80) + (0x1E))), (*(u16 *)((u8 *)((void *)0x03004B80) + (0x1A))), (*(u16 *)((u8 *)(temp_r8_30230) + (0))));
-        if ((u8) (*(u16 *)((u8 *)((void *)0x03004B80) + (0x28))) == 0) {
-            var_r2_30245 = (void *)0x03004B80 + 0x29;
-            var_r0_30247 = (*(u8 *)((u8 *)((void *)0x03004B80) + (0x29))) * 2;
-            var_r1_30249 = 0x03003720;
+        temp_r8_30230 = &g_ItemDefinitions[gPlayer.held_item_type_idx];
+        WriteItemToTile(gPlayer.x, gPlayer.tile_idx, gPlayer.held_item, temp_r8_30230->field_tile_id);
+        if ((u8) gPlayer.held_item_layer == 0) {
+            var_r2_30245 = &gPlayer.held_item_tile_idx;
+            var_r0_30247 = gPlayer.held_item_tile_idx * 2;
+            var_r1_30249 = gIslandFieldWork.fg_tiles[0];
         } else {
-            var_r2_30245 = (void *)0x03004B80 + 0x29;
-            var_r0_30247 = (*(u8 *)((u8 *)((void *)0x03004B80) + (0x29))) * 2;
-            var_r1_30249 = 0x03003920;
+            var_r2_30245 = &gPlayer.held_item_tile_idx;
+            var_r0_30247 = gPlayer.held_item_tile_idx * 2;
+            var_r1_30249 = gIslandFieldWork.fg_tiles[1];
         }
-        *(u32 *)(var_r1_30249 + var_r0_30247) = 0xFFF;
-        if (!((*(s32 *)((u8 *)((void *)0x03004B80) + (0))) & 0xFF0000)) {
-            var_r0_30272 = (*(u8 *)((u8 *)((void *)0x03004B80) + (0x1E))) * 2;
-            var_r1_30274 = 0x03003720;
+        var_r1_30249[var_r0_30247 / 2] = 0xFFF;
+        if (!(gPlayer.x & 0xFF0000)) {
+            var_r0_30272 = gPlayer.tile_idx * 2;
+            var_r1_30274 = gIslandFieldWork.fg_tiles[0];
         } else {
-            var_r0_30272 = (*(u8 *)((u8 *)((void *)0x03004B80) + (0x1E))) * 2;
-            var_r1_30274 = 0x03003920;
+            var_r0_30272 = gPlayer.tile_idx * 2;
+            var_r1_30274 = gIslandFieldWork.fg_tiles[1];
         }
-        *(u32 *)(var_r1_30274 + var_r0_30272) = (s16) (*(u8 *)((u8 *)((void *)0x03004B80) + (0x24)));
-        (*(u16 *)((u8 *)((void *)0x03004B80) + (0x28))) = 0;
+        var_r1_30274[var_r0_30272 / 2] = (s16) gPlayer.held_item_type_idx;
+        gPlayer.held_item_layer = 0;
+        gPlayer.held_item_tile_idx = 0;
         *var_r2_30245 = 0;
-        if (*(u8 *)0x03004227 == 3) {
-            if (*(u16 *)0x03004202 == 0) {
-                temp_r0_30304 = *(u8 *)0x0300422D;
+        if (gIslander.move_proc_idx == 3) {
+            if (gIslander.stored_item_tile_ids[4] == 0) {
+                temp_r0_30304 = gIslander.state;
                 switch (temp_r0_30304) {            /* switch 1; irregular */
                 case 3:                             /* switch 1 */
                 case 7:                             /* switch 1 */
-                    temp_r0_30313 = (*(u16 *)((u8 *)(temp_r8_30230) + (8)));
+                    temp_r0_30313 = temp_r8_30230->interaction_type;
                     switch ((u32) temp_r0_30313) {  /* switch 2; irregular */
                     case 6:                         /* switch 2 */
                         goto block_28;
                     }
                     break;
                 }
-            } else if ((*(u32 *)0x0300422D == 0) && ((u32) (u16) ((*(u16 *)((u8 *)(temp_r8_30230) + (8))) - 5) <= 9U)) {
+            } else if ((gIslander.state == 0) && ((u32) (u16) (temp_r8_30230->interaction_type - 5) <= 9U)) {
 block_28:
                 var_sb_30147 = 1;
             }
         }
-        temp_r3_30338 = (*(s32 *)((u8 *)((void *)0x03004B80) + (0)));
-        var_r2_30340 = temp_r3_30338 - (*(s32 *)((u8 *)((void *)0x030041A0) + (0)));
+        temp_r3_30338 = gPlayer.x;
+        var_r2_30340 = temp_r3_30338 - gIslander._00;
         if (var_r2_30340 < 0) {
             var_r2_30340 = 0 - var_r2_30340;
         }
-        var_r1_30347 = (*(s32 *)((u8 *)((void *)0x03004B80) + (4))) - (*(s32 *)((u8 *)((void *)0x030041A0) + (4)));
+        var_r1_30347 = gPlayer.y - gIslander._04;
         if (var_r1_30347 < 0) {
             var_r1_30347 = 0 - var_r1_30347;
         }
         if ((var_r2_30340 <= 0x2FFF) && (var_r1_30347 <= 0x2FFF) && (var_sb_30147 == 1)) {
-            temp_r2_30363 = (*(u8 *)((u8 *)((void *)0x03004B80) + (0x1E)));
-            (*(s32 *)((u8 *)((void *)0x030041A0) + (0x10))) = (s32) ((temp_r3_30338 & 0xFF0000) | (((0xF & temp_r2_30363) << 0xC) + 0x800));
-            (*(s32 *)((u8 *)((void *)0x030041A0) + (0x14))) = (s32) (((0xF0 & temp_r2_30363) << 8) + 0x800);
-            *(u8 *)0x03004227 = 9;
+            temp_r2_30363 = gPlayer.tile_idx;
+            gIslander._10 = (s32) ((temp_r3_30338 & 0xFF0000) | (((0xF & temp_r2_30363) << 0xC) + 0x800));
+            gIslander._14 = (s32) (((0xF0 & temp_r2_30363) << 8) + 0x800);
+            gIslander.move_proc_idx = 9;
         }
     }
-    (*(s8 *)((u8 *)((void *)0x03004B80) + (0x27))) = 0x20;
-    (*(u8 *)((u8 *)((void *)0x030041A0) + (0x9D))) = (u8) (*(u8 *)((u8 *)((void *)0x03004B80) + (0x1E)));
-    (*(s8 *)((u8 *)((void *)0x03004B80) + (0x1F))) = 0;
+    gPlayer._27 = 0x20;
+    gIslander._9D = (u8) gPlayer.tile_idx;
+    gPlayer.state = 0;
     sub_02025F60();
 }
 
+/* Original address: 0x020267D0 */
 void sub_020267D0(void) {
-    *(s8 *)0x03003B27 = 1;
-    *(s8 *)0x03003B28 = 1;
-    if ((*(u8 *)0x03004227 != 0x14) || (*(u8 *)0x0300423C == 0) || (*(u8 *)0x03004224 == 2)) {
-        ((void (*)(void))*(u32 *)(0x02034E0C + ((*(u8 *)((u8 *)((void *)0x03004B80) + (0x1F))) * 4)))();
+    gIslandFieldWork.entity_active[0] = 1;
+    gIslandFieldWork.entity_active[1] = 1;
+    if ((gIslander.move_proc_idx != 0x14) || (gIslander.sub_move_action == 0) || (gIslander._84 == 2)) {
+        ((void (*)(void))*(u32 *)(0x02034E0C + (gPlayer.state * 4)))();
     }
 }
 

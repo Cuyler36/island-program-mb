@@ -1,4 +1,6 @@
 gGlobalStructure = 0x03000010;
+/* Original address: 0x03000020 */
+sFloatingItemIndex = 0x03000020;
 gIntrTable = 0x030023C0;
 /* Original address: 0x03003100 */
 gMsgGlyph = 0x03003100;

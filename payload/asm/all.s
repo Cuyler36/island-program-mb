@@ -11774,7 +11774,7 @@ _0201DBEE:
 	adds r2, r2, r1
 	strh r0, [r2]
 	bl sub_020267D0
-	bl sub_02021574
+	bl Islander_UpdateMovement
 	movs r4, #0
 _0201DC2E:
 	adds r0, r6, r4
@@ -11973,7 +11973,7 @@ _0201DDC2:
 	ldrb r0, [r0]
 	cmp r0, #2
 	bne _0201DDDA
-	bl sub_02023B58
+	bl Islander_Draw
 _0201DDDA:
 	movs r6, #0
 	ldr r0, _0201DEA0 @ =0x00000417
@@ -12137,7 +12137,7 @@ _0201DEFE:
 	ldr r0, [sp, #4]
 	cmp r0, #0
 	bne _0201DF2E
-	bl sub_02023B58
+	bl Islander_Draw
 	movs r1, #1
 	str r1, [sp, #4]
 _0201DF2E:
@@ -12166,7 +12166,7 @@ _0201DF58:
 	ldr r1, [sp, #4]
 	cmp r1, #0
 	bne _0201DF62
-	bl sub_02023B58
+	bl Islander_Draw
 _0201DF62:
 	movs r0, #1
 	movs r1, #1
@@ -13885,8 +13885,8 @@ _0201EC5A:
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_0201EC6C
-sub_0201EC6C: @ 0x0201EC6C
+	thumb_func_start FieldObject_UpdateTopple
+FieldObject_UpdateTopple: @ 0x0201EC6C
 	push {r4, r5, lr}
 	lsls r1, r0, #1
 	adds r1, r1, r0
@@ -14933,10 +14933,10 @@ _0201F440:
 	beq _0201F4B4
 	movs r0, #1
 	adds r1, r5, #0
-	bl sub_020207C0
+	bl Islander_MoveTowardX
 	movs r0, #1
 	adds r1, r6, #0
-	bl sub_02020814
+	bl Islander_MoveTowardY
 	movs r2, #0x20
 	ldrsh r0, [r4, r2]
 	movs r2, #0x24
@@ -14960,23 +14960,23 @@ _0201F498: .4byte 0x020338F8
 _0201F49C:
 	movs r0, #0
 	adds r1, r5, #0
-	bl sub_020207C0
+	bl Islander_MoveTowardX
 	cmp r0, #0
 	beq _0201F4CA
 	movs r0, #0
 	adds r1, r6, #0
-	bl sub_02020814
+	bl Islander_MoveTowardY
 	str r7, [r4, #0x20]
 	b _0201F51C
 _0201F4B4:
 	movs r0, #0
 	adds r1, r6, #0
-	bl sub_02020814
+	bl Islander_MoveTowardY
 	cmp r0, #0
 	beq _0201F4CE
 	movs r0, #0
 	adds r1, r5, #0
-	bl sub_020207C0
+	bl Islander_MoveTowardX
 	movs r0, #0
 _0201F4CA:
 	str r0, [r4, #0x24]
@@ -15400,7 +15400,7 @@ _0201F7DA:
 	bne _0201F7F2
 	lsls r0, r4, #0x18
 	lsrs r0, r0, #0x18
-	bl sub_0201F844
+	bl Islander_CanMoveInDirection
 	cmp r0, #0
 	bne _0201F7F2
 	movs r0, #1
@@ -15449,8 +15449,8 @@ _0201F836:
 	.align 2, 0
 _0201F840: .4byte 0x00000777
 
-	thumb_func_start sub_0201F844
-sub_0201F844: @ 0x0201F844
+	thumb_func_start Islander_CanMoveInDirection
+Islander_CanMoveInDirection: @ 0x0201F844
 	push {r4, r5, lr}
 	lsls r0, r0, #0x18
 	lsrs r0, r0, #0x18
@@ -16010,8 +16010,8 @@ _0201FCA4: .4byte 0x02033F80
 _0201FCA8: .4byte 0x00001918
 _0201FCAC: .4byte 0x0202F8EC
 
-	thumb_func_start sub_0201FCB0
-sub_0201FCB0: @ 0x0201FCB0
+	thumb_func_start Islander_UpdateBlink
+Islander_UpdateBlink: @ 0x0201FCB0
 	push {r4, lr}
 	ldr r2, _0201FD04 @ =0x030041A0
 	adds r0, r2, #0
@@ -16069,8 +16069,8 @@ _0201FD16:
 	pop {r0}
 	bx r0
 
-	thumb_func_start sub_0201FD1C
-sub_0201FD1C: @ 0x0201FD1C
+	thumb_func_start Islander_FaceTargetAndCheckArrival
+Islander_FaceTargetAndCheckArrival: @ 0x0201FD1C
 	push {r4, r5, lr}
 	ldr r4, _0201FD6C @ =0x030041A0
 	ldr r2, [r4]
@@ -16305,8 +16305,8 @@ _0201FEC6:
 	.align 2, 0
 _0201FED0: .4byte 0x030041A0
 
-	thumb_func_start sub_0201FED4
-sub_0201FED4: @ 0x0201FED4
+	thumb_func_start Islander_SpawnReactionEffect
+Islander_SpawnReactionEffect: @ 0x0201FED4
 	push {r4, r5, r6, r7, lr}
 	lsls r0, r0, #0x18
 	lsrs r7, r0, #0x18
@@ -16600,8 +16600,8 @@ _02020106:
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_02020118
-sub_02020118: @ 0x02020118
+	thumb_func_start Islander_SelectTreeApproach
+Islander_SelectTreeApproach: @ 0x02020118
 	push {r4, r5, r6, lr}
 	adds r4, r0, #0
 	ldr r3, _02020130 @ =0x030041A0
@@ -16809,8 +16809,8 @@ _02020296:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_0202029C
-sub_0202029C: @ 0x0202029C
+	thumb_func_start Islander_SetupTreeApproach
+Islander_SetupTreeApproach: @ 0x0202029C
 	push {r4, r5, r6, r7, lr}
 	mov r7, sl
 	mov r6, sb
@@ -17039,7 +17039,7 @@ _02020442:
 	ldr r1, [r2, #0x30]
 	ldr r2, [r2, #0x34]
 	ldr r0, [sp, #0xc]
-	bl sub_02020118
+	bl Islander_SelectTreeApproach
 	add sp, #0x10
 	pop {r3, r4, r5}
 	mov r8, r3
@@ -17078,7 +17078,7 @@ Islander_DecideTreeAction: @ 0x02020480
 _020204A4: .4byte 0x030041A0
 _020204A8: .4byte 0x03003710
 _020204AC:
-	bl sub_0202086C
+	bl Islander_FindNearbyTree
 	adds r2, r0, #0
 	cmp r2, #0
 	bne _020204BE
@@ -17200,7 +17200,7 @@ _02020580:
 	ldr r0, _020205C0 @ =0x03003C00
 	adds r1, r1, r0
 	adds r0, r1, #0
-	bl sub_0202029C
+	bl Islander_SetupTreeApproach
 	cmp r0, #0
 	beq _020205C4
 	adds r0, r5, #0
@@ -17406,7 +17406,7 @@ _020206F2:
 	subs r1, #0x2b
 	movs r0, #2
 	strb r0, [r1]
-	bl sub_02021720
+	bl Islander_StartWandering
 	b _02020788
 	.align 2, 0
 _02020734: .4byte 0x0000049A
@@ -17481,8 +17481,8 @@ _020207A8:
 	.align 2, 0
 _020207BC: .4byte 0x030041A0
 
-	thumb_func_start sub_020207C0
-sub_020207C0: @ 0x020207C0
+	thumb_func_start Islander_MoveTowardX
+Islander_MoveTowardX: @ 0x020207C0
 	push {r4, r5, r6, lr}
 	adds r4, r1, #0
 	lsls r0, r0, #0x18
@@ -17531,8 +17531,8 @@ _0202080E:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_02020814
-sub_02020814: @ 0x02020814
+	thumb_func_start Islander_MoveTowardY
+Islander_MoveTowardY: @ 0x02020814
 	push {r4, r5, r6, lr}
 	adds r5, r1, #0
 	lsls r0, r0, #0x18
@@ -17583,8 +17583,8 @@ _02020864:
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_0202086C
-sub_0202086C: @ 0x0202086C
+	thumb_func_start Islander_FindNearbyTree
+Islander_FindNearbyTree: @ 0x0202086C
 	push {lr}
 	ldr r3, _020208AC @ =0x030041A0
 	movs r2, #0
@@ -17629,8 +17629,8 @@ _020208B8:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_020208BC
-sub_020208BC: @ 0x020208BC
+	thumb_func_start Islander_TryInteractWithBuriedItem
+Islander_TryInteractWithBuriedItem: @ 0x020208BC
 	push {r4, r5, r6, lr}
 	lsls r0, r0, #0x18
 	ldr r4, _02020920 @ =0x030041A0
@@ -17860,8 +17860,8 @@ _02020A72:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_02020A78
-sub_02020A78: @ 0x02020A78
+	thumb_func_start Islander_TryDropTool
+Islander_TryDropTool: @ 0x02020A78
 	push {r4, r5, r6, r7, lr}
 	mov r7, r8
 	push {r7}
@@ -18485,8 +18485,8 @@ _02020F4C:
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_02020F54
-sub_02020F54: @ 0x02020F54
+	thumb_func_start Islander_TryStartFishing
+Islander_TryStartFishing: @ 0x02020F54
 	push {r4, r5, r6, r7, lr}
 	ldr r5, _02020F98 @ =0x030041A0
 	movs r7, #0
@@ -18621,8 +18621,8 @@ _0202104A:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_02021050
-sub_02021050: @ 0x02021050
+	thumb_func_start Islander_TakeCurrentTileItem
+Islander_TakeCurrentTileItem: @ 0x02021050
 	push {r4, lr}
 	ldr r3, _02021088 @ =0x030041A0
 	ldr r2, _0202108C @ =0x03003710
@@ -18688,8 +18688,8 @@ _020210C2:
 _020210CC: .4byte 0x00007777
 _020210D0: .4byte 0x03001B40
 
-	thumb_func_start sub_020210D4
-sub_020210D4: @ 0x020210D4
+	thumb_func_start Islander_TryInteractWithCurrentTile
+Islander_TryInteractWithCurrentTile: @ 0x020210D4
 	push {r4, r5, r6, r7, lr}
 	mov r7, sl
 	mov r6, sb
@@ -18793,7 +18793,7 @@ _02021190: .4byte 0x0202F7FC
 _02021194:
 	movs r0, #1
 _02021196:
-	bl sub_020208BC
+	bl Islander_TryInteractWithBuriedItem
 	cmp r0, #2
 	bne _020211A0
 	b _020212E2
@@ -18841,7 +18841,7 @@ _020211DA:
 	lsrs r0, r0, #0x10
 	cmp r0, #7
 	bhi _02021220
-	bl sub_02021050
+	bl Islander_TakeCurrentTileItem
 	adds r2, r4, #0
 	adds r2, #0x72
 	movs r1, #0
@@ -18871,7 +18871,7 @@ _02021220:
 	cmp r0, #0
 	bne _020212B8
 _0202122A:
-	bl sub_02021050
+	bl Islander_TakeCurrentTileItem
 	lsls r0, r0, #0x10
 	lsrs r0, r0, #0x10
 	mov sl, r0
@@ -18982,8 +18982,8 @@ _020212E4:
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_020212F4
-sub_020212F4: @ 0x020212F4
+	thumb_func_start Islander_TryStartDigging
+Islander_TryStartDigging: @ 0x020212F4
 	push {r4, r5, lr}
 	ldr r4, _02021340 @ =0x030041A0
 	ldr r3, _02021344 @ =0x03003710
@@ -19302,8 +19302,8 @@ _02021568: .4byte 0x0600C800
 _0202156C: .4byte 0x03001B40
 _02021570: .4byte 0x00006234
 
-	thumb_func_start sub_02021574
-sub_02021574: @ 0x02021574
+	thumb_func_start Islander_UpdateMovement
+Islander_UpdateMovement: @ 0x02021574
 	push {r4, r5, lr}
 	ldr r4, _020215C0 @ =0x030041A0
 	ldr r0, _020215C4 @ =0x03003710
@@ -19459,7 +19459,7 @@ _02021674:
 	adds r1, #0x87
 	movs r0, #2
 	strb r0, [r1]
-	bl sub_02021720
+	bl Islander_StartWandering
 	adds r1, r4, #0
 	adds r1, #0x9a
 	movs r0, #0x40
@@ -19521,8 +19521,8 @@ _02021710:
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_02021720
-sub_02021720: @ 0x02021720
+	thumb_func_start Islander_StartWandering
+Islander_StartWandering: @ 0x02021720
 	push {r4, r5, r6, lr}
 	ldr r5, _02021768 @ =0x030041A0
 	movs r6, #0
@@ -19597,7 +19597,7 @@ sub_020217AC: @ 0x020217AC
 	push {r4, r5, r6, lr}
 	ldr r4, _02021818 @ =0x030041A0
 	movs r6, #0
-	bl sub_0201FCB0
+	bl Islander_UpdateBlink
 	adds r1, r4, #0
 	adds r1, #0x7e
 	ldrh r0, [r1]
@@ -19644,7 +19644,7 @@ _020217EE:
 	lsls r0, r0, #5
 	cmp r1, r0
 	bls _0202181C
-	bl sub_02020A78
+	bl Islander_TryDropTool
 	cmp r0, #0
 	beq _02021820
 	strh r6, [r5]
@@ -19655,13 +19655,13 @@ _0202181C:
 	adds r0, r1, #1
 	strh r0, [r5]
 _02021820:
-	bl sub_020210D4
+	bl Islander_TryInteractWithCurrentTile
 	cmp r0, #0
 	bne _020218AA
-	bl sub_02020F54
+	bl Islander_TryStartFishing
 	cmp r0, #0
 	bne _020218AA
-	bl sub_020212F4
+	bl Islander_TryStartDigging
 	adds r5, r0, #0
 	cmp r5, #0
 	bne _020218AA
@@ -19671,7 +19671,7 @@ _02021820:
 	ldr r1, [r4, #0x14]
 	cmp r1, #0
 	beq _02021860
-	bl sub_0201FD1C
+	bl Islander_FaceTargetAndCheckArrival
 	cmp r0, #0
 	beq _02021860
 	adds r1, r4, #0
@@ -19712,7 +19712,7 @@ _02021870:
 	adds r1, #0x87
 	movs r0, #2
 	strb r0, [r1]
-	bl sub_02021720
+	bl Islander_StartWandering
 	b _020218AA
 	.align 2, 0
 _0202189C: .4byte 0x00000777
@@ -19738,7 +19738,7 @@ IslanderMoveAction_MoveToTarget: @ 0x020218B0
 	mov sb, r0
 	movs r6, #0
 	movs r7, #0
-	bl sub_0201FCB0
+	bl Islander_UpdateBlink
 	ldr r1, [r5, #0x14]
 	ldr r2, _02021940 @ =0xFFFF0000
 	adds r0, r1, #0
@@ -19828,7 +19828,7 @@ _02021968:
 	adds r1, #0x87
 	movs r0, #5
 	strb r0, [r1]
-	bl sub_02021AD8
+	bl Islander_StartFoodProcessing
 	b _02021AB4
 _02021976:
 	ldr r0, [r5, #0x10]
@@ -19935,7 +19935,7 @@ _02021A2A:
 	adds r1, #0x87
 	movs r0, #2
 	strb r0, [r1]
-	bl sub_02021720
+	bl Islander_StartWandering
 	b _02021AB4
 _02021A46:
 	adds r1, r5, #0
@@ -20017,8 +20017,8 @@ _02021ACC:
 	pop {r0}
 	bx r0
 
-	thumb_func_start sub_02021AD8
-sub_02021AD8: @ 0x02021AD8
+	thumb_func_start Islander_StartFoodProcessing
+Islander_StartFoodProcessing: @ 0x02021AD8
 	push {r4, r5, lr}
 	ldr r5, _02021B2C @ =0x030041A0
 	adds r2, r5, #0
@@ -20626,7 +20626,7 @@ _02021F4A:
 	adds r0, #0x87
 	mov r3, sb
 	strb r3, [r0]
-	bl sub_02021720
+	bl Islander_StartWandering
 _02021F76:
 	ldr r1, _02021FA0 @ =0x02033680
 	ldr r2, [sp, #4]
@@ -20908,7 +20908,7 @@ _020221A6:
 	adds r1, #0x87
 	movs r0, #2
 	strb r0, [r1]
-	bl sub_02021720
+	bl Islander_StartWandering
 _020221B8:
 	pop {r4, r5, r6}
 	pop {r0}
@@ -20976,7 +20976,7 @@ _0202222C:
 	adds r1, #0x87
 	movs r0, #2
 	strb r0, [r1]
-	bl sub_02021720
+	bl Islander_StartWandering
 	b _020222F0
 	.align 2, 0
 _0202223C: .4byte 0x00000FFF
@@ -20986,7 +20986,7 @@ _02022248: .4byte 0x0202F7FC
 _0202224C:
 	movs r0, #0
 	movs r1, #0x30
-	bl sub_0201FED4
+	bl Islander_SpawnReactionEffect
 	adds r1, r4, #0
 	adds r1, #0x98
 	movs r0, #0x30
@@ -21100,13 +21100,13 @@ Islander_CheckClickedOnTimer: @ 0x020222F8
 	adds r0, r1, #0
 	subs r0, #0x40
 	strb r0, [r2]
-	bl sub_02020A78
+	bl Islander_TryDropTool
 _02022330:
 	adds r1, r4, #0
 	adds r1, #0x87
 	movs r0, #2
 	strb r0, [r1]
-	bl sub_02021720
+	bl Islander_StartWandering
 	b _020223A6
 	.align 2, 0
 _02022340: .4byte 0x030041A0
@@ -21137,7 +21137,7 @@ _0202236C:
 	strb r5, [r0]
 	movs r0, #1
 	movs r1, #0x30
-	bl sub_0201FED4
+	bl Islander_SpawnReactionEffect
 	movs r0, #0x30
 	strb r0, [r7]
 	b _020223A6
@@ -21806,7 +21806,7 @@ Islander_Fishing_State1: @ 0x02022858
 	strh r2, [r0]
 	movs r0, #0
 	movs r1, #0x30
-	bl sub_0201FED4
+	bl Islander_SpawnReactionEffect
 	adds r1, r4, #0
 	adds r1, #0x9c
 	movs r0, #2
@@ -22058,7 +22058,7 @@ _02022A4C:
 _02022A68:
 	movs r0, #3
 	movs r1, #0x30
-	bl sub_0201FED4
+	bl Islander_SpawnReactionEffect
 	adds r0, r4, #0
 	adds r0, #0x8b
 	ldrb r0, [r0]
@@ -22159,7 +22159,7 @@ _02022B2C:
 	adds r1, #0x87
 	movs r0, #2
 	strb r0, [r1]
-	bl sub_02021720
+	bl Islander_StartWandering
 _02022B38:
 	movs r0, #0
 	str r0, [r4, #0x40]
@@ -22272,7 +22272,7 @@ Islander_Fishing_State7: @ 0x02022BE0
 	adds r1, #0x87
 	movs r0, #2
 	strb r0, [r1]
-	bl sub_02021720
+	bl Islander_StartWandering
 _02022C04:
 	pop {r4}
 	pop {r0}
@@ -22381,7 +22381,7 @@ Islander_DespawnFlyingItem: @ 0x02022CAC
 	adds r1, #0x87
 	movs r0, #2
 	strb r0, [r1]
-	bl sub_02021720
+	bl Islander_StartWandering
 	b _02022E32
 	.align 2, 0
 _02022CD0: .4byte 0x030041A0
@@ -22463,7 +22463,7 @@ _02022D64:
 	adds r4, r1, #0
 	movs r0, #3
 	movs r1, #0x30
-	bl sub_0201FED4
+	bl Islander_SpawnReactionEffect
 _02022D70:
 	ldr r1, _02022D94 @ =0x02033680
 	ldrb r0, [r4]
@@ -22674,7 +22674,7 @@ _02022F10:
 	adds r1, #0x87
 	movs r0, #2
 	strb r0, [r1]
-	bl sub_02021720
+	bl Islander_StartWandering
 _02022F20:
 	pop {r4}
 	pop {r0}
@@ -23272,7 +23272,7 @@ _020233A2:
 	adds r5, r1, #0
 	movs r0, #3
 	movs r1, #0x30
-	bl sub_0201FED4
+	bl Islander_SpawnReactionEffect
 _020233AE:
 	ldr r1, _020233E0 @ =0x02033680
 	ldrb r0, [r5]
@@ -23786,7 +23786,7 @@ _02023760:
 	bne _02023792
 	movs r0, #4
 	movs r1, #0x20
-	bl sub_0201FED4
+	bl Islander_SpawnReactionEffect
 	movs r0, #0x25
 	bl sub_02026A38
 _02023792:
@@ -24087,7 +24087,7 @@ _020239D4: @ jump table
 _020239EC:
 	movs r0, #1
 	movs r1, #0x30
-	bl sub_0201FED4
+	bl Islander_SpawnReactionEffect
 	adds r1, r5, #0
 	adds r1, #0x89
 	movs r0, #0
@@ -24274,8 +24274,8 @@ Islander_MoveAction20_Move: @ 0x02023B38
 _02023B50: .4byte 0x030041A0
 _02023B54: .4byte 0x020338A4
 
-	thumb_func_start sub_02023B58
-sub_02023B58: @ 0x02023B58
+	thumb_func_start Islander_Draw
+Islander_Draw: @ 0x02023B58
 	push {r4, r5, r6, r7, lr}
 	mov r7, sl
 	mov r6, sb
@@ -28937,7 +28937,7 @@ _02025C74:
 	strb r0, [r6]
 	movs r0, #2
 	movs r1, #0x30
-	bl sub_0201FED4
+	bl Islander_SpawnReactionEffect
 	adds r2, r4, #0
 	adds r2, #0x8d
 	ldrb r1, [r2]

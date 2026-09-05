@@ -1110,7 +1110,8 @@ typedef struct Entity {
     u16 _44;
     u16 _46;
     u16 _48;
-    u16 _4A;
+    /* 0x4A */ u8 _4A;
+    /* 0x4B */ u8 _4B;
     u8 item_tile_frame;
     u8 _4D;
     u8 type;
@@ -1394,6 +1395,9 @@ typedef enum IslanderMoveAction20Phase {
 typedef void (*IslanderBuryStateProc)(void);
 extern IslanderBuryStateProc IslanderSubMoveAction_BuryProcTbl[6];
 
+/* Original address: 0x0203380C */
+extern void (*IslanderMoveProcTable[21])(void);
+
 typedef enum IslanderEmotion {
     ISLANDER_EMOTION_NEUTRAL = 0,
     ISLANDER_EMOTION_ANGRY,
@@ -1549,14 +1553,30 @@ extern u8 gIslanderAnimMirrorFlags[ISLANDER_ANIM_NUM];
 extern u8 gMoveAction11ObjectAnimFrames[9];
 extern u8 gMoveAction11EmotionSpawnOffsets[4];
 extern EntitySpawnParams gMoveAction11EntitySpawnParams[39];
+/* Original address: 0x02033B30 */
+extern EntitySpawnParams sFlyingItemFruitParams[6];
+/* Original address: 0x02033B48 */
+extern EntitySpawnParams sFlyingItemParams[160];
+/* Original address: 0x02033DC8 */
+extern u8 sFloatingItemHourOffsets[24];
+/* Original address: 0x02033DE4 */
+extern u16 sFloatingItemBaseIndices[18 * 7];
+/* Original address: 0x02033F92 */
+extern u8 sIslanderRewardAdjust[18];
+/* Original address: 0x03000020 */
+extern s32 sFloatingItemIndex;
 extern u8 gIslanderFavoriteHours[18];
 extern IslanderFoodPreference ISLANDER_FOOD_PREFERENCES;
 /* Original address: 0x020338DC */
 extern IslanderDirectionSector gIslanderDirectionSectors[8];
 extern BuriedItemUpdateGroup gBuriedItemUpdateGroups[6];
+/* Original address: 0x020338C4 */
+extern u16 sIslanderMoodEmotions[7];
 extern BuriedItemRngTileGroup gBuriedItemRngTileGroups[13];
 extern u8 gBuriedItemGeneratorIndices[0x120];
 extern ItemGeneratorDef gItemGeneratorDefs[38];
+/* Original address: 0x02033F80 */
+extern mActor_name_t sIslanderFlowerItems[9];
 
 /* sizeof(Islander_AGB) == 0xC0 */
 typedef struct Islander_AGB {
@@ -1570,10 +1590,10 @@ typedef struct Islander_AGB {
     /* 0x1C */ s32 _1C;
     /* 0x20 */ s32 dir_x;
     /* 0x24 */ s32 dir_y;
-    /* 0x28 */ s32 _28;
-    /* 0x2C */ s32 _2C;
-    /* 0x30 */ s32 _30;
-    /* 0x34 */ s32 _34;
+    /* Original address: 0x030041C8 */
+    /* 0x28 */ s32 tree_approach_work[2]; /* tile indices, then horizontal distance scores */
+    /* Original address: 0x030041D0 */
+    /* 0x30 */ s32 tree_approach_x[2]; /* right and left approach positions */
     /* 0x38 */ s32 _38;
     /* 0x3C */ s32 _3C;
     /* 0x40 */ s32 _40;

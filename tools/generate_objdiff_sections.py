@@ -81,9 +81,13 @@ DATA_OBJECTS = (
     DataObject("sIslanderAnimFrames", 0x90FC, 0x08E0, "islander_frames"),
     DataObject("sIslanderAnimFrameLists", 0x99DC, 0x060C, "islander_frame_list"),
     DataObject("gIslanderAnimData", 0x9FE8, 0x0188, "islander_anim_table", True),
+    # Original address: 0x0203380C
+    DataObject("IslanderMoveProcTable", 0xA174, 0x0054, "thumb_functions", True),
     DataObject("sIslanderMoveAction11SubMoveProcs", 0xA1C8, 0x000C, "thumb_functions"),
     DataObject("sIslanderFishingSubMoveProcs", 0xA1D4, 0x0020, "thumb_functions"),
     DataObject("sIslanderReceiveItemSubMoveProcs", 0xA220, 0x000C, "thumb_functions"),
+    # Original address: 0x020338C4
+    DataObject("sIslanderMoodEmotions", 0xA22C, 0x000E, global_symbol=True),
     # Original address: 0x020338D2
     DataObject("sIslanderTreeActionChances", 0xA23A, 0x0008, global_symbol=True),
     DataObject("gIslanderDirectionSectors", 0xA244, 0x0020, global_symbol=True),
@@ -91,11 +95,25 @@ DATA_OBJECTS = (
     DataObject("sFishingRewardItemTypes", 0xA2E4, 0x0080),
     DataObject("sIslanderCollisionSampleOffsets", 0xA364, 0x0020),
     DataObject("collision_check_offsets", 0xA384, 0x0010),
+    # Original address: 0x02033A2C
+    DataObject("gIslanderMoveCollisionOffsets", 0xA394, 0x0040, global_symbol=True),
     DataObject("sIslanderMoveSteps", 0xA3EC, 0x0040, global_symbol=True),
     DataObject("gIslanderAnimMirrorFlags", 0xA42C, 0x0062, global_symbol=True),
     DataObject("gMoveAction11ObjectAnimFrames", 0xA48F, 0x0009, global_symbol=True),
+    # Original address: 0x02033B30
+    DataObject("sFlyingItemFruitParams", 0xA498, 0x18, global_symbol=True),
+    # Original address: 0x02033B48
+    DataObject("sFlyingItemParams", 0xA4B0, 0x280, global_symbol=True),
+    # Original address: 0x02033DC8
+    DataObject("sFloatingItemHourOffsets", 0xA730, 0x18, global_symbol=True),
     DataObject("gMoveAction11EmotionSpawnOffsets", 0xA748, 0x0004, global_symbol=True),
+    # Original address: 0x02033DE4
+    DataObject("sFloatingItemBaseIndices", 0xA74C, 0xFC, global_symbol=True),
     DataObject("gMoveAction11EntitySpawnParams", 0xA848, 0x009C, global_symbol=True),
+    # Original address: 0x02033F80
+    DataObject("sIslanderFlowerItems", 0xA8E8, 0x12, global_symbol=True),
+    # Original address: 0x02033F92
+    DataObject("sIslanderRewardAdjust", 0xA8FA, 0x12, global_symbol=True),
     DataObject("gIslanderFavoriteHours", 0xA90C, 0x0012, global_symbol=True),
     DataObject("ISLANDER_FOOD_PREFERENCES", 0xA91E, 0x00AC, global_symbol=True),
     DataObject("gItemGeneratorDefs", 0xB65C, 0x0098, global_symbol=True),
@@ -119,6 +137,8 @@ BSS_OBJECTS = (
     BssObject("_03000018", 0x03000018, 0x0004),
     BssObject("sMsgPreviousTextRow", 0x0300001C, 0x0001),
     BssObject("sMsgPreviousTextX", 0x0300001D, 0x0001),
+    # Original address: 0x03000020
+    BssObject("sFloatingItemIndex", 0x03000020, 4, global_symbol=True),
     BssObject("gGameState", 0x03001B50, 0x0864, global_symbol=True),
     BssObject("gUnk3002410", 0x03002410, 0x0400),
     BssObject("sMsgWindows", 0x03002A20, 0x05A0),
