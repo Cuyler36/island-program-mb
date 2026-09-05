@@ -488,6 +488,11 @@
 #define REG_SIOMULTI2   (*(vu16 *)REG_ADDR_SIOMULTI2)
 #define REG_SIOMULTI3   (*(vu16 *)REG_ADDR_SIOMULTI3)
 
+#define REG_JOYCNT      (*(vu16 *)REG_ADDR_JOYCNT)
+#define REG_JOYSTAT     (*(vu16 *)REG_ADDR_JOYSTAT)
+#define REG_JOY_RECV    (*(vu32 *)REG_ADDR_JOY_RECV)
+#define REG_JOY_TRANS   (*(vu32 *)REG_ADDR_JOY_TRANS)
+
 #define REG_KEYINPUT    (*(vu16 *)REG_ADDR_KEYINPUT)
 #define REG_KEYCNT      (*(vu16 *)REG_ADDR_KEYCNT)
 

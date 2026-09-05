@@ -1,5 +1,19 @@
 gGlobalStructure = 0x03000010;
 gIntrTable = 0x030023C0;
+/* Original address: 0x03003100 */
+gMsgGlyph = 0x03003100;
+/* Original address: 0x030031D0 */
+gIslandProgramWork = 0x030031D0;
+/* Original addresses: 0x02000100, 0x02000102, 0x02000120, and 0x02000122 */
+time_of_day_palette_buffer0 = 0x02000100;
+current_time_of_day_palette0 = 0x02000102;
+time_of_day_palette_buffer1 = 0x02000120;
+current_time_of_day_palette1 = 0x02000122;
+/* Original addresses: 0x02000180, 0x02000190, 0x020001C0, and 0x020001D6 */
+time_of_day_palette_buffer2 = 0x02000180;
+current_time_of_day_palette2 = 0x02000190;
+time_of_day_palette_buffer3 = 0x020001C0;
+current_time_of_day_palette3 = 0x020001D6;
 
 /* TODO deal with these proper */
 

@@ -7608,8 +7608,8 @@ sub_0201BB7C: @ 0x0201BB7C
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_0201BB88
-sub_0201BB88: @ 0x0201BB88
+	thumb_func_start IslandProgram_ApplyPendingMode
+IslandProgram_ApplyPendingMode: @ 0x0201BB88
 	push {lr}
 	adds r3, r0, #0
 	adds r2, r3, #0
@@ -7633,8 +7633,8 @@ _0201BBAC:
 	.align 2, 0
 _0201BBB0: .4byte 0x0202B2BC
 
-	thumb_func_start sub_0201BBB4
-sub_0201BBB4: @ 0x0201BBB4
+	thumb_func_start IslandProgram_EnterNormalMode
+IslandProgram_EnterNormalMode: @ 0x0201BBB4
 	push {r4, lr}
 	adds r2, r0, #0
 	adds r4, r2, #0
@@ -7665,8 +7665,8 @@ _0201BBEC: .4byte 0x03001B50
 _0201BBF0: .4byte 0x00000816
 _0201BBF4: .4byte 0x0000085A
 
-	thumb_func_start sub_0201BBF8
-sub_0201BBF8: @ 0x0201BBF8
+	thumb_func_start IslandProgram_UpdateNormalMode
+IslandProgram_UpdateNormalMode: @ 0x0201BBF8
 	push {r4, lr}
 	adds r4, r0, #0
 	ldr r0, _0201BC38 @ =0x0203E9A0
@@ -7719,7 +7719,7 @@ _0201BC4C:
 	bne _0201BC78
 _0201BC66:
 	adds r0, r4, #0
-	bl sub_0201BB88
+	bl IslandProgram_ApplyPendingMode
 	b _0201BC96
 	.align 2, 0
 _0201BC70: .4byte 0x03001B50
@@ -7750,8 +7750,8 @@ _0201BC96:
 _0201BC9C: .4byte 0x03001B50
 _0201BCA0: .4byte 0x00000856
 
-	thumb_func_start sub_0201BCA4
-sub_0201BCA4: @ 0x0201BCA4
+	thumb_func_start IslandProgram_EnterFieldLoadMode
+IslandProgram_EnterFieldLoadMode: @ 0x0201BCA4
 	push {r4, r5, r6, lr}
 	adds r2, r0, #0
 	adds r2, #0x57
@@ -7849,8 +7849,8 @@ _0201BD70: .4byte 0x00000826
 _0201BD74: .4byte 0x00000828
 _0201BD78: .4byte 0x0000083E
 
-	thumb_func_start sub_0201BD7C
-sub_0201BD7C: @ 0x0201BD7C
+	thumb_func_start IslandProgram_UpdateFieldLoadMode
+IslandProgram_UpdateFieldLoadMode: @ 0x0201BD7C
 	push {r4, r5, lr}
 	adds r5, r0, #0
 	bl sub_0201D904
@@ -7865,14 +7865,14 @@ sub_0201BD7C: @ 0x0201BD7C
 	cmp r0, #1
 	bne _0201BDA2
 	adds r0, r5, #0
-	bl sub_0201BB88
+	bl IslandProgram_ApplyPendingMode
 _0201BDA2:
 	pop {r4, r5}
 	pop {r0}
 	bx r0
 
-	thumb_func_start sub_0201BDA8
-sub_0201BDA8: @ 0x0201BDA8
+	thumb_func_start IslandProgram_EnterMosaicCoverMode
+IslandProgram_EnterMosaicCoverMode: @ 0x0201BDA8
 	push {lr}
 	adds r3, r0, #0
 	adds r3, #0x57
@@ -7887,8 +7887,8 @@ sub_0201BDA8: @ 0x0201BDA8
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_0201BDC4
-sub_0201BDC4: @ 0x0201BDC4
+	thumb_func_start IslandProgram_UpdateMosaicCoverMode
+IslandProgram_UpdateMosaicCoverMode: @ 0x0201BDC4
 	push {r4, lr}
 	adds r4, r0, #0
 	movs r0, #1
@@ -7900,14 +7900,14 @@ sub_0201BDC4: @ 0x0201BDC4
 	cmp r0, #1
 	bne _0201BDE2
 	adds r0, r4, #0
-	bl sub_0201BB88
+	bl IslandProgram_ApplyPendingMode
 _0201BDE2:
 	pop {r4}
 	pop {r0}
 	bx r0
 
-	thumb_func_start sub_0201BDE8
-sub_0201BDE8: @ 0x0201BDE8
+	thumb_func_start IslandProgram_EnterMosaicRevealMode
+IslandProgram_EnterMosaicRevealMode: @ 0x0201BDE8
 	push {r4, r5, lr}
 	adds r2, r0, #0
 	adds r2, #0x57
@@ -7946,8 +7946,8 @@ _0201BE30: .4byte 0x00000816
 _0201BE34: .4byte 0x00000842
 _0201BE38: .4byte 0x00000844
 
-	thumb_func_start sub_0201BE3C
-sub_0201BE3C: @ 0x0201BE3C
+	thumb_func_start IslandProgram_UpdateMosaicRevealMode
+IslandProgram_UpdateMosaicRevealMode: @ 0x0201BE3C
 	push {r4, lr}
 	adds r4, r0, #0
 	movs r0, #0
@@ -7970,8 +7970,8 @@ _0201BE5A:
 _0201BE60: .4byte 0x03001B50
 _0201BE64: .4byte 0x0000085A
 
-	thumb_func_start sub_0201BE68
-sub_0201BE68: @ 0x0201BE68
+	thumb_func_start IslandProgram_EnterMessageMode
+IslandProgram_EnterMessageMode: @ 0x0201BE68
 	push {r4, r5, lr}
 	adds r4, r0, #0
 	ldr r5, _0201BEAC @ =0x03002FC0
@@ -8081,7 +8081,7 @@ sub_0201BF10: @ 0x0201BF10
 	cmp r0, #1
 	bne _0201BF40
 	adds r0, r4, #0
-	bl sub_0201BB88
+	bl IslandProgram_ApplyPendingMode
 _0201BF40:
 	adds r0, r4, #0
 	bl sub_0201B594
@@ -11867,7 +11867,7 @@ sub_0201DCE4: @ 0x0201DCE4
 	cmp r0, #2
 	bne _0201DD0E
 	bl sub_0201D7AC
-	bl sub_020213DC
+	bl RestoreHeldItemsToField
 	ldr r0, _0201DD1C @ =0x03001B50
 	ldr r1, _0201DD20 @ =0x00000857
 	adds r0, r0, r1
@@ -11897,7 +11897,7 @@ sub_0201DD24: @ 0x0201DD24
 	cmp r0, #2
 	bne _0201DD4E
 	bl sub_0201D7AC
-	bl sub_020213DC
+	bl RestoreHeldItemsToField
 	ldr r0, _0201DD5C @ =0x03001B50
 	ldr r1, _0201DD60 @ =0x0000084F
 	adds r0, r0, r1
@@ -11927,7 +11927,7 @@ sub_0201DD64: @ 0x0201DD64
 	cmp r0, #2
 	bne _0201DD84
 	bl sub_0201D7AC
-	bl sub_020213DC
+	bl RestoreHeldItemsToField
 	movs r0, #3
 	strb r0, [r4]
 _0201DD84:
@@ -12142,7 +12142,7 @@ _0201DEFE:
 	str r1, [sp, #4]
 _0201DF2E:
 	adds r0, r6, #0
-	bl sub_0201EF44
+	bl FieldObject_Draw
 _0201DF34:
 	mov r6, r8
 	cmp r6, #0
@@ -14010,8 +14010,8 @@ _0201ED48:
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_0201ED50
-sub_0201ED50: @ 0x0201ED50
+	thumb_func_start FieldObject_Deactivate
+FieldObject_Deactivate: @ 0x0201ED50
 	ldr r1, _0201ED60 @ =0x03003710
 	adds r1, r1, r0
 	ldr r0, _0201ED64 @ =0x0000044D
@@ -14023,8 +14023,8 @@ sub_0201ED50: @ 0x0201ED50
 _0201ED60: .4byte 0x03003710
 _0201ED64: .4byte 0x0000044D
 
-	thumb_func_start sub_0201ED68
-sub_0201ED68: @ 0x0201ED68
+	thumb_func_start FieldObject_DrawSprite
+FieldObject_DrawSprite: @ 0x0201ED68
 	push {r4, r5, r6, r7, lr}
 	mov r7, r8
 	push {r7}
@@ -14254,8 +14254,8 @@ _0201EF38: .4byte 0x000001FF
 _0201EF3C: .4byte 0xFFFFFE00
 _0201EF40: .4byte 0x00000846
 
-	thumb_func_start sub_0201EF44
-sub_0201EF44: @ 0x0201EF44
+	thumb_func_start FieldObject_Draw
+FieldObject_Draw: @ 0x0201EF44
 	push {r4, lr}
 	adds r4, r0, #0
 	lsls r0, r4, #1
@@ -14299,7 +14299,7 @@ _0201EF7E:
 	ldr r1, _0201EFB4 @ =0x0202FF78
 	adds r0, r0, r1
 	adds r1, r4, #0
-	bl sub_0201ED68
+	bl FieldObject_DrawSprite
 _0201EF9C:
 	pop {r4}
 	pop {r0}
@@ -14481,8 +14481,8 @@ _0201F0F0:
 	.align 2, 0
 _0201F0F8: .4byte 0x00004350
 
-	thumb_func_start sub_0201F0FC
-sub_0201F0FC: @ 0x0201F0FC
+	thumb_func_start Islander_SetupDigApproach
+Islander_SetupDigApproach: @ 0x0201F0FC
 	push {r4, r5, r6, r7, lr}
 	mov r7, sl
 	mov r6, sb
@@ -14797,14 +14797,14 @@ _0201F356:
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_0201F368
-sub_0201F368: @ 0x0201F368
+	thumb_func_start Islander_CanDigHere
+Islander_CanDigHere: @ 0x0201F368
 	push {r4, r5, lr}
 	ldr r4, _0201F39C @ =0x030041A0
 	adds r0, r4, #0
 	adds r0, #0x8b
 	ldrb r0, [r0]
-	bl sub_0201F538
+	bl Islander_UpdateCollisionTiles
 	movs r5, #0
 _0201F378:
 	lsls r1, r5, #1
@@ -15042,8 +15042,8 @@ _0201F52A:
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_0201F538
-sub_0201F538: @ 0x0201F538
+	thumb_func_start Islander_UpdateCollisionTiles
+Islander_UpdateCollisionTiles: @ 0x0201F538
 	push {r4, r5, r6, r7, lr}
 	mov r7, sb
 	mov r6, r8
@@ -17212,7 +17212,7 @@ _02020580:
 	adds r1, #0x87
 	movs r0, #4
 	strb r0, [r1]
-	bl sub_020218B0
+	bl IslanderMoveAction_MoveToTarget
 	movs r0, #1
 	b _020205D2
 	.align 2, 0
@@ -17235,8 +17235,8 @@ _020205D2:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_020205E0
-sub_020205E0: @ 0x020205E0
+	thumb_func_start Islander_MoveWithCollision
+Islander_MoveWithCollision: @ 0x020205E0
 	push {r4, r5, r6, lr}
 	ldr r4, _02020634 @ =0x030041A0
 	ldr r6, _02020638 @ =0x03003710
@@ -17287,7 +17287,7 @@ _0202063C: .4byte 0x02033A84
 _02020640: .4byte 0x000FFF00
 _02020644:
 	ldrb r0, [r3]
-	bl sub_0201F538
+	bl Islander_UpdateCollisionTiles
 	movs r2, #0
 	movs r5, #0
 	b _02020652
@@ -17435,7 +17435,7 @@ _02020740:
 	adds r1, #0x87
 	movs r0, #4
 	strb r0, [r1]
-	bl sub_020218B0
+	bl IslanderMoveAction_MoveToTarget
 	b _02020788
 	.align 2, 0
 _02020774: .4byte 0x03003BC4
@@ -17737,7 +17737,7 @@ _02020980:
 	cmp r5, r0
 	blt _020209D4
 	movs r0, #0xf1
-	bl sub_0201F0FC
+	bl Islander_SetupDigApproach
 	lsls r0, r0, #0x10
 	cmp r0, #0
 	beq _020209D4
@@ -17755,7 +17755,7 @@ _02020980:
 	adds r1, #0x19
 	movs r0, #4
 	strb r0, [r1]
-	bl sub_020218B0
+	bl IslanderMoveAction_MoveToTarget
 	movs r0, #2
 	b _020209DA
 	.align 2, 0
@@ -17891,13 +17891,13 @@ _02020A9C:
 	lsls r0, r0, #0x10
 	lsrs r5, r0, #0x10
 _02020AAE:
-	bl sub_0201F368
+	bl Islander_CanDigHere
 	cmp r0, #0
 	beq _02020B7C
 	adds r0, r6, #0
 	adds r0, #0x8b
 	ldrb r0, [r0]
-	bl sub_0201F538
+	bl Islander_UpdateCollisionTiles
 	adds r4, r6, #0
 	adds r4, #0x8e
 	ldrb r0, [r4]
@@ -19047,11 +19047,11 @@ _02021356:
 	bl __modsi3
 	cmp r0, #5
 	bgt _020213D4
-	bl sub_0201F368
+	bl Islander_CanDigHere
 	cmp r0, #0
 	beq _020213D4
 	movs r0, #0xf1
-	bl sub_0201F0FC
+	bl Islander_SetupDigApproach
 	lsls r0, r0, #0x10
 	cmp r0, #0
 	beq _020213D4
@@ -19086,7 +19086,7 @@ _020213AE:
 	adds r1, #0x19
 	movs r0, #4
 	strb r0, [r1]
-	bl sub_020218B0
+	bl IslanderMoveAction_MoveToTarget
 	movs r0, #2
 	b _020213D6
 	.align 2, 0
@@ -19099,8 +19099,8 @@ _020213D6:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_020213DC
-sub_020213DC: @ 0x020213DC
+	thumb_func_start RestoreHeldItemsToField
+RestoreHeldItemsToField: @ 0x020213DC
 	push {r4, r5, r6, r7, lr}
 	mov r7, sb
 	mov r6, r8
@@ -19330,7 +19330,7 @@ sub_02021574: @ 0x02021574
 _020215A4:
 	cmp r1, #3
 	bne _020215AC
-	bl sub_020205E0
+	bl Islander_MoveWithCollision
 _020215AC:
 	ldr r0, _020215CC @ =0x0203380C
 	ldrb r1, [r5]
@@ -19727,8 +19727,8 @@ _020218AA:
 	pop {r0}
 	bx r0
 
-	thumb_func_start sub_020218B0
-sub_020218B0: @ 0x020218B0
+	thumb_func_start IslanderMoveAction_MoveToTarget
+IslanderMoveAction_MoveToTarget: @ 0x020218B0
 	push {r4, r5, r6, r7, lr}
 	mov r7, sb
 	mov r6, r8
@@ -20859,7 +20859,7 @@ _02022118:
 	subs r1, #3
 	movs r0, #4
 	strb r0, [r1]
-	bl sub_020218B0
+	bl IslanderMoveAction_MoveToTarget
 	b _020221B8
 	.align 2, 0
 _02022158: .4byte 0x02033680
@@ -21309,7 +21309,7 @@ _02022474:
 	subs r1, #0x12
 	movs r0, #4
 	strb r0, [r1]
-	bl sub_020218B0
+	bl IslanderMoveAction_MoveToTarget
 _020224C6:
 	pop {r4, r5, r6}
 	pop {r0}
@@ -23586,7 +23586,7 @@ _020235D0:
 	adds r1, #0x19
 	movs r0, #4
 	strb r0, [r1]
-	bl sub_020218B0
+	bl IslanderMoveAction_MoveToTarget
 _0202361A:
 	movs r0, #0
 	strh r0, [r7]
@@ -24169,7 +24169,7 @@ _02023A80:
 	adds r0, r5, #0
 	adds r0, #0x8b
 	ldrb r0, [r0]
-	bl sub_0201F538
+	bl Islander_UpdateCollisionTiles
 	movs r7, #0
 	adds r4, r5, #0
 	adds r4, #0x48

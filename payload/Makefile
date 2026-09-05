@@ -63,7 +63,7 @@ AIF_BINS := $(AIF_SRCS:%.aif=%.bin)
 
 CC1 := ../tools/agbcc/bin/agbcc
 CPPFLAGS := -I ../tools/agbcc/include -iquote include -nostdinc -undef
-CFLAGS := -O2 -g -mthumb-interwork -fhex-asm -Wimplicit -Werror
+CFLAGS := -O2 -g -mthumb-interwork -fhex-asm -Wimplicit -Werror -ffix-debug-line
 ASFLAGS := -mcpu=arm7tdmi -I include
 LIBS := -L../../../tools/agbcc/lib -lgcc -lc
 LIBC_CPPFLAGS := -DABORT_PROVIDED -DHAVE_GETTIMEOFDAY -D__thumb__ \

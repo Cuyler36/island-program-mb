@@ -67,7 +67,16 @@ DATA_OBJECTS = (
     DataObject("sMsgControlCodeHandlers", 0x126C, 0x01C4, "thumb_functions"),
     DataObject("gMsgWindowScrollOffsets", 0x148C, 0x0030),
     DataObject("sMsgControlCodeInfo", 0x14BC, 0x01C4),
+    # Original address: 0x0202AFBC
+    DataObject("sJoybootGbaHandshake", 0x1924, 0x0004, global_symbol=True),
+    # Original address: 0x0202AFC4
+    DataObject("sJoybootGameCubeHandshake", 0x192C, 0x0004, global_symbol=True),
+    DataObject("sTimeOfDayPalette2Table", 0x197C, 0x0180, global_symbol=True),
+    DataObject("sTimeOfDayPalette3Table", 0x1AFC, 0x00F0, global_symbol=True),
+    DataObject("sIslandProgramModeEnterProcs", 0x1C24, 0x0018, "thumb_functions", True),
     DataObject("g_ItemDefinitions", 0x6164, 0x0420, global_symbol=True),
+    DataObject("gFieldObjectSpriteFrameIndices", 0x6848, 0x0098, global_symbol=True),
+    DataObject("gFieldObjectSpriteFrames", 0x68E0, 0x0180, global_symbol=True),
     DataObject("sIslanderOamData", 0x6A94, 0x2668),
     DataObject("sIslanderAnimFrames", 0x90FC, 0x08E0, "islander_frames"),
     DataObject("sIslanderAnimFrameLists", 0x99DC, 0x060C, "islander_frame_list"),
@@ -75,14 +84,25 @@ DATA_OBJECTS = (
     DataObject("sIslanderMoveAction11SubMoveProcs", 0xA1C8, 0x000C, "thumb_functions"),
     DataObject("sIslanderFishingSubMoveProcs", 0xA1D4, 0x0020, "thumb_functions"),
     DataObject("sIslanderReceiveItemSubMoveProcs", 0xA220, 0x000C, "thumb_functions"),
+    # Original address: 0x020338D2
+    DataObject("sIslanderTreeActionChances", 0xA23A, 0x0008, global_symbol=True),
+    DataObject("gIslanderDirectionSectors", 0xA244, 0x0020, global_symbol=True),
+    DataObject("sFishingRewardGeneratorIndices", 0xA264, 0x0080),
+    DataObject("sFishingRewardItemTypes", 0xA2E4, 0x0080),
+    DataObject("sIslanderCollisionSampleOffsets", 0xA364, 0x0020),
+    DataObject("collision_check_offsets", 0xA384, 0x0010),
+    DataObject("sIslanderMoveSteps", 0xA3EC, 0x0040, global_symbol=True),
     DataObject("gIslanderAnimMirrorFlags", 0xA42C, 0x0062, global_symbol=True),
     DataObject("gMoveAction11ObjectAnimFrames", 0xA48F, 0x0009, global_symbol=True),
     DataObject("gMoveAction11EmotionSpawnOffsets", 0xA748, 0x0004, global_symbol=True),
     DataObject("gMoveAction11EntitySpawnParams", 0xA848, 0x009C, global_symbol=True),
     DataObject("gIslanderFavoriteHours", 0xA90C, 0x0012, global_symbol=True),
     DataObject("ISLANDER_FOOD_PREFERENCES", 0xA91E, 0x00AC, global_symbol=True),
+    DataObject("gItemGeneratorDefs", 0xB65C, 0x0098, global_symbol=True),
+    DataObject("time_of_day_palettes", 0xB84C, 0x00C0, global_symbol=True),
     DataObject("gMsgTextData", 0xB90C, 0x07D2),
     DataObject("sMsgOffsets", 0xC0E0, 0x007C),
+    DataObject("sBgPalettes", 0xC15C, 0x0200),
 )
 
 ISLANDER_OAM_ADDRESS = DATA_ADDRESS + 0x6A94
@@ -102,6 +122,7 @@ BSS_OBJECTS = (
     BssObject("gGameState", 0x03001B50, 0x0864, global_symbol=True),
     BssObject("gUnk3002410", 0x03002410, 0x0400),
     BssObject("sMsgWindows", 0x03002A20, 0x05A0),
+    BssObject("gTransmissionBuf_p", 0x03003120, 0x0040, global_symbol=True),
     BssObject("gIslandFieldWork", 0x03003710, 0x04A0, global_symbol=True),
     BssObject("gIslandBuildings", 0x03003BB0, 0x0028, global_symbol=True),
     BssObject("gFieldObjects", 0x03003C00, 0x05A0, global_symbol=True),
@@ -247,6 +268,9 @@ def generate_assembly(text_object: Path, data_path: Path) -> str:
                 raise ValueError(f"pointer table {obj.name} is not word-sized")
             for pointer_offset in range(obj.offset, obj.offset + obj.size, 4):
                 pointer = struct.unpack_from("<I", data, pointer_offset)[0]
+                if pointer == 0:
+                    lines.append("    .4byte 0")
+                    continue
                 try:
                     function_name = functions[pointer]
                 except KeyError as error:

@@ -20,7 +20,7 @@
     {
       "name": "payload/text",
       "target_path": "payload/build/objdiff/all.text.target.o",
-      "base_path": "payload/build/objdiff/all.base.o",
+      "base_path": "payload/build/payload/src/all.o",
       "scratch": {
         "platform": "gba",
         "compiler": "agbcc",

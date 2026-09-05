@@ -668,6 +668,7 @@ typedef struct agb_landinfo_s {
     u8 name[LAND_NAME_SIZE];
     s8 exists;
     u16 id;
+    u8 _pad[4];
 } mISL_landinfo_agb_c;
 
 typedef struct agb_floor_s {
@@ -767,7 +768,6 @@ typedef struct island_agb_s {
     /* 0x0011 */ u8 _0011[2];
     /* 0x0013 */ u8 in_use; /* Set on the GBA when the island has been transferred already */
     /* 0x0014 */ mISL_landinfo_agb_c landinfo; /* land info for town */
-    /* 0x0020 */ u8 _0020[4];
     /* 0x0024 */ mFM_fg_c fgblock[mISL_FG_BLOCK_Z_NUM][mISL_FG_BLOCK_X_NUM]; /* island item actor data */
     /* 0x0424 */ u8 _0424[4];
     /* 0x0428 */ mISL_cottage_agb_c cottage; /* player shared cottage data */
@@ -791,10 +791,18 @@ typedef struct island_agb_s {
 /* Pointer to the island save/runtime image currently being edited. */
 extern Island_agb_c* gIslandData;
 
+enum {
+    mEnv_WEATHER_CLEAR,
+    mEnv_WEATHER_RAIN,
+
+    mEnv_WEATHER_NUM
+};
+
 
 typedef struct GameState {
     u32 unk_000;
-    u8 pad_004[0x8];
+    int _004;
+    int _008;
     u32 rngValue;
     u32 game_time_frames; // time of day represented by number of frames
     u8 pad_014[0x814 - 0x14];
@@ -1045,6 +1053,15 @@ typedef struct FieldObject {
     /* 0x2E */ u8 pad_2E[2];
 } FieldObject;
 
+/* sizeof(FieldObjectSpriteFrame) == 0x10; records at 0x0202FF78. */
+typedef struct FieldObjectSpriteFrame {
+    /* 0x00 */ u32 oam_attributes;
+    /* 0x04 */ s32 y_offset;
+    /* 0x08 */ s32 x_offset;
+    /* 0x0C */ u16 tile_num;
+    /* 0x0E */ u16 unused;
+} FieldObjectSpriteFrame;
+
 /* State for the hand controlled by the player. */
 /* sizeof(Player) == 0x2C */
 typedef struct Player {
@@ -1231,7 +1248,88 @@ typedef struct mMsg_Window_s {
     u8 _81[0xA0 - 0x81];
 } mMsg_Window_c;
 
+/* Joy Bus transfer state used by JoybootHandler. */
+/* sizeof(JoybusTransferWork) == 0x40 */
+typedef struct JoybusTransferWork {
+    /* 0x00 */ u32* buffer;
+    /* 0x04 */ s32 word_index;
+    /* 0x08 */ s32 transfer_size;
+    /* 0x0C */ s32 packet_index;
+    /* 0x10 */ u8 _10[8];
+    /* 0x18 */ u32 command;
+    /* 0x1C */ u32 packet_checksum;
+    /* 0x20 */ u32 total_checksum;
+    /* 0x24 */ s8 checksum_result;
+    /* 0x25 */ s8 result;
+    /* 0x26 */ u8 enabled;
+    /* 0x27 */ u8 _27[2];
+    /* 0x29 */ u8 connected;
+    /* 0x2A */ u8 interrupt_count;
+    /* 0x2B */ u8 _2B[0x15];
+} JoybusTransferWork;
+
+/* Main menu/message state used by the island program. */
+/* sizeof(IslandProgramWork) == 0x80 */
+typedef struct IslandProgramWork {
+    /* 0x00 */ u8 _00[8];
+    /* 0x08 */ mMsg_Window_c* _08;
+    /* 0x0C */ mMsg_Window_c* _0C;
+    /* 0x10 */ mMsg_Window_c* _10;
+    /* 0x14 */ mMsg_Window_c* current_window;
+    /* 0x18 */ s32 elapsed_milliseconds;
+    /* 0x1C */ u8 _1C[0xC];
+    /* 0x28 */ s32 wait_timer;
+    /* 0x2C */ s16 input_timer;
+    /* 0x2E */ u8 _2E[6];
+    /* 0x34 */ u16 _34;
+    /* 0x36 */ u16 _36;
+    /* 0x38 */ u8 _38[0xC];
+    /* 0x44 */ u16 _44;
+    /* 0x46 */ u16 _46;
+    /* 0x48 */ u16 _48;
+    /* 0x4A */ u8 _4A[6];
+    /* 0x50 */ s8 _50;
+    /* 0x51 */ u8 _51;
+    /* 0x52 */ s8 mode;
+    /* 0x53 */ s8 _53;
+    /* 0x54 */ s8 _54;
+    /* 0x55 */ s8 _55;
+    /* 0x56 */ u8 _56;
+    /* 0x57 */ s8 pending_mode;
+    /* 0x58 */ s8 _58;
+    /* 0x59 */ s8 _59;
+    /* 0x5A */ s8 _5A;
+    /* 0x5B */ u8 _5B[2];
+    /* 0x5D */ s8 _5D;
+    /* 0x5E */ s8 _5E;
+    /* 0x5F */ s8 _5F;
+    /* 0x60 */ s8 _60;
+    /* 0x61 */ u8 _61;
+    /* 0x62 */ s8 _62;
+    /* 0x63 */ s8 time_of_day;
+    /* 0x64 */ u8 window_ready[5];
+    /* 0x69 */ u8 _69;
+    /* 0x6A */ s8 _6A;
+    /* 0x6B */ u8 _6B[2];
+    /* 0x6D */ u8 _6D;
+    /* 0x6E */ u8 _6E;
+    /* 0x6F */ u8 _6F;
+    /* 0x70 */ u8 _70;
+    /* 0x71 */ u8 _71;
+    /* 0x72 */ u8 transition_requested;
+    /* 0x73 */ u8 weather_scroll;
+    /* 0x74 */ u8 retry_timer;
+    /* 0x75 */ u8 retry_result;
+    /* 0x76 */ u8 _76[0xA];
+} IslandProgramWork;
+
 typedef void (*mMsg_Callback)(mMsg_Window_c*);
+
+typedef void (*IslandProgramModeProc)(IslandProgramWork *work);
+
+/* Dispatch table indexed by IslandProgramWork.pending_mode; NULL entries are skipped. */
+/* Original address: 0x0202B2BC */
+extern IslandProgramModeProc const sIslandProgramModeEnterProcs[6];
 
 /* OAM layout used by the islander animation data. */
 typedef struct islander_oam_data_s {
@@ -1453,6 +1551,7 @@ extern u8 gMoveAction11EmotionSpawnOffsets[4];
 extern EntitySpawnParams gMoveAction11EntitySpawnParams[39];
 extern u8 gIslanderFavoriteHours[18];
 extern IslanderFoodPreference ISLANDER_FOOD_PREFERENCES;
+/* Original address: 0x020338DC */
 extern IslanderDirectionSector gIslanderDirectionSectors[8];
 extern BuriedItemUpdateGroup gBuriedItemUpdateGroups[6];
 extern BuriedItemRngTileGroup gBuriedItemRngTileGroups[13];
@@ -1478,11 +1577,9 @@ typedef struct Islander_AGB {
     /* 0x38 */ s32 _38;
     /* 0x3C */ s32 _3C;
     /* 0x40 */ s32 _40;
-    /* 0x44 */ s32 _44;
+    /* 0x44 */ u16 *_44; /* surrounding terrain tilemap */
     /* 0x48 */ u16 _48[4];
-    /* 0x50 */ u16 _50;
-    /* 0x52 */ u16 _52;
-    /* 0x54 */ u8 _54[4];
+    /* 0x50 */ u16 surrounding_tile_indices[4];
     /* 0x58 */ u16 _58;
     /* 0x5A */ u16 stored_item_tile_ids[5];
     /* 0x64 */ mActor_name_t stored_items[5];
@@ -1591,13 +1688,45 @@ extern u8* g020317a4;
 extern u8* g02038000;
 extern u8* g02038200;
 extern u32* gUnk_30008C0;
+/* Original address: 0x03003120 */
+extern JoybusTransferWork gTransmissionBuf_p;
+/* Original address: 0x030031D0 */
+extern IslandProgramWork gIslandProgramWork;
+/* Original address: 0x03001B50 */
 extern GameState gGameState;
+/* Original address: 0x03003710 */
 extern IslandFieldWork gIslandFieldWork;
 extern IslandBuilding gIslandBuildings[ISLAND_BUILDING_COUNT];
 extern FieldObject gFieldObjects[FIELD_OBJECT_COUNT];
+/* Original address: 0x0202FEE0 */
+extern u8 gFieldObjectSpriteFrameIndices[19 * 8];
+/* Original address: 0x0202FF78 */
+extern FieldObjectSpriteFrame gFieldObjectSpriteFrames[24];
 extern Player gPlayer;
 extern Entity g_EntityTable[12];
 extern ItemGroupStruct g_ItemDefinitions[ITEM_TYPE_COUNT];
+/* Original address: 0x02000102 */
+extern u16 current_time_of_day_palette0[4];
+/* Original address: 0x02000122 */
+extern u16 current_time_of_day_palette1[4];
+/* Original address: 0x02000190 */
+extern u16 current_time_of_day_palette2[8];
+/* Original address: 0x020001D6 */
+extern u16 current_time_of_day_palette3[5];
+/* Original address: 0x02000100 */
+extern u16 time_of_day_palette_buffer0[16];
+/* Original address: 0x02000120 */
+extern u16 time_of_day_palette_buffer1[16];
+/* Original address: 0x02000180 */
+extern u16 time_of_day_palette_buffer2[16];
+/* Original address: 0x020001C0 */
+extern u16 time_of_day_palette_buffer3[16];
+/* Original address: 0x0202B014 */
+extern const u16 sTimeOfDayPalette2Table[24][8];
+/* Original address: 0x0202B194 */
+extern const u16 sTimeOfDayPalette3Table[24][5];
+/* Original address: 0x02034EE4 */
+extern u16 time_of_day_palettes[24 * 4];
 extern u64 gUnk_30008D0[0x80];
 extern unk_struct_03000E30 gUnk_3000E30;
 extern unk_struct_03000E50 g03000E50;
@@ -1643,11 +1772,11 @@ void mMsg_Init(void);
 void mMsg_MainSetup_Window(mMsg_Window_c* msg);
 void mMsg_InitWindow(mMsg_Window_c* msg, u8* text, u8* tile_data);
 void mMsg_Main_Window(mMsg_Window_c* msg);
-s32 mFont_DrawStringToTiles(u8* tile_data, u16* cursor, u32 packed_position,
-                            u16 glyph_height, u8* text, s32 length, u8 palette,
+s32 mFont_DrawStringToTiles(u8* tile_data, u16* cursor, u16 y,
+                            u16 tile_stride, u8* text, s32 length, u8 palette,
                             u8 stop_at_newline, u8 fixed_width);
-void mFont_DrawCharToTiles(u8* tile_data, u16 tile_offset, u16 row,
-                           u16 tile_stride, u8 character, u8 palette, s32 width);
+void mFont_DrawCharToTiles(u8* tile_data, s32 tile_offset, s32 row,
+                           s32 tile_stride, s32 character, s32 palette, s32 width);
 void sub_020198B8(s8 index);
 void sub_02019910(u8 value, s8 index);
 void mFont_BlitGlyphToTiles(mFont_GlyphDraw_c* glyph, s32 width);

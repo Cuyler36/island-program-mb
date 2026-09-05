@@ -2089,6 +2089,7 @@ AnimFrameData** gIslanderAnimData[ISLANDER_ANIM_NUM] = {
     &sIslanderAnimFrameLists[377], /* ISLANDER_ANIM_61, 0x02033658 */
 };
 
+/* Original address: 0x020338DC */
 IslanderDirectionSector gIslanderDirectionSectors[8] = {
     { 0x1000, 6, 0 },
     { 0x3000, 7, 0 },
@@ -2211,7 +2212,7 @@ u8 gBuriedItemGeneratorIndices[0x120] = {
     0x24, 0x24, 0x18, 0x17, 0x18, 0x17, 0x1B, 0x1D, 0x16, 0x1A, 0x1C, 0x0D, 0x16, 0x1E, 0x0C, 0x0C,
 };
 
-/* 0x02034CF4 */
+/* Original address: 0x02034CF4 */
 ItemGeneratorDef gItemGeneratorDefs[38] = {
     { ITM_FOOD_APPLE,      ITEM_TYPE_APPLE, 0 },
     { ITM_FOOD_ORANGE,     ITEM_TYPE_ORANGE, 0 },

@@ -65,7 +65,7 @@ DATA_ASM_OBJS := $(DATA_ASM_SRCS:%.s=$(OBJ_DIR)/%.o)
 
 CC1 := tools/agbcc/bin/agbcc
 CPPFLAGS := -I tools/agbcc/include -iquote include -nostdinc -undef
-CFLAGS := -O3 -g3 -mthumb-interwork -fhex-asm -Wimplicit -Werror
+CFLAGS := -O3 -g3 -mthumb-interwork -fhex-asm -Wimplicit -Werror -ffix-debug-line
 ASFLAGS := -mcpu=arm7tdmi
 LIBS := -L../../tools/agbcc/lib -lgcc -lc
 
