@@ -104,8 +104,6 @@ extern AnimFrameData *sEntityLeafFrames[20];
 extern AnimFrameData **sEntityReactionAnimations[5];
 /* Original address: 0x02034E0C */
 extern void (*sPlayerHandUpdateProcs[6])(void);
-/* Original address: 0x02034ED4 */
-extern AnimFrameData **sPlayerHandAnimations[4];
 /* Original address: 0x020347E0 */
 extern void (*sEntityUpdateProcs[11])(s32);
 /* Original address: 0x0202AD34 */
@@ -114,11 +112,7 @@ extern const s16 sSineTable[320];
 /* Original address: 0x03003250 */
 extern m_msg_sprite_c gMsgSprites[12];
 /* Original address: 0x0202B2FC */
-extern const mMsg_SpriteProfile* const sMsgSpriteProfiles[13];
-/* Original address: 0x0202B378 */
-extern AnimFrameData* const sMsgContinuePromptAnimations[1];
-/* Original address: 0x0202B3DC */
-extern AnimFrameData* const sMsgChoiceCursorAnimations[1];
+extern mMsg_SpriteProfile* sMsgSpriteProfiles[13];
 
 /* Original address: 0x0203E9A0 */
 extern u16 gIslandDataReceived;
@@ -775,7 +769,8 @@ extern u16 gObjPaletteBuffer[256];
 
 /* These tables are indexed by the one-based mMsg_MODE_* values. */
 // #define gMsgModeSetupCallbacks ((mMsg_Callback*)0x0202AADC)
-#define gMsgModeCallbacks ((mMsg_Callback*)0x0202AB00)
+/* Original address: 0x0202AB00 */
+extern mMsg_Callback gMsgModeCallbacks[9];
 /* Original address: 0x0202AD18 */
 extern const u8 gMsgChoiceTemplateParams[4];
 /* Original address: 0x0202AD1C */
@@ -1812,14 +1807,14 @@ void mMsg_CopySpriteOam(m_msg_sprite_c *sprite, IslanderOamData *source, Islande
 void mMsg_UpdateAndDrawSprites(void);
 void sub_0201C5F8(void *arg0);
 void mMsg_ContinuePromptSetColor(s32 arg0);
-void mMsg_ContinuePromptCycleColor(void *arg0);
-void mMsg_ContinuePromptInit(void *arg0);
-void mMsg_ContinuePromptDestroy(void);
+void mMsg_ContinuePromptCycleColor(m_msg_sprite_c *sprite);
+void mMsg_ContinuePromptInit(m_msg_sprite_c *sprite);
+void mMsg_ContinuePromptDestroy(m_msg_sprite_c* sprite);
 void mMsg_ContinuePromptUpdate(m_msg_sprite_c* sprite);
 void mMsg_ContinuePromptDraw(m_msg_sprite_c* sprite);
-void mMsg_ChoiceCursorIdle(void *arg0);
-void mMsg_ChoiceCursorInit(void *arg0);
-void mMsg_ChoiceCursorDestroy(void);
+void mMsg_ChoiceCursorIdle(m_msg_sprite_c *sprite);
+void mMsg_ChoiceCursorInit(m_msg_sprite_c *sprite);
+void mMsg_ChoiceCursorDestroy(m_msg_sprite_c *sprite);
 void mMsg_ChoiceCursorUpdate(m_msg_sprite_c* sprite);
 void mMsg_ChoiceCursorDraw(m_msg_sprite_c* sprite);
 void InitIslandLinkTransfer(s32 arg0);
@@ -2106,7 +2101,8 @@ void ChangeEmotion(u8 arg0);
 typedef struct SoundTrack SoundTrack;
 void Sound_PlayEmotionNote(SoundTrack *arg0, u8 arg1, u8 arg2, u16 arg3);
 void Sound_ApplyEmotionTrackDelay(SoundTrack *arg0, u8 arg1);
-void SoundDriver_Init(const void *bank);
+typedef struct SoundBank SoundBank;
+void SoundDriver_Init(const SoundBank *bank);
 void SoundDriver_VBlank(void);
 void SoundDriver_Update(void);
 void SoundDriver_InitPcmBuffers(s8 *buffers);
@@ -2114,8 +2110,8 @@ void SoundDriver_SwapPcmBuffers(void);
 void SoundDriver_DisablePcm(void);
 void SoundDriver_EnablePcm(void);
 void SoundDriver_InitChannelLists(void);
-void Sound_UnlinkChannel(u8 *arg0);
 typedef struct SoundChannel SoundChannel;
+void Sound_UnlinkChannel(SoundChannel *channel);
 
 void Sound_InsertPcmChannelByPriority(SoundChannel *arg0);
 s32 Sound_NoteToPitch(SoundChannel *arg0, u8 arg1, u8 arg2);
@@ -2151,8 +2147,8 @@ u32 Sound_GetPlayerStatus(s32 arg0);
 void Sound_InitTracks(void);
 SoundTrack *Sound_FindFreeTrack(void);
 void Sound_StartTrack(SoundTrack *track, SoundPlayer *player, const u8 *sequence);
-void Sound_ReleaseTrackChannels(void **arg0);
-void Sound_StopTrack(void **arg0);
+void Sound_ReleaseTrackChannels(SoundTrack *track);
+void Sound_StopTrack(SoundTrack *track);
 s32 Sound_UpdateTrack(SoundTrack *track);
 void Sound_AttachChannelToTrack(SoundTrack *track, SoundChannel *channel);
 void Sound_DetachChannelFromTrack(SoundTrack *track, SoundChannel *channel);
@@ -2622,7 +2618,7 @@ void IslandProgram_SetDialogPalette(IslandProgramWork *work, s8 arg1) {
             }
             break;
     }
-    CpuFastSet((void *)0x020000E0, (void *)0x050000E0, 8U);
+    CpuFastSet(&gFieldPaletteBuffer[7 * 16], (void *)(BG_PLTT + PLTT_OFFSET_4BPP(7)), 8U);
 }
 
 /* Original address: 0x0201AA98 */
@@ -2649,7 +2645,7 @@ void IslandProgram_RestoreDialogDisplay(IslandProgramWork *work, s8 arg1) {
     if (arg1 == work->dialog_display_owner) {
         gGameState.bg3cnt = work->saved_bg3cnt;
         gGameState.dispcnt = work->saved_dispcnt;
-        if (*(u16 *)0x0203E9A0 == 1) {
+        if (gIslandDataReceived == 1) {
             gGameState.dispcnt &= 0xFDFF;
         }
         gGameState.bldy = work->saved_bldy;
@@ -2779,7 +2775,7 @@ s16 IslandProgram_PollJoybusSend(IslandProgramWork *work) {
     }
 
     if (work->notice_send_active == 0 && work->joybus_sending == 1 && (var_r3_5792 == 1)) {
-        *(u16 *)0x0203E9A0 = (u16) var_r3_5792;
+        gIslandDataReceived = (u16) var_r3_5792;
         gIslandData->in_use = TRUE;
     }
     return var_r3_5792;
@@ -3137,7 +3133,7 @@ void IslandProgram_SetupOverviewDisplay(void) {
     } else {
         gGameState.bg0cnt |= 0x000; // clear flag
     }
-    if (*(u16 *)0x0203E9A0 == 1) {
+    if (gIslandDataReceived == 1) {
         gGameState.dispcnt &= 0xFDFF;
     }
     gGameState.bg1_vofs = 0x100;
@@ -3487,13 +3483,13 @@ void IslandProgram_EnterNormalMode(IslandProgramWork *work) {
 
 /* Original address: 0x0201BBF8 */
 void IslandProgram_UpdateNormalMode(IslandProgramWork *work) {
-    if (*(u16 *)0x0203E9A0 == 0) {
+    if (gIslandDataReceived == 0) {
         if ((gGameState.keys.buttons.pressed & 9) && IslandProgram_RequestMosaicCoverMode(work) == 1) {
             IslandProgram_ApplyPendingMode(work);
             return;
         }
         if (gGameState.joybus_notice_requested != 0 ||
-            (*(u32 *)&gGameState.transfer_requested & 0x00FF00FF) != 0) {
+            (gGameState.transfer_requested != 0 || gGameState.sleep_requested != 0)) {
             work->transition_requested = 1;
         }
     } else {
@@ -3744,7 +3740,7 @@ void mMsg_InitSprites(void) {
     s32 sp0;
 
     sp0 = 0;
-    CpuFastSet(&sp0, (void *)0x03003250, 0x01000120U);
+    CpuFastSet(&sp0, gMsgSprites, 0x01000120U);
 }
 
 /* Original address: 0x0201C300 */
@@ -3885,43 +3881,47 @@ void sub_0201C5F8(void *arg0) {
 
 }
 
+/* Original address: 0x0202B37C */
+extern const u8 sMsgContinuePromptRed[8];
+/* Original address: 0x0202B384 */
+extern const u8 sMsgContinuePromptGreen[8];
+/* Original address: 0x0202B38C */
+extern const u8 sMsgContinuePromptBlue[8];
+
 /* Original address: 0x0201C5FC */
 void mMsg_ContinuePromptSetColor(s32 arg0) {
     u8 red[8];
     u8 green[8];
     u8 blue[8];
 
-    memcpy(red, (void *)0x0202B37C, sizeof(red));
-    memcpy(green, (void *)0x0202B384, sizeof(green));
-    memcpy(blue, (void *)0x0202B38C, sizeof(blue));
+    memcpy(red, sMsgContinuePromptRed, sizeof(red));
+    memcpy(green, sMsgContinuePromptGreen, sizeof(green));
+    memcpy(blue, sMsgContinuePromptBlue, sizeof(blue));
     SetPaletteColor(1U, 7U, 6U, red[arg0], green[arg0], blue[arg0]);
-    CpuFastSet((void *)0x020002E0, (void *)0x050002E0, 8U);
+    CpuFastSet(&gObjPaletteBuffer[7 * 16], (void *)(OBJ_PLTT + PLTT_OFFSET_4BPP(7)), 8U);
 }
 
 /* Original address: 0x0201C668 */
-void mMsg_ContinuePromptCycleColor(void *arg0) {
-    s32 temp_r0_9026;
-
-    mMsg_ContinuePromptSetColor(((*(s32 *)((u8 *)(arg0) + (0x18))) & 3) + ((*(s32 *)((u8 *)(arg0) + (0x14))) * 4));
-    temp_r0_9026 = (*(s32 *)((u8 *)(arg0) + (0x1C))) + 1;
-    (*(s32 *)((u8 *)(arg0) + (0x1C))) = temp_r0_9026;
-    if (temp_r0_9026 > 0xA) {
-        (*(s32 *)((u8 *)(arg0) + (0x18))) = (s32) ((*(s32 *)((u8 *)(arg0) + (0x18))) + 1);
-        (*(s32 *)((u8 *)(arg0) + (0x1C))) = 0;
+void mMsg_ContinuePromptCycleColor(m_msg_sprite_c *sprite) {
+    mMsg_ContinuePromptSetColor((sprite->color_phase & 3) + sprite->_14 * 4);
+    sprite->color_timer++;
+    if (sprite->color_timer > 10) {
+        sprite->color_phase++;
+        sprite->color_timer = 0;
     }
-    sub_0201C5F8(arg0);
+    sub_0201C5F8(sprite);
 }
 
 /* Original address: 0x0201C69C */
-void mMsg_ContinuePromptInit(void *arg0) {
-    mMsg_StartSpriteAnimation(arg0, sMsgContinuePromptAnimations, 0);
-    sub_0201C5F8(arg0);
-    (*(void (**)(void *))((u8 *)(arg0) + (0x10))) = mMsg_ContinuePromptCycleColor;
-    mMsg_ContinuePromptCycleColor(arg0);
+void mMsg_ContinuePromptInit(m_msg_sprite_c *sprite) {
+    mMsg_StartSpriteAnimation(sprite, sMsgContinuePromptAnimations, 0);
+    sub_0201C5F8(sprite);
+    sprite->state_proc = mMsg_ContinuePromptCycleColor;
+    sprite->state_proc(sprite);
 }
 
 /* Original address: 0x0201C6C8 */
-void mMsg_ContinuePromptDestroy(void) {
+void mMsg_ContinuePromptDestroy(m_msg_sprite_c* sprite) {
 
 }
 
@@ -3945,19 +3945,19 @@ void mMsg_ContinuePromptDraw(m_msg_sprite_c* sprite) {
 }
 
 /* Original address: 0x0201C740 */
-void mMsg_ChoiceCursorIdle(void *arg0) {
+void mMsg_ChoiceCursorIdle(m_msg_sprite_c *sprite) {
 
 }
 
 /* Original address: 0x0201C744 */
-void mMsg_ChoiceCursorInit(void *arg0) {
-    mMsg_StartSpriteAnimation(arg0, sMsgChoiceCursorAnimations, 0);
-    (*(void (**)(void *))((u8 *)(arg0) + (0x10))) = mMsg_ChoiceCursorIdle;
-    mMsg_ChoiceCursorIdle(arg0);
+void mMsg_ChoiceCursorInit(m_msg_sprite_c *sprite) {
+    mMsg_StartSpriteAnimation(sprite, sMsgChoiceCursorAnimations, 0);
+    sprite->state_proc = mMsg_ChoiceCursorIdle;
+    sprite->state_proc(sprite);
 }
 
 /* Original address: 0x0201C768 */
-void mMsg_ChoiceCursorDestroy(void) {
+void mMsg_ChoiceCursorDestroy(m_msg_sprite_c *sprite) {
 
 }
 
@@ -5408,9 +5408,9 @@ void FieldObject_HandleHit(s32 object_index) {
                 }
             }
             if (acre == 0) {
-                object->drop_tilemap = (u16 *)0x0600A000;
+                object->drop_tilemap = (u16 *)BG_SCREEN_ADDR(20);
             } else {
-                object->drop_tilemap = (u16 *)0x0600A800;
+                object->drop_tilemap = (u16 *)BG_SCREEN_ADDR(21);
             }
             object->drop_tilemap = object->drop_tilemap + ((object->drop_tile_y + object->drop_tile_x) & 0xF0) * 4 +
                                    ((object->drop_tile_y + object->drop_tile_x) & 0xF) * 2;
@@ -10338,10 +10338,10 @@ void FallingFruit_UpdateFall(s32 fruit_index) {
             do {
                 u16 *tilemap;
                 if (fruit->acre == 0) {
-                    tilemap = (u16 *)((0xFF0 & fruit->tile_idx) * 8 + 0x0600C000 + row_offset +
+                    tilemap = (u16 *)((0xFF0 & fruit->tile_idx) * 8 + BG_SCREEN_ADDR(24) + row_offset +
                                      (0xF & fruit->tile_idx) * 4);
                 } else {
-                    tilemap = (u16 *)((0xFF0 & fruit->tile_idx) * 8 + 0x0600C800 + row_offset +
+                    tilemap = (u16 *)((0xFF0 & fruit->tile_idx) * 8 + BG_SCREEN_ADDR(25) + row_offset +
                                      (0xF & fruit->tile_idx) * 4);
                 }
                 tilemap[0] = tile_offset + profile->ground_tile;
@@ -11481,9 +11481,12 @@ void PlayerHand_Draw(void) {
     } while (sprite->affine_param != 0xFFFF);
 }
 
+/* Original address: 0x02035BF4 */
+extern const SoundBank sSoundBank;
+
 /* Original address: 0x020269C8 */
 void Audio_Init(void) {
-    SoundDriver_Init((const void *)0x02035BF4);
+    SoundDriver_Init(&sSoundBank);
     Sound_InitMusic();
     Sound_InitEffects();
 }
@@ -11828,7 +11831,7 @@ typedef struct SoundInstrumentSplit {
 } SoundInstrumentSplit;
 
 /* sizeof(SoundBank) == 0x1C; table offsets are relative to each table. */
-typedef struct SoundBank {
+struct SoundBank {
     /* 0x00 */ const u32 *sample_offsets;
     /* 0x04 */ const u32 *instrument_offsets;
     /* 0x08 */ const u32 *music_sequence_offsets;
@@ -11836,7 +11839,7 @@ typedef struct SoundBank {
     /* 0x10 */ const u16 *sample_indices;
     /* 0x14 */ const u32 *music_bank_offsets;
     /* 0x18 */ const u32 *effect_bank_offsets;
-} SoundBank;
+};
 
 /* Original address: 0x03000268 */
 extern SoundInstrument sSoundKeySampleInstrument;
@@ -11996,7 +11999,7 @@ void Sound_ApplyEmotionTrackDelay(SoundTrack *arg0, u8 event) {
 }
 
 /* Original address: 0x02026E4C */
-void SoundDriver_Init(const void *bank) {
+void SoundDriver_Init(const SoundBank *bank) {
     gSoundBank = bank;
     *(vu8 *)REG_ADDR_SOUNDCNT_X = 0;
     *(vu8 *)REG_ADDR_SOUNDCNT_X = 0x80;
@@ -12027,7 +12030,7 @@ void SoundDriver_Update(void) {
     Sound_ProcessCommands();
     Sound_UpdatePlayers();
     Sound_UpdatePsgChannels();
-    if (*(u8 *)0x0300006B != 0) {
+    if (gSoundDmaEnabled != 0) {
         Sound_UpdatePcmChannels();
     }
 }
@@ -12067,7 +12070,7 @@ void SoundDriver_DisablePcm(void) {
 
 /* Original address: 0x02027068 */
 void SoundDriver_EnablePcm(void) {
-    *(s8 *)0x0300006B = 1;
+    gSoundDmaEnabled = 1;
 }
 
 /* Original address: 0x02027074 */
@@ -12101,9 +12104,9 @@ void SoundDriver_InitChannelLists(void) {
 }
 
 /* Original address: 0x020271FC */
-void Sound_UnlinkChannel(u8 *arg0) {
-    (*(void **)((u8 *)((*(void **)((u8 *)(arg0) + (0x6C)))) + (0x70))) = (void *) (*(void **)((u8 *)(arg0) + (0x70)));
-    (*(void **)((u8 *)((*(void **)((u8 *)(arg0) + (0x70)))) + (0x6C))) = (void *) (*(void **)((u8 *)(arg0) + (0x6C)));
+void Sound_UnlinkChannel(SoundChannel *channel) {
+    channel->prev->next = channel->next;
+    channel->next->prev = channel->prev;
 }
 
 
@@ -12624,7 +12627,7 @@ void Sound_PlayNote(SoundTrack *track, u8 key, u8 velocity, u16 duration) {
 void Sound_ReleaseChannel(SoundChannel *channel) {
     if (channel->state == 1 && channel->track->tie == 0) {
         if (channel->type == 0) {
-            Sound_UnlinkChannel((u8 *)channel);
+            Sound_UnlinkChannel(channel);
             channel->state = 2;
             Sound_InsertPcmChannelByPriority(channel);
         } else {
@@ -12669,7 +12672,7 @@ void Sound_StopChannel(SoundChannel *channel) {
     if (channel->state != 0) {
         switch (channel->type) {
         case 0:
-            Sound_UnlinkChannel((u8 *)channel);
+            Sound_UnlinkChannel(channel);
             channel->next = gSoundChannelLists.free_head.next;
             channel->prev = &gSoundChannelLists.free_head;
             gSoundChannelLists.free_head.next->prev = channel;
@@ -12760,7 +12763,7 @@ SoundChannel *Sound_AllocateChannel(u8 type, SoundTrack *track, u8 priority) {
             channel = active;
             Sound_StopChannel(channel);
         }
-        Sound_UnlinkChannel((u8 *)channel);
+        Sound_UnlinkChannel(channel);
         channel->state = 1;
         channel->priority = priority;
         Sound_InsertPcmChannelByPriority(channel);
@@ -13038,7 +13041,7 @@ void Sound_StopPlayer(s32 index) {
 
     if (player->status != 0) {
         for (i = 0; i < 10; i++) {
-            Sound_StopTrack((void **)player->tracks[i]);
+            Sound_StopTrack(player->tracks[i]);
             player->tracks[i] = NULL;
         }
         player->status = 0;
@@ -13108,7 +13111,7 @@ SoundTrack *Sound_FindFreeTrack(void) {
 void Sound_StartTrack(SoundTrack *track, SoundPlayer *player, const u8 *sequence) {
     if (track != NULL) {
         if (track->player != NULL)
-            Sound_StopTrack((void **)track);
+            Sound_StopTrack(track);
         track->tick_accumulator = 0;
         track->tie = 0;
         track->muted = 0;
@@ -13147,31 +13150,29 @@ void Sound_StartTrack(SoundTrack *track, SoundPlayer *player, const u8 *sequence
 }
 
 /* Original address: 0x02028580 */
-void Sound_ReleaseTrackChannels(void **arg0) {
-    u8 temp_r6_34368;
-    void *temp_r4_34376;
-    void *var_r0_34371;
+void Sound_ReleaseTrackChannels(SoundTrack *track) {
+    u8 tie;
+    SoundChannel *next;
+    SoundChannel *channel;
 
-    if (arg0 != NULL) {
-        temp_r6_34368 = (*(u8 *)((u8 *)(arg0) + (0x49)));
-        (*(u8 *)((u8 *)(arg0) + (0x49))) = 0U;
-        var_r0_34371 = (*(void **)((u8 *)(arg0) + (0xC)));
-        if (var_r0_34371 != NULL) {
-            do {
-                temp_r4_34376 = (*(void **)((u8 *)(var_r0_34371) + (0x78)));
-                Sound_ReleaseChannel((SoundChannel *)var_r0_34371);
-                var_r0_34371 = temp_r4_34376;
-            } while (var_r0_34371 != NULL);
+    if (track != NULL) {
+        tie = track->tie;
+        track->tie = 0;
+        channel = track->channel;
+        while (channel != NULL) {
+            next = channel->track_next;
+            Sound_ReleaseChannel(channel);
+            channel = next;
         }
-        (*(u8 *)((u8 *)(arg0) + (0x49))) = temp_r6_34368;
+        track->tie = tie;
     }
 }
 
 /* Original address: 0x020285B0 */
-void Sound_StopTrack(void **arg0) {
-    if (arg0 != NULL) {
-        Sound_ReleaseTrackChannels(arg0);
-        (*(s32 *)((u8 *)(arg0) + (8))) = 0;
+void Sound_StopTrack(SoundTrack *track) {
+    if (track != NULL) {
+        Sound_ReleaseTrackChannels(track);
+        track->player = NULL;
     }
 }
 
@@ -13193,7 +13194,7 @@ s32 Sound_UpdateTrack(SoundTrack *track) {
         return 1;
     player = track->player;
     if (player->control.flags & 1) {
-        Sound_ReleaseTrackChannels((void **)track);
+        Sound_ReleaseTrackChannels(track);
     } else {
         while (track->tick_accumulator <= 0) {
             command = *track->sequence++;
@@ -13239,7 +13240,7 @@ s32 Sound_UpdateTrack(SoundTrack *track) {
                 switch (command) {
                 case 0xFF: /* Return from a pattern, or end the track. */
                     if (track->stack_pointer == track->return_stack) {
-                        Sound_StopTrack((void **)track);
+                        Sound_StopTrack(track);
                         return 2;
                     }
                     track->sequence = *--track->stack_pointer;
@@ -13289,7 +13290,7 @@ s32 Sound_UpdateTrack(SoundTrack *track) {
                     break;
                 case 0xC5:
                 case 0xC6:
-                    Sound_ReleaseTrackChannels((void **)track);
+                    Sound_ReleaseTrackChannels(track);
                     track->tie = command == 0xC5;
                     break;
                 case 0xC8:
@@ -13327,7 +13328,7 @@ s32 Sound_UpdateTrack(SoundTrack *track) {
                         player->tracks[index] = child;
                     } else {
                         child = player->tracks[index];
-                        Sound_StopTrack((void **)child);
+                        Sound_StopTrack(child);
                     }
                     Sound_StartTrack(child, player, player->sequence + offset);
                     child->sample_offsets = track->sample_offsets;

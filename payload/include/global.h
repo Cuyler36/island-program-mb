@@ -1188,7 +1188,8 @@ typedef struct m_msg_sprite_s {
     void (*draw)(struct m_msg_sprite_s*);
     void (*state_proc)(struct m_msg_sprite_s*);
     s32 _14;
-    u8 _18[8];
+    /* 0x18 */ s32 color_phase;
+    /* 0x1C */ s32 color_timer;
     s32 offset_x;
     s32 offset_y;
     s32 _28;
@@ -1566,8 +1567,8 @@ typedef struct ItemGeneratorDef {
     u8 use_island_id;
 } ItemGeneratorDef;
 
-extern AnimFrameData** gIslanderAnimData[ISLANDER_ANIM_NUM];
-extern u8 gIslanderAnimMirrorFlags[ISLANDER_ANIM_NUM];
+extern AnimFrameData** gIslanderAnimData[ISLANDER_ANIM_NUM+1];
+extern u8 gIslanderAnimMirrorFlags[ISLANDER_ANIM_NUM+1];
 extern u8 gMoveAction11ObjectAnimFrames[9];
 extern u8 gMoveAction11EmotionSpawnOffsets[4];
 extern EntitySpawnParams gMoveAction11EntitySpawnParams[39];
@@ -1778,6 +1779,19 @@ extern u16 time_of_day_palettes[24 * 4];
 extern u64 gUnk_30008D0[0x80];
 extern unk_struct_03000E30 gUnk_3000E30;
 extern unk_struct_03000E50 g03000E50;
+extern mMsg_SpriteProfile mMsg_continue_prompt_sprite_profile;
+/* Original address: 0x0202B378 */
+extern AnimFrameData* sMsgContinuePromptAnimations[1];
+/* Original address: 0x0202B394 */
+extern mMsg_SpriteProfile mMsg_choice_cursor_sprite_profile;
+/* Original address: 0x0202B3A4 */
+extern IslanderOamData sMsgChoiceCursorAnimOamData[5];
+/* Original address: 0x0202B3CC */
+extern AnimFrameData sMsgChoiceCursorAnimData[2];
+/* Original address: 0x0202B3DC */
+extern AnimFrameData* sMsgChoiceCursorAnimations[1];
+/* Original address: 0x02034ED4 */
+extern AnimFrameData** sPlayerHandAnimations[4];
 void mFont_GetGlyphRows(void* lower_rows, void* upper_rows, u8 character);
 int mFont_GetGlyphWidth(u32 character);
 int mFont_GetCodeWidth(u32 character);
@@ -1828,6 +1842,14 @@ void mFont_DrawCharToTiles(u8* tile_data, s32 tile_offset, s32 row,
 void mFont_CopyTileBufferToVram(s8 index);
 void mFont_FillTileBuffer(u8 value, s8 index);
 void mFont_BlitGlyphToTiles(mFont_GlyphDraw_c* glyph, s32 width);
+void mMsg_ContinuePromptInit(m_msg_sprite_c *sprite);
+void mMsg_ContinuePromptDestroy(m_msg_sprite_c* sprite);
+void mMsg_ContinuePromptUpdate(m_msg_sprite_c* sprite);
+void mMsg_ContinuePromptDraw(m_msg_sprite_c* sprite);
+void mMsg_ChoiceCursorInit(m_msg_sprite_c *sprite);
+void mMsg_ChoiceCursorDestroy(m_msg_sprite_c *sprite);
+void mMsg_ChoiceCursorUpdate(m_msg_sprite_c* sprite);
+void mMsg_ChoiceCursorDraw(m_msg_sprite_c* sprite);
 s16 FixedMul8(s16 lhs, s16 rhs);
 s16 FixedDiv8(s16 numerator, s16 denominator);
 s32 rand_u16(GameState* state);

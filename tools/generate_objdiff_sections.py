@@ -99,11 +99,11 @@ DATA_OBJECTS = (
     # Original address: 0x0202B2D4
     DataObject("sIslandProgramModeUpdateProcs", 0x1C3C, 0x18, "thumb_functions", True),
     # Original address: 0x0202B2FC
-    DataObject("sMsgSpriteProfiles", 0x1C64, 0x34, global_symbol=True),
+    DataObject("sMsgSpriteProfiles", 0x1C64, 0x34, "data_pointers", global_symbol=True),
     # Original address: 0x0202B378
-    DataObject("sMsgContinuePromptAnimations", 0x1CE0, 4, global_symbol=True),
+    DataObject("sMsgContinuePromptAnimations", 0x1CE0, 4, "data_pointers", global_symbol=True),
     # Original address: 0x0202B3DC
-    DataObject("sMsgChoiceCursorAnimations", 0x1D44, 4, global_symbol=True),
+    DataObject("sMsgChoiceCursorAnimations", 0x1D44, 4, "data_pointers", global_symbol=True),
     # Original address: 0x0202B3FC
     DataObject("sIslandRightAcreTilemaps", 0x1D64, 0x2000, global_symbol=True),
     # Original address: 0x0202D3FC
@@ -142,7 +142,8 @@ DATA_OBJECTS = (
     DataObject("sIslanderOamData", 0x6A94, 0x2668, global_symbol=True),
     DataObject("sIslanderAnimFrames", 0x90FC, 0x08E0, "islander_frames", True),
     DataObject("sIslanderAnimFrameLists", 0x99DC, 0x060C, "islander_frame_list", True),
-    DataObject("gIslanderAnimData", 0x9FE8, 0x0188, "islander_anim_table", True),
+    # Original address: 0x02033680
+    DataObject("gIslanderAnimData", 0x9FE8, 0x018C, "islander_anim_table", True),
     # Original address: 0x0203380C
     DataObject("IslanderMoveProcTable", 0xA174, 0x0054, "thumb_functions", True),
     DataObject("sIslanderMoveAction11SubMoveProcs", 0xA1C8, 0x000C, "thumb_functions"),
@@ -160,7 +161,8 @@ DATA_OBJECTS = (
     # Original address: 0x02033A2C
     DataObject("gIslanderMoveCollisionOffsets", 0xA394, 0x0040, global_symbol=True),
     DataObject("sIslanderMoveSteps", 0xA3EC, 0x0040, global_symbol=True),
-    DataObject("gIslanderAnimMirrorFlags", 0xA42C, 0x0062, global_symbol=True),
+    # Original address: 0x02033AC4
+    DataObject("gIslanderAnimMirrorFlags", 0xA42C, 0x0063, global_symbol=True),
     DataObject("gMoveAction11ObjectAnimFrames", 0xA48F, 0x0009, global_symbol=True),
     # Original address: 0x02033B30
     DataObject("sFlyingItemFruitParams", 0xA498, 0x18, global_symbol=True),
@@ -194,7 +196,7 @@ DATA_OBJECTS = (
     # Original address: 0x02034E0C
     DataObject("sPlayerHandUpdateProcs", 0xB774, 0x18, "thumb_functions", True),
     # Original address: 0x02034ED4
-    DataObject("sPlayerHandAnimations", 0xB83C, 0x10, global_symbol=True),
+    DataObject("sPlayerHandAnimations", 0xB83C, 0x10, "data_pointers", global_symbol=True),
     DataObject("time_of_day_palettes", 0xB84C, 0x00C0, global_symbol=True),
     DataObject("gMsgTextData", 0xB90C, 0x07D2),
     DataObject("sMsgOffsets", 0xC0E0, 0x007C),
@@ -284,7 +286,7 @@ DATA_OBJECTS = tuple(sorted(DATA_OBJECTS + (
     # Original address: 0x0202AADC
     DataObject("gMsgModeSetupCallbacks", 0x1444, 0x24, "thumb_functions", global_symbol=True),
     # Original address: 0x0202AB00
-    DataObject("sData_0202AB00", 0x1468, 0x24, global_symbol=True),
+    DataObject("gMsgModeCallbacks", 0x1468, 0x24, global_symbol=True),
     # Original address: 0x0202AFC0
     DataObject("sData_0202AFC0", 0x1928, 0x4, global_symbol=True),
     # Original address: 0x0202AFC8
@@ -298,11 +300,25 @@ DATA_OBJECTS = tuple(sorted(DATA_OBJECTS + (
     # Original address: 0x0202B284
     DataObject("sIslandProgramTransferEnterProcs", 0x1BEC, 0x1C, "thumb_functions", global_symbol=True),
     # Original address: 0x0202B2EC
-    DataObject("sData_0202B2EC", 0x1C54, 0x10, global_symbol=True),
+    DataObject("mMsg_null_sprite_profile", 0x1C54, 0x10, global_symbol=True),
     # Original address: 0x0202B330
-    DataObject("sData_0202B330", 0x1C98, 0x48, global_symbol=True),
+    DataObject("mMsg_continue_prompt_sprite_profile", 0x1C98, 0x10, "thumb_functions", global_symbol=True),
+    # Original address: 0x0202B340
+    DataObject("sContinuePromptAnimOamData", 0x1CA8, 0x28, global_symbol=True),
+    # Original address: 0x0202B368
+    DataObject("sMsgContinuePromptAnimData", 0x1CD0, 0x10, "animation_frames", global_symbol=True),
     # Original address: 0x0202B37C
-    DataObject("sData_0202B37C", 0x1CE4, 0x60, global_symbol=True),
+    DataObject("sMsgContinuePromptRed", 0x1CE4, 8, global_symbol=True),
+    # Original address: 0x0202B384
+    DataObject("sMsgContinuePromptGreen", 0x1CEC, 8, global_symbol=True),
+    # Original address: 0x0202B38C
+    DataObject("sMsgContinuePromptBlue", 0x1CF4, 8, global_symbol=True),
+    # Original address: 0x0202B394
+    DataObject("mMsg_choice_cursor_sprite_profile", 0x1CFC, 0x10, "thumb_functions", global_symbol=True),
+    # Original address: 0x0202B3A4
+    DataObject("sMsgChoiceCursorAnimOamData", 0x1D0C, 0x28, global_symbol=True),
+    # Original address: 0x0202B3CC
+    DataObject("sMsgChoiceCursorAnimData", 0x1D34, 0x10, "animation_frames", global_symbol=True),
     # Original address: 0x0202B3E0
     DataObject("sData_0202B3E0", 0x1D48, 0x1C, global_symbol=True),
     # Original address: 0x0202FD15
@@ -313,8 +329,6 @@ DATA_OBJECTS = tuple(sorted(DATA_OBJECTS + (
     DataObject("sData_0202FDB8", 0x6720, 0xF8, global_symbol=True),
     # Original address: 0x0202FECC
     DataObject("gFieldObjectProcs", 0x6834, 0x14, "thumb_functions", global_symbol=True),
-    # Original address: 0x02033808
-    DataObject("sData_02033808", 0xA170, 0x4, global_symbol=True),
     # Original address: 0x0203388C
     DataObject("IslanderSubMoveAction_BuryProcTbl", 0xA1F4, 0x18, "thumb_functions", global_symbol=True),
     # Original address: 0x020338A4
@@ -323,8 +337,6 @@ DATA_OBJECTS = tuple(sorted(DATA_OBJECTS + (
     DataObject("sData_020338DA", 0xA242, 0x2, global_symbol=True),
     # Original address: 0x02033A6C
     DataObject("gBuriedItemUpdateGroups", 0xA3D4, 0x18, global_symbol=True),
-    # Original address: 0x02033B26
-    DataObject("sData_02033B26", 0xA48E, 0x1, global_symbol=True),
     # Original address: 0x02033F7C
     DataObject("sData_02033F7C", 0xA8E4, 0x4, global_symbol=True),
     # Original address: 0x02034062
@@ -342,13 +354,21 @@ DATA_OBJECTS = tuple(sorted(DATA_OBJECTS + (
     # Original address: 0x02034C94
     DataObject("sData_02034C94", 0xB5FC, 0x4C, global_symbol=True),
     # Original address: 0x02034D8C
-    DataObject("sData_02034D8C", 0xB6F4, 0x80, global_symbol=True),
+    DataObject("sPlayerHandOamData", 0xB6F4, 0x80, global_symbol=True),
     # Original address: 0x02034E24
-    DataObject("sData_02034E24", 0xB78C, 0xB0, global_symbol=True),
+    DataObject("sPlayerHandAnimFrames", 0xB78C, 0x58, "animation_frames", global_symbol=True),
+    # Original address: 0x02034E7C
+    DataObject("sPlayerHandIdleAnimation", 0xB7E4, 0x20, "data_pointers", global_symbol=True),
+    # Original address: 0x02034E9C
+    DataObject("sPlayerHandCarryingAnimation", 0xB804, 0x18, "data_pointers", global_symbol=True),
+    # Original address: 0x02034EB4
+    DataObject("sPlayerHandPlacingAnimation", 0xB81C, 0x14, "data_pointers", global_symbol=True),
+    # Original address: 0x02034EC8
+    DataObject("sPlayerHandBlockedAnimation", 0xB830, 0xC, "data_pointers", global_symbol=True),
     # Original address: 0x02035776
     DataObject("sData_02035776", 0xC0DE, 0x2, global_symbol=True),
     # Original address: 0x02035BF4
-    DataObject("sData_02035BF4", 0xC55C, 0x1C, global_symbol=True),
+    DataObject("sSoundBank", 0xC55C, 0x1C, global_symbol=True),
     # Original address: 0x02035CC0
     DataObject("sData_02035CC0", 0xC628, 0x4, global_symbol=True),
     # Original address: 0x02035CC9
@@ -564,6 +584,27 @@ def generate_assembly(text_object: Path, data_path: Path) -> str:
                         f"at target address 0x{DATA_ADDRESS + pointer_offset:08X}"
                     ) from error
                 lines.append(f"    .4byte {function_name}")
+                if stride == 8:
+                    emit_incbin(lines, incbin_path, pointer_offset + 4, 4)
+        elif obj.relocation_kind in ("data_pointers", "animation_frames"):
+            stride = 8 if obj.relocation_kind == "animation_frames" else 4
+            if obj.size % stride:
+                raise ValueError(f"pointer table {obj.name} is not record-sized")
+            for pointer_offset in range(obj.offset, obj.offset + obj.size, stride):
+                pointer = struct.unpack_from("<I", data, pointer_offset)[0]
+                if pointer == 0 or (stride == 8 and pointer == 0xFFFF):
+                    lines.append(f"    .4byte 0x{pointer:X}")
+                else:
+                    target = next((entry for entry in DATA_OBJECTS
+                                   if DATA_ADDRESS + entry.offset <= pointer <
+                                   DATA_ADDRESS + entry.offset + entry.size), None)
+                    if target is None:
+                        raise ValueError(f"{obj.name} contains unknown data pointer 0x{pointer:08X}")
+                    addend = pointer - (DATA_ADDRESS + target.offset)
+                    if addend:
+                        lines.append(f"    .4byte {target.name} + 0x{addend:X}")
+                    else:
+                        lines.append(f"    .4byte {target.name}")
                 if stride == 8:
                     emit_incbin(lines, incbin_path, pointer_offset + 4, 4)
         elif obj.relocation_kind == "choice_tiles":
