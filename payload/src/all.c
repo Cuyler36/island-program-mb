@@ -230,39 +230,39 @@ void VBlankInterruptHandler(void) {
     u16 temp;
 
     GameAudio_VBlank();
-    if (gGameState.unk_85A == 1) {
-        gGameState.unk_85A = 0;
+    if (gGameState.pcm_disable_pending == 1) {
+        gGameState.pcm_disable_pending = 0;
         SoundDriver_DisablePcm();
     }
-    temp_r5 = gGameState.unk_85F;
+    temp_r5 = gGameState.frame_committed;
     if (temp_r5 == 0) {
         CpuFastCopy(gUnk3002410, (void*)OAM, sizeof(gUnk3002410));
-        REG_DISPCNT = gGameState.unk_82A;
-        REG_BG0HOFS = gGameState.unk_83C;
-        REG_BG0VOFS = gGameState.unk_83E;
-        REG_BG1HOFS = gGameState.unk_840;
-        REG_BG1VOFS = gGameState.unk_842;
-        REG_BG2HOFS = gGameState.unk_844;
-        REG_BG2VOFS = gGameState.unk_846;
-        REG_BG3HOFS = gGameState.unk_848;
+        REG_DISPCNT = gGameState.dispcnt;
+        REG_BG0HOFS = gGameState.bg0_hofs;
+        REG_BG0VOFS = gGameState.bg0_vofs;
+        REG_BG1HOFS = gGameState.bg1_hofs;
+        REG_BG1VOFS = gGameState.bg1_vofs;
+        REG_BG2HOFS = gGameState.bg2_hofs;
+        REG_BG2VOFS = gGameState.bg2_vofs;
+        REG_BG3HOFS = gGameState.bg3_hofs;
         REG_BG3VOFS = gGameState.bg3_vofs;
-        REG_BLDALPHA = gGameState.unk_81C;
-        REG_BLDY = gGameState.unk_81E;
-        REG_BLDCNT = gGameState.unk_820;
-        REG_BG0CNT = gGameState.unk_822;
-        REG_BG1CNT = gGameState.unk_824;
-        REG_BG2CNT = gGameState.unk_826;
-        REG_BG3CNT = gGameState.unk_828;
+        REG_BLDALPHA = gGameState.bldalpha;
+        REG_BLDY = gGameState.bldy;
+        REG_BLDCNT = gGameState.bldcnt;
+        REG_BG0CNT = gGameState.bg0cnt;
+        REG_BG1CNT = gGameState.bg1cnt;
+        REG_BG2CNT = gGameState.bg2cnt;
+        REG_BG3CNT = gGameState.bg3cnt;
 
-        if (gGameState.unk_859 == 1) {
-            gGameState.unk_859 = temp_r5;
+        if (gGameState.vblank_latch == 1) {
+            gGameState.vblank_latch = temp_r5;
         }
 
-        gGameState.unk_85B++;
-        gGameState.unk_85F = 1;
+        gGameState.vblank_counter++;
+        gGameState.frame_committed = 1;
     }
 
-    REG_IF = gGameState.unk_814 = 1;
+    REG_IF = gGameState.vblank_flags = 1;
     REG_DISPSTAT = 8;
     GameAudio_UpdateDriver();
 }
@@ -920,10 +920,10 @@ static void mMsg_MainSetup_Disappear(mMsg_Window_c* msg) {
 static void mMsg_Main_Disappear(mMsg_Window_c* msg) {
     gGameState.bg3_vofs = mMsg_GetWindowScrollOffset(&msg->transition_frame);
     if (msg->transition_frame == 0 && mMsg_RequestHide(msg) != 0) {
-        gGameState.unk_84E = 0;
-        gGameState.unk_84F = 0;
-        gGameState.unk_84C = 0;
-        gGameState.unk_84D = 0;
+        gGameState.sleep_requested = 0;
+        gGameState.sleep_dialog_active = 0;
+        gGameState.transfer_requested = 0;
+        gGameState.transfer_dialog_active = 0;
         mMsg_MainSetup_Window(msg);
     } else {
         msg->transition_frame--;
@@ -2110,33 +2110,33 @@ s16 FixedDiv8(s16 numerator, s16 denominator) {
 }
 
 s32 rand_u16(GameState *state) {
-    u32 m = state->rngValue * 0x41C64E6D;
-    u32 a = state->unk_85B + 0x3039;
-    state->rngValue = m + a;
-    return (s32)((u32)(state->rngValue << 1) >> 0x11);
+    u32 m = state->rng_state * 0x41C64E6D;
+    u32 a = state->vblank_counter + 0x3039;
+    state->rng_state = m + a;
+    return (s32)((u32)(state->rng_state << 1) >> 0x11);
 }
 
 /* Original address: 0x02019B18 */
 void GameState_SeedRandom(GameState *state, u32 seed) {
-    state->rngValue = seed;
+    state->rng_state = seed;
 }
 
 /* Original address: 0x02019B1C */
 void GameState_SetBrightnessFade(GameState *state, u16 darken, u16 blend_control, u16 intensity) {
     if (darken == 1) {
-        state->unk_820 = blend_control | 0xC0;
+        state->bldcnt = blend_control | 0xC0;
     } else {
-        state->unk_820 = blend_control | 0x80;
+        state->bldcnt = blend_control | 0x80;
     }
     if (intensity > 16) {
         intensity = 16;
     }
-    state->unk_81E = intensity;
+    state->bldy = intensity;
 }
 
 /* Original address: 0x02019B58 */
 u16 GameState_StepBrightnessFade(GameState *state, u8 direction, u8 amount) {
-    u16 intensity = state->unk_81E;
+    u16 intensity = state->bldy;
 
     if (direction == 1) {
         intensity += amount;
@@ -2149,8 +2149,8 @@ u16 GameState_StepBrightnessFade(GameState *state, u8 direction, u8 amount) {
             intensity = 0;
         }
     }
-    state->unk_81E = intensity;
-    return state->unk_81E;
+    state->bldy = intensity;
+    return state->bldy;
 }
 
 /* Original address: 0x02019BA8 */
@@ -2173,15 +2173,15 @@ void SetPaletteColor(u8 palette, u8 bank, u8 color, u8 red, u8 green, u8 blue) {
     }
     packed_color = RGB(red, green, blue);
     buffer[(bank & 0xF) * 16 + (color & 0xF)] = packed_color;
-    gGameState.unk_852 = 1;
+    gGameState.palette_dirty = 1;
 }
 
 /* Original address: 0x02019C3C */
 void WaitForVBlank(void) {
-    gGameState.unk_814 &= ~1;
-    while (!(gGameState.unk_814 & 1)) {
+    gGameState.vblank_flags &= ~1;
+    while (!(gGameState.vblank_flags & 1)) {
     }
-    gGameState.unk_814 &= ~1;
+    gGameState.vblank_flags &= ~1;
 }
 
 /* Original address: 0x02019C88 */
@@ -2192,7 +2192,7 @@ void ClearOamBuffer(void) {
     while (oam < end) {
         *oam++ = sHiddenOamAttributes;
     }
-    gGameState.unk_860 = 0;
+    gGameState.oam_count = 0;
 }
 
 /* Original address: 0x02019CC0 */
@@ -2842,15 +2842,15 @@ void InitializeIsland(void) {
     gGameState.game_time_frames = gIslandTransferData->renew_time.hour * 3600;
     gGameState.game_time_frames += gIslandTransferData->renew_time.min * 60;
     gGameState.game_time_frames = (gGameState.game_time_frames + gIslandTransferData->renew_time.sec) * 60;
-    gGameState.unk_822 = 0x1C00;
-    gGameState.unk_824 = 0xD801;
-    gGameState.unk_826 = 0xD402;
-    gGameState.unk_828 = 0xD003;
+    gGameState.bg0cnt = 0x1C00;
+    gGameState.bg1cnt = 0xD801;
+    gGameState.bg2cnt = 0xD402;
+    gGameState.bg3cnt = 0xD003;
     CpuFastCopy(gIslandTransferData->earth_tex, (void *)BG_VRAM, sizeof(gIslandTransferData->earth_tex));
     CpuFastCopy(gIslandTransferData->npc_tex, (void *)OBJ_VRAM0, sizeof(gIslandTransferData->npc_tex));
     CpuFastCopy(gIslandTransferData->npc_pal, &gObjPaletteBuffer[16], sizeof(gIslandTransferData->npc_pal));
     CpuFastCopy(&gObjPaletteBuffer[16], (void *)(OBJ_PLTT + PLTT_OFFSET_4BPP(1)), PLTT_SIZE_4BPP);
-    gGameState.unk_82A = 0;
+    gGameState.dispcnt = 0;
     Joybus_Init();
     mMsg_InitSprites();
     mMsg_InitWindow(&sMsgWindow_03002fc0, gMsgMainText, gMsgMainTiles);
@@ -2869,13 +2869,13 @@ void IslandProgram_Main(void) {
     CpuFastCopy(mFont_BlitGlyphToTiles, gFontGlyphBlitterCode, sizeof(gFontGlyphBlitterCode));
     mMsg_Init();
     EnableVBlankInterrupt();
-    gGameState.unk_85F = 1;
-    gGameState.unk_816 = 0xFFFF;
+    gGameState.frame_committed = 1;
+    gGameState.current_music_id = 0xFFFF;
     sub_02019F08();
     InitializeIsland();
     for (;;) {
         GameState_ReadKeys();
-        if (gGameState.unk_850 == 1 && gGameState.unk_851 == 1) {
+        if (gGameState.sleep_mode_active == 1 && gGameState.sleep_ready == 1) {
             u16 saved_interrupt_enable;
             u16 saved_display_control;
 
@@ -2890,16 +2890,16 @@ void IslandProgram_Main(void) {
             SoundBiasSet();
             REG_IE = saved_interrupt_enable;
             REG_KEYCNT = 0;
-            gGameState.unk_856 = 0;
-            gGameState.unk_857 = 0;
-            gGameState.unk_851 = 0;
-            gGameState.unk_850 = 0;
+            gGameState.joybus_notice_requested = 0;
+            gGameState.joybus_notice_active = 0;
+            gGameState.sleep_ready = 0;
+            gGameState.sleep_mode_active = 0;
             Joybus_Reset();
         }
         ClearOamBuffer();
         if ((gTransWork.command >= 0xFFFE0101 && gTransWork.command <= 0xFFFE0102) ||
             gTransWork.command == 0xFFFE0202) {
-            gGameState.unk_856 = 1;
+            gGameState.joybus_notice_requested = 1;
         }
         IslandProgram_UpdateFrame();
         gGameState.game_time_frames++;
@@ -2907,7 +2907,7 @@ void IslandProgram_Main(void) {
             gGameState.game_time_frames -= 24 * 60 * 60 * 60;
         }
         GameAudio_Update();
-        gGameState.unk_85F = 0;
+        gGameState.frame_committed = 0;
         WaitForVBlank();
     }
 }
@@ -3171,7 +3171,7 @@ s32 IslandProgram_CheckWindowResumed(IslandProgramWork *work, s8 arg1) {
     if (work->current_window->draw_enabled == TRUE) {
         work->window_ready[arg1] = 0;
         if (arg1 == 1) {
-            work->_6D = 0;
+            work->transfer_succeeded = 0;
         }
     }
 
@@ -3186,11 +3186,11 @@ s32 IslandProgram_CheckWindowResumed(IslandProgramWork *work, s8 arg1) {
 u8 IslandProgram_CheckSleepRequest(IslandProgramWork* work) {
     u8 var_r4_5054 = 0;
 
-    if (gGameState.unk_84E == 1) {
+    if (gGameState.sleep_requested == 1) {
         var_r4_5054 = 1;
     } else if (gGameState.keys.buttons.pressed & SELECT_BUTTON) {
         var_r4_5054 = 1;
-    } else if (IslandProgram_UpdateInputTimeout(&work->input_timer, 18000) == 1) {
+    } else if (IslandProgram_UpdateInputTimeout(&work->input_idle_timer, 18000) == 1) {
         var_r4_5054 = 1;
     }
     return var_r4_5054;
@@ -3235,14 +3235,14 @@ void IslandProgram_SetDialogPalette(IslandProgramWork *work, s8 arg1) {
             SetPaletteColor(0, 7, 6, 0xA, 0xB, 8);
             break;
         case 1:
-            if (work->_6F == 1) {
+            if (work->use_warm_dialog_palette == 1) {
                 SetPaletteColor(0, 7, 1, 0x16, 0xA, 4);
                 SetPaletteColor(0, 7, 2, 0x1A, 0xE, 6);
                 SetPaletteColor(0, 7, 3, 0x1E, 0xD, 3);
                 SetPaletteColor(0, 7, 4, 0x1D, 0x15, 0xC);
                 SetPaletteColor(0, 7, 5, 0x1F, 0x1F, 0x15);
                 break;
-            } else if (work->_6E == 1) {
+            } else if (work->use_cool_dialog_palette == 1) {
                 SetPaletteColor(0, 7, 1, 8, 0x10, 0x14);
                 SetPaletteColor(0, 7, 2, 0xA, 0x14, 0x1B);
                 SetPaletteColor(0, 7, 3, 0x15, 0x19, 0x1F);
@@ -3265,35 +3265,35 @@ void IslandProgram_SetDialogPalette(IslandProgramWork *work, s8 arg1) {
 
 /* Original address: 0x0201AA98 */
 void IslandProgram_SetupDialogDisplay(IslandProgramWork *work, u8 arg1) {
-    if (work->_50 == 0 && arg1 != 1) {
-        work->_34 = gGameState.unk_828;
-        work->_36 = gGameState.unk_82A;
-        work->_48 = gGameState.unk_81E;
-        work->_44 = gGameState.bg3_vofs;
-        work->_46 = gGameState.unk_848;
-        work->_50 = arg1;
+    if (work->dialog_display_owner == 0 && arg1 != 1) {
+        work->saved_bg3cnt = gGameState.bg3cnt;
+        work->saved_dispcnt = gGameState.dispcnt;
+        work->saved_bldy = gGameState.bldy;
+        work->saved_bg3_vofs = gGameState.bg3_vofs;
+        work->saved_bg3_hofs = gGameState.bg3_hofs;
+        work->dialog_display_owner = arg1;
     }
-    gGameState.unk_828 &= 0xFFFC;
-    gGameState.unk_82A |= 0x1800;
-    gGameState.unk_81E = 0;
+    gGameState.bg3cnt &= 0xFFFC;
+    gGameState.dispcnt |= 0x1800;
+    gGameState.bldy = 0;
     gGameState.bg3_vofs = 0;
-    gGameState.unk_848 = 0;
+    gGameState.bg3_hofs = 0;
 }
 
 /* Original address: 0x0201AB3C */
 void IslandProgram_RestoreDialogDisplay(IslandProgramWork *work, s8 arg1) {
     u16 temp_r1_5496;
 
-    if (arg1 == work->_50) {
-        gGameState.unk_828 = work->_34;
-        gGameState.unk_82A = work->_36;
+    if (arg1 == work->dialog_display_owner) {
+        gGameState.bg3cnt = work->saved_bg3cnt;
+        gGameState.dispcnt = work->saved_dispcnt;
         if (*(u16 *)0x0203E9A0 == 1) {
-            gGameState.unk_82A &= 0xFDFF;
+            gGameState.dispcnt &= 0xFDFF;
         }
-        gGameState.unk_81E = work->_48;
-        gGameState.bg3_vofs = work->_44;
-        gGameState.unk_848 = work->_46;
-        work->_50 = 0;
+        gGameState.bldy = work->saved_bldy;
+        gGameState.bg3_vofs = work->saved_bg3_vofs;
+        gGameState.bg3_hofs = work->saved_bg3_hofs;
+        work->dialog_display_owner = 0;
     }
 }
 
@@ -3302,7 +3302,7 @@ void IslandProgram_UpdateMessages(IslandProgramWork *work) {
     mMsg_Window_c *temp_r1_5544;
 
     temp_r1_5544 = work->current_window;
-    if ((temp_r1_5544 != NULL) && (gGameState.unk_850 == 0)) {
+    if ((temp_r1_5544 != NULL) && (gGameState.sleep_mode_active == 0)) {
         mMsg_Main_Window(temp_r1_5544);
     }
     mMsg_UpdateAndDrawSprites();
@@ -3313,10 +3313,10 @@ s32 IslandProgram_TryOpenTransferDialog(IslandProgramWork *work, u8 arg1) {
     s32 var_r1_5569;
 
     var_r1_5569 = 0;
-    if ((gGameState.unk_850 == 0) && (work->_5A != 0)) {
+    if ((gGameState.sleep_mode_active == 0) && (work->pending_transfer_state != 0)) {
         if (IslandProgram_PrepareDialogTransition(work, arg1) == 1) {
-            work->_5F = arg1;
-            work->_10 = work->current_window;
+            work->transfer_return_window_id = arg1;
+            work->transfer_saved_window = work->current_window;
             IslandProgram_ApplyPendingTransferState(work);
         }
         var_r1_5569 = 1;
@@ -3329,10 +3329,10 @@ s32 IslandProgram_TryOpenNoticeDialog(IslandProgramWork *work, u8 arg1) {
     s32 var_r1_5613;
 
     var_r1_5613 = 0;
-    if ((gGameState.unk_850 == 0) && (work->_58 != 0)) {
+    if ((gGameState.sleep_mode_active == 0) && (work->pending_notice_state != 0)) {
         if (IslandProgram_PrepareDialogTransition(work, arg1) == 1) {
-            work->_5D = arg1;
-            work->_08 = work->current_window;
+            work->notice_return_window_id = arg1;
+            work->notice_saved_window = work->current_window;
             IslandProgram_ApplyPendingNoticeState(work);
         }
         var_r1_5613 = 1;
@@ -3345,10 +3345,10 @@ s32 IslandProgram_TryOpenSleepDialog(IslandProgramWork *work, u8 arg1) {
     s32 var_r1_5657;
 
     var_r1_5657 = 0;
-    if (work->_59 != 0) {
+    if (work->pending_sleep_state != 0) {
         if (IslandProgram_PrepareDialogTransition(work, arg1) == 1) {
-            work->_5E = arg1;
-            work->_0C = work->current_window;
+            work->sleep_return_window_id = arg1;
+            work->sleep_saved_window = work->current_window;
             IslandProgram_ApplyPendingSleepState(work);
         }
         var_r1_5657 = 1;
@@ -3364,8 +3364,8 @@ void IslandProgram_BeginJoybusReceive(IslandProgramWork *work) {
     gTransWork.transfer_size = transfer_size;
     gTransWork.buffer = (u32*)island;
     gTransWork.enabled = TRUE;
-    work->_6A = 2;
-    work->_71 = 0;
+    work->joybus_transfer_mode = 2;
+    work->joybus_sending = 0;
 }
 
 /* Original address: 0x0201ACF8 */
@@ -3380,7 +3380,7 @@ s8 IslandProgram_PollJoybusReceive(IslandProgramWork *work) {
     }
 
     if (var_r1_5714 == 1) {
-        work->_6D = var_r1_5714;
+        work->transfer_succeeded = var_r1_5714;
     }
 
     return var_r1_5714;
@@ -3396,13 +3396,13 @@ void IslandProgram_BeginJoybusSend(IslandProgramWork *work) {
     gTransWork.enabled = TRUE;
     
     if (gTransWork.command == 0xFFFE0101) {
-        work->_70 = 1;
+        work->notice_send_active = 1;
     } else {
-        work->_70 = 0;
+        work->notice_send_active = 0;
     }
 
-    work->_6A = 1;
-    work->_71 = 1;
+    work->joybus_transfer_mode = 1;
+    work->joybus_sending = 1;
 }
 
 /* Original address: 0x0201AD84 */
@@ -3416,7 +3416,7 @@ s16 IslandProgram_PollJoybusSend(IslandProgramWork *work) {
         var_r3_5792 = 2;
     }
 
-    if (work->_70 == 0 && work->_71 == 1 && (var_r3_5792 == 1)) {
+    if (work->notice_send_active == 0 && work->joybus_sending == 1 && (var_r3_5792 == 1)) {
         *(u16 *)0x0203E9A0 = (u16) var_r3_5792;
         gIslandData->in_use = TRUE;
     }
@@ -3429,25 +3429,25 @@ void sub_0201ADDC(void) {
 
 /* Original address: 0x0201ADE0 */
 s32 IslandProgram_RequestNoticeState(IslandProgramWork *work, s8 arg1) {
-    work->_58 = arg1;
+    work->pending_notice_state = arg1;
     return 1;
 }
 
 /* Original address: 0x0201ADE8 */
 s32 IslandProgram_RequestNoticeTransfer(IslandProgramWork *work) {
-    work->_58 = 1;
+    work->pending_notice_state = 1;
     return 1;
 }
 
 /* Original address: 0x0201ADF4 */
 s32 IslandProgram_RequestNoticeResult(IslandProgramWork *work) {
-    work->_58 = 2;
+    work->pending_notice_state = 2;
     return 1;
 }
 
 /* Original address: 0x0201AE00 */
 s32 IslandProgram_RequestNoticeRestart(IslandProgramWork *work) {
-    work->_58 = 3;
+    work->pending_notice_state = 3;
     return 1;
 }
 
@@ -3462,11 +3462,11 @@ void IslandProgram_ApplyPendingNoticeState(IslandProgramWork *work) {
 
     IslandProgramModeProc proc;
 
-    if ((u8)work->_58 <= 3) {
-        proc = sIslandProgramWorkProcs[work->_58];
+    if ((u8)work->pending_notice_state <= 3) {
+        proc = sIslandProgramWorkProcs[work->pending_notice_state];
         if (proc != NULL) {
             proc(work);
-            work->input_timer = 0;
+            work->input_idle_timer = 0;
         }
     }
 }
@@ -3484,33 +3484,33 @@ void IslandProgram_EnterNoticeTransfer(IslandProgramWork *work) {
         IslandProgram_SetDialogPalette(work, 2);
         IslandProgram_SetupDialogDisplay(work, 2);
 
-        work->_53 = work->_58;
+        work->notice_state = work->pending_notice_state;
         work->current_window = &sMsgWindow_03002980;
     }
 
-    work->_58 = 0;
+    work->pending_notice_state = 0;
 }
 
 /* Original address: 0x0201AEBC */
 void IslandProgram_UpdateNoticeTransfer(IslandProgramWork *work) {
-    if (work->_71 == 0) {
-        work->_60 = IslandProgram_PollJoybusReceive(work);
+    if (work->joybus_sending == 0) {
+        work->joybus_result = IslandProgram_PollJoybusReceive(work);
     } else {
         if (work->retry_timer == 0) {
             work->retry_result = IslandProgram_PollJoybusSend(work);
             if (work->retry_result != 0) {
                 work->retry_timer = 60;
             } else {
-                work->_60 = 0;
+                work->joybus_result = 0;
             }
         } else {
             work->retry_timer--;
             if (work->retry_timer == 0) {
-                work->_60 = work->retry_result;
+                work->joybus_result = work->retry_result;
             }
         }
     }
-    if ((work->current_window->current_mode >= mMsg_MODE_CURSOR) && (work->current_window->current_mode <= mMsg_MODE_CHOICE) && (work->_60 != 0) && (IslandProgram_RequestNoticeResult(work) != 0)) {
+    if ((work->current_window->current_mode >= mMsg_MODE_CURSOR) && (work->current_window->current_mode <= mMsg_MODE_CHOICE) && (work->joybus_result != 0) && (IslandProgram_RequestNoticeResult(work) != 0)) {
         IslandProgram_ApplyPendingNoticeState(work);
     }
 }
@@ -3519,32 +3519,32 @@ void IslandProgram_UpdateNoticeTransfer(IslandProgramWork *work) {
 void IslandProgram_EnterNoticeResult(IslandProgramWork *work) {
     s32 sp[2] = { 13, 20 }; // static data placed at 0x0202B00C
 
-    if (work->_70 == 1) {
-        gGameState.unk_856 = 0;
-        gGameState.unk_857 = 0;
-        gGameState.unk_84E = 0;
-        gGameState.unk_84F = 0;
-        if (work->_60 != 2) {
+    if (work->notice_send_active == 1) {
+        gGameState.joybus_notice_requested = 0;
+        gGameState.joybus_notice_active = 0;
+        gGameState.sleep_requested = 0;
+        gGameState.sleep_dialog_active = 0;
+        if (work->joybus_result != 2) {
             work->current_window->cancel_continue = TRUE;
             work->current_window->force_next = TRUE;
-            work->wait_timer = 0;
+            work->notice_result_wait_timer = 0;
         } else {
-            work->wait_timer = 60;
+            work->notice_result_wait_timer = 60;
             GameAudio_PlayEffect0(0x28U);
         }
-        work->_53 = work->_58;
-        work->_62 = 0;
+        work->notice_state = work->pending_notice_state;
+        work->notice_result_state = 0;
     } else {
-        if ((mMsg_ChangeMsgData(work->current_window, sp[work->_60 - 1]) == 1) && ((mMsg_RequestCursor(work->current_window)) != 0)) {
-            GameAudio_PlayEffect0(work->_60 == 1 ? 0x27 : 0x28);
-            gGameState.unk_856 = 0;
-            gGameState.unk_857 = 0;
+        if ((mMsg_ChangeMsgData(work->current_window, sp[work->joybus_result - 1]) == 1) && ((mMsg_RequestCursor(work->current_window)) != 0)) {
+            GameAudio_PlayEffect0(work->joybus_result == 1 ? 0x27 : 0x28);
+            gGameState.joybus_notice_requested = 0;
+            gGameState.joybus_notice_active = 0;
             mMsg_MainSetup_Window(work->current_window);
-            work->_53 = work->_58;
-            work->_62 = 0;
+            work->notice_state = work->pending_notice_state;
+            work->notice_result_state = 0;
         }
     }
-    work->_58 = 0;
+    work->pending_notice_state = 0;
 }
 
 /* Original address: 0x0201B04C */
@@ -3557,25 +3557,25 @@ void IslandProgram_UpdateNoticeResult(IslandProgramWork *work) {
     void *temp_r0_6223;
     void *temp_r1_6187;
 
-    if ((work->_70 == 1) && work->wait_timer != 0) {
-        work->wait_timer--;
-        if (work->wait_timer == 0) {
+    if ((work->notice_send_active == 1) && work->notice_result_wait_timer != 0) {
+        work->notice_result_wait_timer--;
+        if (work->notice_result_wait_timer == 0) {
             work->current_window->cancel_continue = TRUE;
             work->current_window->force_next = TRUE;
         }
     } else {
         if (!work->current_window->draw_enabled) {
-            if (work->_6D == 1) {
-                work->_53 = 3;
+            if (work->transfer_succeeded == 1) {
+                work->notice_state = 3;
                 GameState_SetBrightnessFade(&gGameState, 0x80U, 0x3FU, 0U);
-                gGameState.unk_82A &= 0xFEFF;
-                work->_6D = 0;
+                gGameState.dispcnt &= 0xFEFF;
+                work->transfer_succeeded = 0;
                 return;
             }
-            work->_53 = 0;
-            work->input_timer = 0;
-            work->_70 = 0;
-            switch (work->_5D) {
+            work->notice_state = 0;
+            work->input_idle_timer = 0;
+            work->notice_send_active = 0;
+            switch (work->notice_return_window_id) {
                 case 1:
                     IslandProgram_SetDialogPalette(work, 1);
                     break;
@@ -3583,13 +3583,13 @@ void IslandProgram_UpdateNoticeResult(IslandProgramWork *work) {
                     IslandProgram_SetDialogPalette(work, 3);
                     break;
             }
-            work->current_window = work->_08;
+            work->current_window = work->notice_saved_window;
             IslandProgram_RestoreDialogDisplay(work, 2);
             mMsg_CopyTilesToVram(0, 0x90, work->current_window->tile_data);
-            if (gGameState.unk_856 == 1) {
+            if (gGameState.joybus_notice_requested == 1) {
                 work->transition_requested = 1;
             }
-        } else if (((work->current_window->current_mode >= mMsg_MODE_CURSOR) && (work->current_window->current_mode <= mMsg_MODE_CHOICE)) && (work->_70 == 0) && (gGameState.unk_856 == 1)) {
+        } else if (((work->current_window->current_mode >= mMsg_MODE_CURSOR) && (work->current_window->current_mode <= mMsg_MODE_CHOICE)) && (work->notice_send_active == 0) && (gGameState.joybus_notice_requested == 1)) {
             work->current_window->cancel_continue = TRUE;
             work->current_window->force_next = TRUE;
         }
@@ -3610,25 +3610,25 @@ void IslandProgram_UpdateNoticeRestart(IslandProgramWork *work) {
 
 /* Original address: 0x0201B18C */
 s32 IslandProgram_RequestSleepState(IslandProgramWork *work, s8 arg1) {
-    work->_59 = arg1;
+    work->pending_sleep_state = arg1;
     return 1;
 }
 
 /* Original address: 0x0201B194 */
 s32 IslandProgram_RequestSleepPrompt(IslandProgramWork *work) {
-    work->_59 = 1;
+    work->pending_sleep_state = 1;
     return 1;
 }
 
 /* Original address: 0x0201B1A0 */
 s32 IslandProgram_RequestSleepMode(IslandProgramWork *work) {
-    work->_59 = 2;
+    work->pending_sleep_state = 2;
     return 1;
 }
 
 /* Original address: 0x0201B1AC */
 s32 IslandProgram_RequestSleepCleanup(IslandProgramWork *work) {
-    work->_59 = 3;
+    work->pending_sleep_state = 3;
     return 1;
 }
 
@@ -3642,11 +3642,11 @@ void IslandProgram_ApplyPendingSleepState(IslandProgramWork *work) {
     };
     IslandProgramModeProc proc;
 
-    if ((u8)work->_59 <= 3) {
-        proc = sIslandProgramWorkProcs[work->_59];
+    if ((u8)work->pending_sleep_state <= 3) {
+        proc = sIslandProgramWorkProcs[work->pending_sleep_state];
         if (proc != NULL) {
             proc(work);
-            work->input_timer = 0;
+            work->input_idle_timer = 0;
         }
     }
 }
@@ -3656,11 +3656,11 @@ void IslandProgram_EnterSleepPrompt(IslandProgramWork *work) {
     if (mMsg_RequestAppear(&sMsgWindow_03003060, 21) == 1) {
         IslandProgram_SetDialogPalette(work, 3);
         IslandProgram_SetupDialogDisplay(work, 3);
-        work->_54 = work->_59;
-        work->input_timer = 0;
+        work->sleep_state = work->pending_sleep_state;
+        work->input_idle_timer = 0;
         work->current_window = &sMsgWindow_03003060;
     }
-    work->_59 = 0;
+    work->pending_sleep_state = 0;
 }
 
 /* Original address: 0x0201B238 */
@@ -3672,7 +3672,7 @@ void IslandProgram_UpdateSleepPrompt(IslandProgramWork *work) {
     } else if (work->current_window->current_mode >= mMsg_MODE_CURSOR && work->current_window->current_mode <= mMsg_MODE_CHOICE) {
         if (work->current_window->selected_choice != -1) {
             if ((mMsg_CheckControlCode(work->current_window->text, 1, work->current_window->text_offset) == 0) || (work->current_window->message_id != 22)) {
-                if (IslandProgram_UpdateInputTimeout(&work->input_timer, 600) == 1) {
+                if (IslandProgram_UpdateInputTimeout(&work->input_idle_timer, 600) == 1) {
                     if (IslandProgram_RequestSleepMode(work) != 0) {
                         IslandProgram_ApplyPendingSleepState(work);
                     }
@@ -3682,11 +3682,11 @@ void IslandProgram_UpdateSleepPrompt(IslandProgramWork *work) {
                     IslandProgram_ApplyPendingSleepState(work);
                 }
             }
-        } else if (IslandProgram_UpdateInputTimeout(&work->input_timer, 600) == 1) {
+        } else if (IslandProgram_UpdateInputTimeout(&work->input_idle_timer, 600) == 1) {
             if (IslandProgram_RequestSleepMode(work) != 0) {
                 IslandProgram_ApplyPendingSleepState(work);
             }
-        } else if (gGameState.unk_856 != 0) {
+        } else if (gGameState.joybus_notice_requested != 0) {
             work->transition_requested = 1;
         }
     }
@@ -3694,29 +3694,29 @@ void IslandProgram_UpdateSleepPrompt(IslandProgramWork *work) {
 
 /* Original address: 0x0201B2E8 */
 void IslandProgram_EnterSleepMode(IslandProgramWork *work) {
-    work->_54 = work->_59;
-    work->_59 = 0;
-    work->input_timer = 0;
-    gGameState._008 = 0;
-    gGameState.unk_850 = 1;
-    gGameState.unk_85A = 1;
+    work->sleep_state = work->pending_sleep_state;
+    work->pending_sleep_state = 0;
+    work->input_idle_timer = 0;
+    gGameState.sleep_timer = 0;
+    gGameState.sleep_mode_active = 1;
+    gGameState.pcm_disable_pending = 1;
     GameAudio_StopMusic(0x14U);
 }
 
 /* Original address: 0x0201B328 */
 void IslandProgram_UpdateSleepMode(IslandProgramWork *work) {
 
-    if (gGameState.unk_850 == 1) {
-        if (gGameState._008 > 120) {
+    if (gGameState.sleep_mode_active == 1) {
+        if (gGameState.sleep_timer > 120) {
             int result = mMsg_ChangeMsgData(work->current_window, 23);
             if ((result == 1) && ((mMsg_RequestCursor(work->current_window)) != 0)) {
-                work->input_timer = 0;
+                work->input_idle_timer = 0;
                 work->current_window->text_delay_timer = 0;
                 mMsg_MainSetup_Window(work->current_window);
-                gGameState.unk_851 = result;
+                gGameState.sleep_ready = result;
             }
         }
-        gGameState._008++;
+        gGameState.sleep_timer++;
         return;
     }
 
@@ -3729,15 +3729,15 @@ void IslandProgram_UpdateSleepMode(IslandProgramWork *work) {
             if ((mMsg_CheckControlCode(work->current_window->text, 1, work->current_window->text_offset) != 0) && (work->current_window->message_id == 23)) {
                 if (IslandProgram_RequestSleepMode(work) != 0) {
                     IslandProgram_ApplyPendingSleepState(work);
-                    gGameState._008 = 120;
+                    gGameState.sleep_timer = 120;
                 }
             }
-        } else if (IslandProgram_UpdateInputTimeout(&work->input_timer, 600) == 1) {
+        } else if (IslandProgram_UpdateInputTimeout(&work->input_idle_timer, 600) == 1) {
             if (IslandProgram_RequestSleepMode(work) != 0) {
                 IslandProgram_ApplyPendingSleepState(work);
-                gGameState._008 = 120;
+                gGameState.sleep_timer = 120;
             }
-        } else if (gGameState.unk_856 != 0) {
+        } else if (gGameState.joybus_notice_requested != 0) {
             work->transition_requested = 1;
         }
     }
@@ -3745,51 +3745,51 @@ void IslandProgram_UpdateSleepMode(IslandProgramWork *work) {
 
 /* Original address: 0x0201B420 */
 void IslandProgram_EnterSleepCleanup(IslandProgramWork *work) {
-    work->_54 = work->_59;
-    work->_59 = 0;
-    if (gGameState._008 != 0) {
-        if ((s16) gGameState.unk_816 != -1) {
-            GameAudio_PlayMusic(gGameState.unk_816);
+    work->sleep_state = work->pending_sleep_state;
+    work->pending_sleep_state = 0;
+    if (gGameState.sleep_timer != 0) {
+        if ((s16) gGameState.current_music_id != -1) {
+            GameAudio_PlayMusic(gGameState.current_music_id);
         }
         SoundDriver_EnablePcm();
-        gGameState._008 = 0;
+        gGameState.sleep_timer = 0;
     }
 }
 
 /* Original address: 0x0201B464 */
 void IslandProgram_UpdateSleepCleanup(IslandProgramWork *work) {
     if (!work->current_window->draw_enabled) {
-        work->_54 = 0;
-        if (work->_5E == 1) {
+        work->sleep_state = 0;
+        if (work->sleep_return_window_id == 1) {
             IslandProgram_SetDialogPalette(work, 1);
         }
-        work->_5E = 0;
-        work->current_window = work->_0C;
+        work->sleep_return_window_id = 0;
+        work->current_window = work->sleep_saved_window;
         IslandProgram_RestoreDialogDisplay(work, 3);
         mMsg_CopyTilesToVram(0, 0x90, work->current_window->tile_data);
-        work->input_timer = 0;
+        work->input_idle_timer = 0;
     }
 }
 
 /* Original address: 0x0201B4B0 */
 void IslandProgram_SetupOverviewDisplay(void) {
-    gGameState.unk_82A = (gGameState.unk_82A & 0xE0FF) | 0x700;
-    gGameState.unk_828 &= 0xFFFC;
-    gGameState.unk_824 = (gGameState.unk_824 & 0xFFFC) | 1;
-    gGameState.unk_822 = (gGameState.unk_822 & 0xFFFC) | 2;
-    gGameState.unk_826 = (gGameState.unk_826 & 0xFFFC) | 3;
+    gGameState.dispcnt = (gGameState.dispcnt & 0xE0FF) | 0x700;
+    gGameState.bg3cnt &= 0xFFFC;
+    gGameState.bg1cnt = (gGameState.bg1cnt & 0xFFFC) | 1;
+    gGameState.bg0cnt = (gGameState.bg0cnt & 0xFFFC) | 2;
+    gGameState.bg2cnt = (gGameState.bg2cnt & 0xFFFC) | 3;
     if (gIslandData->weather != mEnv_WEATHER_CLEAR) {
-        gGameState.unk_822 |= 0x100; // rain flag
+        gGameState.bg0cnt |= 0x100; // rain flag
     } else {
-        gGameState.unk_822 |= 0x000; // clear flag
+        gGameState.bg0cnt |= 0x000; // clear flag
     }
     if (*(u16 *)0x0203E9A0 == 1) {
-        gGameState.unk_82A &= 0xFDFF;
+        gGameState.dispcnt &= 0xFDFF;
     }
-    gGameState.unk_842 = 0x100;
-    gGameState.unk_840 = 0x100;
-    gGameState.unk_846 = 0x100;
-    gGameState.unk_844 = 0;
+    gGameState.bg1_vofs = 0x100;
+    gGameState.bg1_hofs = 0x100;
+    gGameState.bg2_vofs = 0x100;
+    gGameState.bg2_hofs = 0;
 }
 
 /* Original address: 0x0201B594 */
@@ -3813,49 +3813,49 @@ void IslandProgram_UpdateTimeOfDayPalette(IslandProgramWork *work) {
         CpuFastCopy(current_time_of_day_palette1, (void *)(BG_PLTT + 0x120), PLTT_SIZE_4BPP);
         work->time_of_day = time_of_day;
     }
-    gGameState.unk_820 = 0x2441;
-    gGameState.unk_81C = 0x1006;
+    gGameState.bldcnt = 0x2441;
+    gGameState.bldalpha = 0x1006;
 }
 
 /* Original address: 0x0201B680 */
 s32 IslandProgram_RequestTransferState(IslandProgramWork *work, s8 arg1) {
-    work->_5A = arg1;
+    work->pending_transfer_state = arg1;
     return 1;
 }
 
 /* Original address: 0x0201B688 */
 s32 IslandProgram_RequestTransferPrompt(IslandProgramWork *work) {
-    work->_5A = 1;
+    work->pending_transfer_state = 1;
     return 1;
 }
 
 /* Original address: 0x0201B694 */
 s32 IslandProgram_RequestTransferProgress(IslandProgramWork *work) {
-    work->_5A = 2;
+    work->pending_transfer_state = 2;
     return 1;
 }
 
 /* Original address: 0x0201B6A0 */
 s32 IslandProgram_RequestTransferRetry(IslandProgramWork *work) {
-    work->_5A = 3;
+    work->pending_transfer_state = 3;
     return 1;
 }
 
 /* Original address: 0x0201B6AC */
 s32 IslandProgram_RequestTransferComplete(IslandProgramWork *work) {
-    work->_5A = 4;
+    work->pending_transfer_state = 4;
     return 1;
 }
 
 /* Original address: 0x0201B6B8 */
 s32 IslandProgram_RequestTransferCleanup(IslandProgramWork *work) {
-    work->_5A = 5;
+    work->pending_transfer_state = 5;
     return 1;
 }
 
 /* Original address: 0x0201B6C4 */
 s32 IslandProgram_RequestTransferRestart(IslandProgramWork *work) {
-    work->_5A = 6;
+    work->pending_transfer_state = 6;
     return 1;
 }
 
@@ -3863,7 +3863,7 @@ s32 IslandProgram_RequestTransferRestart(IslandProgramWork *work) {
 void IslandProgram_ApplyPendingTransferState(IslandProgramWork *work) {
     IslandProgramModeProc proc;
 
-    if ((u8)work->_5A <= 6) {
+    if ((u8)work->pending_transfer_state <= 6) {
         static const IslandProgramModeProc sIslandProgramWorkProcs[] = {
             NULL,
             IslandProgram_EnterTransferPrompt,
@@ -3874,7 +3874,7 @@ void IslandProgram_ApplyPendingTransferState(IslandProgramWork *work) {
             IslandProgram_EnterTransferRestart,
         };
 
-        proc = sIslandProgramWorkProcs[work->_5A];
+        proc = sIslandProgramWorkProcs[work->pending_transfer_state];
         if (proc != NULL) {
             proc(work);
         }
@@ -3889,10 +3889,10 @@ void IslandProgram_EnterTransferPrompt(IslandProgramWork *work) {
         InitIslandLinkTransfer(0);
         StopIslandLinkTransfer();
         *gIntrTable = (u32) IslandLinkSerialInterrupt;
-        work->_55 = work->_5A;
+        work->transfer_state = work->pending_transfer_state;
         work->current_window = &sMsgWindow_03002980;
     }
-    work->_5A = 0;
+    work->pending_transfer_state = 0;
 }
 
 /* Original address: 0x0201B75C */
@@ -3914,17 +3914,17 @@ void IslandProgram_EnterTransferProgress(IslandProgramWork *work) {
     if ((mMsg_ChangeMsgData(work->current_window, 15) == 1) && (mMsg_RequestCursor(work->current_window) != 0)) {
         mMsg_MainSetup_Window(work->current_window);
         var_r2_7139 = 0;
-        work->_55 = work->_5A;
+        work->transfer_state = work->pending_transfer_state;
         gIslandData->checksum = 0;
 
         // clear the land info? I don't know why they didn't use memset here.
         for (i = 0; i < sizeof(gIslandData->landinfo) / sizeof(s32); i++) {
             ((s32*)&gIslandData->landinfo)[i] = 0;
         }
-        work->_69 = 1;
+        work->link_transfer_started = 1;
         InitIslandLinkTransfer(0);
     }
-    work->_5A = 0;
+    work->pending_transfer_state = 0;
 }
 
 /* Original address: 0x0201B824 */
@@ -3954,7 +3954,7 @@ void IslandProgram_UpdateTransferProgress(IslandProgramWork *work) {
                 mMsg_MainSetup_Window(work->current_window);
                 mMsg_ClearText(work->current_window);
                 IslandProgram_ApplyPendingTransferState(work);
-                work->_6D = temp_r0_7232;
+                work->transfer_succeeded = temp_r0_7232;
                 return;
             }
         }
@@ -3970,8 +3970,8 @@ void IslandProgram_UpdateTransferProgress(IslandProgramWork *work) {
 
 /* Original address: 0x0201B90C */
 void IslandProgram_EnterTransferRetry(IslandProgramWork *work) {
-    work->_55 = work->_5A;
-    work->_5A = 0;
+    work->transfer_state = work->pending_transfer_state;
+    work->pending_transfer_state = 0;
 }
 
 /* Original address: 0x0201B91C */
@@ -3981,7 +3981,7 @@ void IslandProgram_UpdateTransferRetry(IslandProgramWork *work) {
     if (mMsg_CheckControlCode(work->current_window->text, 1, work->current_window->text_offset) != 0) {
         temp_r0_7298 = mMsg_ChangeMsgData(work->current_window, 0x11);
         if ((temp_r0_7298 == 1) && (mMsg_RequestCursor(work->current_window) != 0)) {
-            work->_55 = temp_r0_7298;
+            work->transfer_state = temp_r0_7298;
             mMsg_MainSetup_Window(work->current_window);
         }
     }
@@ -3989,8 +3989,8 @@ void IslandProgram_UpdateTransferRetry(IslandProgramWork *work) {
 
 /* Original address: 0x0201B960 */
 void IslandProgram_EnterTransferComplete(IslandProgramWork *work) {
-    work->_55 = work->_5A;
-    work->_5A = 0;
+    work->transfer_state = work->pending_transfer_state;
+    work->pending_transfer_state = 0;
 }
 
 /* Original address: 0x0201B970 */
@@ -4009,27 +4009,27 @@ void IslandProgram_EnterTransferCleanup(IslandProgramWork *work) {
     u8 temp_r3_7355;
     int i;
 
-    temp_r3_7355 = work->_69;
-    if (work->_69 == 0) {
-        work->_55 = work->_5A;
-        gGameState.unk_856 = 0;
-        gGameState.unk_857 = 0;
-        gGameState.unk_84C = 0;
-        gGameState.unk_84D = 0;
+    temp_r3_7355 = work->link_transfer_started;
+    if (work->link_transfer_started == 0) {
+        work->transfer_state = work->pending_transfer_state;
+        gGameState.joybus_notice_requested = 0;
+        gGameState.joybus_notice_active = 0;
+        gGameState.transfer_requested = 0;
+        gGameState.transfer_dialog_active = 0;
     } else if (mMsg_RequestAppear(&sMsgWindow_03002980, 18) == 1) {
         // Again, why not use memcpy here?
         for (i = 0; i < sizeof(gIslandData->landinfo) / sizeof(s32); i++) {
             ((s32*)&gIslandData->landinfo)[i] = ((s32*)&gIslandLandInfo)[i];
         }
-        work->_55 = work->_5A;
+        work->transfer_state = work->pending_transfer_state;
         work->current_window = &sMsgWindow_03002980;
-        gGameState.unk_856 = 0;
-        gGameState.unk_857 = 0;
-        gGameState.unk_84C = 0;
-        gGameState.unk_84D = 0;
+        gGameState.joybus_notice_requested = 0;
+        gGameState.joybus_notice_active = 0;
+        gGameState.transfer_requested = 0;
+        gGameState.transfer_dialog_active = 0;
     }
 
-    work->_5A = 0;
+    work->pending_transfer_state = 0;
 }
 
 /* Original address: 0x0201BA54 */
@@ -4039,9 +4039,9 @@ void IslandProgram_UpdateTransferCleanup(IslandProgramWork *work) {
     u8 temp_r0_7450;
 
     if (!work->current_window->draw_enabled) {
-        work->_55 = 0;
+        work->transfer_state = 0;
 
-        switch (work->_5F) {
+        switch (work->transfer_return_window_id) {
             case 1:
                 IslandProgram_SetDialogPalette(work, 1);
                 break;
@@ -4053,19 +4053,19 @@ void IslandProgram_UpdateTransferCleanup(IslandProgramWork *work) {
                 break;
         }
 
-        work->_5F = 0;
-        work->current_window = work->_10;
+        work->transfer_return_window_id = 0;
+        work->current_window = work->transfer_saved_window;
         IslandProgram_RestoreDialogDisplay(work, 4);
         mMsg_CopyTilesToVram(0, 0x90, work->current_window->tile_data);
-        if (work->_6D == 1) {
-            work->_55 = 6;
+        if (work->transfer_succeeded == 1) {
+            work->transfer_state = 6;
             GameState_SetBrightnessFade(&gGameState, 0x80U, 0x3FU, 0U);
-            gGameState.unk_82A &= 0xFEFF;
+            gGameState.dispcnt &= 0xFEFF;
             GameAudio_StopMusic(0x14U);
-            work->_6D = 0;
+            work->transfer_succeeded = 0;
         }
-        work->_69 = 0;
-        work->input_timer = 0;
+        work->link_transfer_started = 0;
+        work->input_idle_timer = 0;
         *gIntrTable = (u32)JoybootHandler;
         Joybus_Init();
     }
@@ -4133,9 +4133,9 @@ void IslandProgram_EnterNormalMode(IslandProgramWork *work) {
     work->mode = prev;
     work->pending_mode = 0;
     work->current_window = NULL;
-    gGameState.unk_816 = 0;
+    gGameState.current_music_id = 0;
     GameAudio_PlayMusic(0);
-    gGameState.unk_85A = 1;
+    gGameState.pcm_disable_pending = 1;
     IslandProgram_SetupOverviewDisplay();
 }
 
@@ -4146,8 +4146,8 @@ void IslandProgram_UpdateNormalMode(IslandProgramWork *work) {
             IslandProgram_ApplyPendingMode(work);
             return;
         }
-        if (gGameState.unk_856 != 0 ||
-            (*(u32 *)&gGameState.unk_84C & 0x00FF00FF) != 0) {
+        if (gGameState.joybus_notice_requested != 0 ||
+            (*(u32 *)&gGameState.transfer_requested & 0x00FF00FF) != 0) {
             work->transition_requested = 1;
         }
     } else {
@@ -4155,7 +4155,7 @@ void IslandProgram_UpdateNormalMode(IslandProgramWork *work) {
             IslandProgram_ApplyPendingMode(work);
             return;
         }
-        if (gGameState.unk_856 != 0 || gGameState.unk_84E != 0) {
+        if (gGameState.joybus_notice_requested != 0 || gGameState.sleep_requested != 0) {
             work->transition_requested = 1;
         }
     }
@@ -4167,22 +4167,22 @@ void IslandProgram_EnterFieldLoadMode(IslandProgramWork *work) {
 
     work->mode = prev;
     work->pending_mode = 0;
-    gGameState.unk_816 = 1;
-    GameAudio_PlayMusic(gGameState.unk_816);
+    gGameState.current_music_id = 1;
+    GameAudio_PlayMusic(gGameState.current_music_id);
     SoundDriver_EnablePcm();
-    gGameState.unk_82A = (0xE0FF & gGameState.unk_82A) | 0x1F00;
-    gGameState.unk_822 &= 0xFFFC;
-    gGameState.unk_824 = (0xFFFC & gGameState.unk_824) | 1;
-    gGameState.unk_826 = (0xFFFC & gGameState.unk_826) | 2;
-    gGameState.unk_828 = (0xFFFC & gGameState.unk_828) | 3;
-    gGameState.unk_83E = 0;
-    gGameState.unk_83C = 0;
-    gGameState.unk_842 = 0;
-    gGameState.unk_840 = 0;
-    gGameState.unk_846 = 0;
-    gGameState.unk_844 = 0;
+    gGameState.dispcnt = (0xE0FF & gGameState.dispcnt) | 0x1F00;
+    gGameState.bg0cnt &= 0xFFFC;
+    gGameState.bg1cnt = (0xFFFC & gGameState.bg1cnt) | 1;
+    gGameState.bg2cnt = (0xFFFC & gGameState.bg2cnt) | 2;
+    gGameState.bg3cnt = (0xFFFC & gGameState.bg3cnt) | 3;
+    gGameState.bg0_vofs = 0;
+    gGameState.bg0_hofs = 0;
+    gGameState.bg1_vofs = 0;
+    gGameState.bg1_hofs = 0;
+    gGameState.bg2_vofs = 0;
+    gGameState.bg2_hofs = 0;
     gGameState.bg3_vofs = 0x100;
-    gGameState.unk_848 = 0x100;
+    gGameState.bg3_hofs = 0x100;
 }
 
 /* Original address: 0x0201BD7C */
@@ -4218,13 +4218,13 @@ void IslandProgram_EnterMosaicRevealMode(IslandProgramWork *work) {
 
     work->mode = prev;
     work->pending_mode = 0;
-    gGameState.unk_816 = 0;
+    gGameState.current_music_id = 0;
     GameAudio_PlayMusic(0U);
     IslandProgram_SetupOverviewDisplay();
-    gGameState.unk_842 = 0x100;
-    gGameState.unk_840 = 0x100;
-    gGameState.unk_846 = 0x100;
-    gGameState.unk_844 = 0;
+    gGameState.bg1_vofs = 0x100;
+    gGameState.bg1_hofs = 0x100;
+    gGameState.bg2_vofs = 0x100;
+    gGameState.bg2_hofs = 0;
 }
 
 /* Original address: 0x0201BE3C */
@@ -4234,7 +4234,7 @@ void IslandProgram_UpdateMosaicRevealMode(IslandProgramWork *work) {
     transition_complete = UpdateIslandMosaic(0U);
     if (transition_complete == 1) {
         work->mode = transition_complete;
-        gGameState.unk_85A = transition_complete;
+        gGameState.pcm_disable_pending = transition_complete;
     }
 }
 
@@ -4256,7 +4256,7 @@ void IslandProgram_EnterMessageMode(IslandProgramWork *work) {
 void IslandProgram_UpdateMessageMode(IslandProgramWork *work) {
     if (!work->current_window->draw_enabled) {
         work->mode = 1;
-    } else if ((work->current_window->current_mode >= mMsg_MODE_CURSOR) && (work->current_window->current_mode <= mMsg_MODE_CHOICE) && (work->current_window->selected_choice == -1) && ((gGameState.unk_856 != 0) || (gGameState.unk_84E != 0))) {
+    } else if ((work->current_window->current_mode >= mMsg_MODE_CURSOR) && (work->current_window->current_mode <= mMsg_MODE_CHOICE) && (work->current_window->selected_choice == -1) && ((gGameState.joybus_notice_requested != 0) || (gGameState.sleep_requested != 0))) {
         work->transition_requested = 1;
     }
 }
@@ -4316,33 +4316,33 @@ void IslandProgram_Update(void) {
     IslandProgramWork *work = &gIslandProgramWork;
 
     allow_link_reset = 1;
-    if ((work->_53 != 3) && (work->_55 != 6) && (work->mode != 2)) {
+    if ((work->notice_state != 3) && (work->transfer_state != 6) && (work->mode != 2)) {
         IslandProgram_UpdateTimeOfDayPalette(work);
     }
     if (gIslandData->weather != 0) {
-        gGameState.unk_83C = work->weather_scroll + ((u16)gGameState.unk_844 >> 1);
-        gGameState.unk_83E -= 4;
+        gGameState.bg0_hofs = work->weather_scroll + ((u16)gGameState.bg2_hofs >> 1);
+        gGameState.bg0_vofs -= 4;
         work->weather_scroll += 1;
     }
     IslandProgram_UpdateMessages(work);
-    if (work->_53 != 0) {
-        sIslandProgramNoticeUpdateProcs[work->_53](work);
+    if (work->notice_state != 0) {
+        sIslandProgramNoticeUpdateProcs[work->notice_state](work);
         transition_requested = work->transition_requested;
         if (transition_requested == 1) {
             IslandProgram_RequestNoticeTransfer(work);
             work->transition_requested = 0;
             IslandProgram_ApplyPendingNoticeState(work);
-            gGameState.unk_857 = transition_requested;
-            gGameState.unk_84E = 0;
-            gGameState.unk_84F = 0;
+            gGameState.joybus_notice_active = transition_requested;
+            gGameState.sleep_requested = 0;
+            gGameState.sleep_dialog_active = 0;
         }
-    } else if (work->_55 != 0) {
-        sIslandProgramTransferUpdateProcs[work->_55](work);
+    } else if (work->transfer_state != 0) {
+        sIslandProgramTransferUpdateProcs[work->transfer_state](work);
         allow_link_reset = 0;
-    } else if (work->_54 != 0) {
+    } else if (work->sleep_state != 0) {
         if (work->transition_requested == 0) {
             if (work->window_ready[3] == 0) {
-                sIslandProgramPromptUpdateProcs[work->_54](work);
+                sIslandProgramPromptUpdateProcs[work->sleep_state](work);
             } else if ((work->current_window == NULL) || (work->current_window->draw_enabled == 1)) {
                 work->window_ready[3] = 0;
             }
@@ -4352,15 +4352,15 @@ void IslandProgram_Update(void) {
         }
     } else if (work->mode != 0) {
         if ((work->mode == 1) && (gIslandDataReceived == 0) && (gGameState.keys.buttons.pressed & B_BUTTON)) {
-            gGameState.unk_84C = 1;
+            gGameState.transfer_requested = 1;
         }
-        gGameState.unk_84E = IslandProgram_CheckSleepRequest(work);
+        gGameState.sleep_requested = IslandProgram_CheckSleepRequest(work);
         if (work->transition_requested == 0) {
             if (work->window_ready[1] == 0) {
                 sIslandProgramModeUpdateProcs[gIslandProgramWork.mode](&gIslandProgramWork);
             } else if ((work->current_window == NULL) || (work->current_window->draw_enabled == 1)) {
                 work->window_ready[1] = 0;
-                work->input_timer = 0;
+                work->input_idle_timer = 0;
             }
         }
         if (work->transition_requested == 1) {
@@ -4389,31 +4389,31 @@ void IslandProgram_TryOpenPendingDialog(IslandProgramWork *work, u8 window, u8 a
     s32 ready = IslandProgram_PrepareDialogTransition(work, (s8)window);
 
     if (ready == 1) {
-        if (allow_notice != 0 && gGameState.unk_856 != 0) {
+        if (allow_notice != 0 && gGameState.joybus_notice_requested != 0) {
             IslandProgram_RequestNoticeTransfer(work);
             work->transition_requested = 0;
-            work->_5D = window;
-            work->_08 = work->current_window;
+            work->notice_return_window_id = window;
+            work->notice_saved_window = work->current_window;
             IslandProgram_ApplyPendingNoticeState(work);
-            gGameState.unk_857 = ready;
-            gGameState.unk_84E = 0;
-            gGameState.unk_84F = 0;
-        } else if (allow_transfer != 0 && gGameState.unk_84C != 0) {
+            gGameState.joybus_notice_active = ready;
+            gGameState.sleep_requested = 0;
+            gGameState.sleep_dialog_active = 0;
+        } else if (allow_transfer != 0 && gGameState.transfer_requested != 0) {
             IslandProgram_RequestTransferPrompt(work);
             work->transition_requested = 0;
-            work->_5F = window;
-            work->_10 = work->current_window;
+            work->transfer_return_window_id = window;
+            work->transfer_saved_window = work->current_window;
             IslandProgram_ApplyPendingTransferState(work);
-            gGameState.unk_84D = 1;
-            gGameState.unk_84E = 0;
-            gGameState.unk_84F = 0;
-        } else if (allow_prompt != 0 && gGameState.unk_84E != 0) {
+            gGameState.transfer_dialog_active = 1;
+            gGameState.sleep_requested = 0;
+            gGameState.sleep_dialog_active = 0;
+        } else if (allow_prompt != 0 && gGameState.sleep_requested != 0) {
             IslandProgram_RequestSleepPrompt(work);
             work->transition_requested = 0;
-            work->_5E = window;
-            work->_0C = work->current_window;
+            work->sleep_return_window_id = window;
+            work->sleep_saved_window = work->current_window;
             IslandProgram_ApplyPendingSleepState(work);
-            gGameState.unk_84F = 1;
+            gGameState.sleep_dialog_active = 1;
         }
     }
 }
@@ -4617,8 +4617,8 @@ void mMsg_ContinuePromptDraw(m_msg_sprite_c* sprite) {
     IslanderOamData* oam = sMsgContinuePromptAnimations[sprite->animation_index]->sprite_gfx_p;
 
     while (oam->affine_param != 0xFFFF) {
-        mMsg_CopySpriteOam(sprite, oam, (IslanderOamData *)gUnk3002410 + gGameState.unk_860);
-        gGameState.unk_860++;
+        mMsg_CopySpriteOam(sprite, oam, (IslanderOamData *)gUnk3002410 + gGameState.oam_count);
+        gGameState.oam_count++;
         oam++;
     }
 }
@@ -4653,8 +4653,8 @@ void mMsg_ChoiceCursorDraw(m_msg_sprite_c* sprite) {
     IslanderOamData* oam = sMsgChoiceCursorAnimations[sprite->animation_index]->sprite_gfx_p;
 
     while (oam->affine_param != 0xFFFF) {
-        mMsg_CopySpriteOam(sprite, oam, (IslanderOamData *)gUnk3002410 + gGameState.unk_860);
-        gGameState.unk_860++;
+        mMsg_CopySpriteOam(sprite, oam, (IslanderOamData *)gUnk3002410 + gGameState.oam_count);
+        gGameState.oam_count++;
         oam++;
     }
 }
@@ -5346,7 +5346,7 @@ void InitIslandField(void) {
 /* Original address: 0x0201D7AC */
 void ExpandIslandBg3(void) {
     if (!(0xC000 & REG_BG3CNT)) {
-        gGameState.unk_828 = (0xC000 | gGameState.unk_828) ^ 0x300;
+        gGameState.bg3cnt = (0xC000 | gGameState.bg3cnt) ^ 0x300;
         if (gIslandData->weather != 0) {
             Sound_StopEffect2(0x26U);
         }
@@ -5358,9 +5358,9 @@ s32 UpdateIslandMosaic(u8 cover) {
     IslandFieldWork *field = &gIslandFieldWork;
 
     if (cover != 0) {
-        gGameState.unk_824 |= 0x40;
-        gGameState.unk_826 |= 0x40;
-        gGameState.unk_828 |= 0x40;
+        gGameState.bg1cnt |= 0x40;
+        gGameState.bg2cnt |= 0x40;
+        gGameState.bg3cnt |= 0x40;
         field->mosaic += 0x1111;
         if (field->mosaic == 0xFFFF) {
             field->transition_state = 2;
@@ -5370,7 +5370,7 @@ s32 UpdateIslandMosaic(u8 cover) {
             REG_MOSAIC = field->mosaic;
             return 0;
         }
-    } else if (gGameState.unk_824 & 0x40) {
+    } else if (gGameState.bg1cnt & 0x40) {
         if (field->mosaic == 0) {
             field->mosaic = 0xFFFF;
         }
@@ -5378,9 +5378,9 @@ s32 UpdateIslandMosaic(u8 cover) {
         field->transition_proc_idx = 0;
         field->mosaic -= 0x1111;
         if (field->mosaic == 0) {
-            gGameState.unk_824 ^= 0x40;
-            gGameState.unk_826 ^= 0x40;
-            gGameState.unk_828 ^= 0x40;
+            gGameState.bg1cnt ^= 0x40;
+            gGameState.bg2cnt ^= 0x40;
+            gGameState.bg3cnt ^= 0x40;
             REG_MOSAIC = field->mosaic;
             return 1;
         } else {
@@ -5417,61 +5417,61 @@ void GameStateUpdateFunc_Normal(void) {
     s32 camera_y;
     u16 mosaic_enabled;
     s32 mosaic_complete;
-    u8 exit_requested;
-    u8 transfer_requested;
+    u8 joybus_notice_requested;
+    u8 sleep_requested;
 
     UpdateHourlyPalette();
-    gGameState.unk_820 = 0x3E41;
-    gGameState.unk_81C = 0x1006;
-    if (islander->_84 != 1) {
+    gGameState.bldcnt = 0x3E41;
+    gGameState.bldalpha = 0x1006;
+    if (islander->carry_state != 1) {
         mosaic_complete = UpdateIslandMosaic(0U);
         if (mosaic_complete == 0) {
-            gGameState.unk_840 = ((s32) player->x >> 8) - 0x80;
+            gGameState.bg1_hofs = ((s32) player->x >> 8) - 0x80;
             camera_y = ((s32) player->y >> 8) - 0x50;
-            gGameState.unk_842 = camera_y;
+            gGameState.bg1_vofs = camera_y;
             if (camera_y & 0x800) {
-                gGameState.unk_842 = 0;
+                gGameState.bg1_vofs = 0;
             }
-            if ((u32) gGameState.unk_842 > 0x60U) {
-                gGameState.unk_842 = 0x60;
+            if ((u32) gGameState.bg1_vofs > 0x60U) {
+                gGameState.bg1_vofs = 0x60;
             }
-            if (0x800 & gGameState.unk_840) {
-                gGameState.unk_840 = 0;
+            if (0x800 & gGameState.bg1_hofs) {
+                gGameState.bg1_hofs = 0;
             }
-            if ((u32) gGameState.unk_840 > 0x100U) {
-                gGameState.unk_840 = 0x100;
+            if ((u32) gGameState.bg1_hofs > 0x100U) {
+                gGameState.bg1_hofs = 0x100;
             }
             ChangeEmotion((u8) (islander->emotion + 1));
-            gGameState.unk_844 = gGameState.unk_840;
-            gGameState.unk_846 = gGameState.unk_842;
+            gGameState.bg2_hofs = gGameState.bg1_hofs;
+            gGameState.bg2_vofs = gGameState.bg1_vofs;
             field->gameplay_active = 1;
             return;
         }
     }
-    exit_requested = gGameState.unk_856;
-    if ((exit_requested == 1) && (islander->_84 != 1)) {
+    joybus_notice_requested = gGameState.joybus_notice_requested;
+    if ((joybus_notice_requested == 1) && (islander->carry_state != 1)) {
         Sound_StopMusic(0x14U);
         Sound_InitMusic();
         field->mosaic = 0;
         field->unk_49D = 0;
         field->gameplay_active = 0;
-        field->transition_state = exit_requested;
-        field->transition_proc_idx = exit_requested;
+        field->transition_state = joybus_notice_requested;
+        field->transition_proc_idx = joybus_notice_requested;
         return;
     }
-    transfer_requested = gGameState.unk_84E;
-    if ((transfer_requested == 1) && (islander->_84 != 1)) {
+    sleep_requested = gGameState.sleep_requested;
+    if ((sleep_requested == 1) && (islander->carry_state != 1)) {
         Sound_StopMusic(0x14U);
         Sound_InitMusic();
         field->mosaic = 0U;
         field->unk_49D = 0;
         field->gameplay_active = 0;
-        field->transition_state = transfer_requested;
+        field->transition_state = sleep_requested;
         field->transition_proc_idx = 2U;
         return;
     }
-    if ((2 & gGameState.keys.buttons.pressed) && (islander->_84 != 1)) {
-        mosaic_enabled = 0x40 & gGameState.unk_824;
+    if ((2 & gGameState.keys.buttons.pressed) && (islander->carry_state != 1)) {
+        mosaic_enabled = 0x40 & gGameState.bg1cnt;
         if (mosaic_enabled == 0) {
             Sound_StopMusic(0x14U);
             Sound_InitMusic();
@@ -5483,8 +5483,8 @@ void GameStateUpdateFunc_Normal(void) {
             return;
         }
     }
-    if ((0xC000 & REG_BG3CNT) && (0xC000 & gGameState.unk_828)) {
-        gGameState.unk_828 = (0xC000 ^ gGameState.unk_828) | 0x300;
+    if ((0xC000 & REG_BG3CNT) && (0xC000 & gGameState.bg3cnt)) {
+        gGameState.bg3cnt = (0xC000 ^ gGameState.bg3cnt) | 0x300;
         if (gIslandData->weather != 0) {
             Sound_PlayEffect2(0x26U);
         }
@@ -5508,10 +5508,10 @@ void GameStateUpdateFunc_Normal(void) {
         }
     }
     CpuSet(gFieldPaletteBuffer, (void *)PLTT, 0x200U);
-    gGameState.unk_848 = gGameState.unk_840;
+    gGameState.bg3_hofs = gGameState.bg1_hofs;
     scroll_y = field->bg3_scroll_y + 0x40;
     field->bg3_scroll_y = scroll_y;
-    gGameState.bg3_vofs = (u16) ((s32) (gGameState.unk_842 + scroll_y) >> 8);
+    gGameState.bg3_vofs = (u16) ((s32) (gGameState.bg1_vofs + scroll_y) >> 8);
     PlayerHand_Update();
     Islander_UpdateMovement();
     i = 0;
@@ -5548,7 +5548,7 @@ void IslandField_UpdateJoybusExit(void) {
     if (gIslandFieldWork.transition_state == 2) {
         ExpandIslandBg3();
         RestoreHeldItemsToField();
-        gGameState.unk_857 = 1;
+        gGameState.joybus_notice_active = 1;
         gIslandFieldWork.transition_state = 3;
     }
 }
@@ -5559,7 +5559,7 @@ void IslandField_UpdateSleepExit(void) {
     if (gIslandFieldWork.transition_state == 2) {
         ExpandIslandBg3();
         RestoreHeldItemsToField();
-        gGameState.unk_84F = 1;
+        gGameState.sleep_dialog_active = 1;
         gIslandFieldWork.transition_state = 3;
     }
 }
@@ -5575,8 +5575,8 @@ void IslandField_UpdateOverviewExit(void) {
 }
 
 static inline void DrawIslanderBehindFieldObjects(Islander_AGB *islander) {
-    if (islander->move_proc_idx == 0x14) {
-        if (islander->_84 == 2) {
+    if (islander->move_action == 0x14) {
+        if (islander->carry_state == 2) {
             Islander_Draw();
         }
     }
@@ -5596,7 +5596,7 @@ void DrawIslandField(void) {
     s32 cabana_drawn;
     u32 entity_id;
 
-    gGameState.unk_860 = 0;
+    gGameState.oam_count = 0;
     if (field->entity_active[2] == 1) {
         Entity_DrawSprite(2);
     }
@@ -5630,7 +5630,7 @@ void DrawIslandField(void) {
                 IslandBuilding_Draw(1, 2U);
                 house_drawn = 1;
             }
-            entity_id = object->entity_id;
+            entity_id = object->falling_fruit_id;
             if (entity_id != 0) {
                 if (entity_id != 0xFFFF) {
                     FallingFruit_Draw(entity_id - 1);
@@ -5644,9 +5644,9 @@ void DrawIslandField(void) {
                     } while (entity <= 2);
                 }
             }
-            distance_x = object->x - (islander->_00 >> 8);
+            distance_x = object->x - (islander->x >> 8);
             field->entity_dist_x = distance_x;
-            islander_y = islander->_04;
+            islander_y = islander->y;
             field->entity_dist_y = object->y - (islander_y >> 8);
             if (distance_x < 0) {
                 field->entity_dist_x = -distance_x;
@@ -5698,10 +5698,10 @@ void InitIslandBuilding(s32 index, u8 type, s32 tile, u8 acre) {
         } else {
             building->x = (tile & 0xF) * 16 + 0x108;
         }
-        islander->_00 = building->x << 8;
-        islander->_04 = (building->y << 8) + 0x100;
-        islander->_08 = islander->_00;
-        islander->_0C = islander->_04;
+        islander->x = building->x << 8;
+        islander->y = (building->y << 8) + 0x100;
+        islander->accepted_x = islander->x;
+        islander->accepted_y = islander->y;
         building->interaction_x = building->x - 8;
         building->interaction_y = building->y - 4;
     }
@@ -5737,7 +5737,7 @@ void IslandBuilding_Update(u8 arg0, u8 arg1) {
 /* Original address: 0x0201E060 */
 void IslandBuilding_DrawSprite(IslandBuildingSprite *sprite, s32 building_index, u8 sprite_index) {
     IslandBuilding *building = &gIslandBuildings[building_index];
-    IslanderOamData *oam = &((IslanderOamData *)gUnk3002410)[gGameState.unk_860];
+    IslanderOamData *oam = &((IslanderOamData *)gUnk3002410)[gGameState.oam_count];
 
     if (sprite_index != 5 || building->state == 1) {
         oam->shape = (sprite->oam_attributes >> 14) & 3;
@@ -5746,12 +5746,12 @@ void IslandBuilding_DrawSprite(IslandBuildingSprite *sprite, s32 building_index,
         oam->v_flip = sprite->v_flip;
         oam->palette_num = sprite->palette_num;
         oam->priority = 1;
-        oam->x = sprite->x_offset + (building->x - gGameState.unk_844);
-        oam->y = sprite->y_offset + (building->y - (u8)gGameState.unk_846);
+        oam->x = sprite->x_offset + (building->x - gGameState.bg2_hofs);
+        oam->y = sprite->y_offset + (building->y - (u8)gGameState.bg2_vofs);
         oam->tile_num = sprite->tile_num;
         oam->mosaic = 1;
     }
-    gGameState.unk_860++;
+    gGameState.oam_count++;
 }
 
 /* Original address: 0x0201E178 */
@@ -5814,21 +5814,21 @@ void AnimatedFieldObject_Draw(s32 index) {
     IslanderOamData *source = sFieldAnimationFrames[object->anim_frame]->sprite_gfx_p;
 
     while (source->affine_param != 0xFFFF) {
-        IslanderOamData *oam = &((IslanderOamData *)gUnk3002410)[gGameState.unk_860];
+        IslanderOamData *oam = &((IslanderOamData *)gUnk3002410)[gGameState.oam_count];
 
-        oam->y = source->y + object->y - (u8)gGameState.unk_846;
+        oam->y = source->y + object->y - (u8)gGameState.bg2_vofs;
         oam->obj_mode = source->obj_mode;
         oam->bpp = source->bpp;
         oam->shape = source->shape;
         oam->h_flip = source->h_flip;
         oam->v_flip = source->v_flip;
         oam->size = source->size;
-        oam->x = source->x + object->x - gGameState.unk_844;
+        oam->x = source->x + object->x - gGameState.bg2_hofs;
         oam->tile_num = source->tile_num;
         oam->mosaic = 1;
         oam->priority = 1;
         oam->palette_num = source->palette_num;
-        gGameState.unk_860++;
+        gGameState.oam_count++;
         source++;
     }
 }
@@ -5845,7 +5845,7 @@ void FieldObject_AttachEntity(s32 object_index, s32 type) {
         if (field->entity_active[slot + 24] == 0) {
             field->entity_active[slot + 24] = 1;
             FallingFruit_Init(object_index, slot, type, object->layer);
-            object->entity_id = slot + 1;
+            object->falling_fruit_id = slot + 1;
             break;
         }
     }
@@ -5859,22 +5859,22 @@ void FieldObject_Init(s32 object_index, u16 type, s32 tile, u8 layer) {
     object = &gFieldObjects[object_index];
     object->type = type;
     object->x_flip = 0;
-    object->_10 = 0;
-    object->_16 = 0;
-    object->_18 = 0;
-    object->_1A = 0;
-    object->state = 0;
+    object->rotation = 0;
+    object->topple_x_offset = 0;
+    object->topple_y_offset = 0;
+    object->topple_extra_x_offset = 0;
+    object->action_state = 0;
     object->anim_counter = 0;
     object->anim_frame = 0;
     object->anim_timer = 0;
-    object->state_timer = 0;
-    object->entity_id = 0;
-    object->_2B = 0;
-    object->_1E = 0;
-    object->_20 = 0;
-    object->_22 = 0;
-    object->_2C = 0;
-    object->_2D = 0;
+    object->hits_remaining = 0;
+    object->falling_fruit_id = 0;
+    object->fruit_drop_processed = 0;
+    object->drop_tile_x = 0;
+    object->drop_tile_y = 0;
+    object->drop_existing_item = 0;
+    object->shake_animation_paused = 0;
+    object->favorite_hour_item_eligible = 0;
     object->y = (0xF0 & tile) + 8;
     tile_x = (0xF & tile) * 0x10;
     object->x = tile_x + 8;
@@ -5882,7 +5882,7 @@ void FieldObject_Init(s32 object_index, u16 type, s32 tile, u8 layer) {
     if (layer != 0) {
         object->x = tile_x + 0x108;
     }
-    object->state_timer = sFieldObjectInitialTimers[object->type];
+    object->hits_remaining = sFieldObjectInitialTimers[object->type];
     object->layer = layer;
     if (object->type == 0x12) {
         FieldObject_AttachEntity(object_index, 0U);
@@ -5903,7 +5903,7 @@ void FieldObject_Init(s32 object_index, u16 type, s32 tile, u8 layer) {
         FieldObject_AttachEntity(object_index, 0x13U);
     }
     if (object->type == 6) {
-        object->_2D = 1;
+        object->favorite_hour_item_eligible = 1;
     }
 }
 
@@ -5921,7 +5921,7 @@ static FieldObject_PROC gFieldObjectProcs[] = {
 /* Original address: 0x0201E538 */
 void FieldObject_Update(s32 idx) {
     FieldObject *object = &gFieldObjects[idx];
-    gFieldObjectProcs[object->state](idx);
+    gFieldObjectProcs[object->action_state](idx);
 }
 
 /* Original address: 0x0201E560 */
@@ -5951,7 +5951,7 @@ void FieldObject_SpawnToppleEffect(s32 object_index) {
                 }
                 entity->x = object->x + offset_x;
                 entity->y = object->y - offset_y;
-                entity->type = 1;
+                entity->update_type = 1;
                 break;
             }
         }
@@ -5965,7 +5965,7 @@ void FieldObject_UpdateForegroundItem(s32 object_index) {
 
     object = &gFieldObjects[object_index];
     item = 0;
-    if (object->state == 3) {
+    if (object->action_state == 3) {
         if (object->type == 3) {
             item = 1;
         }
@@ -6039,13 +6039,13 @@ void FieldObject_HandleHit(s32 object_index) {
     u8 acre;
     FallingFruit *fruit;
 
-    timer = object->state_timer;
+    timer = object->hits_remaining;
     if (timer == 0 || (timer & 0x80)) {
         FieldObject_SpawnToppleEffect(object_index);
         object->anim_timer = 8;
         object->anim_counter = 0;
-        object->_14 = 0xFFFF;
-        object->state = 3;
+        object->rotation_threshold = 0xFFFF;
+        object->action_state = 3;
         FieldObject_UpdateForegroundItem(object_index);
         Sound_PlayEffect0(0x13);
     } else {
@@ -6053,45 +6053,45 @@ void FieldObject_HandleHit(s32 object_index) {
         object->anim_timer = 2;
         object->anim_counter = 0;
         object->anim_frame = 0;
-        object->state = 2;
+        object->action_state = 2;
     }
-    if (object->entity_id == 0) {
+    if (object->falling_fruit_id == 0) {
         return;
     }
-    if (object->_2B != 0) {
+    if (object->fruit_drop_processed != 0) {
         return;
     }
     for (fruit_index = 0; fruit_index < 3; fruit_index++) {
-        if (field->entity_active[fruit_index + 21] == 1 && object->entity_id != 0) {
-            field->entity_active[object->entity_id + 23] = 0;
-            object->entity_id = 0;
+        if (field->entity_active[fruit_index + 21] == 1 && object->falling_fruit_id != 0) {
+            field->entity_active[object->falling_fruit_id + 23] = 0;
+            object->falling_fruit_id = 0;
             return;
         }
         for (candidate = 0; candidate < 4; candidate++) {
             tile = object->tile_idx;
             y = (tile + sFruitDropOffsetsY[fruit_index][candidate] * 16) & 0xF0;
-            object->_20 = y;
+            object->drop_tile_y = y;
             x = ((tile & 0xF) + sFruitDropOffsetsX[fruit_index][candidate]) & 0xF;
-            object->_1E = x;
+            object->drop_tile_x = x;
             acre = 0;
             if (object->layer == 0) {
-                object->_22 = gIslandData->fgblock[0][0].items[y >> 4][object->_1E];
+                object->drop_existing_item = gIslandData->fgblock[0][0].items[y >> 4][object->drop_tile_x];
                 fg_tile = field->fg_tiles[0][x | y];
                 if (x <= 1) {
                     acre = 1;
-                    object->_22 = gIslandData->fgblock[0][1].items[y >> 4][object->_1E];
+                    object->drop_existing_item = gIslandData->fgblock[0][1].items[y >> 4][object->drop_tile_x];
                     fg_tile = field->fg_tiles[1][x | y];
                 }
             }
             if (object->layer != 0) {
                 acre = 1;
-                tile_x = object->_1E;
-                tile_y = object->_20;
-                object->_22 = gIslandData->fgblock[0][1].items[tile_y >> 4][tile_x & 0xF];
+                tile_x = object->drop_tile_x;
+                tile_y = object->drop_tile_y;
+                object->drop_existing_item = gIslandData->fgblock[0][1].items[tile_y >> 4][tile_x & 0xF];
                 fg_tile = field->fg_tiles[1][(u8)(tile_y + tile_x)];
                 if (tile_x > 13) {
                     acre = 0;
-                    object->_22 = gIslandData->fgblock[0][0].items[tile_y >> 4][tile_x & 0xF];
+                    object->drop_existing_item = gIslandData->fgblock[0][0].items[tile_y >> 4][tile_x & 0xF];
                     fg_tile = field->fg_tiles[0][(u8)(tile_y + tile_x)];
                 }
             }
@@ -6100,9 +6100,9 @@ void FieldObject_HandleHit(s32 object_index) {
             } else {
                 object->drop_tilemap = (u16 *)0x0600A800;
             }
-            object->drop_tilemap = object->drop_tilemap + ((object->_20 + object->_1E) & 0xF0) * 4 +
-                                   ((object->_20 + object->_1E) & 0xF) * 2;
-            if ((object->_22 == 0 && fg_tile == 0xFFF &&
+            object->drop_tilemap = object->drop_tilemap + ((object->drop_tile_y + object->drop_tile_x) & 0xF0) * 4 +
+                                   ((object->drop_tile_y + object->drop_tile_x) & 0xF) * 2;
+            if ((object->drop_existing_item == 0 && fg_tile == 0xFFF &&
                  (u16)((*object->drop_tilemap & 0x3FF) - 0x20) <= 0x5E) || candidate == 3) {
                 field->entity_active[fruit_index + 21] = 1;
                 if (object->type == 18) {
@@ -6124,18 +6124,18 @@ void FieldObject_HandleHit(s32 object_index) {
                     FallingFruit_Init(object_index, fruit_index, fruit_index + 20, acre);
                 }
                 if (acre == 0) {
-                    field->fg_tiles[0][(u8)(object->_20 + (u8)object->_1E)] = 0x7777;
+                    field->fg_tiles[0][(u8)(object->drop_tile_y + (u8)object->drop_tile_x)] = 0x7777;
                 } else {
-                    field->fg_tiles[1][(u8)(object->_20 + (u8)object->_1E)] = 0x7777;
+                    field->fg_tiles[1][(u8)(object->drop_tile_y + (u8)object->drop_tile_x)] = 0x7777;
                 }
                 fruit = &gFallingFruit[fruit_index];
-                fruit->landing_x = object->_1E * 16;
+                fruit->landing_x = object->drop_tile_x * 16;
                 if (acre != 0) {
                     fruit->landing_x |= 0x100;
                 }
-                fruit->landing_y = object->_20;
-                fruit->tile_idx = object->_1E + object->_20;
-                if (object->_22 == 0 && fg_tile == 0xFFF) {
+                fruit->landing_y = object->drop_tile_y;
+                fruit->tile_idx = object->drop_tile_x + object->drop_tile_y;
+                if (object->drop_existing_item == 0 && fg_tile == 0xFFF) {
                     fruit->can_land = 1;
                 }
                 break;
@@ -6146,7 +6146,7 @@ void FieldObject_HandleHit(s32 object_index) {
         }
     }
     FieldObject_UpdateForegroundItem(object_index);
-    if (object->state == 3) {
+    if (object->action_state == 3) {
         if (object->layer == 0) {
             if (object->type == 18) {
                 field->fg_tiles[0][object->tile_idx] = 0x25;
@@ -6162,9 +6162,9 @@ void FieldObject_HandleHit(s32 object_index) {
             }
         }
     }
-    object->_2B = 1;
-    field->entity_active[object->entity_id + 23] = 0;
-    object->entity_id = 0xFFFF;
+    object->fruit_drop_processed = 1;
+    field->entity_active[object->falling_fruit_id + 23] = 0;
+    object->falling_fruit_id = 0xFFFF;
 }
 
 /* Original address: 0x0201EB48 */
@@ -6178,7 +6178,7 @@ void FieldObject_UpdateShake(s32 object_index) {
     s32 x;
     s32 y;
 
-    if (object->_2C == 0) {
+    if (object->shake_animation_paused == 0) {
         object->anim_timer--;
         if (object->anim_timer == 0) {
             object->anim_timer = 2;
@@ -6200,7 +6200,7 @@ void FieldObject_UpdateShake(s32 object_index) {
                         random = rand_u16(&gGameState);
                         y = object->y - 16;
                         entity->y = y - random % 17;
-                        entity->type = 3;
+                        entity->update_type = 3;
                         break;
                     }
                 }
@@ -6211,8 +6211,8 @@ void FieldObject_UpdateShake(s32 object_index) {
         object->anim_timer = 0;
         object->anim_counter = 0;
         object->anim_frame = 0;
-        object->_2C = 0;
-        object->state = 0;
+        object->shake_animation_paused = 0;
+        object->action_state = 0;
     }
 }
 
@@ -6227,7 +6227,7 @@ void FieldObject_UpdateTopple(s32 object_index) {
     if (object->anim_timer != 0) {
         object->anim_timer--;
         if (!(object->anim_timer & 1)) {
-            object->_16++;
+            object->topple_x_offset++;
         }
     } else {
         rotation_step = 0x200;
@@ -6243,31 +6243,31 @@ void FieldObject_UpdateTopple(s32 object_index) {
             drop_angle = 0xF800;
             break;
         }
-        rotation_speed = rotation_step + object->_12;
-        object->_12 = rotation_speed;
+        rotation_speed = rotation_step + object->rotation_speed;
+        object->rotation_speed = rotation_speed;
         if ((u16)rotation_speed > rotation_step) {
-            object->_12 = rotation_step;
+            object->rotation_speed = rotation_step;
         }
-        object->_10 -= object->_12;
-        if (object->_10 <= object->_14) {
-            rotation_threshold = (object->_14 & 0xFF00) - rotation_step;
-            object->_14 = rotation_threshold;
-            object->_16++;
+        object->rotation -= object->rotation_speed;
+        if (object->rotation <= object->rotation_threshold) {
+            rotation_threshold = (object->rotation_threshold & 0xFF00) - rotation_step;
+            object->rotation_threshold = rotation_threshold;
+            object->topple_x_offset++;
             if ((u16)rotation_threshold < drop_angle) {
-                object->_18++;
+                object->topple_y_offset++;
             }
             if (object->type != 3 && object->type != 14) {
-                if (object->_1A <= 5) {
-                    object->_1A++;
+                if (object->topple_extra_x_offset <= 5) {
+                    object->topple_extra_x_offset++;
                 }
             }
         }
-        if (object->_10 <= 0xD000) {
-            object->_10 = 0xD000;
+        if (object->rotation <= 0xD000) {
+            object->rotation = 0xD000;
             object->anim_counter++;
             if (object->anim_counter > 0x20) {
-                object->state = 4;
-                object->entity_id = 0;
+                object->action_state = 4;
+                object->falling_fruit_id = 0;
             }
         }
     }
@@ -6284,7 +6284,7 @@ void FieldObject_DrawSprite(FieldObjectSpriteFrame *frame, s32 object_index) {
     struct ObjAffineSrcData transform __attribute__((aligned(4)));
     struct { s16 pa, pb, pc, pd; } matrix;
     FieldObject *object = &gFieldObjects[object_index];
-    IslanderOamData *oam = &((IslanderOamData *)gUnk3002410)[gGameState.unk_860];
+    IslanderOamData *oam = &((IslanderOamData *)gUnk3002410)[gGameState.oam_count];
 
     oam->shape = (frame->oam_attributes >> 14) & 3;
     oam->size = frame->oam_attributes >> 30;
@@ -6293,16 +6293,16 @@ void FieldObject_DrawSprite(FieldObjectSpriteFrame *frame, s32 object_index) {
     oam->priority = 1;
     oam->palette_num = 0;
     oam->mosaic = 1;
-    if ((u8)(object->state - 3) <= 1) {
+    if ((u8)(object->action_state - 3) <= 1) {
         oam->affine_mode = 1;
         oam->matrix_num = 0;
         oam->obj_mode = 0;
         transform.xScale = 0x100;
         transform.yScale = 0x100;
         if (object->x_flip == 0) {
-            transform.rotation = object->_10;
+            transform.rotation = object->rotation;
         } else {
-            transform.rotation = -object->_10;
+            transform.rotation = -object->rotation;
         }
         ObjAffineSet(&transform, &matrix, 1, 2);
         oam = (IslanderOamData *)gUnk3002410;
@@ -6312,25 +6312,25 @@ void FieldObject_DrawSprite(FieldObjectSpriteFrame *frame, s32 object_index) {
         oam++;
         oam->affine_param = matrix.pc;
         oam[1].affine_param = matrix.pd;
-        oam = &((IslanderOamData *)gUnk3002410)[gGameState.unk_860];
+        oam = &((IslanderOamData *)gUnk3002410)[gGameState.oam_count];
     }
     if (object->x_flip == 0) {
-        oam->x = frame->x_offset + (object->x - gGameState.unk_844) + object->_16 + object->_1A;
+        oam->x = frame->x_offset + (object->x - gGameState.bg2_hofs) + object->topple_x_offset + object->topple_extra_x_offset;
     } else {
-        oam->x = frame->x_offset + (object->x - gGameState.unk_844) - object->_16 - object->_1A;
+        oam->x = frame->x_offset + (object->x - gGameState.bg2_hofs) - object->topple_x_offset - object->topple_extra_x_offset;
     }
-    oam->y = frame->y_offset + (object->y - (u8)gGameState.unk_846) + (u8)object->_18;
-    gGameState.unk_860++;
+    oam->y = frame->y_offset + (object->y - (u8)gGameState.bg2_vofs) + (u8)object->topple_y_offset;
+    gGameState.oam_count++;
 }
 
 /* Original address: 0x0201EF44 */
 void FieldObject_Draw(s32 object_index) {
     FieldObject *object = &gFieldObjects[object_index];
-    u16 camera_y = gGameState.unk_846;
+    u16 camera_y = gGameState.bg2_vofs;
     s32 y = object->y;
 
     if (y >= camera_y && y <= camera_y + 200 &&
-        (object->state != 3 || !(object->anim_counter & 2))) {
+        (object->action_state != 3 || !(object->anim_counter & 2))) {
         u8 *frame_indices = gFieldObjectSpriteFrameIndices;
         u16 type = object->type;
         u8 anim_frame = object->anim_frame;
@@ -6345,19 +6345,19 @@ s32 Islander_StoreItem(u16 item_type, u16 generator_idx) {
     Islander_AGB *islander = &gIslander;
     ItemGroupStruct *definition = &g_ItemDefinitions[item_type];
     mActor_name_t *stored_item;
-    u16 *stored_tile;
+    u16 *stored_type_plus_one;
     s32 slot;
     ItemGeneratorDef *generator;
 
-    islander->_40 = 0x800000;
-    islander->_40 = definition->held_item_oam_attr2 | 0x800000;
+    islander->held_item_sprite = 0x800000;
+    islander->held_item_sprite = definition->held_item_oam_attr2 | 0x800000;
     if (definition->interaction_type != 4) {
         slot = 0;
-        stored_item = islander->stored_items;
-        stored_tile = islander->stored_item_tile_ids;
+        stored_item = islander->stored_item_ids;
+        stored_type_plus_one = islander->stored_item_type_plus_one;
         do {
-            if (*stored_tile == 0) {
-                *stored_tile = item_type + 1;
+            if (*stored_type_plus_one == 0) {
+                *stored_type_plus_one = item_type + 1;
                 generator = &gItemGeneratorDefs[generator_idx];
                 if (generator->use_island_id == 0) {
                     *stored_item = generator->item;
@@ -6367,7 +6367,7 @@ s32 Islander_StoreItem(u16 item_type, u16 generator_idx) {
                 return 1;
             }
             stored_item++;
-            stored_tile++;
+            stored_type_plus_one++;
             slot++;
         } while (slot < 5);
     }
@@ -6416,16 +6416,16 @@ s16 Islander_GetFishingItem(void) {
     u32 item_flags;
 
     reward_idx = (islander->emotion & 3) * 16;
-    if ((islander->state & 0xF) == 8) {
+    if ((islander->equipped_tool_state & 0xF) == 8) {
         reward_idx += 8;
     }
     reward_idx = (reward_idx + rand_u16(&gGameState) % 8) & 0x3F;
     generator_idx = sFishingRewardGeneratorIndices[reward_idx];
     if ((u16)(generator_idx - 0x7E) > 1) {
-        if (generator_idx != 0x25 && islander->stored_item_tile_ids[4] != 0) {
+        if (generator_idx != 0x25 && islander->stored_item_type_plus_one[4] != 0) {
             definition = &g_ItemDefinitions[sFishingRewardItemTypes[reward_idx]];
             item_flags = 0x800000;
-            islander->_40 = item_flags;
+            islander->held_item_sprite = item_flags;
             item_attr2 = definition->held_item_oam_attr2;
         } else {
             Islander_StoreItem(sFishingRewardItemTypes[reward_idx], sFishingRewardGeneratorIndices[reward_idx]);
@@ -6433,10 +6433,10 @@ s16 Islander_GetFishingItem(void) {
         }
     } else {
         item_flags = 0x800000;
-        islander->_40 = item_flags;
+        islander->held_item_sprite = item_flags;
         item_attr2 = FishingSpecialCatchAttr2(generator_idx);
     }
-    islander->_40 = item_attr2 | item_flags;
+    islander->held_item_sprite = item_attr2 | item_flags;
     return 0xFE;
 }
 
@@ -6448,7 +6448,7 @@ s32 Islander_SetupDigApproach(u8 tile_offset) {
     Islander_AGB *islander = &gIslander;
     IslandFieldWork *field = &gIslandFieldWork;
     u16 items[2];
-    u8 tile = islander->stand_on_tile_idx;
+    u8 tile = islander->tile_idx;
     u8 row = (tile & 0xF0) + (tile_offset & 0xF0);
     u32 right_tile = row;
     u32 left_tile = row;
@@ -6460,9 +6460,9 @@ s32 Islander_SetupDigApproach(u8 tile_offset) {
 
     right_tile |= ((tile & 0xF) + (tile_offset & 0xF)) & 0xF;
     left_tile |= ((tile & 0xF) - (tile_offset & 0xF)) & 0xF;
-    islander->world_state = 0;
-    islander->_18 = 0;
-    if ((islander->_00 & 0xFF0000) == 0) {
+    islander->interaction_tile = 0;
+    islander->next_target_x = 0;
+    if ((islander->x & 0xFF0000) == 0) {
         right_tiles = (u16 *)BG_SCREEN_ADDR(20);
         items[0] = field->fg_tiles[0][right_tile];
         if ((tile & 0xF) > (right_tile & 0xF)) {
@@ -6472,7 +6472,7 @@ s32 Islander_SetupDigApproach(u8 tile_offset) {
         left_tiles = (u16 *)BG_SCREEN_ADDR(20);
         items[1] = field->fg_tiles[0][left_tile];
     } else {
-        islander->world_state = 0x8000;
+        islander->interaction_tile = 0x8000;
         right_tiles = (u16 *)BG_SCREEN_ADDR(21);
         items[0] = field->fg_tiles[1][right_tile];
         left_tiles = (u16 *)BG_SCREEN_ADDR(21);
@@ -6482,7 +6482,7 @@ s32 Islander_SetupDigApproach(u8 tile_offset) {
             items[1] = field->fg_tiles[0][left_tile];
         }
     }
-    islander->world_state |= islander->stand_on_tile_idx;
+    islander->interaction_tile |= islander->tile_idx;
     right_row = right_tile & 0xF0;
     right_col = right_tile & 0xF;
     right_tiles += right_row * 4;
@@ -6496,29 +6496,29 @@ s32 Islander_SetupDigApproach(u8 tile_offset) {
         if (CheckSurroundingCollision(items[1], left_info) != 0 ||
             (tile_id = *left_info & 0x3FF) <= 5 ||
             (u16)(tile_id - 0x10) <= 5 || tile_id > 0xAF) {
-            islander->world_state = 0;
+            islander->interaction_tile = 0;
             return 0;
         }
         if ((u32)left_info & 0x800) {
-            islander->_18 = 0x10000;
+            islander->next_target_x = 0x10000;
         }
-        islander->_99[0] = 0x70;
-        islander->_10 = islander->_00 & 0xFF0000;
-        islander->_10 |= ((islander->stand_on_tile_idx & 0xF) << 12) + 0x800;
-        islander->_14 = ((islander->stand_on_tile_idx & 0xF0) << 8) + 0x800;
-        islander->_18 |= ((left_tile & 0xF) << 12) + 0x800;
-        islander->_1C = ((left_tile & 0xF0) << 8) + 0x800;
+        islander->target_action = 0x70;
+        islander->target_x = islander->x & 0xFF0000;
+        islander->target_x |= ((islander->tile_idx & 0xF) << 12) + 0x800;
+        islander->target_y = ((islander->tile_idx & 0xF0) << 8) + 0x800;
+        islander->next_target_x |= ((left_tile & 0xF) << 12) + 0x800;
+        islander->next_target_y = ((left_tile & 0xF0) << 8) + 0x800;
         return left_tile;
     }
     if ((u32)right_info & 0x800) {
-        islander->_18 = 0x10000;
+        islander->next_target_x = 0x10000;
     }
-    islander->_99[0] = 0x60;
-    islander->_10 = islander->_00 & 0xFF0000;
-    islander->_10 |= ((islander->stand_on_tile_idx & 0xF) << 12) + 0x800;
-    islander->_14 = ((islander->stand_on_tile_idx & 0xF0) << 8) + 0x800;
-    islander->_18 |= (right_col << 12) + 0x800;
-    islander->_1C = (right_row << 8) + 0x800;
+    islander->target_action = 0x60;
+    islander->target_x = islander->x & 0xFF0000;
+    islander->target_x |= ((islander->tile_idx & 0xF) << 12) + 0x800;
+    islander->target_y = ((islander->tile_idx & 0xF0) << 8) + 0x800;
+    islander->next_target_x |= (right_col << 12) + 0x800;
+    islander->next_target_y = (right_row << 8) + 0x800;
     return right_tile;
 }
 
@@ -6532,17 +6532,17 @@ s32 Islander_CanDigHere(void) {
     u8 tile_idx;
     s32 i;
 
-    Islander_UpdateCollisionTiles(islander->_8B);
+    Islander_UpdateCollisionTiles(islander->direction);
     for (i = 0; i < 4; i++) {
-        if (CheckSurroundingCollision(islander->_48[i], islander->_44) != 0) {
+        if (CheckSurroundingCollision(islander->surrounding_item_types[i], islander->collision_tilemap) != 0) {
             return 0;
         }
-        if ((islander->_00 & 0xFF0000) == 0) {
+        if ((islander->x & 0xFF0000) == 0) {
             tilemap = (u8 *)BG_SCREEN_ADDR(20);
         } else {
             tilemap = (u8 *)BG_SCREEN_ADDR(21);
         }
-        tile_idx = islander->stand_on_tile_idx;
+        tile_idx = islander->tile_idx;
         tilemap = (0xF0 & tile_idx) * 8 + tilemap;
         tilemap += (0xF & tile_idx) * 4;
         if ((u16)((*(u16 *)(tilemap + collision_check_offsets[i]) & 0x3FF) - 0x20) > 0x5E) {
@@ -6577,54 +6577,54 @@ s32 Islander_ChangeMoveDir(s32 target_x, s32 target_y, u8 move_mode) {
     u8 direction_diff;
     IslanderDirectionSector *sectors;
 
-    islander->dir_x = target_x - islander->_00;
-    islander->dir_y = target_y - islander->_04;
-    if (islander->dir_x < 0) {
-        islander->dir_x = -islander->dir_x;
+    islander->work_x = target_x - islander->x;
+    islander->work_y = target_y - islander->y;
+    if (islander->work_x < 0) {
+        islander->work_x = -islander->work_x;
     }
-    if (islander->dir_y < 0) {
-        islander->dir_y = -islander->dir_y;
+    if (islander->work_y < 0) {
+        islander->work_y = -islander->work_y;
     }
-    if (islander->dir_x <= 0x100 && islander->dir_y <= 0x100) {
+    if (islander->work_x <= 0x100 && islander->work_y <= 0x100) {
         return 1;
     }
 
-    islander->dir_x = (target_x - islander->_00) >> 8;
-    islander->dir_y = (target_y - islander->_04) >> 8;
-    old_direction = islander->_8B;
+    islander->work_x = (target_x - islander->x) >> 8;
+    islander->work_y = (target_y - islander->y) >> 8;
+    old_direction = islander->direction;
     switch (move_mode) {
     case 0:
         if (Islander_MoveTowardX(0, target_x)) {
             Islander_MoveTowardY(0, target_y);
-            islander->dir_x = 0;
+            islander->work_x = 0;
         } else {
-            islander->dir_y = 0;
+            islander->work_y = 0;
         }
         break;
     case 1:
         if (Islander_MoveTowardY(0, target_y)) {
             Islander_MoveTowardX(0, target_x);
-            islander->dir_y = 0;
+            islander->work_y = 0;
         } else {
-            islander->dir_x = 0;
+            islander->work_x = 0;
         }
         break;
     default:
         Islander_MoveTowardX(1, target_x);
         Islander_MoveTowardY(1, target_y);
-        angle = ArcTan2((s16)islander->dir_x, (s16)islander->dir_y);
+        angle = ArcTan2((s16)islander->work_x, (s16)islander->work_y);
         sectors = Islander_GetDirectionSector(angle);
-        direction_diff = islander->_8B - sectors->direction;
+        direction_diff = islander->direction - sectors->direction;
         direction = sectors->direction;
         if (direction_diff & 0x80) {
             direction_diff = ~direction_diff;
             direction_diff++;
         }
         if ((u8)(direction_diff - 2) <= 4) {
-            islander->_8B = direction;
+            islander->direction = direction;
         }
     }
-    if (islander->_8B != old_direction) {
+    if (islander->direction != old_direction) {
         Islander_AdjustAnimForTool();
     }
     return 0;
@@ -6639,8 +6639,8 @@ static s32 sIslanderCollisionSampleOffsets[8] = {
 void Islander_UpdateCollisionTiles(u8 direction) {
     Islander_AGB *islander = &gIslander;
     IslandFieldWork *field = &gIslandFieldWork;
-    s32 y = (islander->_04 >> 8) & 0xFF0;
-    s32 x = (islander->_00 >> 8) & 0xFF0;
+    s32 y = (islander->y >> 8) & 0xFF0;
+    s32 x = (islander->x >> 8) & 0xFF0;
     s32 i;
     u8 tile_idx;
     s32 terrain_tile_idx;
@@ -6649,32 +6649,32 @@ void Islander_UpdateCollisionTiles(u8 direction) {
     /* The direction argument is unused in the original routine. */
     tile_idx = y;
     tile_idx |= (x & 0xF0) >> 4;
-    islander->stand_on_tile_idx = tile_idx;
+    islander->tile_idx = tile_idx;
     for (i = 0; i < 4; i++) {
-        x = islander->_00 + sIslanderCollisionSampleOffsets[(u8)(i * 2)];
-        y = islander->_04 + sIslanderCollisionSampleOffsets[(u8)(i * 2 + 1)];
+        x = islander->x + sIslanderCollisionSampleOffsets[(u8)(i * 2)];
+        y = islander->y + sIslanderCollisionSampleOffsets[(u8)(i * 2 + 1)];
         tile_idx = (y >> 8) & ~0xF;
         tile_idx |= ((x >> 8) & 0xF0) >> 4;
         if ((x & 0xFF0000) == 0) {
             islander->surrounding_tile_indices[i] = tile_idx;
-            islander->_48[i] = field->fg_tiles[0][tile_idx];
+            islander->surrounding_item_types[i] = field->fg_tiles[0][tile_idx];
         } else {
             islander->surrounding_tile_indices[i] = tile_idx;
-            islander->_48[i] = field->fg_tiles[1][tile_idx];
+            islander->surrounding_item_types[i] = field->fg_tiles[1][tile_idx];
         }
     }
-    islander->dir_x = islander->_00 - 0x200;
-    islander->dir_y = islander->_04 + 0x200;
-    y = (islander->dir_y >> 8) & 0xFF0;
-    x = (islander->dir_x >> 8) & 0xFF0;
+    islander->work_x = islander->x - 0x200;
+    islander->work_y = islander->y + 0x200;
+    y = (islander->work_y >> 8) & 0xFF0;
+    x = (islander->work_x >> 8) & 0xFF0;
     terrain_tile_idx = y | ((x & 0xF0) >> 4);
-    islander->_8F = terrain_tile_idx;
-    if ((islander->dir_x & 0xFF0000) == 0) {
+    islander->terrain_tile_idx = terrain_tile_idx;
+    if ((islander->work_x & 0xFF0000) == 0) {
         tilemap = (u16 *)BG_SCREEN_ADDR(20);
     } else {
         tilemap = (u16 *)BG_SCREEN_ADDR(21);
     }
-    islander->_44 = (terrain_tile_idx & 0xF0) * 4 + tilemap + (terrain_tile_idx & 0xF) * 2;
+    islander->collision_tilemap = (terrain_tile_idx & 0xF0) * 4 + tilemap + (terrain_tile_idx & 0xF) * 2;
 }
 
 /* Original address: 0x0201F660 */
@@ -6728,30 +6728,30 @@ s32 Islander_ChooseNewMoveDirection(u8 allow_reverse) {
     s32 count;
 
     for (direction = 0; direction < 8; direction++) {
-        islander->_A2[direction] = 0;
-        islander->_AA[direction] = 0xFF;
+        islander->blocked_directions[direction] = 0;
+        islander->direction_candidates[direction] = 0xFF;
     }
 
-    islander->_A2[islander->_8B] = 1;
+    islander->blocked_directions[islander->direction] = 1;
     if (allow_reverse == 0) {
-        direction = islander->_8B + 4;
+        direction = islander->direction + 4;
         if (direction > 7) {
-            direction = islander->_8B - 4;
+            direction = islander->direction - 4;
         }
-        islander->_A2[direction] = 1;
+        islander->blocked_directions[direction] = 1;
     }
 
     for (direction = 0; direction < 8; direction++) {
-        if (islander->_A2[direction] == 0 && Islander_CanMoveInDirection(direction) == 0) {
-            islander->_A2[direction] = 1;
+        if (islander->blocked_directions[direction] == 0 && Islander_CanMoveInDirection(direction) == 0) {
+            islander->blocked_directions[direction] = 1;
         }
     }
 
     direction = 0;
     count = 0;
     for (; direction < 8; direction++) {
-        if (islander->_A2[direction] == 0) {
-            islander->_AA[count] = direction;
+        if (islander->blocked_directions[direction] == 0) {
+            islander->direction_candidates[count] = direction;
             count++;
         }
     }
@@ -6759,7 +6759,7 @@ s32 Islander_ChooseNewMoveDirection(u8 allow_reverse) {
     if (count == 0) {
         return 0x777;
     } else {
-        direction = islander->_AA[rand_u16(&gGameState) % count];
+        direction = islander->direction_candidates[rand_u16(&gGameState) % count];
         return direction;
     }
 }
@@ -6772,24 +6772,24 @@ s32 Islander_CanMoveInDirection(u8 direction) {
     Islander_AGB *islander = &gIslander;
     IslandFieldWork *field = &gIslandFieldWork;
     s32 offset_idx = direction * 2;
-    s32 x = islander->_00 + gIslanderMoveCollisionOffsets[offset_idx];
+    s32 x = islander->x + gIslanderMoveCollisionOffsets[offset_idx];
     s32 y_offset = gIslanderMoveCollisionOffsets[offset_idx + 1] + 0x800;
-    s32 y = islander->_04 + y_offset;
+    s32 y = islander->y + y_offset;
     s32 row = (y >> 8) & ~0xF;
     u8 tile = ((x >> 12) & 0xF) | row;
     u32 tilemap;
 
     if ((x & 0xFF0000) == 0) {
-        islander->_48[0] = field->fg_tiles[0][tile];
+        islander->surrounding_item_types[0] = field->fg_tiles[0][tile];
         tilemap = BG_SCREEN_ADDR(20);
     } else {
-        islander->_48[0] = field->fg_tiles[1][tile];
+        islander->surrounding_item_types[0] = field->fg_tiles[1][tile];
         tilemap = BG_SCREEN_ADDR(21);
     }
     tilemap = (tile & 0xF0) * 8 + tilemap;
     tilemap += (tile & 0xF) * 4;
-    islander->_44 = (u16 *)tilemap;
-    if (CheckSurroundingCollision(islander->_48[0], (u16 *)tilemap) == 0) {
+    islander->collision_tilemap = (u16 *)tilemap;
+    if (CheckSurroundingCollision(islander->surrounding_item_types[0], (u16 *)tilemap) == 0) {
         return 1;
     } else {
         return 0;
@@ -6808,7 +6808,7 @@ void Islander_BuryRandomItem(s32 item_type) {
     mActor_name_t buried_item;
     s32 update_idx;
     u8 generator_idx;
-    u8 tile_idx = islander->world_state;
+    u8 tile_idx = islander->interaction_tile;
     s32 group_idx;
 
     for (group_idx = 0; group_idx < ARRAY_COUNT(gBuriedItemRngTileGroups); group_idx++) {
@@ -6822,7 +6822,7 @@ void Islander_BuryRandomItem(s32 item_type) {
         islander->item_work.held_item.type_idx = ITEM_TYPE_TRASH;
         return;
     }
-    if ((islander->state & 0xF) == 7) {
+    if ((islander->equipped_tool_state & 0xF) == 7) {
         item_type += 0x10;
     }
 
@@ -6840,12 +6840,12 @@ void Islander_BuryRandomItem(s32 item_type) {
         return;
     }
 
-    islander->_40 = item_definition->held_item_oam_attr2 | 0x800000;
+    islander->held_item_sprite = item_definition->held_item_oam_attr2 | 0x800000;
 
     if (IS_ITEM_TYPE_FRUIT(generator_def->item_type)) {
-        islander->_7C[0] = 0x3260;
+        islander->buried_item_tile_base = 0x3260;
         if (generator_def->item_type == ITEM_TYPE_COCONUT) {
-            islander->_7C[0] = 0x3268;
+            islander->buried_item_tile_base = 0x3268;
         }
 
         for (update_idx = 0; update_idx < 6; update_idx++) {
@@ -6855,7 +6855,7 @@ void Islander_BuryRandomItem(s32 item_type) {
             }
         }
 
-        if ((islander->world_state & 0x8000) == 0) {
+        if ((islander->interaction_tile & 0x8000) == 0) {
             field->fg_tiles[0][tile_idx] = 0x7777;
             gIslandData->fgblock[0][0].items[tile_idx >> 4][tile_idx & 0xF] = buried_item_update->buried_item;
             gIslandData->deposit[0][tile_idx >> 4] &= ~(1 << (tile_idx & 0xF));
@@ -6865,14 +6865,14 @@ void Islander_BuryRandomItem(s32 item_type) {
             gIslandData->deposit[1][tile_idx >> 4] &= ~(1 << (tile_idx & 0xF));
         }
     } else {
-        islander->_7C[0] = 0x1270;
+        islander->buried_item_tile_base = 0x1270;
         if (generator_def->use_island_id == 0) {
             buried_item = generator_def->item;
         } else {
             buried_item = Item_TypeToIslandItem(generator_def->item);
         }
 
-        if ((islander->world_state & 0x8000) == 0) {
+        if ((islander->interaction_tile & 0x8000) == 0) {
             field->fg_tiles[0][tile_idx] = generator_def->item_type + 0x8000;
             gIslandData->fgblock[0][0].items[tile_idx >> 4][tile_idx & 0xF] = buried_item;
             gIslandData->deposit[0][tile_idx >> 4] |= (1 << (tile_idx & 0xF));
@@ -6888,13 +6888,13 @@ void Islander_BuryRandomItem(s32 item_type) {
 void Islander_PlantRandomFlower(void) {
     Islander_AGB *islander = &gIslander;
     IslandFieldWork *field = &gIslandFieldWork;
-    u8 tile_idx = islander->world_state;
+    u8 tile_idx = islander->interaction_tile;
     u8 flower;
 
-    islander->_40 = 0x800000;
+    islander->held_item_sprite = 0x800000;
     flower = rand_u16(&gGameState) % 9;
-    islander->_40 |= 0x5344;
-    if ((islander->world_state & 0x8000) == 0) {
+    islander->held_item_sprite |= 0x5344;
+    if ((islander->interaction_tile & 0x8000) == 0) {
         field->fg_tiles[0][tile_idx] = 0x7777;
         gIslandData->fgblock[0][0].items[tile_idx >> 4][tile_idx & 0xF] = sIslanderFlowerItems[flower];
         gIslandData->deposit[0][tile_idx >> 4] &= ~(1 << (tile_idx & 0xF));
@@ -6903,24 +6903,24 @@ void Islander_PlantRandomFlower(void) {
         gIslandData->fgblock[0][1].items[tile_idx >> 4][tile_idx & 0xF] = sIslanderFlowerItems[flower];
         gIslandData->deposit[1][tile_idx >> 4] &= ~(1 << (tile_idx & 0xF));
     }
-    islander->_7C[0] = (g_ItemDefinitions + ITEM_TYPE_PURPLE_COSMOS)[flower].field_tile_id;
+    islander->buried_item_tile_base = (g_ItemDefinitions + ITEM_TYPE_PURPLE_COSMOS)[flower].field_tile_id;
 }
 
 /* Original address: 0x0201FCB0 */
 void Islander_UpdateBlink(void) {
     Islander_AGB *islander = &gIslander;
-    u8 direction = islander->_8B;
+    u8 direction = islander->direction;
 
     if ((direction == 0 || direction == 2 || direction == 1 || direction == 6 || direction == 7) && islander->emotion == 0) {
-        if (islander->_91[1] == 0) {
-            islander->_91[0] = (islander->_91[0] + 1) & 1;
-            if (islander->_91[0] == 0) {
-                islander->_91[1] = rand_u16(&gGameState) % 65 + 0x20;
+        if (islander->blink_timer == 0) {
+            islander->blink_frame = (islander->blink_frame + 1) & 1;
+            if (islander->blink_frame == 0) {
+                islander->blink_timer = rand_u16(&gGameState) % 65 + 0x20;
             } else {
-                islander->_91[1] = 4;
+                islander->blink_timer = 4;
             }
         }
-        islander->_91[1]--;
+        islander->blink_timer--;
     }
 }
 
@@ -6948,29 +6948,29 @@ s32 Islander_FaceTargetAndCheckArrival(s32 target_x, s32 target_y) {
     s32 sector;
     s32 tile_y;
 
-    islander->dir_x = (target_x - islander->_00) >> 8;
-    islander->dir_y = (target_y - islander->_04) >> 8;
-    angle = ArcTan2(islander->dir_x, islander->dir_y);
+    islander->work_x = (target_x - islander->x) >> 8;
+    islander->work_y = (target_y - islander->y) >> 8;
+    angle = ArcTan2(islander->work_x, islander->work_y);
     sector = Islander_FindDirectionSector(angle);
-    if (islander->_94[0] == 0) {
-        if (gIslanderDirectionSectors[sector].direction != islander->_8B) {
-            islander->_8B = gIslanderDirectionSectors[sector].direction;
+    if (islander->direction_change_cooldown_timer == 0) {
+        if (gIslanderDirectionSectors[sector].direction != islander->direction) {
+            islander->direction = gIslanderDirectionSectors[sector].direction;
             Islander_AdjustAnimForTool();
-            islander->_94[0] = 0x20;
+            islander->direction_change_cooldown_timer = 0x20;
         }
     }
-    if (islander->dir_x < 0) {
-        islander->dir_x = -islander->dir_x;
+    if (islander->work_x < 0) {
+        islander->work_x = -islander->work_x;
     }
-    if (islander->dir_y < 0) {
-        islander->dir_y = -islander->dir_y;
+    if (islander->work_y < 0) {
+        islander->work_y = -islander->work_y;
     }
-    if (islander->dir_x <= 1 && islander->dir_y <= 1) {
-        tile_y = (islander->_04 >> 8) & 0xFF0;
-        islander->dir_y = tile_y;
-        islander->dir_x = (islander->_00 >> 8) & 0xFF0;
-        islander->stand_on_tile_idx = tile_y;
-        islander->stand_on_tile_idx = ((islander->dir_x & 0xF0) >> 4) | tile_y;
+    if (islander->work_x <= 1 && islander->work_y <= 1) {
+        tile_y = (islander->y >> 8) & 0xFF0;
+        islander->work_y = tile_y;
+        islander->work_x = (islander->x >> 8) & 0xFF0;
+        islander->tile_idx = tile_y;
+        islander->tile_idx = ((islander->work_x & 0xF0) >> 4) | tile_y;
         return 1;
     }
     return 0;
@@ -7002,14 +7002,14 @@ void Islander_ClearStoredItem(s32 index) {
     Islander_AGB *islander = &gIslander;
     s32 i;
 
-    islander->stored_item_tile_ids[index] = 0;
-    islander->stored_items[index] = 0;
+    islander->stored_item_type_plus_one[index] = 0;
+    islander->stored_item_ids[index] = 0;
     for (i = index; i < 4; i++) {
-        if (islander->stored_item_tile_ids[i] == 0 && islander->stored_items[i] == 0) {
-            islander->stored_item_tile_ids[i] = islander->stored_item_tile_ids[i + 1];
-            islander->stored_items[i] = islander->stored_items[i + 1];
-            islander->stored_item_tile_ids[i + 1] = 0;
-            islander->stored_items[i + 1] = 0;
+        if (islander->stored_item_type_plus_one[i] == 0 && islander->stored_item_ids[i] == 0) {
+            islander->stored_item_type_plus_one[i] = islander->stored_item_type_plus_one[i + 1];
+            islander->stored_item_ids[i] = islander->stored_item_ids[i + 1];
+            islander->stored_item_type_plus_one[i + 1] = 0;
+            islander->stored_item_ids[i + 1] = 0;
         }
     }
 }
@@ -7027,10 +7027,10 @@ s32 Islander_SpawnReactionEffect(u8 effect, u8 duration) {
             field->entity_active[i + 3] = 1;
             Entity_Reset(i);
             entity->lifetime = duration;
-            entity->_4B = effect;
-            entity->type = 5;
-            entity->x = islander->_00 >> 8;
-            entity->y = islander->_04 >> 8;
+            entity->reaction_type = effect;
+            entity->update_type = 5;
+            entity->x = islander->x >> 8;
+            entity->y = islander->y >> 8;
             return 1;
         }
     }
@@ -7055,21 +7055,21 @@ s32 SpawnEntity(u8 spawn_flag, u8 spawn_mode, u16 item_type, u16 item) {
     ItemGroupStruct *definition;
 
     if (spawn_mode == 0) {
-        if (!(islander->_00 & 0xFF0000)) {
-            tile = field->fg_tiles[0][islander->stand_on_tile_idx];
+        if (!(islander->x & 0xFF0000)) {
+            tile = field->fg_tiles[0][islander->tile_idx];
             if (tile != 0xFFF && tile != 0x3333) {
                 return 0;
             }
             tilemap = (u16 *)BG_SCREEN_ADDR(20);
         } else {
-            tile = field->fg_tiles[1][islander->stand_on_tile_idx];
+            tile = field->fg_tiles[1][islander->tile_idx];
             if (tile != 0xFFF && tile != 0x3333) {
                 return 0;
             }
             tilemap = (u16 *)BG_SCREEN_ADDR(21);
         }
-        tilemap += (0xF0 & islander->stand_on_tile_idx) * 4;
-        tilemap += (0xF & islander->stand_on_tile_idx) * 2;
+        tilemap += (0xF0 & islander->tile_idx) * 4;
+        tilemap += (0xF & islander->tile_idx) * 2;
         if (CheckSurroundingCollision(0, tilemap) != 0) {
             return 0;
         }
@@ -7086,21 +7086,21 @@ s32 SpawnEntity(u8 spawn_flag, u8 spawn_mode, u16 item_type, u16 item) {
             entity = &g_EntityTable[entity_idx];
             definition = &g_ItemDefinitions[item_type];
             Entity_Reset(entity_idx);
-            entity->x = (islander->_00 >> 8) - 8;
-            entity->y = (islander->_04 >> 8) - 0x10;
+            entity->x = (islander->x >> 8) - 8;
+            entity->y = (islander->y >> 8) - 0x10;
             if (spawn_mode == 0) {
-                entity->type = 7;
+                entity->update_type = 7;
             } else {
-                entity->type = 9;
+                entity->update_type = 9;
                 islander->floating_balloon_target_entity_id = entity_idx;
             }
             field->entity_active[active_idx] = 1;
-            entity->item_tile_no[0] = item_type;
-            entity->item[0] = item;
-            entity->item_is_resolved = spawn_flag;
-            tile_idx = islander->stand_on_tile_idx;
+            entity->item_type_indices[0] = item_type;
+            entity->item_ids[0] = item;
+            entity->items_are_resolved = spawn_flag;
+            tile_idx = islander->tile_idx;
             entity->landing_tile = tile_idx;
-            if (islander->_00 & 0xFF0000) {
+            if (islander->x & 0xFF0000) {
                 entity->landing_tile = tile_idx | 0x1000;
             }
             entity->sprite_tile = definition->held_item_oam_attr2 & 0x3FF;
@@ -7122,61 +7122,61 @@ s32 Islander_SelectTreeApproach(FieldObject *object, s32 right_x, s32 left_x) {
     if (right_x == 0 && left_x == 0) {
         return 0;
     }
-    islander->_14 = ((0xF0 & object->tile_idx) << 8) + 0x800;
+    islander->target_y = ((0xF0 & object->tile_idx) << 8) + 0x800;
     islander->item_work.held_item.type_idx = 0;
     if (islander->tree_approach_x[0] != 0 && islander->tree_approach_x[1] != 0) {
         for (i = 0; i < 2; i++) {
-            islander->tree_approach_work[i] = islander->tree_approach_x[i] - islander->_00;
-            if (islander->tree_approach_work[i] < 0) {
-                islander->tree_approach_work[i] = 0;
+            islander->tree_approach_eval[i] = islander->tree_approach_x[i] - islander->x;
+            if (islander->tree_approach_eval[i] < 0) {
+                islander->tree_approach_eval[i] = 0;
             }
         }
-        islander->_10 = islander->tree_approach_x[0] + 0x500;
-        islander->_99[0] = 0x40;
-        if (islander->tree_approach_work[0] > islander->tree_approach_work[1]) {
-            islander->_10 = islander->tree_approach_x[1];
-            islander->_99[0] = 0x30;
-            islander->_10 = islander->tree_approach_x[1] + 0xA00;
+        islander->target_x = islander->tree_approach_x[0] + 0x500;
+        islander->target_action = 0x40;
+        if (islander->tree_approach_eval[0] > islander->tree_approach_eval[1]) {
+            islander->target_x = islander->tree_approach_x[1];
+            islander->target_action = 0x30;
+            islander->target_x = islander->tree_approach_x[1] + 0xA00;
         }
-        islander->_18 = 0;
-        islander->_1C = 0;
+        islander->next_target_x = 0;
+        islander->next_target_y = 0;
     } else {
-        islander->_10 = islander->tree_approach_x[0] + 0x500;
-        islander->_99[0] = 0x40;
+        islander->target_x = islander->tree_approach_x[0] + 0x500;
+        islander->target_action = 0x40;
         if (islander->tree_approach_x[1] != 0) {
-            islander->_10 = islander->tree_approach_x[1];
-            islander->_99[0] = 0x30;
-            islander->_10 = islander->tree_approach_x[1] + 0xA00;
+            islander->target_x = islander->tree_approach_x[1];
+            islander->target_action = 0x30;
+            islander->target_x = islander->tree_approach_x[1] + 0xA00;
         }
-        islander->_18 = islander->_10;
-        islander->_1C = islander->_14;
-        islander->_10 -= islander->_00;
-        if (islander->_10 < 0) {
-            islander->_10 = -islander->_10;
+        islander->next_target_x = islander->target_x;
+        islander->next_target_y = islander->target_y;
+        islander->target_x -= islander->x;
+        if (islander->target_x < 0) {
+            islander->target_x = -islander->target_x;
         }
-        islander->_14 = islander->_1C - islander->_04;
-        if (islander->_14 < 0) {
-            islander->_14 = -islander->_14;
+        islander->target_y = islander->next_target_y - islander->y;
+        if (islander->target_y < 0) {
+            islander->target_y = -islander->target_y;
         }
-        if (islander->_10 <= 0xFFF && islander->_14 <= 0xFFF) {
-            islander->_10 = islander->_18;
-            islander->_14 = islander->_1C;
-            islander->_18 = 0;
-            islander->_1C = 0;
+        if (islander->target_x <= 0xFFF && islander->target_y <= 0xFFF) {
+            islander->target_x = islander->next_target_x;
+            islander->target_y = islander->next_target_y;
+            islander->next_target_x = 0;
+            islander->next_target_y = 0;
         } else {
-            islander->_10 = 0;
-            islander->_14 = 0;
+            islander->target_x = 0;
+            islander->target_y = 0;
             if (object->layer != 0) {
-                islander->_10 = 0x10000;
+                islander->target_x = 0x10000;
             }
-            if ((object->y << 8) > islander->_04) {
+            if ((object->y << 8) > islander->y) {
                 tile_idx = object->tile_idx - 0x10;
-                islander->_10 |= ((0xF & tile_idx) << 12) + 0x800;
-                islander->_14 = ((tile_idx & 0xF0) << 8) + 0x0FFFF400;
+                islander->target_x |= ((0xF & tile_idx) << 12) + 0x800;
+                islander->target_y = ((tile_idx & 0xF0) << 8) + 0x0FFFF400;
             } else {
                 tile_idx = object->tile_idx + 0x10;
-                islander->_10 |= ((0xF & tile_idx) << 12) + 0x800;
-                islander->_14 = ((tile_idx & 0xF0) << 8) + 0x800;
+                islander->target_x |= ((0xF & tile_idx) << 12) + 0x800;
+                islander->target_y = ((tile_idx & 0xF0) << 8) + 0x800;
             }
         }
     }
@@ -7194,45 +7194,45 @@ s32 Islander_SetupTreeApproach(FieldObject *object) {
     s32 right_column = column + 1;
     s32 side;
 
-    islander->tree_approach_work[0] = right_column;
-    islander->tree_approach_x[0] = islander->tree_approach_work[0] << 12;
+    islander->tree_approach_eval[0] = right_column;
+    islander->tree_approach_x[0] = islander->tree_approach_eval[0] << 12;
     if (object->layer == 0) {
         tilemap_addresses[0] = BG_SCREEN_ADDR(20);
-        tile_ids[0] = field->fg_tiles[0][(0xF0 & tile_idx) + islander->tree_approach_work[0]];
-        if (islander->tree_approach_work[0] == 0x10) {
-            islander->tree_approach_work[0] = 0;
+        tile_ids[0] = field->fg_tiles[0][(0xF0 & tile_idx) + islander->tree_approach_eval[0]];
+        if (islander->tree_approach_eval[0] == 0x10) {
+            islander->tree_approach_eval[0] = 0;
             tilemap_addresses[0] = BG_SCREEN_ADDR(21);
             tile_ids[0] = field->fg_tiles[1][0xF0 & tile_idx];
             islander->tree_approach_x[0] = 0x10000;
         }
-        islander->tree_approach_work[0] = (0xF0 & tile_idx) + islander->tree_approach_work[0];
-        islander->tree_approach_work[1] = (0xF & object->tile_idx) - 1;
-        islander->tree_approach_x[1] = islander->tree_approach_work[1] << 12;
+        islander->tree_approach_eval[0] = (0xF0 & tile_idx) + islander->tree_approach_eval[0];
+        islander->tree_approach_eval[1] = (0xF & object->tile_idx) - 1;
+        islander->tree_approach_x[1] = islander->tree_approach_eval[1] << 12;
         tilemap_addresses[1] = BG_SCREEN_ADDR(20);
-        tile_ids[1] = field->fg_tiles[0][(0xF0 & object->tile_idx) + islander->tree_approach_work[1]];
-        islander->tree_approach_work[1] = (0xF0 & object->tile_idx) + islander->tree_approach_work[1];
+        tile_ids[1] = field->fg_tiles[0][(0xF0 & object->tile_idx) + islander->tree_approach_eval[1]];
+        islander->tree_approach_eval[1] = (0xF0 & object->tile_idx) + islander->tree_approach_eval[1];
     } else {
         islander->tree_approach_x[0] |= 0x10000;
         islander->tree_approach_x[1] = 0x10000;
         tilemap_addresses[0] = BG_SCREEN_ADDR(21);
-        tile_ids[0] = field->fg_tiles[1][(tile_idx & 0xF0) + islander->tree_approach_work[0]];
-        islander->tree_approach_work[0] = (tile_idx & 0xF0) + islander->tree_approach_work[0];
-        islander->tree_approach_work[1] = column - 1;
-        islander->tree_approach_x[1] = (islander->tree_approach_work[1] << 12) | 0x10000;
+        tile_ids[0] = field->fg_tiles[1][(tile_idx & 0xF0) + islander->tree_approach_eval[0]];
+        islander->tree_approach_eval[0] = (tile_idx & 0xF0) + islander->tree_approach_eval[0];
+        islander->tree_approach_eval[1] = column - 1;
+        islander->tree_approach_x[1] = (islander->tree_approach_eval[1] << 12) | 0x10000;
         tilemap_addresses[1] = BG_SCREEN_ADDR(21);
-        tile_ids[1] = field->fg_tiles[1][(tile_idx & 0xF0) + islander->tree_approach_work[1]];
-        if ((islander->tree_approach_work[1] & 0xFF) == 0xFF) {
-            islander->tree_approach_work[1] = 0xF;
+        tile_ids[1] = field->fg_tiles[1][(tile_idx & 0xF0) + islander->tree_approach_eval[1]];
+        if ((islander->tree_approach_eval[1] & 0xFF) == 0xFF) {
+            islander->tree_approach_eval[1] = 0xF;
             islander->tree_approach_x[1] = 0;
             tilemap_addresses[1] = BG_SCREEN_ADDR(20);
-            tile_ids[1] = field->fg_tiles[0][(0xF0 & tile_idx) + islander->tree_approach_work[1]];
-            islander->tree_approach_x[1] = islander->tree_approach_work[1] << 12;
+            tile_ids[1] = field->fg_tiles[0][(0xF0 & tile_idx) + islander->tree_approach_eval[1]];
+            islander->tree_approach_x[1] = islander->tree_approach_eval[1] << 12;
         }
-        islander->tree_approach_work[1] += tile_idx & 0xF0;
+        islander->tree_approach_eval[1] += tile_idx & 0xF0;
     }
     for (side = 0; side < 2; side++) {
-        tilemap_addresses[side] += (islander->tree_approach_work[side] & 0xF0) * 8;
-        tilemap_addresses[side] += (islander->tree_approach_work[side] & 0xF) * 4;
+        tilemap_addresses[side] += (islander->tree_approach_eval[side] & 0xF0) * 8;
+        tilemap_addresses[side] += (islander->tree_approach_eval[side] & 0xF) * 4;
         if ((*(u16 *)tilemap_addresses[side] & 0x3FF) > 0x7F) {
             islander->tree_approach_x[side] = 0;
         }
@@ -7258,49 +7258,49 @@ s32 Islander_DecideTreeAction(void) {
     s32 approach;
     FieldObject *object;
 
-    if (islander->_7C[1] != 0) {
-        islander->_B5[0] = 0;
+    if (islander->tree_action_cooldown_timer != 0) {
+        islander->tree_action_skipped = 0;
         return 0;
     }
     tree = Islander_FindNearbyTree();
     if (tree == 0) {
-        islander->_B5[0] = tree;
+        islander->tree_action_skipped = tree;
         return 0;
     }
-    state = islander->state & 0xF;
+    state = islander->equipped_tool_state & 0xF;
     if (state == 0 || state == 2 || state == 6) {
         for (i = 0; i < FIELD_OBJECT_COUNT; i++) {
             if (field->entity_active[0x36 + i] == 1) {
                 object = &gFieldObjects[i];
                 if (object->tile_idx == islander->surrounding_tile_indices[(u8)(tree - 1)] &&
-                    object->layer == (islander->_00 & 0x10000) >> 16) {
+                    object->layer == (islander->x & 0x10000) >> 16) {
                     break;
                 }
             }
         }
         if (i == FIELD_OBJECT_COUNT) {
-            islander->_B5[0] = 0;
+            islander->tree_action_skipped = 0;
             return 0;
         }
-        if (islander->_B5[0] == 0) {
+        if (islander->tree_action_skipped == 0) {
             chance_idx = islander->emotion * 2 + islander->reward_adjust;
             chance = sIslanderTreeActionChances[chance_idx];
             if (chance < (s32)rand_u16(&gGameState) % 101) {
-                islander->_B5[0] = 1;
+                islander->tree_action_skipped = 1;
             } else {
-                islander->_99[2] = i;
+                islander->target_field_object_idx = i;
                 islander->item_work.held_item.type_idx = 0;
-                object = &gFieldObjects[islander->_99[2]];
+                object = &gFieldObjects[islander->target_field_object_idx];
                 approach = Islander_SetupTreeApproach(object);
                 if (approach != 0) {
-                    islander->_8C = islander->_8B;
-                    islander->move_proc_idx = 4;
+                    islander->previous_direction = islander->direction;
+                    islander->move_action = 4;
                     IslanderMoveAction_MoveToTarget();
                     return 1;
                 }
-                islander->_10 = approach;
-                islander->_14 = approach;
-                islander->_7C[1] = 0x50;
+                islander->target_x = approach;
+                islander->target_y = approach;
+                islander->tree_action_cooldown_timer = 0x50;
             }
         }
     }
@@ -7326,75 +7326,75 @@ void Islander_MoveWithCollision(void) {
     IslandFieldWork *field = &gIslandFieldWork;
     s32 collision;
     s32 i;
-    s32 *step = sIslanderMoveSteps[islander->_8B];
+    s32 *step = sIslanderMoveSteps[islander->direction];
 
-    islander->_00 += step[0];
-    islander->_04 += step[1];
-    if (islander->_99[1] != 0) {
-        islander->_99[1]--;
-        if ((islander->_08 & 0xFFF00) != (islander->_00 & 0xFFF00)) {
-            islander->_08 = islander->_00 & 0xFFF00;
+    islander->x += step[0];
+    islander->y += step[1];
+    if (islander->collision_bypass_timer != 0) {
+        islander->collision_bypass_timer--;
+        if ((islander->accepted_x & 0xFFF00) != (islander->x & 0xFFF00)) {
+            islander->accepted_x = islander->x & 0xFFF00;
         }
-        if ((islander->_0C & 0xFFF00) != (islander->_04 & 0xFFF00)) {
-            islander->_0C = islander->_04 & 0xFFF00;
+        if ((islander->accepted_y & 0xFFF00) != (islander->y & 0xFFF00)) {
+            islander->accepted_y = islander->y & 0xFFF00;
         }
         return;
     }
 
-    Islander_UpdateCollisionTiles(islander->_8B);
+    Islander_UpdateCollisionTiles(islander->direction);
     collision = 0;
     for (i = 0; i < 4; i++) {
-        collision = CheckSurroundingCollision(islander->_48[i], islander->_44);
+        collision = CheckSurroundingCollision(islander->surrounding_item_types[i], islander->collision_tilemap);
         if (collision != 0) {
             break;
         }
     }
     if (i == 4) {
-        if ((islander->_08 & 0xFFF00) != (islander->_00 & 0xFFF00)) {
-            islander->_08 = islander->_00 & 0xFFF00;
+        if ((islander->accepted_x & 0xFFF00) != (islander->x & 0xFFF00)) {
+            islander->accepted_x = islander->x & 0xFFF00;
         }
-        if ((islander->_0C & 0xFFF00) != (islander->_04 & 0xFFF00)) {
-            islander->_0C = islander->_04 & 0xFFF00;
+        if ((islander->accepted_y & 0xFFF00) != (islander->y & 0xFFF00)) {
+            islander->accepted_y = islander->y & 0xFFF00;
         }
-        islander->_B5[0] = 0;
-        if (islander->_B2[0] != 0) {
-            islander->_B2[1]++;
-            if (islander->_B2[1] > 0x20) {
-                islander->_B2[0] = 0;
-                islander->_B2[1] = 0;
+        islander->tree_action_skipped = 0;
+        if (islander->collision_retry_count != 0) {
+            islander->collision_recovery_timer++;
+            if (islander->collision_recovery_timer > 0x20) {
+                islander->collision_retry_count = 0;
+                islander->collision_recovery_timer = 0;
             }
         }
     } else {
-        if (collision != 1 || (!(islander->_8B >= 3 && islander->_8B <= 5) ||
-            field->special_tile_idx != islander->stand_on_tile_idx || gPlayer._26 != 1)) {
+        if (collision != 1 || (!(islander->direction >= 3 && islander->direction <= 5) ||
+            field->special_tile_idx != islander->tile_idx || gPlayer.near_house_door != 1)) {
             if (collision == 1 && Islander_DecideTreeAction() != 0) {
                 return;
             }
-            islander->_00 = islander->_08;
-            islander->_04 = islander->_0C;
+            islander->x = islander->accepted_x;
+            islander->y = islander->accepted_y;
             collision = Islander_ChooseNewMoveDirection(1);
-            islander->_10 = 0;
-            islander->_14 = 0;
-            islander->_B2[0]++;
-            if (collision != 0x777 && islander->_B2[0] <= 6) {
-                islander->_8B = collision;
-                islander->move_proc_idx = 2;
+            islander->target_x = 0;
+            islander->target_y = 0;
+            islander->collision_retry_count++;
+            if (collision != 0x777 && islander->collision_retry_count <= 6) {
+                islander->direction = collision;
+                islander->move_action = 2;
                 Islander_StartWandering();
                 return;
             }
         } else {
             IslandBuilding *house = &gIslandBuildings[ISLAND_BUILDING_ISLANDER_HOUSE];
 
-            islander->_10 = house->x << 8;
-            islander->_14 = (house->y << 8) + 0x1000;
-            islander->_99[0] = 0x20;
+            islander->target_x = house->x << 8;
+            islander->target_y = (house->y << 8) + 0x1000;
+            islander->target_action = 0x20;
             islander->item_work.held_item.type_idx = 0;
-            islander->move_proc_idx = 4;
+            islander->move_action = 4;
             IslanderMoveAction_MoveToTarget();
             return;
         }
-        islander->_B2[0] = 0;
-        islander->move_proc_idx = 0x13;
+        islander->collision_retry_count = 0;
+        islander->move_action = 0x13;
         Islander_MoveAction20_Init();
     }
 }
@@ -7403,17 +7403,17 @@ void Islander_MoveWithCollision(void) {
 void Islander_AdjustAnimForTool(void) {
     u32 var_r1_17464;
 
-    var_r1_17464 = 0xF & gIslander.state;
+    var_r1_17464 = 0xF & gIslander.equipped_tool_state;
     if (var_r1_17464 > 4U) {
         var_r1_17464 = (u32) (u16) (var_r1_17464 - 4);
     }
-    gIslander.anim_id = (var_r1_17464 * 8) + gIslander._8B;
+    gIslander.anim_id = (var_r1_17464 * 8) + gIslander.direction;
 }
 
 /* Original address: 0x020207C0 */
 s32 Islander_MoveTowardX(u8 keep_facing, s32 target) {
     Islander_AGB *islander = &gIslander;
-    s32 x = islander->_00;
+    s32 x = islander->x;
     s32 distance = target - x;
 
     if (distance < 0) {
@@ -7421,14 +7421,14 @@ s32 Islander_MoveTowardX(u8 keep_facing, s32 target) {
     }
     if (distance > 0x100) {
         if (target > x) {
-            islander->_00 = x + 0x40;
+            islander->x = x + 0x40;
             if (keep_facing == 0) {
-                islander->_8B = 6;
+                islander->direction = 6;
             }
         } else {
-            islander->_00 = x - 0x40;
+            islander->x = x - 0x40;
             if (keep_facing == 0) {
-                islander->_8B = 2;
+                islander->direction = 2;
             }
         }
         return 0;
@@ -7439,7 +7439,7 @@ s32 Islander_MoveTowardX(u8 keep_facing, s32 target) {
 /* Original address: 0x02020814 */
 s32 Islander_MoveTowardY(u8 keep_facing, s32 target) {
     Islander_AGB *islander = &gIslander;
-    s32 y = islander->_04;
+    s32 y = islander->y;
     s32 distance = target - y;
 
     if (distance < 0) {
@@ -7447,14 +7447,14 @@ s32 Islander_MoveTowardY(u8 keep_facing, s32 target) {
     }
     if (distance > 0x100) {
         if (target > y) {
-            islander->_04 = y + 0x40;
+            islander->y = y + 0x40;
             if (keep_facing == 0) {
-                islander->_8B = 0;
+                islander->direction = 0;
             }
         } else {
-            islander->_04 = y - 0x40;
+            islander->y = y - 0x40;
             if (keep_facing == 0) {
-                islander->_8B = 4;
+                islander->direction = 4;
             }
         }
         return 0;
@@ -7469,7 +7469,7 @@ s32 Islander_FindNearbyTree(void) {
     u16 item_type;
 
     for (i = 0; i < 4; i++) {
-        item_type = islander->_48[i];
+        item_type = islander->surrounding_item_types[i];
         if ((item_type >= ITEM_TYPE_SMALL_TREE && item_type <= ITEM_TYPE_FULLY_GROWN_TREE) ||
             (item_type >= ITEM_TYPE_FRUIT_APPLE_TREE && item_type <= ITEM_TYPE_FRUIT_CHERRY_TREE) ||
             (item_type >= ITEM_TYPE_SMALL_PALM_TREE && item_type <= ITEM_TYPE_PALM_TREE) ||
@@ -7483,7 +7483,7 @@ s32 Islander_FindNearbyTree(void) {
 /* Original address: 0x020208BC */
 s32 Islander_TryInteractWithBuriedItem(u8 layer) {
     Islander_AGB *islander = &gIslander;
-    u8 *tile_idx = &islander->stand_on_tile_idx;
+    u8 *tile_idx = &islander->tile_idx;
     IslandFieldWork *field = &gIslandFieldWork;
     Island_agb_c *island = gIslandData;
     u32 tile;
@@ -7493,9 +7493,9 @@ s32 Islander_TryInteractWithBuriedItem(u8 layer) {
     s32 state;
 
     if ((island->deposit[layer][*tile_idx >> 4] >> (0xF & *tile_idx)) & 1) {
-        if (islander->_78 == 0 &&
-            ((state = 0xF & islander->state) == 3 || state == 7)) {
-            if (!(islander->_00 & 0xFF0000)) {
+        if (islander->digging_cooldown_timer == 0 &&
+            ((state = 0xF & islander->equipped_tool_state) == 3 || state == 7)) {
+            if (!(islander->x & 0xFF0000)) {
                 tile = field->fg_tiles[0][*tile_idx];
             } else {
                 tile = field->fg_tiles[1][*tile_idx];
@@ -7511,11 +7511,11 @@ s32 Islander_TryInteractWithBuriedItem(u8 layer) {
                     }
                     if (chance >= (s32)rand_u16(&gGameState) % 101 &&
                         (u16)Islander_SetupDigApproach(0xF1) != 0) {
-                        islander->_08 = islander->_10;
-                        islander->_0C = islander->_14;
-                        islander->_7C[0] = 0;
+                        islander->accepted_x = islander->target_x;
+                        islander->accepted_y = islander->target_y;
+                        islander->buried_item_tile_base = 0;
                         islander->item_work.held_item.type_idx = 2;
-                        islander->move_proc_idx = 4;
+                        islander->move_action = 4;
                         IslanderMoveAction_MoveToTarget();
                         return 2;
                     }
@@ -7531,7 +7531,7 @@ s32 Islander_TryInteractWithBuriedItem(u8 layer) {
 void Islander_OnMoodChanged(void) {
     Islander_AGB *islander = &gIslander;
     u16 *emotions = sIslanderMoodEmotions;
-    u16 emotion = emotions[islander->mood];
+    u16 emotion = emotions[islander->mood_level];
 
     islander->emotion = emotion;
     ChangeEmotion(emotion + 1);
@@ -7553,9 +7553,9 @@ u16 Item_GetItemIdFromTileId(s32 item_type) {
     int i;
 
     if (IS_ITEM_TYPE_FRUIT(item_type)) {
-        islander->_7C[0] = 0x3260;
+        islander->buried_item_tile_base = 0x3260;
         if (item_type == ITEM_TYPE_COCONUT) {
-            islander->_7C[0] = 0x3268;
+            islander->buried_item_tile_base = 0x3268;
         }
 
         for (i = 0; i < ARRAY_COUNT(gBuriedItemUpdateGroups); i++) {
@@ -7576,7 +7576,7 @@ s32 Islander_TryDropTool(void) {
     Islander_AGB *islander = &gIslander;
     IslandFieldWork *field = &gIslandFieldWork;
     s32 placed = 0;
-    u16 tile = islander->state & 0xF;
+    u16 tile = islander->equipped_tool_state & 0xF;
     u32 tool = tile;
     s32 collision;
 
@@ -7588,32 +7588,32 @@ s32 Islander_TryDropTool(void) {
         tile++;
     }
     if (Islander_CanDigHere() != 0) {
-        Islander_UpdateCollisionTiles(islander->_8B);
-        collision = CheckSurroundingCollision(islander->stand_on_tile_idx, islander->_44);
-        if ((islander->_00 & 0xFF0000) == 0) {
+        Islander_UpdateCollisionTiles(islander->direction);
+        collision = CheckSurroundingCollision(islander->tile_idx, islander->collision_tilemap);
+        if ((islander->x & 0xFF0000) == 0) {
             if (collision == 0) {
-                if (field->fg_tiles[0][islander->stand_on_tile_idx] == 0xFFF) {
-                    field->fg_tiles[0][islander->stand_on_tile_idx] = tile;
+                if (field->fg_tiles[0][islander->tile_idx] == 0xFFF) {
+                    field->fg_tiles[0][islander->tile_idx] = tile;
                     placed = 1;
                 }
             }
         } else if (collision == 0) {
-            if (field->fg_tiles[1][islander->stand_on_tile_idx] == 0xFFF) {
-                field->fg_tiles[1][islander->stand_on_tile_idx] = tile;
+            if (field->fg_tiles[1][islander->tile_idx] == 0xFFF) {
+                field->fg_tiles[1][islander->tile_idx] = tile;
                 placed = 1;
             }
         }
         if (placed == 1) {
-            WriteItemToTile(islander->_00, islander->stand_on_tile_idx, islander->_72, 0x6234);
-            if (islander->_85 == 0) {
-                field->fg_tiles[0][islander->_86] = 0xFFF;
+            WriteItemToTile(islander->x, islander->tile_idx, islander->removed_tool_item, 0x6234);
+            if (islander->removed_tool_layer == 0) {
+                field->fg_tiles[0][islander->removed_tool_tile_idx] = 0xFFF;
             } else {
-                field->fg_tiles[1][islander->_86] = 0xFFF;
+                field->fg_tiles[1][islander->removed_tool_tile_idx] = 0xFFF;
             }
-            islander->_86 = 0;
-            islander->_85 = 0;
-            islander->state = 0;
-            islander->_72 = 0;
+            islander->removed_tool_tile_idx = 0;
+            islander->removed_tool_layer = 0;
+            islander->equipped_tool_state = 0;
+            islander->removed_tool_item = 0;
             Islander_AdjustAnimForTool();
             return 1;
         }
@@ -7626,87 +7626,87 @@ void Islander_Init(void) {
     Islander_AGB *islander = &gIslander;
     s32 i;
 
-    islander->_00 = 0;
-    islander->_04 = 0;
-    islander->_08 = 0;
-    islander->_0C = 0;
-    islander->_10 = 0;
-    islander->_14 = 0;
-    islander->_18 = 0;
-    islander->_1C = 0;
-    islander->_38 = 0;
-    islander->_3C = 0;
-    islander->dir_x = 0;
-    islander->dir_y = 0;
-    islander->_48[0] = 0;
-    islander->_44 = 0;
-    islander->_85 = 0;
-    islander->_86 = 0;
-    islander->_40 = 0;
-    islander->_58 = 0;
-    islander->move_proc_idx = 0;
+    islander->x = 0;
+    islander->y = 0;
+    islander->accepted_x = 0;
+    islander->accepted_y = 0;
+    islander->target_x = 0;
+    islander->target_y = 0;
+    islander->next_target_x = 0;
+    islander->next_target_y = 0;
+    islander->flying_item_x = 0;
+    islander->flying_item_y = 0;
+    islander->work_x = 0;
+    islander->work_y = 0;
+    islander->surrounding_item_types[0] = 0;
+    islander->collision_tilemap = 0;
+    islander->removed_tool_layer = 0;
+    islander->removed_tool_tile_idx = 0;
+    islander->held_item_sprite = 0;
+    islander->wander_timer = 0;
+    islander->move_action = 0;
     islander->anim_id = 0;
     islander->anim_frame = 0;
     islander->anim_timer = 0;
-    islander->_8B = 0;
-    islander->_8C = 0;
-    islander->state = 0;
-    islander->_72 = 0;
-    islander->stand_on_tile_idx = 0;
-    islander->world_state = 0;
-    islander->_8F = 0;
+    islander->direction = 0;
+    islander->previous_direction = 0;
+    islander->equipped_tool_state = 0;
+    islander->removed_tool_item = 0;
+    islander->tile_idx = 0;
+    islander->interaction_tile = 0;
+    islander->terrain_tile_idx = 0;
     islander->emotion = 0;
-    islander->_91[0] = 0;
-    islander->_91[1] = 0;
-    islander->mood = 0;
-    islander->_94[0] = 0;
-    islander->_94[1] = 0;
+    islander->blink_frame = 0;
+    islander->blink_timer = 0;
+    islander->mood_level = 0;
+    islander->direction_change_cooldown_timer = 0;
+    islander->stored_item_slot = 0;
     islander->islander_npc_idx = 0;
-    islander->emotion_anim_id = 0;
+    islander->reaction_anim_id = 0;
     islander->click_cooldown_timer = 0;
-    islander->_99[0] = 0;
-    islander->_99[1] = 0;
-    islander->_99[2] = 0;
+    islander->target_action = 0;
+    islander->collision_bypass_timer = 0;
+    islander->target_field_object_idx = 0;
     islander->item_work.held_item.type_idx = 0;
     islander->item_work.held_item.tile_no = 0;
-    islander->sub_move_action = 0;
-    islander->_9D = 0;
-    islander->_74 = 0;
+    islander->action_state = 0;
+    islander->player_interaction_tile_idx = 0;
+    islander->fishing_cooldown_timer = 0;
     islander->floating_balloon_target_entity_id = 0;
-    islander->_9F = 0;
-    islander->_7C[0] = 0;
-    islander->_7C[2] = 0;
-    islander->_84 = 0;
-    islander->_A0 = 0;
+    islander->interaction_target_is_islander = 0;
+    islander->buried_item_tile_base = 0;
+    islander->carry_wait_timer = 0;
+    islander->carry_state = 0;
+    islander->immediate_item_type_plus_one = 0;
     islander->reward_adjust = 0;
-    islander->_7C[3] = 0;
-    islander->_B2[0] = 0;
-    islander->_B4 = 0;
-    islander->_B5[0] = 0;
-    islander->_B2[1] = 0;
-    islander->_B5[1] = 0;
-    islander->_B5[2] = 0;
-    islander->_B5[3] = 0;
+    islander->equipped_tool_timer = 0;
+    islander->collision_retry_count = 0;
+    islander->favorite_hour_item_spawned = 0;
+    islander->tree_action_skipped = 0;
+    islander->collision_recovery_timer = 0;
+    islander->removed_field_item_type = 0;
+    islander->dig_target_layer = 0;
+    islander->dig_target_tile_idx = 0;
 
-    islander->_78 = 0x78;
+    islander->digging_cooldown_timer = 0x78;
     islander->flying_item_spawn_timer = 0x2A30;
     islander->islander_npc_idx = gIslandData->npc_idx;
     islander->reward_adjust = sIslanderRewardAdjust[islander->islander_npc_idx];
     for (i = 0; i < 4; i++) {
-        islander->_48[i] = 0;
+        islander->surrounding_item_types[i] = 0;
         islander->surrounding_tile_indices[i] = 0;
     }
     for (i = 0; i < 5; i++) {
-        islander->stored_item_tile_ids[i] = 0;
-        islander->stored_items[i] = 0;
+        islander->stored_item_type_plus_one[i] = 0;
+        islander->stored_item_ids[i] = 0;
     }
-    islander->mood = 3;
+    islander->mood_level = 3;
     Islander_OnMoodChanged();
     ChangeEmotion(islander->emotion + 1);
     Sound_InitMusic();
     islander->anim_timer = 0xFE;
     islander->anim_id = ISLANDER_ANIM_60;
-    islander->move_proc_idx = 0;
+    islander->move_action = 0;
 }
 
 /* Original address: 0x02020D20 */
@@ -7719,7 +7719,7 @@ s32 Island_GetFloatingItem(void) {
     *index += sFloatingItemHourOffsets[field->last_palette_hour];
     *index = sFloatingItemBaseIndices[*index];
     *index += gMoveAction11EmotionSpawnOffsets[islander->emotion];
-    if ((islander->state & 0xF) == 5) {
+    if ((islander->equipped_tool_state & 0xF) == 5) {
         *index += 20;
     }
     if (*index >= 160) {
@@ -7743,14 +7743,14 @@ void Islander_StepFlyingItem(void) {
     u16 item;
     s32 chance;
 
-    if (islander->move_proc_idx == 16) {
+    if (islander->move_action == 16) {
         return;
     }
     if (islander->flying_item_spawn_timer != 0) {
         islander->flying_item_spawn_timer--;
         return;
     }
-    if (islander->stored_item_tile_ids[4] == 0 && islander->_38 == 0 && islander->_3C == 0) {
+    if (islander->stored_item_type_plus_one[4] == 0 && islander->flying_item_x == 0 && islander->flying_item_y == 0) {
         i = Island_GetFloatingItem();
         params = &sFlyingItemParams[i];
         i = SpawnEntity(0, 1, params->type, params->param);
@@ -7760,19 +7760,19 @@ void Islander_StepFlyingItem(void) {
         balloon = &g_EntityTable[i];
         if ((rand_u16(&gGameState) & 1) == 0) {
             balloon->x = 16;
-            balloon->_18 = 24;
-            balloon->_14 = 465;
+            balloon->horizontal_velocity = 24;
+            balloon->vertical_velocity_or_x_limit = 465;
         } else {
             balloon->x = 464;
-            balloon->_18 = -24;
-            balloon->_14 = 15;
+            balloon->horizontal_velocity = -24;
+            balloon->vertical_velocity_or_x_limit = 15;
         }
         balloon->y = (rand_u16(&gGameState) % 5) * 16 + 80;
-        islander->_38 = balloon->x;
-        islander->_3C = balloon->y;
+        islander->flying_item_x = balloon->x;
+        islander->flying_item_y = balloon->y;
         params++;
-        items = &balloon->item[1];
-        tile_ids = &balloon->item_tile_no[1];
+        items = &balloon->item_ids[1];
+        tile_ids = &balloon->item_type_indices[1];
         i = 3;
         do {
             tile = params->type;
@@ -7789,32 +7789,32 @@ void Islander_StepFlyingItem(void) {
             i--;
             params++;
         } while (i >= 0);
-    } else if (islander->move_proc_idx == 3) {
-        if (islander->stored_item_tile_ids[4] != 0) {
+    } else if (islander->move_action == 3) {
+        if (islander->stored_item_type_plus_one[4] != 0) {
             islander->floating_balloon_target_entity_id = 0;
             return;
         }
-        if ((islander->state & 0xF) == 1 || (islander->state & 0xF) == 5) {
-            islander->dir_x = islander->_38 - islander->_00;
-            islander->dir_y = islander->_3C - islander->_04;
-            if (islander->dir_x < 0) {
-                islander->dir_x = -islander->dir_x;
+        if ((islander->equipped_tool_state & 0xF) == 1 || (islander->equipped_tool_state & 0xF) == 5) {
+            islander->work_x = islander->flying_item_x - islander->x;
+            islander->work_y = islander->flying_item_y - islander->y;
+            if (islander->work_x < 0) {
+                islander->work_x = -islander->work_x;
             }
-            if (islander->dir_y < 0) {
-                islander->dir_y = -islander->dir_y;
+            if (islander->work_y < 0) {
+                islander->work_y = -islander->work_y;
             }
-            if (islander->dir_x <= 0x1000 && islander->dir_y <= 0x1000) {
+            if (islander->work_x <= 0x1000 && islander->work_y <= 0x1000) {
                 chance = 100;
                 if (islander->reward_adjust == 1) {
                     chance = 50;
                 }
                 if (chance >= rand_u16(&gGameState) % 101) {
-                    if (islander->_00 > islander->_38) {
-                        islander->_8B = 0;
+                    if (islander->x > islander->flying_item_x) {
+                        islander->direction = 0;
                     } else {
-                        islander->_8B = 1;
+                        islander->direction = 1;
                     }
-                    islander->move_proc_idx = MoveActionReceiveItemInit;
+                    islander->move_action = MoveActionReceiveItemInit;
                     Islander_ReceiveItem_Init();
                 }
             }
@@ -7832,13 +7832,13 @@ s32 Islander_TryStartFishing(void) {
     Islander_AGB *islander = &gIslander;
     s32 can_fish = 0;
 
-    if (islander->_74 == 0 && ((islander->state & 0xF) == 4 || (islander->state & 0xF) == 8)) {
-        if (!(islander->_00 & 0xFF0000)) {
-            tile = islander->stand_on_tile_idx - 2;
+    if (islander->fishing_cooldown_timer == 0 && ((islander->equipped_tool_state & 0xF) == 4 || (islander->equipped_tool_state & 0xF) == 8)) {
+        if (!(islander->x & 0xFF0000)) {
+            tile = islander->tile_idx - 2;
             tile += 16;
             tilemap = (u16 *)BG_SCREEN_ADDR(20);
         } else {
-            tile = islander->stand_on_tile_idx + 18;
+            tile = islander->tile_idx + 18;
             tilemap = (u16 *)BG_SCREEN_ADDR(21);
         }
         tilemap += (tile & 0xF0) * 4;
@@ -7866,12 +7866,12 @@ s32 Islander_TryStartFishing(void) {
                 chance = 50;
             }
             if (chance > rand_u16(&gGameState) % 101) {
-                if (!(islander->_00 & 0xFF0000)) {
-                    islander->_8B = 0;
+                if (!(islander->x & 0xFF0000)) {
+                    islander->direction = 0;
                 } else {
-                    islander->_8B = 1;
+                    islander->direction = 1;
                 }
-                islander->move_proc_idx = MoveAction13;
+                islander->move_action = MoveAction13;
                 Islander_Fishing_Init();
                 return 1;
             }
@@ -7886,12 +7886,12 @@ u16 Islander_TakeCurrentTileItem(void) {
     IslandFieldWork *field = &gIslandFieldWork;
     u16 item;
 
-    if (!(islander->_00 & 0xFF0000)) {
-        field->fg_tiles[0][islander->stand_on_tile_idx] = 0x7777;
-        item = gIslandData->fgblock[0][0].items[islander->stand_on_tile_idx >> 4][islander->stand_on_tile_idx & 0xF];
+    if (!(islander->x & 0xFF0000)) {
+        field->fg_tiles[0][islander->tile_idx] = 0x7777;
+        item = gIslandData->fgblock[0][0].items[islander->tile_idx >> 4][islander->tile_idx & 0xF];
     } else {
-        field->fg_tiles[1][islander->stand_on_tile_idx] = 0x7777;
-        item = gIslandData->fgblock[0][1].items[islander->stand_on_tile_idx >> 4][islander->stand_on_tile_idx & 0xF];
+        field->fg_tiles[1][islander->tile_idx] = 0x7777;
+        item = gIslandData->fgblock[0][1].items[islander->tile_idx >> 4][islander->tile_idx & 0xF];
     }
     return item;
 }
@@ -7907,14 +7907,14 @@ s32 Islander_TryInteractWithCurrentTile(void) {
     s32 result;
     s32 slot;
 
-    state = islander->state & 0xF;
+    state = islander->equipped_tool_state & 0xF;
     if (state != 0 && state != 3 && state != 7) {
         return 0;
     }
-    if (!(islander->_00 & 0xFF0000)) {
-        tile = field->fg_tiles[0][islander->stand_on_tile_idx];
+    if (!(islander->x & 0xFF0000)) {
+        tile = field->fg_tiles[0][islander->tile_idx];
     } else {
-        tile = field->fg_tiles[1][islander->stand_on_tile_idx];
+        tile = field->fg_tiles[1][islander->tile_idx];
     }
     if (tile == 0xFFF) {
         return 0;
@@ -7932,7 +7932,7 @@ s32 Islander_TryInteractWithCurrentTile(void) {
     if (definition->held_item_oam_attr2 == 0xFFF) {
         return 0;
     }
-    if (!(islander->_00 & 0xFF0000)) {
+    if (!(islander->x & 0xFF0000)) {
         result = Islander_TryInteractWithBuriedItem(0);
     } else {
         result = Islander_TryInteractWithBuriedItem(1);
@@ -7944,55 +7944,55 @@ s32 Islander_TryInteractWithCurrentTile(void) {
         return 0;
     }
 
-    islander->_B5[1] = 0;
-    if ((islander->state & 0xF) == 3 || (islander->state & 0xF) == 7) {
-        if (islander->stored_item_tile_ids[4] != 0 ||
+    islander->removed_field_item_type = 0;
+    if ((islander->equipped_tool_state & 0xF) == 3 || (islander->equipped_tool_state & 0xF) == 7) {
+        if (islander->stored_item_type_plus_one[4] != 0 ||
             (definition->interaction_type >= 7 && definition->interaction_type <= 14)) {
             return 0;
         }
         item = Islander_TakeCurrentTileItem();
     } else if (!(definition->interaction_type >= 5 && definition->interaction_type <= 6)) {
         if (definition->interaction_type >= 7 && definition->interaction_type <= 14) {
-            islander->_72 = Islander_TakeCurrentTileItem();
-            islander->_B5[1] = tile;
-            islander->_86 = 0;
-            islander->_85 = 0;
-            islander->_86 = islander->stand_on_tile_idx;
-            if (islander->_00 & 0xFF0000) {
-                islander->_85 = 1;
+            islander->removed_tool_item = Islander_TakeCurrentTileItem();
+            islander->removed_field_item_type = tile;
+            islander->removed_tool_tile_idx = 0;
+            islander->removed_tool_layer = 0;
+            islander->removed_tool_tile_idx = islander->tile_idx;
+            if (islander->x & 0xFF0000) {
+                islander->removed_tool_layer = 1;
             }
         } else {
-            if (islander->stored_item_tile_ids[4] != 0) {
+            if (islander->stored_item_type_plus_one[4] != 0) {
                 return 0;
             }
             item = Islander_TakeCurrentTileItem();
         }
     }
 
-    if (!(islander->_00 & 0xFF0000)) {
-        field->fg_tiles[0][islander->stand_on_tile_idx] = 0x7777;
+    if (!(islander->x & 0xFF0000)) {
+        field->fg_tiles[0][islander->tile_idx] = 0x7777;
     } else {
-        field->fg_tiles[1][islander->stand_on_tile_idx] = 0x7777;
+        field->fg_tiles[1][islander->tile_idx] = 0x7777;
     }
-    islander->_10 = islander->_00 & 0xFF0000;
-    islander->_10 |= ((islander->stand_on_tile_idx & 0xF) << 12) + 0x800;
-    islander->_14 = ((islander->stand_on_tile_idx & 0xF0) << 8) + 0x800;
+    islander->target_x = islander->x & 0xFF0000;
+    islander->target_x |= ((islander->tile_idx & 0xF) << 12) + 0x800;
+    islander->target_y = ((islander->tile_idx & 0xF0) << 8) + 0x800;
     islander->item_work.held_item.type_idx = 2;
-    islander->_99[0] = 0x10;
-    islander->move_proc_idx = 4;
-    islander->_A0 = 0;
+    islander->target_action = 0x10;
+    islander->move_action = 4;
+    islander->immediate_item_type_plus_one = 0;
     if (item != 0) {
         for (slot = 0; slot < 5; slot++) {
-            if (islander->stored_item_tile_ids[slot] == 0) {
-                islander->stored_item_tile_ids[slot] = tile + 1;
-                islander->stored_items[slot] = item;
-                islander->_94[1] = slot;
+            if (islander->stored_item_type_plus_one[slot] == 0) {
+                islander->stored_item_type_plus_one[slot] = tile + 1;
+                islander->stored_item_ids[slot] = item;
+                islander->stored_item_slot = slot;
                 return 1;
             }
         }
     } else {
-        if (islander->_B5[1] == 0) {
-            islander->_A0 = tile + 1;
+        if (islander->removed_field_item_type == 0) {
+            islander->immediate_item_type_plus_one = tile + 1;
         }
         return 1;
     }
@@ -8007,26 +8007,26 @@ s32 Islander_TryStartDigging(void) {
     u8 *standing_tile;
 
     if ((islander->emotion == ISLANDER_EMOTION_HAPPY || islander->emotion == ISLANDER_EMOTION_ANGRY) &&
-        ((islander->state & 0xF) == 3 || (islander->state & 0xF) == 7) && islander->_78 == 0) {
-        if (!(islander->_00 & 0xFF0000)) {
-            standing_tile = &islander->stand_on_tile_idx;
+        ((islander->equipped_tool_state & 0xF) == 3 || (islander->equipped_tool_state & 0xF) == 7) && islander->digging_cooldown_timer == 0) {
+        if (!(islander->x & 0xFF0000)) {
+            standing_tile = &islander->tile_idx;
             tile = field->fg_tiles[0][*standing_tile];
         } else {
-            standing_tile = &islander->stand_on_tile_idx;
+            standing_tile = &islander->tile_idx;
             tile = field->fg_tiles[1][*standing_tile];
         }
         if (tile == 0xFFF && rand_u16(&gGameState) % 101 <= 5 &&
             Islander_CanDigHere() != 0 && (u16)Islander_SetupDigApproach(0xF1) != 0) {
-            islander->_08 = islander->_10;
-            islander->_0C = islander->_14;
-            islander->_B5[2] = 0;
-            islander->_B5[3] = *standing_tile;
-            if (islander->_00 & 0xFF0000) {
-                islander->_B5[2] = 1;
+            islander->accepted_x = islander->target_x;
+            islander->accepted_y = islander->target_y;
+            islander->dig_target_layer = 0;
+            islander->dig_target_tile_idx = *standing_tile;
+            if (islander->x & 0xFF0000) {
+                islander->dig_target_layer = 1;
             }
-            islander->_7C[0] = 0;
+            islander->buried_item_tile_base = 0;
             islander->item_work.held_item.type_idx = 2;
-            islander->move_proc_idx = MoveAction4;
+            islander->move_action = MoveAction4;
             IslanderMoveAction_MoveToTarget();
             return 2;
         }
@@ -8057,7 +8057,7 @@ void RestoreHeldItemsToField(void) {
         field->entity_active[2] = 0;
     }
 
-    tool = islander->state & 0xF;
+    tool = islander->equipped_tool_state & 0xF;
     if (tool != 0) {
         tile = tool;
         if (tile > 4) {
@@ -8067,26 +8067,26 @@ void RestoreHeldItemsToField(void) {
         if (tool > 4) {
             tile++;
         }
-        if (islander->_85 != 0 || islander->_86 != 0) {
-            if (islander->_85 == 0) {
-                field->fg_tiles[0][islander->_86] = tile;
+        if (islander->removed_tool_layer != 0 || islander->removed_tool_tile_idx != 0) {
+            if (islander->removed_tool_layer == 0) {
+                field->fg_tiles[0][islander->removed_tool_tile_idx] = tile;
                 tilemap_vram = (u16 *)BG_SCREEN_ADDR(24);
-                tilemap_vram += (islander->_86 & 0xF0) * 4;
-                tilemap_vram += (islander->_86 & 0xF) * 2;
-                gIslandData->fgblock[0][0].items[(islander->_86 >> 4) & 0xF][islander->_86 & 0xF] = islander->_72;
+                tilemap_vram += (islander->removed_tool_tile_idx & 0xF0) * 4;
+                tilemap_vram += (islander->removed_tool_tile_idx & 0xF) * 2;
+                gIslandData->fgblock[0][0].items[(islander->removed_tool_tile_idx >> 4) & 0xF][islander->removed_tool_tile_idx & 0xF] = islander->removed_tool_item;
             } else {
-                field->fg_tiles[1][islander->_86] = tile;
+                field->fg_tiles[1][islander->removed_tool_tile_idx] = tile;
                 tilemap_vram = (u16 *)BG_SCREEN_ADDR(25);
-                tilemap_vram += (islander->_86 & 0xF0) * 4;
-                tilemap_vram += (islander->_86 & 0xF) * 2;
-                gIslandData->fgblock[0][1].items[(islander->_86 >> 4) & 0xF][islander->_86 & 0xF] = islander->_72;
+                tilemap_vram += (islander->removed_tool_tile_idx & 0xF0) * 4;
+                tilemap_vram += (islander->removed_tool_tile_idx & 0xF) * 2;
+                gIslandData->fgblock[0][1].items[(islander->removed_tool_tile_idx >> 4) & 0xF][islander->removed_tool_tile_idx & 0xF] = islander->removed_tool_item;
             }
             WriteItemTileToVRAM(tilemap_vram, 0x6234);
-            islander->_86 = 0;
-            islander->_85 = 0;
-            islander->state = 0;
-            islander->_72 = 0;
-            if (islander->move_proc_idx == MoveAction3) {
+            islander->removed_tool_tile_idx = 0;
+            islander->removed_tool_layer = 0;
+            islander->equipped_tool_state = 0;
+            islander->removed_tool_item = 0;
+            if (islander->move_action == MoveAction3) {
                 Islander_AdjustAnimForTool();
             }
         }
@@ -8098,12 +8098,12 @@ void Islander_UpdateMovement(void) {
 
     if (gIslandFieldWork.gameplay_active != 0) {
         Islander_StepFlyingItem();
-        if ((islander->move_proc_idx >= MoveAction9 && islander->move_proc_idx <= CheckClickedOnTimer) ||
+        if ((islander->move_action >= MoveAction9 && islander->move_action <= CheckClickedOnTimer) ||
             islander->click_cooldown_timer == 0) {
-            if (islander->move_proc_idx == MoveAction3) {
+            if (islander->move_action == MoveAction3) {
                 Islander_MoveWithCollision();
             }
-            IslanderMoveProcTable[islander->move_proc_idx]();
+            IslanderMoveProcTable[islander->move_action]();
         }
     }
 }
@@ -8112,13 +8112,13 @@ void Islander_UpdateMovement(void) {
 void Islander_StartHouseTransition(void) {
     gIslander.anim_timer = 0;
     gIslander.anim_frame = 0;
-    gIslander._10 = 0;
-    gIslander._14 = 0;
-    gIslander._8B = 0;
+    gIslander.target_x = 0;
+    gIslander.target_y = 0;
+    gIslander.direction = 0;
     if (gIslander.anim_id == 0x60) {
         gIslander.anim_timer = 0xFE;
     }
-    gIslander.move_proc_idx = 1;
+    gIslander.move_action = 1;
 }
 
 /* Original address: 0x02021608 */
@@ -8150,19 +8150,19 @@ void Islander_MoveIndoorsOrOutdoors(void) {
             anim_id = islander->anim_id;
             if (anim_id == ISLANDER_ANIM_60) {
                 house->state = 1;
-                islander->_04 += 0x1200;
-                islander->_0C = islander->_04;
-                islander->_94[0] = anim_id;
-                islander->move_proc_idx = ActionOutside;
+                islander->y += 0x1200;
+                islander->accepted_y = islander->y;
+                islander->direction_change_cooldown_timer = anim_id;
+                islander->move_action = ActionOutside;
                 Islander_StartWandering();
-                islander->_99[1] = 0x40;
-                islander->_58 = 0x60;
+                islander->collision_bypass_timer = 0x40;
+                islander->wander_timer = 0x60;
             } else {
                 for (i = 0; i < 5; i++) {
-                    if (islander->stored_item_tile_ids[0] != 0) {
-                        islander->mood++;
-                        if (islander->mood > 6) {
-                            islander->mood = 6;
+                    if (islander->stored_item_type_plus_one[0] != 0) {
+                        islander->mood_level++;
+                        if (islander->mood_level > 6) {
+                            islander->mood_level = 6;
                         }
                         Islander_OnMoodChanged();
                         Islander_ClearStoredItem(0);
@@ -8170,7 +8170,7 @@ void Islander_MoveIndoorsOrOutdoors(void) {
                 }
                 islander->anim_timer = 0xFE;
                 islander->anim_id = ISLANDER_ANIM_60;
-                islander->move_proc_idx = ActionInside;
+                islander->move_action = ActionInside;
                 house->state = 1;
             }
         }
@@ -8185,9 +8185,9 @@ void Islander_StartWandering(void) {
     islander->anim_id = ISLANDER_ANIM_00;
     islander->anim_frame = 0;
     islander->anim_timer = 0;
-    islander->_91[0] = 0;
-    islander->_91[1] = 0;
-    islander->emotion_anim_id = ISLANDER_ANIM_00;
+    islander->blink_frame = 0;
+    islander->blink_timer = 0;
+    islander->reaction_anim_id = ISLANDER_ANIM_00;
     Islander_AdjustAnimForTool();
     anim = *gIslanderAnimData[islander->anim_id];
     switch (islander->emotion) {
@@ -8200,9 +8200,9 @@ void Islander_StartWandering(void) {
         base_duration = 0x100;
         break;
     }
-    islander->_58 = base_duration + rand_u16(&gGameState) % 337;
+    islander->wander_timer = base_duration + rand_u16(&gGameState) % 337;
     islander->anim_timer = anim->duration;
-    islander->move_proc_idx = MoveAction3;
+    islander->move_action = MoveAction3;
 }
 
 /* Original address: 0x020217AC */
@@ -8211,47 +8211,47 @@ void Islander_UpdateWandering(void) {
     s32 direction = 0;
 
     Islander_UpdateBlink();
-    if (islander->_7C[1] != 0) {
-        islander->_7C[1]--;
+    if (islander->tree_action_cooldown_timer != 0) {
+        islander->tree_action_cooldown_timer--;
     }
-    if (islander->_78 != 0) {
-        islander->_78--;
+    if (islander->digging_cooldown_timer != 0) {
+        islander->digging_cooldown_timer--;
     }
-    if (islander->_94[0] != 0) {
-        islander->_94[0]--;
+    if (islander->direction_change_cooldown_timer != 0) {
+        islander->direction_change_cooldown_timer--;
     }
-    if (islander->_74 != 0) {
-        islander->_74--;
+    if (islander->fishing_cooldown_timer != 0) {
+        islander->fishing_cooldown_timer--;
     }
-    if (islander->state & 0xF) {
-        if (islander->_7C[3] > 0x1C20) {
+    if (islander->equipped_tool_state & 0xF) {
+        if (islander->equipped_tool_timer > 0x1C20) {
             if (Islander_TryDropTool() != 0) {
-                islander->_7C[3] = 0;
+                islander->equipped_tool_timer = 0;
             }
         } else {
-            islander->_7C[3]++;
+            islander->equipped_tool_timer++;
         }
     }
     if (Islander_TryInteractWithCurrentTile() == 0 && Islander_TryStartFishing() == 0 && Islander_TryStartDigging() == 0) {
-        if (islander->_10 != 0 && islander->_14 != 0 &&
-            Islander_FaceTargetAndCheckArrival(islander->_10, islander->_14) != 0) {
-            if (islander->_58 < 0x60) {
-                islander->_58 = 0x60;
+        if (islander->target_x != 0 && islander->target_y != 0 &&
+            Islander_FaceTargetAndCheckArrival(islander->target_x, islander->target_y) != 0) {
+            if (islander->wander_timer < 0x60) {
+                islander->wander_timer = 0x60;
             }
-            islander->_10 = 0;
-            islander->_14 = 0;
+            islander->target_x = 0;
+            islander->target_y = 0;
         }
-        if (islander->emotion != ISLANDER_EMOTION_HAPPY || islander->_14 == 0) {
-            if (islander->_58 == 0) {
+        if (islander->emotion != ISLANDER_EMOTION_HAPPY || islander->target_y == 0) {
+            if (islander->wander_timer == 0) {
                 direction = Islander_ChooseNewMoveDirection(0);
                 if (direction != 0x777) {
-                    islander->_8B = direction;
-                    islander->move_proc_idx = ActionOutside;
+                    islander->direction = direction;
+                    islander->move_action = ActionOutside;
                     Islander_StartWandering();
                     return;
                 }
             } else {
-                islander->_58--;
+                islander->wander_timer--;
             }
         }
         Islander_PlayAnim(0);
@@ -8266,118 +8266,118 @@ void IslanderMoveAction_MoveToTarget(void) {
     s32 continue_moving = 0;
 
     Islander_UpdateBlink();
-    if (islander->_14 & 0xFFFF0000) {
-        islander->_14 &= 0xFFFF;
+    if (islander->target_y & 0xFFFF0000) {
+        islander->target_y &= 0xFFFF;
     }
-    if (islander->_1C & 0xFFFF0000) {
-        islander->_1C &= 0xFFFF;
+    if (islander->next_target_y & 0xFFFF0000) {
+        islander->next_target_y &= 0xFFFF;
     }
-    if (Islander_ChangeMoveDir(islander->_10, islander->_14,
+    if (Islander_ChangeMoveDir(islander->target_x, islander->target_y,
                              (u8)islander->item_work.held_item.type_idx)) {
-        if (islander->_99[0] == 0x30 || islander->_99[0] == 0x40) {
-            object = &gFieldObjects[islander->_99[2]];
+        if (islander->target_action == 0x30 || islander->target_action == 0x40) {
+            object = &gFieldObjects[islander->target_field_object_idx];
         }
-        switch (islander->_99[0]) {
+        switch (islander->target_action) {
         case 0x10:
-            islander->move_proc_idx = MoveAction5;
+            islander->move_action = MoveAction5;
             Islander_StartFoodProcessing();
             break;
         case 0x20:
-            islander->_00 = islander->_10;
-            islander->_04 = islander->_14 - 0x1000;
+            islander->x = islander->target_x;
+            islander->y = islander->target_y - 0x1000;
             house->state = 0;
             islander->anim_id = ISLANDER_ANIM_5F;
-            islander->move_proc_idx = ActionInside;
+            islander->move_action = ActionInside;
             Islander_StartHouseTransition();
             islander->anim_timer = 4;
             break;
         case 0x30:
             object->x_flip = 0;
-            if (islander->_18 == 0 && islander->_1C == 0) {
-                if ((islander->state & 0xF) != 2 && (islander->state & 0xF) != 6) {
+            if (islander->next_target_x == 0 && islander->next_target_y == 0) {
+                if ((islander->equipped_tool_state & 0xF) != 2 && (islander->equipped_tool_state & 0xF) != 6) {
                     islander->anim_id = 0x62;
                 } else {
                     islander->anim_id = ISLANDER_ANIM_55;
                 }
-                islander->_00 = islander->_10;
-                islander->_04 = islander->_14;
-                islander->move_proc_idx = MoveAction11;
+                islander->x = islander->target_x;
+                islander->y = islander->target_y;
+                islander->move_action = MoveAction11;
                 Islander_StartFieldObjectInteraction();
             } else {
-                islander->_10 = islander->_18;
-                islander->_14 = islander->_1C;
-                islander->_18 = 0;
-                islander->_1C = 0;
+                islander->target_x = islander->next_target_x;
+                islander->target_y = islander->next_target_y;
+                islander->next_target_x = 0;
+                islander->next_target_y = 0;
                 continue_moving = 1;
             }
             break;
         case 0x40:
             object->x_flip = 1;
-            if (islander->_18 == 0 && islander->_1C == 0) {
-                if ((islander->state & 0xF) != 2 && (islander->state & 0xF) != 6) {
+            if (islander->next_target_x == 0 && islander->next_target_y == 0) {
+                if ((islander->equipped_tool_state & 0xF) != 2 && (islander->equipped_tool_state & 0xF) != 6) {
                     islander->anim_id = ISLANDER_ANIM_61;
                 } else {
                     islander->anim_id = ISLANDER_ANIM_54;
                 }
-                islander->_00 = islander->_10;
-                islander->_04 = islander->_14;
-                islander->move_proc_idx = MoveAction11;
+                islander->x = islander->target_x;
+                islander->y = islander->target_y;
+                islander->move_action = MoveAction11;
                 Islander_StartFieldObjectInteraction();
             } else {
-                islander->_10 = islander->_18;
-                islander->_14 = islander->_1C;
-                islander->_18 = 0;
-                islander->_1C = 0;
+                islander->target_x = islander->next_target_x;
+                islander->target_y = islander->next_target_y;
+                islander->next_target_x = 0;
+                islander->next_target_y = 0;
                 continue_moving = 1;
             }
             break;
         case 0x50:
-            islander->_00 = islander->_10;
-            islander->_04 = islander->_14;
+            islander->x = islander->target_x;
+            islander->y = islander->target_y;
             Islander_ChooseNewMoveDirection(1);
-            islander->move_proc_idx = ActionOutside;
+            islander->move_action = ActionOutside;
             Islander_StartWandering();
             break;
         case 0x60:
-            islander->_8B = 0;
-            islander->_00 = islander->_10;
-            islander->_04 = islander->_14;
-            if (islander->_18 == 0 && islander->_1C == 0) {
+            islander->direction = 0;
+            islander->x = islander->target_x;
+            islander->y = islander->target_y;
+            if (islander->next_target_x == 0 && islander->next_target_y == 0) {
                 islander->item_work.held_item.type_idx = 0;
-                islander->_99[0] = 0;
-                islander->move_proc_idx = MoveActionDig;
+                islander->target_action = 0;
+                islander->move_action = MoveActionDig;
                 IslanderMoveAction_Dig();
             } else {
-                islander->_10 = islander->_18;
-                islander->_14 = islander->_1C;
-                islander->_18 = 0;
-                islander->_1C = 0;
+                islander->target_x = islander->next_target_x;
+                islander->target_y = islander->next_target_y;
+                islander->next_target_x = 0;
+                islander->next_target_y = 0;
                 continue_moving = 1;
             }
             break;
         case 0x70:
-            islander->_8B = 1;
-            islander->_00 = islander->_10;
-            islander->_04 = islander->_14;
-            if (islander->_18 == 0 && islander->_1C == 0) {
+            islander->direction = 1;
+            islander->x = islander->target_x;
+            islander->y = islander->target_y;
+            if (islander->next_target_x == 0 && islander->next_target_y == 0) {
                 islander->item_work.held_item.type_idx = 0;
-                islander->_99[0] = 0;
-                islander->move_proc_idx = MoveActionDig;
+                islander->target_action = 0;
+                islander->move_action = MoveActionDig;
                 IslanderMoveAction_Dig();
             } else {
-                islander->_10 = islander->_18;
-                islander->_14 = islander->_1C;
-                islander->_18 = 0;
-                islander->_1C = 0;
+                islander->target_x = islander->next_target_x;
+                islander->target_y = islander->next_target_y;
+                islander->next_target_x = 0;
+                islander->next_target_y = 0;
                 continue_moving = 1;
             }
             break;
         }
         if (!continue_moving) {
             islander->item_work.held_item.type_idx = 0;
-            islander->_99[0] = 0;
-            islander->_10 = 0;
-            islander->_14 = 0;
+            islander->target_action = 0;
+            islander->target_x = 0;
+            islander->target_y = 0;
             return;
         }
     }
@@ -8395,35 +8395,35 @@ void Islander_StartFoodProcessing(void) {
 
     islander->anim_frame = initial_frame;
     islander->anim_timer = 0;
-    islander->_91[0] = 0;
-    islander->_91[1] = 0;
+    islander->blink_frame = 0;
+    islander->blink_timer = 0;
     islander->anim_id = ISLANDER_ANIM_56;
     islander->anim_timer = gIslanderAnimData[*anim_id][0]->duration;
-    if (islander->_85 == 0 && islander->_86 == 0) {
-        WriteItemToTile(islander->_00, islander->stand_on_tile_idx, 0, 0x200);
+    if (islander->removed_tool_layer == 0 && islander->removed_tool_tile_idx == 0) {
+        WriteItemToTile(islander->x, islander->tile_idx, 0, 0x200);
     } else {
-        if ((islander->_00 & 0xFF0000) == 0) {
+        if ((islander->x & 0xFF0000) == 0) {
             tilemap = (u8 *)BG_SCREEN_ADDR(24);
         } else {
             tilemap = (u8 *)BG_SCREEN_ADDR(25);
         }
-        tilemap = (0xF0 & islander->stand_on_tile_idx) * 8 + tilemap;
-        tilemap = (0xF & islander->stand_on_tile_idx) * 4 + tilemap;
+        tilemap = (0xF0 & islander->tile_idx) * 8 + tilemap;
+        tilemap = (0xF & islander->tile_idx) * 4 + tilemap;
         WriteItemTileToVRAM((u16*)tilemap, 0x200);
     }
-    Field_RestoreAdjacentTreeTiles(islander->stand_on_tile_idx, islander->_00);
+    Field_RestoreAdjacentTreeTiles(islander->tile_idx, islander->x);
 
-    if (islander->_A0 == 0) {
-        if (islander->_B5[1] == 0) {
-            item_type_idx = islander->stored_item_tile_ids[islander->_94[1]] - 1;
+    if (islander->immediate_item_type_plus_one == 0) {
+        if (islander->removed_field_item_type == 0) {
+            item_type_idx = islander->stored_item_type_plus_one[islander->stored_item_slot] - 1;
         } else {
-            item_type_idx = islander->_B5[1];
+            item_type_idx = islander->removed_field_item_type;
         }
     } else {
-        item_type_idx = islander->_A0 - 1;
+        item_type_idx = islander->immediate_item_type_plus_one - 1;
     }
-    islander->_40 = (item_type_idx + g_ItemDefinitions)->held_item_oam_attr2 | 0x800000;
-    islander->move_proc_idx = ProcessFood;
+    islander->held_item_sprite = (item_type_idx + g_ItemDefinitions)->held_item_oam_attr2 | 0x800000;
+    islander->move_action = ProcessFood;
 }
 
 /* Original address: 0x02021BCC */
@@ -8447,23 +8447,23 @@ void Islander_ProcessFood(void) {
     }
 
     result = 0;
-    if (islander->_A0 == 0) {
-        if (islander->_B5[1] == 0) {
-            item_type_idx = islander->stored_item_tile_ids[islander->_94[1]] - 1;
+    if (islander->immediate_item_type_plus_one == 0) {
+        if (islander->removed_field_item_type == 0) {
+            item_type_idx = islander->stored_item_type_plus_one[islander->stored_item_slot] - 1;
         } else {
-            item_type_idx = islander->_B5[1];
+            item_type_idx = islander->removed_field_item_type;
         }
     } else {
-        item_type_idx = islander->_A0 - 1;
+        item_type_idx = islander->immediate_item_type_plus_one - 1;
     }
 
     definition = g_ItemDefinitions + item_type_idx;
-    islander->_40 = definition->held_item_oam_attr2 | 0x800000;
+    islander->held_item_sprite = definition->held_item_oam_attr2 | 0x800000;
 
     switch (islander->anim_id) {
     case ISLANDER_ANIM_56:
         islander->anim_id = ISLANDER_ANIM_58;
-        if (islander->_A0 != 0) {
+        if (islander->immediate_item_type_plus_one != 0) {
             islander->anim_id = ISLANDER_ANIM_57;
             Sound_PlayEffect0(0x19);
         }
@@ -8473,11 +8473,11 @@ void Islander_ProcessFood(void) {
         u8 *food_preferences;
         u8 *food_preference_layout;
 
-        islander->_40 = 0;
-        if ((islander->_00 & 0xFF0000) == 0) {
-            field->fg_tiles[0][islander->stand_on_tile_idx] = 0xFFF;
+        islander->held_item_sprite = 0;
+        if ((islander->x & 0xFF0000) == 0) {
+            field->fg_tiles[0][islander->tile_idx] = 0xFFF;
         } else {
-            field->fg_tiles[1][islander->stand_on_tile_idx] = 0xFFF;
+            field->fg_tiles[1][islander->tile_idx] = 0xFFF;
         }
 
         i = 0;
@@ -8488,40 +8488,40 @@ void Islander_ProcessFood(void) {
                 u8 preference_idx = islander->islander_npc_idx * 9 + i;
                 u8 preference = food_preferences[preference_idx];
 
-                islander->mood += preference;
+                islander->mood_level += preference;
                 if ((preference & 0x80) == 0) {
-                    islander->emotion_anim_id = ISLANDER_ANIM_59;
+                    islander->reaction_anim_id = ISLANDER_ANIM_59;
                 } else {
-                    islander->emotion_anim_id = ISLANDER_ANIM_5D;
+                    islander->reaction_anim_id = ISLANDER_ANIM_5D;
                 }
                 break;
             }
         }
 
         result = 3;
-        if (islander->mood & 0x80) {
-            islander->mood = 0;
-        } else if (islander->mood > 5) {
-            if ((islander->_00 & 0xFF0000) == 0) {
-                field->fg_tiles[0][islander->stand_on_tile_idx] = 0x3333;
+        if (islander->mood_level & 0x80) {
+            islander->mood_level = 0;
+        } else if (islander->mood_level > 5) {
+            if ((islander->x & 0xFF0000) == 0) {
+                field->fg_tiles[0][islander->tile_idx] = 0x3333;
             } else {
-                field->fg_tiles[1][islander->stand_on_tile_idx] = 0x3333;
+                field->fg_tiles[1][islander->tile_idx] = 0x3333;
             }
-            islander->mood = 6;
+            islander->mood_level = 6;
             break;
         }
-        islander->_A0 = 0;
+        islander->immediate_item_type_plus_one = 0;
         break;
     }
 
     case ISLANDER_ANIM_58:
-        islander->_40 = 0;
-        if ((islander->_00 & 0xFF0000) == 0) {
-            if (islander->_86 != islander->stand_on_tile_idx) {
-                field->fg_tiles[0][islander->stand_on_tile_idx] = 0xFFF;
+        islander->held_item_sprite = 0;
+        if ((islander->x & 0xFF0000) == 0) {
+            if (islander->removed_tool_tile_idx != islander->tile_idx) {
+                field->fg_tiles[0][islander->tile_idx] = 0xFFF;
             }
-        } else if (islander->_86 != islander->stand_on_tile_idx) {
-            field->fg_tiles[1][islander->stand_on_tile_idx] = 0xFFF;
+        } else if (islander->removed_tool_tile_idx != islander->tile_idx) {
+            field->fg_tiles[1][islander->tile_idx] = 0xFFF;
         }
 
         switch (definition->interaction_type) {
@@ -8530,45 +8530,45 @@ void Islander_ProcessFood(void) {
         case 3:
         case 5:
         case 6:
-            islander->emotion_anim_id = ISLANDER_ANIM_59;
+            islander->reaction_anim_id = ISLANDER_ANIM_59;
             result = 3;
             break;
         case 4:
-            islander->mood = 0;
+            islander->mood_level = 0;
             islander->emotion = ISLANDER_EMOTION_ANGRY;
-            islander->emotion_anim_id = ISLANDER_ANIM_ANGRY;
+            islander->reaction_anim_id = ISLANDER_ANIM_ANGRY;
             result = 1;
             break;
         case 8:
-            islander->state = 5;
+            islander->equipped_tool_state = 5;
             result = 2;
             break;
         case 7:
-            islander->state = 1;
+            islander->equipped_tool_state = 1;
             result = 2;
             break;
         case 10:
-            islander->state = 6;
+            islander->equipped_tool_state = 6;
             result = 2;
             break;
         case 9:
-            islander->state = 2;
+            islander->equipped_tool_state = 2;
             result = 2;
             break;
         case 12:
-            islander->state = 7;
+            islander->equipped_tool_state = 7;
             result = 2;
             break;
         case 11:
-            islander->state = 3;
+            islander->equipped_tool_state = 3;
             result = 2;
             break;
         case 14:
-            islander->state = 8;
+            islander->equipped_tool_state = 8;
             result = 2;
             break;
         case 13:
-            islander->state = 4;
+            islander->equipped_tool_state = 4;
             result = 2;
             break;
         default:
@@ -8579,7 +8579,7 @@ void Islander_ProcessFood(void) {
 
     switch (result) {
     case 1:
-        Islander_ClearStoredItem(islander->_94[1]);
+        Islander_ClearStoredItem(islander->stored_item_slot);
         /* fallthrough */
     case 3:
         if (result != 1) {
@@ -8590,15 +8590,15 @@ void Islander_ProcessFood(void) {
             }
         }
         islander->item_work.held_item.type_idx = 2;
-        islander->_99[0] = 0x50;
-        islander->move_proc_idx = MoveAction7;
+        islander->target_action = 0x50;
+        islander->move_action = MoveAction7;
         IslanderMoveAction_UpdateEmotion();
         break;
     case 2:
-        WriteItemToTile(islander->_00, islander->stand_on_tile_idx, 0, 0x200);
-        islander->_7C[3] = 0;
-        islander->_94[0] = 0x20;
-        islander->move_proc_idx = ActionOutside;
+        WriteItemToTile(islander->x, islander->tile_idx, 0, 0x200);
+        islander->equipped_tool_timer = 0;
+        islander->direction_change_cooldown_timer = 0x20;
+        islander->move_action = ActionOutside;
         Islander_StartWandering();
         break;
     }
@@ -8612,12 +8612,12 @@ void IslanderMoveAction_UpdateEmotion(void) {
 
     islander->anim_frame = 0;
     islander->anim_timer = 0;
-    islander->_91[0] = 0;
-    islander->_91[1] = 0;
-    islander->anim_id = islander->emotion_anim_id;
+    islander->blink_frame = 0;
+    islander->blink_timer = 0;
+    islander->anim_id = islander->reaction_anim_id;
     anim_data = *gIslanderAnimData[islander->anim_id];
 
-    switch (islander->emotion_anim_id) {
+    switch (islander->reaction_anim_id) {
     case ISLANDER_ANIM_59:
         Sound_PlayEffect0(9);
         break;
@@ -8639,7 +8639,7 @@ void IslanderMoveAction_UpdateEmotion(void) {
 
     ChangeEmotion(islander->emotion + 1);
     islander->anim_timer = anim_data->duration;
-    islander->move_proc_idx = MoveAction8;
+    islander->move_action = MoveAction8;
 }
 
 /* Original address: 0x02022054 */
@@ -8647,7 +8647,7 @@ void Islander_UpdateEmotionAnimation(void) {
     Islander_AGB *islander = &gIslander;
     IslandBuilding *house = &gIslandBuildings[ISLAND_BUILDING_ISLANDER_HOUSE];
     mActor_name_t *stored_item;
-    u16 *stored_item_tile_id;
+    u16 *stored_type_plus_one;
     s32 i;
     u16 random = 0;
 
@@ -8655,13 +8655,13 @@ void Islander_UpdateEmotionAnimation(void) {
         return;
     }
 
-    islander->_94[0] = 0x20;
-    if ((islander->_A0 != 0) && (islander->emotion_anim_id == ISLANDER_ANIM_59)) {
-        islander->_A0 = random;
-        if (islander->mood == 6) {
-            if (islander->stored_item_tile_ids[0] != 0) {
-                if (SpawnEntity(1, 0, islander->stored_item_tile_ids[0] - 1,
-                                islander->stored_items[0]) != 0) {
+    islander->direction_change_cooldown_timer = 0x20;
+    if ((islander->immediate_item_type_plus_one != 0) && (islander->reaction_anim_id == ISLANDER_ANIM_59)) {
+        islander->immediate_item_type_plus_one = random;
+        if (islander->mood_level == 6) {
+            if (islander->stored_item_type_plus_one[0] != 0) {
+                if (SpawnEntity(1, 0, islander->stored_item_type_plus_one[0] - 1,
+                                islander->stored_item_ids[0]) != 0) {
                     Islander_ClearStoredItem(0);
                 }
             } else {
@@ -8679,37 +8679,37 @@ void Islander_UpdateEmotionAnimation(void) {
         }
     }
 
-    if (islander->_99[0] == 0x50) {
-        islander->_10 = islander->_08;
-        islander->_14 = islander->_0C;
+    if (islander->target_action == 0x50) {
+        islander->target_x = islander->accepted_x;
+        islander->target_y = islander->accepted_y;
         islander->anim_frame = 0;
         Islander_AdjustAnimForTool();
         islander->anim_timer = (*gIslanderAnimData[islander->anim_id])->duration;
-        islander->move_proc_idx = MoveAction4;
+        islander->move_action = MoveAction4;
         IslanderMoveAction_MoveToTarget();
         return;
     }
 
-    if (islander->_99[0] == 0x80) {
+    if (islander->target_action == 0x80) {
         house->state = 0;
-        islander->_00 = house->x << 8;
-        islander->_04 = house->y << 8;
-        islander->_99[0] = 0;
+        islander->x = house->x << 8;
+        islander->y = house->y << 8;
+        islander->target_action = 0;
         islander->anim_id = ISLANDER_ANIM_5F;
-        islander->move_proc_idx = ActionInside;
+        islander->move_action = ActionInside;
         Islander_StartHouseTransition();
         islander->anim_timer = 4;
         {
             u16 empty_item = 0;
 
-            stored_item = islander->stored_items;
-            stored_item_tile_id = islander->stored_item_tile_ids;
+            stored_item = islander->stored_item_ids;
+            stored_type_plus_one = islander->stored_item_type_plus_one;
             i = 4;
             do {
-                *stored_item_tile_id = empty_item;
+                *stored_type_plus_one = empty_item;
                 *stored_item = empty_item;
                 stored_item++;
-                stored_item_tile_id++;
+                stored_type_plus_one++;
                 i--;
             } while (i >= 0);
         }
@@ -8717,7 +8717,7 @@ void Islander_UpdateEmotionAnimation(void) {
     }
 
     Islander_ChooseNewMoveDirection(1);
-    islander->move_proc_idx = ActionOutside;
+    islander->move_action = ActionOutside;
     Islander_StartWandering();
 }
 
@@ -8730,16 +8730,16 @@ void Islander_StartClickReaction(void) {
     u16 angle;
     s32 sector_idx;
 
-    if (islander->_9F == 0) {
-        if ((islander->_10 & 0xFF0000) == 0) {
-            tile_id = field->fg_tiles[0][islander->_9D];
+    if (islander->interaction_target_is_islander == 0) {
+        if ((islander->target_x & 0xFF0000) == 0) {
+            tile_id = field->fg_tiles[0][islander->player_interaction_tile_idx];
         } else {
-            tile_id = field->fg_tiles[1][islander->_9D];
+            tile_id = field->fg_tiles[1][islander->player_interaction_tile_idx];
         }
 
         if ((tile_id == 0xFFF) || (tile_id == 0x3333) || (tile_id == 0x7777) ||
             ((g_ItemDefinitions + tile_id)->held_item_oam_attr2 == 0xFFF)) {
-            islander->move_proc_idx = ActionOutside;
+            islander->move_action = ActionOutside;
             Islander_StartWandering();
             return;
         }
@@ -8747,10 +8747,10 @@ void Islander_StartClickReaction(void) {
 
     Islander_SpawnReactionEffect(0, 0x30);
     islander->click_cooldown_timer = 0x30;
-    islander->_94[0] = 0x60;
-    islander->dir_x = (islander->_10 - islander->_00) >> 8;
-    islander->dir_y = (islander->_14 - islander->_04) >> 8;
-    angle = ArcTan2((s16)islander->dir_x, (s16)islander->dir_y);
+    islander->direction_change_cooldown_timer = 0x60;
+    islander->work_x = (islander->target_x - islander->x) >> 8;
+    islander->work_y = (islander->target_y - islander->y) >> 8;
+    angle = ArcTan2((s16)islander->work_x, (s16)islander->work_y);
 
     sector = &gIslanderDirectionSectors[7];
     if (angle < sector->max_angle) {
@@ -8766,11 +8766,11 @@ void Islander_StartClickReaction(void) {
         sector_idx = 0;
     }
 
-    islander->_8B = gIslanderDirectionSectors[sector_idx].direction;
+    islander->direction = gIslanderDirectionSectors[sector_idx].direction;
     islander->anim_frame = 0;
     islander->anim_timer = 0;
     Islander_AdjustAnimForTool();
-    islander->move_proc_idx = CheckClickedOnTimer;
+    islander->move_action = CheckClickedOnTimer;
 }
 
 void Islander_CheckClickedOnTimer(void) {
@@ -8780,40 +8780,40 @@ void Islander_CheckClickedOnTimer(void) {
 
     timer = --islander->click_cooldown_timer;
     if (timer == 0) {
-        if (islander->emotion_anim_id == ISLANDER_ANIM_00) {
-            state = islander->state;
+        if (islander->reaction_anim_id == ISLANDER_ANIM_00) {
+            state = islander->equipped_tool_state;
             if (state & 0x40) {
-                islander->state = state - 0x40;
+                islander->equipped_tool_state = state - 0x40;
                 Islander_TryDropTool();
             }
-            islander->move_proc_idx = ActionOutside;
+            islander->move_action = ActionOutside;
             Islander_StartWandering();
             return;
         }
 
-        islander->emotion_anim_id = 0;
-        islander->mood--;
-        if (islander->mood & 0x80) {
-            islander->mood = 0;
+        islander->reaction_anim_id = 0;
+        islander->mood_level--;
+        if (islander->mood_level & 0x80) {
+            islander->mood_level = 0;
         }
         Islander_OnMoodChanged();
 
         if ((islander->emotion == ISLANDER_EMOTION_NEUTRAL) ||
             (islander->emotion == ISLANDER_EMOTION_HAPPY)) {
-            islander->_8B = 0;
+            islander->direction = 0;
             Islander_SpawnReactionEffect(1, 0x30);
             islander->click_cooldown_timer = 0x30;
             return;
         }
 
         if (islander->reward_adjust == 0) {
-            islander->emotion_anim_id = ISLANDER_ANIM_ANGRY;
+            islander->reaction_anim_id = ISLANDER_ANIM_ANGRY;
             islander->emotion = ISLANDER_EMOTION_ANGRY;
         } else {
-            islander->emotion_anim_id = ISLANDER_ANIM_SAD;
+            islander->reaction_anim_id = ISLANDER_ANIM_SAD;
             islander->emotion = ISLANDER_EMOTION_SAD;
         }
-        islander->move_proc_idx = MoveAction7;
+        islander->move_action = MoveAction7;
         IslanderMoveAction_UpdateEmotion();
     }
 }
@@ -8821,42 +8821,42 @@ void Islander_CheckClickedOnTimer(void) {
 /* Original address: 0x020223AC */
 void Islander_StartFieldObjectInteraction(void) {
     Islander_AGB *islander = &gIslander;
-    FieldObject *field_object = &gFieldObjects[islander->_99[2]];
+    FieldObject *field_object = &gFieldObjects[islander->target_field_object_idx];
 
     islander->anim_frame = 0;
     islander->anim_timer = (*gIslanderAnimData[islander->anim_id])->duration;
     islander->item_work.held_item.type_idx = 0;
-    islander->_7C[1] = 0;
-    if (((islander->state & 0xF) != 2) && ((islander->state & 0xF) != 6)) {
-        islander->sub_move_action = 0;
-        field_object->_2C = 1;
-        field_object->state = 1;
+    islander->tree_action_cooldown_timer = 0;
+    if (((islander->equipped_tool_state & 0xF) != 2) && ((islander->equipped_tool_state & 0xF) != 6)) {
+        islander->action_state = 0;
+        field_object->shake_animation_paused = 1;
+        field_object->action_state = 1;
     } else {
-        field_object->_2C = 0;
-        islander->sub_move_action = 1;
+        field_object->shake_animation_paused = 0;
+        islander->action_state = 1;
     }
-    islander->move_proc_idx = MoveAction12;
+    islander->move_action = MoveAction12;
 }
 
 void Islander_MoveAction11_State0(void) {
     Islander_AGB *islander = &gIslander;
-    FieldObject *field_object = &gFieldObjects[islander->_99[2]];
+    FieldObject *field_object = &gFieldObjects[islander->target_field_object_idx];
 
     if ((islander->anim_frame != 0) && (islander->anim_timer == 1)) {
         field_object->anim_frame = gMoveAction11ObjectAnimFrames[islander->anim_frame - 1];
     }
     if (Islander_PlayAnim(1) != 0) {
-        islander->_7C[1] = 600;
-        islander->sub_move_action = 0;
+        islander->tree_action_cooldown_timer = 600;
+        islander->action_state = 0;
         field_object->anim_frame = 3;
-        islander->_10 = islander->_08;
-        islander->_14 = islander->_0C;
+        islander->target_x = islander->accepted_x;
+        islander->target_y = islander->accepted_y;
         islander->item_work.held_item.type_idx = 1;
-        islander->_99[2] = 0;
+        islander->target_field_object_idx = 0;
         Islander_AdjustAnimForTool();
         islander->item_work.held_item.type_idx = 1;
-        islander->_99[0] = 0x50;
-        islander->move_proc_idx = MoveAction4;
+        islander->target_action = 0x50;
+        islander->move_action = MoveAction4;
         IslanderMoveAction_MoveToTarget();
     }
 }
@@ -8864,7 +8864,7 @@ void Islander_MoveAction11_State0(void) {
 void Islander_MoveAction11_State1(void) {
     IslandFieldWork *field = &gIslandFieldWork;
     Islander_AGB *islander = &gIslander;
-    FieldObject *field_object = &gFieldObjects[islander->_99[2]];
+    FieldObject *field_object = &gFieldObjects[islander->target_field_object_idx];
     Entity *entity;
     EntitySpawnParams *spawn_params;
     u16 *tiles;
@@ -8874,11 +8874,11 @@ void Islander_MoveAction11_State1(void) {
     s32 map_tile_offset;
 
     if (Islander_PlayAnim(1) != 0) {
-        if ((field_object->state_timer == 0) || (field_object->state_timer & 0x80)) {
-            islander->_7C[1] = 0x20;
-            islander->sub_move_action = 2;
+        if ((field_object->hits_remaining == 0) || (field_object->hits_remaining & 0x80)) {
+            islander->tree_action_cooldown_timer = 0x20;
+            islander->action_state = 2;
         } else {
-            islander->move_proc_idx = MoveAction11;
+            islander->move_action = MoveAction11;
             Islander_StartFieldObjectInteraction();
         }
     }
@@ -8887,7 +8887,7 @@ void Islander_MoveAction11_State1(void) {
         return;
     }
 
-    if ((field_object->_2D == 1) && (islander->_B4 == 0) &&
+    if ((field_object->favorite_hour_item_eligible == 1) && (islander->favorite_hour_item_spawned == 0) &&
         (islander->item_work.held_item.type_idx == 0) &&
         (field->last_palette_hour == gIslanderFavoriteHours[islander->islander_npc_idx]) &&
         ((rand_u16(&gGameState) % 101) <= 24)) {
@@ -8905,7 +8905,7 @@ void Islander_MoveAction11_State1(void) {
         if (*(u16 *)((u8 *)tiles + map_tile_offset) == 0xFFF) {
             islander->item_work.held_item.type_idx = 1;
             spawn_idx = 0;
-            if ((islander->state & 0xF) == 6) {
+            if ((islander->equipped_tool_state & 0xF) == 6) {
                 spawn_idx = 0x14;
             }
             spawn_idx += gMoveAction11EmotionSpawnOffsets[islander->emotion];
@@ -8915,31 +8915,31 @@ void Islander_MoveAction11_State1(void) {
             spawn_idx = SpawnEntity(0, 2, spawn_params->type, spawn_params->param);
             if (spawn_idx != 0) {
                 if (field_object->layer == 0) {
-                    map_tile_offset = islander->stand_on_tile_idx;
+                    map_tile_offset = islander->tile_idx;
                     map_tile_offset *= sizeof(u16);
                     tiles = field->fg_tiles[0];
                 } else {
-                    map_tile_offset = islander->stand_on_tile_idx;
+                    map_tile_offset = islander->tile_idx;
                     map_tile_offset *= sizeof(u16);
                     tiles = field->fg_tiles[1];
                 }
                 *(u16 *)((u8 *)tiles + map_tile_offset) = 0x3333;
                 entity = &g_EntityTable[spawn_idx];
-                entity->_10 = (entity->y + 0x20) << 8;
+                entity->base_y = (entity->y + 0x20) << 8;
                 entity_tile_idx = field_object->tile_idx + 0x10;
                 entity->landing_tile = entity_tile_idx;
                 if (field_object->layer != 0) {
                     entity->landing_tile = entity_tile_idx | 0x1000;
                 }
-                entity->_52 = 0x35;
+                entity->landing_delay_timer = 0x35;
                 entity->y -= 0x20;
                 entity->x = field_object->x - 8;
-                islander->_B4 = 1;
+                islander->favorite_hour_item_spawned = 1;
             }
         }
     }
-    field_object->state = 1;
-    field_object->state_timer--;
+    field_object->action_state = 1;
+    field_object->hits_remaining--;
     Sound_PlayEffect0(0);
 }
 
@@ -8947,23 +8947,23 @@ void Islander_MoveAction11_State2(void) {
     Islander_AGB *islander = &gIslander;
     u16 next_timer;
 
-    next_timer = (islander->_7C[1] = islander->_7C[1] - 1);
+    next_timer = (islander->tree_action_cooldown_timer = islander->tree_action_cooldown_timer - 1);
     if (next_timer == 0) {
-        islander->_7C[1] = 600;
+        islander->tree_action_cooldown_timer = 600;
         islander->item_work.held_item.type_idx = next_timer;
-        islander->sub_move_action = 0;
+        islander->action_state = 0;
         if (islander->emotion == ISLANDER_EMOTION_ANGRY) {
-            islander->mood++;
-            if (islander->mood > 6) {
-                islander->mood = 6;
+            islander->mood_level++;
+            if (islander->mood_level > 6) {
+                islander->mood_level = 6;
             }
             Islander_OnMoodChanged();
         }
-        islander->_10 = islander->_08;
-        islander->_14 = islander->_0C;
+        islander->target_x = islander->accepted_x;
+        islander->target_y = islander->accepted_y;
         islander->item_work.held_item.type_idx = 1;
-        islander->_99[0] = 0x50;
-        islander->emotion_anim_id = ISLANDER_ANIM_59;
+        islander->target_action = 0x50;
+        islander->reaction_anim_id = ISLANDER_ANIM_59;
         IslanderMoveAction_UpdateEmotion();
     }
 }
@@ -8978,13 +8978,13 @@ static Islander_SUB_MOVE_PROC sIslanderMoveAction11SubMoveProcs[] = {
 void Islander_UpdateFieldObjectInteraction(void) {
     Islander_AGB *islander = &gIslander;
 
-    sIslanderMoveAction11SubMoveProcs[islander->sub_move_action]();
+    sIslanderMoveAction11SubMoveProcs[islander->action_state]();
 }
 
 void Islander_Fishing_Init(void) {
     Islander_AGB *islander = &gIslander;
 
-    if (islander->_8B == 0) {
+    if (islander->direction == 0) {
         islander->anim_id = ISLANDER_ANIM_38;
     } else {
         islander->anim_id = ISLANDER_ANIM_41;
@@ -8992,8 +8992,8 @@ void Islander_Fishing_Init(void) {
     islander->anim_timer = (*gIslanderAnimData[islander->anim_id])->duration;
     islander->anim_frame = 0;
     islander->item_work.held_item.type_idx = 0;
-    islander->sub_move_action = 0;
-    islander->move_proc_idx = MoveActionFishing;
+    islander->action_state = 0;
+    islander->move_action = MoveActionFishing;
 }
 
 void Islander_Fishing_State0(void) {
@@ -9002,7 +9002,7 @@ void Islander_Fishing_State0(void) {
     u8 *anim_timer;
 
     if (Islander_PlayAnim(1) != 0) {
-        if (islander->_8B == 0) {
+        if (islander->direction == 0) {
             islander->anim_id = ISLANDER_ANIM_39;
         } else {
             islander->anim_id = ISLANDER_ANIM_42;
@@ -9012,7 +9012,7 @@ void Islander_Fishing_State0(void) {
         islander->anim_frame = 0;
         islander->item_work.held_item.type_idx = 0;
         islander->item_work.held_item.tile_no = 0x20;
-        islander->sub_move_action = 1;
+        islander->action_state = 1;
     }
     anim_timer = &islander->anim_timer;
     if ((*anim_timer == 1) && (islander->anim_frame == 3)) {
@@ -9031,7 +9031,7 @@ void Islander_Fishing_State1(void) {
         islander->item_work.held_item.tile_no = 0x30;
         islander->item_work.held_item.type_idx = timer;
         Islander_SpawnReactionEffect(0, 0x30);
-        islander->sub_move_action = 2;
+        islander->action_state = 2;
     }
 }
 
@@ -9039,7 +9039,7 @@ void Islander_Fishing_State2(void) {
     Islander_AGB *islander = &gIslander;
 
     if (--islander->item_work.held_item.tile_no == 0) {
-        if (islander->_8B == 0) {
+        if (islander->direction == 0) {
             islander->anim_id = ISLANDER_ANIM_3A;
         } else {
             islander->anim_id = ISLANDER_ANIM_43;
@@ -9047,7 +9047,7 @@ void Islander_Fishing_State2(void) {
         islander->anim_timer = (*gIslanderAnimData[islander->anim_id])->duration;
         islander->anim_frame = 0;
         islander->item_work.held_item.type_idx = 0;
-        islander->sub_move_action = 3;
+        islander->action_state = 3;
         Sound_PlayEffect1(0x15);
         islander->item_work.held_item.tile_no = 0x51;
     }
@@ -9061,7 +9061,7 @@ void Islander_Fishing_State3(void) {
     timer = --islander->item_work.held_item.tile_no;
     if (timer == 0) {
         islander->item_work.held_item.tile_no = timer;
-        if (islander->_8B == 0) {
+        if (islander->direction == 0) {
             islander->anim_id = ISLANDER_ANIM_3B;
         } else {
             islander->anim_id = ISLANDER_ANIM_44;
@@ -9069,7 +9069,7 @@ void Islander_Fishing_State3(void) {
         islander->anim_timer = (*gIslanderAnimData[islander->anim_id])->duration;
         islander->anim_frame = 0;
         islander->item_work.held_item.type_idx = Islander_GetFishingItem();
-        islander->sub_move_action = 4;
+        islander->action_state = 4;
         Sound_StopEffect1(0x15);
         Sound_PlayEffect0(0x16);
     }
@@ -9084,40 +9084,40 @@ void Islander_Fishing_State4(void) {
     }
     Sound_PlayEffect0(0x1C);
     if (islander->item_work.held_item.type_idx == 0) {
-        if ((islander->_40 & 0xFFFF) == 0x609E) {
-            if (islander->_8B == 0) {
+        if ((islander->held_item_sprite & 0xFFFF) == 0x609E) {
+            if (islander->direction == 0) {
                 islander->anim_id = ISLANDER_ANIM_3E;
             } else {
                 islander->anim_id = ISLANDER_ANIM_47;
             }
-        } else if (islander->_8B == 0) {
+        } else if (islander->direction == 0) {
             islander->anim_id = ISLANDER_ANIM_40;
         } else {
             islander->anim_id = ISLANDER_ANIM_49;
         }
     } else {
-        if ((islander->_40 & 0xFFFF) == 0x434E) {
-            islander->mood--;
-            if (islander->mood & 0x80) {
-                islander->mood = 0;
+        if ((islander->held_item_sprite & 0xFFFF) == 0x434E) {
+            islander->mood_level--;
+            if (islander->mood_level & 0x80) {
+                islander->mood_level = 0;
             }
-            if (islander->_8B == 0) {
+            if (islander->direction == 0) {
                 islander->anim_id = ISLANDER_ANIM_3E;
             } else {
                 islander->anim_id = ISLANDER_ANIM_47;
             }
-        } else if ((islander->_40 & 0xFFFF) == 0x4350) {
-            islander->mood++;
-            if (islander->mood > 6) {
-                islander->mood = 6;
+        } else if ((islander->held_item_sprite & 0xFFFF) == 0x4350) {
+            islander->mood_level++;
+            if (islander->mood_level > 6) {
+                islander->mood_level = 6;
             }
             Islander_SpawnReactionEffect(3, 0x30);
-            if (islander->_8B == 0) {
+            if (islander->direction == 0) {
                 islander->anim_id = ISLANDER_ANIM_3F;
             } else {
                 islander->anim_id = ISLANDER_ANIM_48;
             }
-        } else if (islander->_8B == 0) {
+        } else if (islander->direction == 0) {
             islander->anim_id = ISLANDER_ANIM_40;
         } else {
             islander->anim_id = ISLANDER_ANIM_49;
@@ -9125,7 +9125,7 @@ void Islander_Fishing_State4(void) {
         Islander_OnMoodChanged();
     }
     anim_data = *gIslanderAnimData[islander->anim_id];
-    islander->sub_move_action = 6;
+    islander->action_state = 6;
     islander->item_work.held_item.tile_no = 0;
     islander->anim_frame = 0;
     islander->anim_timer = anim_data->duration;
@@ -9135,17 +9135,17 @@ void Islander_Fishing_State5(void) {
     Islander_AGB *islander = &gIslander;
 
     if (Islander_PlayAnim(1) != 0) {
-        if ((islander->_40 & 0xFFFF) == 0x609E) {
-            islander->mood = 0;
-            islander->emotion_anim_id = ISLANDER_ANIM_SAD;
+        if ((islander->held_item_sprite & 0xFFFF) == 0x609E) {
+            islander->mood_level = 0;
+            islander->reaction_anim_id = ISLANDER_ANIM_SAD;
             islander->emotion = ISLANDER_EMOTION_SAD;
-            islander->move_proc_idx = MoveAction7;
+            islander->move_action = MoveAction7;
             IslanderMoveAction_UpdateEmotion();
         } else {
-            islander->move_proc_idx = ActionOutside;
+            islander->move_action = ActionOutside;
             Islander_StartWandering();
         }
-        islander->_40 = 0;
+        islander->held_item_sprite = 0;
     }
 }
 
@@ -9154,21 +9154,21 @@ void Islander_Fishing_State6(void) {
     AnimFrameData *anim_data;
 
     if (Islander_PlayAnim(1) != 0) {
-        islander->_74 = 0x708;
+        islander->fishing_cooldown_timer = 0x708;
         if (islander->item_work.held_item.type_idx == 0) {
-            if (islander->_8B == 0) {
+            if (islander->direction == 0) {
                 islander->anim_id = ISLANDER_ANIM_3C;
             } else {
                 islander->anim_id = ISLANDER_ANIM_45;
             }
-            islander->sub_move_action = 5;
+            islander->action_state = 5;
         } else {
-            if (islander->_8B == 0) {
+            if (islander->direction == 0) {
                 islander->anim_id = ISLANDER_ANIM_3D;
             } else {
                 islander->anim_id = ISLANDER_ANIM_46;
             }
-            islander->sub_move_action = 7;
+            islander->action_state = 7;
         }
         anim_data = *gIslanderAnimData[islander->anim_id];
         islander->item_work.held_item.tile_no = 0;
@@ -9183,8 +9183,8 @@ void Islander_Fishing_State7(void) {
 
     if (Islander_PlayAnim(1) != 0) {
         Islander_ChooseNewMoveDirection(1);
-        islander->_40 = 0;
-        islander->move_proc_idx = ActionOutside;
+        islander->held_item_sprite = 0;
+        islander->move_action = ActionOutside;
         Islander_StartWandering();
     }
 }
@@ -9203,22 +9203,22 @@ void IslanderMoveAction_Fishing(void) {
 
     Islander_AGB *islander = &gIslander;
 
-    sIslanderFishingSubMoveProcs[islander->sub_move_action]();
+    sIslanderFishingSubMoveProcs[islander->action_state]();
 }
 
 void Islander_ReceiveItem_Init(void) {
     Islander_AGB *islander = &gIslander;
 
     islander->anim_frame = 0;
-    if (islander->_8B == 0) {
+    if (islander->direction == 0) {
         islander->anim_id = ISLANDER_ANIM_4A;
     } else {
         islander->anim_id = ISLANDER_ANIM_4F;
     }
     islander->anim_timer = (*gIslanderAnimData[islander->anim_id])->duration;
-    islander->_40 = 0x800000;
-    islander->sub_move_action = 0;
-    islander->move_proc_idx = MoveActionReceiveItem;
+    islander->held_item_sprite = 0x800000;
+    islander->action_state = 0;
+    islander->move_action = MoveActionReceiveItem;
 }
 
 static Islander_SUB_MOVE_PROC sIslanderReceiveItemSubMoveProcs[] = {
@@ -9230,7 +9230,7 @@ static Islander_SUB_MOVE_PROC sIslanderReceiveItemSubMoveProcs[] = {
 void IslanderMoveAction_ReceiveItem(void) {
     Islander_AGB *islander = &gIslander;
 
-    sIslanderReceiveItemSubMoveProcs[islander->sub_move_action]();
+    sIslanderReceiveItemSubMoveProcs[islander->action_state]();
 }
 
 void Islander_DespawnFlyingItem(void) {
@@ -9242,8 +9242,8 @@ void Islander_DespawnFlyingItem(void) {
     AnimFrameData *anim_data;
     s32 anim_finished;
 
-    if (islander->_40 == 0) {
-        islander->move_proc_idx = ActionOutside;
+    if (islander->held_item_sprite == 0) {
+        islander->move_action = ActionOutside;
         Islander_StartWandering();
         return;
     }
@@ -9262,14 +9262,14 @@ void Islander_DespawnFlyingItem(void) {
     }
     anim_finished = Islander_PlayAnim(1);
     if (anim_finished != 0) {
-        if ((islander->_40 & 0xFFFF) == 0x609E) {
-            if (islander->_8B == 0) {
+        if ((islander->held_item_sprite & 0xFFFF) == 0x609E) {
+            if (islander->direction == 0) {
                 islander->anim_id = ISLANDER_ANIM_4C;
             } else {
                 islander->anim_id = ISLANDER_ANIM_51;
             }
         } else {
-            if (islander->_8B == 0) {
+            if (islander->direction == 0) {
                 islander->anim_id = ISLANDER_ANIM_4D;
             } else {
                 islander->anim_id = ISLANDER_ANIM_52;
@@ -9279,22 +9279,22 @@ void Islander_DespawnFlyingItem(void) {
         anim_data = *gIslanderAnimData[islander->anim_id];
         islander->anim_frame = 0;
         *anim_timer = anim_data->duration;
-        islander->sub_move_action = 1;
+        islander->action_state = 1;
         return;
     }
 
     entity = &g_EntityTable[islander->floating_balloon_target_entity_id];
     if ((*anim_timer == 1) && (islander->anim_frame == 3)) {
-        islander->_40 = 0x800000;
+        islander->held_item_sprite = 0x800000;
         field->entity_active[islander->floating_balloon_target_entity_id + 3] = anim_finished;
-        islander->item_work.held_item.tile_no = entity->item_tile_no[entity->item_tile_frame];
-        islander->item_work.held_item.type_idx = entity->item[entity->item_tile_frame];
+        islander->item_work.held_item.tile_no = entity->item_type_indices[entity->frame_index];
+        islander->item_work.held_item.type_idx = entity->item_ids[entity->frame_index];
         islander->flying_item_spawn_timer = 0x2A30;
         islander->flying_item_spawn_timer += (rand_u16(&gGameState) % 109) * 100;
-        islander->_38 = anim_finished;
-        islander->_3C = anim_finished;
+        islander->flying_item_x = anim_finished;
+        islander->flying_item_y = anim_finished;
         islander->floating_balloon_target_entity_id = 0;
-        islander->_40 |= (g_ItemDefinitions + islander->item_work.held_item.tile_no)->held_item_oam_attr2;
+        islander->held_item_sprite |= (g_ItemDefinitions + islander->item_work.held_item.tile_no)->held_item_oam_attr2;
     }
 }
 
@@ -9305,7 +9305,7 @@ void Islander_StoreHeldItem(void) {
     if (Islander_PlayAnim(1) != 0) {
         Islander_StoreItem(islander->item_work.held_item.tile_no,
                            islander->item_work.held_item.type_idx);
-        if (islander->_8B == 0) {
+        if (islander->direction == 0) {
             islander->anim_id = ISLANDER_ANIM_4B;
         } else {
             islander->anim_id = ISLANDER_ANIM_50;
@@ -9313,7 +9313,7 @@ void Islander_StoreHeldItem(void) {
         anim_data = *gIslanderAnimData[islander->anim_id];
         islander->anim_frame = 0;
         islander->anim_timer = anim_data->duration;
-        islander->sub_move_action = 2;
+        islander->action_state = 2;
     }
 }
 
@@ -9322,17 +9322,17 @@ void Islander_ProcessFishReceived(void) {
 
     if (Islander_PlayAnim(1) != 0) {
         Islander_ChooseNewMoveDirection(1);
-        if ((islander->_40 & 0xFFFF) == 0x609E) {
-            islander->mood = 0;
-            islander->_40 = 0;
-            islander->emotion_anim_id = ISLANDER_ANIM_SAD;
+        if ((islander->held_item_sprite & 0xFFFF) == 0x609E) {
+            islander->mood_level = 0;
+            islander->held_item_sprite = 0;
+            islander->reaction_anim_id = ISLANDER_ANIM_SAD;
             islander->emotion = ISLANDER_EMOTION_SAD;
-            islander->move_proc_idx = MoveAction7;
+            islander->move_action = MoveAction7;
             IslanderMoveAction_UpdateEmotion();
             return;
         }
-        islander->_40 = 0;
-        islander->move_proc_idx = ActionOutside;
+        islander->held_item_sprite = 0;
+        islander->move_action = ActionOutside;
         Islander_StartWandering();
     }
 }
@@ -9340,7 +9340,7 @@ void Islander_ProcessFishReceived(void) {
 void IslanderMoveAction_Dig(void) {
     Islander_AGB *islander = &gIslander;
 
-    if (islander->_8B == 0) {
+    if (islander->direction == 0) {
         islander->anim_id = ISLANDER_ANIM_28;
     } else {
         islander->anim_id = ISLANDER_ANIM_30;
@@ -9348,14 +9348,14 @@ void IslanderMoveAction_Dig(void) {
     islander->anim_timer = (*gIslanderAnimData[islander->anim_id])->duration;
     islander->anim_frame = 0;
     islander->item_work.held_item.type_idx = 0;
-    islander->sub_move_action = 0;
-    islander->move_proc_idx = MoveActionBury;
+    islander->action_state = 0;
+    islander->move_action = MoveActionBury;
 }
 
 void Islander_BuryItem_State0(void) {
     Islander_AGB *islander = &gIslander;
     IslandFieldWork *field = &gIslandFieldWork;
-    u8 tile_idx = islander->world_state;
+    u8 tile_idx = islander->interaction_tile;
     bool32 dug_empty = FALSE;
     u16 *tilemap_vram;
     ItemGroupStruct *definition;
@@ -9370,7 +9370,7 @@ void Islander_BuryItem_State0(void) {
     }
 
     islander->item_work.held_item.type_idx = 0;
-    if (islander->world_state & 0x8000) {
+    if (islander->interaction_tile & 0x8000) {
         tilemap_vram = (u16 *)BG_SCREEN_ADDR(25);
         if (field->fg_tiles[1][tile_idx] == 0xFFF) {
             dug_empty = 1;
@@ -9398,23 +9398,23 @@ void Islander_BuryItem_State0(void) {
     tilemap_vram += (tile_idx & 0xF) * 2;
     WriteItemTileToVRAM(tilemap_vram, 0x12AC);
     if (dug_empty == FALSE) {
-        if (islander->_8B == 0) {
+        if (islander->direction == 0) {
             islander->anim_id = ISLANDER_ANIM_2B;
         } else {
             islander->anim_id = ISLANDER_ANIM_33;
         }
         definition = g_ItemDefinitions + islander->item_work.held_item.type_idx;
 
-        islander->_40 = 0x800000;
-        islander->_40 |= definition->held_item_oam_attr2;
-        islander->sub_move_action = 2;
+        islander->held_item_sprite = 0x800000;
+        islander->held_item_sprite |= definition->held_item_oam_attr2;
+        islander->action_state = 2;
     } else {
-        if (islander->_8B == 0) {
+        if (islander->direction == 0) {
             islander->anim_id = ISLANDER_ANIM_2A;
         } else {
             islander->anim_id = ISLANDER_ANIM_32;
         }
-        islander->sub_move_action = 1;
+        islander->action_state = 1;
     }
     islander->anim_timer = (*gIslanderAnimData[islander->anim_id])->duration;
     islander->anim_frame = 0;
@@ -9425,7 +9425,7 @@ void Islander_BuryItem_State1(void) {
     IslandFieldWork *field = &gIslandFieldWork;
     Island_agb_c *island;
     mActor_name_t item;
-    u8 tile_idx = islander->world_state;
+    u8 tile_idx = islander->interaction_tile;
     s32 is_tree;
     s32 item_type;
     ItemGroupStruct *definition;
@@ -9437,27 +9437,27 @@ void Islander_BuryItem_State1(void) {
     is_tree = 0;
     islander->anim_timer = (*gIslanderAnimData[islander->anim_id])->duration;
     islander->anim_frame = 0;
-    if (islander->_8B == 0) {
+    if (islander->direction == 0) {
         islander->anim_id = ISLANDER_ANIM_29;
     } else {
         islander->anim_id = ISLANDER_ANIM_31;
     }
-    islander->sub_move_action = 4;
-    islander->_7C[0] = 0x1270;
+    islander->action_state = 4;
+    islander->buried_item_tile_base = 0x1270;
 
     if (islander->emotion == ISLANDER_EMOTION_HAPPY) {
-        islander->mood--;
-        if (islander->mood & 0x80) {
-            islander->mood = 0;
+        islander->mood_level--;
+        if (islander->mood_level & 0x80) {
+            islander->mood_level = 0;
         }
         Islander_OnMoodChanged();
 
-        if (islander->stored_item_tile_ids[0] != 0) {
-            item_type = islander->stored_item_tile_ids[0];
+        if (islander->stored_item_type_plus_one[0] != 0) {
+            item_type = islander->stored_item_type_plus_one[0];
             item_type--;
             definition = &g_ItemDefinitions[item_type];
-            islander->_40 = definition->held_item_oam_attr2 | 0x800000;
-            item = islander->stored_items[0];
+            islander->held_item_sprite = definition->held_item_oam_attr2 | 0x800000;
+            item = islander->stored_item_ids[0];
             if (Item_GetItemIdFromTileId(item_type) != 0) {
                 item = Item_GetItemIdFromTileId(item_type);
                 is_tree = 1;
@@ -9468,19 +9468,19 @@ void Islander_BuryItem_State1(void) {
             return;
         }
     } else if ((s32)rand_u16(&gGameState) % 101 <= 49) {
-        islander->_40 = 0x80609E;
+        islander->held_item_sprite = 0x80609E;
         item = Item_TypeToIslandItem(0x11);
     } else {
-        islander->_40 = 0x8050C0;
+        islander->held_item_sprite = 0x8050C0;
         item = 0x2512;
-        islander->mood++;
-        if (islander->mood > 6) {
-            islander->mood = 6;
+        islander->mood_level++;
+        if (islander->mood_level > 6) {
+            islander->mood_level = 6;
         }
         Islander_OnMoodChanged();
     }
 
-    if (!(islander->world_state & 0x8000)) {
+    if (!(islander->interaction_tile & 0x8000)) {
         field->fg_tiles[0][tile_idx] = 0x7777;
         island = gIslandData;
         island->fgblock[0][0].items[tile_idx >> 4][tile_idx & 0xF] = item;
@@ -9502,26 +9502,26 @@ void Islander_BuryItem_State2(void) {
 
     if (Islander_PlayAnim(1) != 0) {
         if (islander->item_work.held_item.type_idx == ITEM_TYPE_TRASH) {
-            if (islander->_8B == 0) {
+            if (islander->direction == 0) {
                 islander->anim_id = ISLANDER_ANIM_2D;
             } else {
                 islander->anim_id = ISLANDER_ANIM_35;
             }
-            islander->mood = 0;
-            islander->emotion_anim_id = ISLANDER_ANIM_ANGRY;
+            islander->mood_level = 0;
+            islander->reaction_anim_id = ISLANDER_ANIM_ANGRY;
         } else if ((islander->item_work.held_item.type_idx == ITEM_TYPE_FOSSIL) ||
                    (islander->item_work.held_item.type_idx == ITEM_TYPE_SEEDLING_DIARY_TICKET_GRAB_BAG) ||
                    (islander->item_work.held_item.type_idx == ITEM_TYPE_PITFALL) ||
                    IS_ITEM_TYPE_TOOL(islander->item_work.held_item.type_idx) ||
                    (islander->item_work.held_item.type_idx == ITEM_TYPE_AIR_CHECK) ||
                    (islander->item_work.held_item.type_idx == ITEM_TYPE_FLOWER_BAG)) {
-            if (islander->_8B == 0) {
+            if (islander->direction == 0) {
                 islander->anim_id = ISLANDER_ANIM_2F;
             } else {
                 islander->anim_id = ISLANDER_ANIM_37;
             }
         } else {
-            if (islander->_8B == 0) {
+            if (islander->direction == 0) {
                 islander->anim_id = ISLANDER_ANIM_2E;
             } else {
                 islander->anim_id = ISLANDER_ANIM_36;
@@ -9530,7 +9530,7 @@ void Islander_BuryItem_State2(void) {
         }
         islander->anim_timer = (*gIslanderAnimData[islander->anim_id])->duration;
         islander->anim_frame = 0;
-        islander->sub_move_action = 5;
+        islander->action_state = 5;
         Sound_PlayEffect0(0x1C);
     }
 }
@@ -9558,24 +9558,24 @@ void Islander_BuryItem_State3(void) {
         if (islander->item_work.held_item.type_idx == ITEM_TYPE_TRASH) {
             Islander_PlantRandomFlower();
         } else {
-            if ((islander->_7C[0] != 0x3260) && (islander->_7C[0] != 0x3268)) {
-                islander->_7C[0] = 0x1270;
+            if ((islander->buried_item_tile_base != 0x3260) && (islander->buried_item_tile_base != 0x3268)) {
+                islander->buried_item_tile_base = 0x1270;
             }
         }
-        if (islander->_8B == 0) {
+        if (islander->direction == 0) {
             islander->anim_id = ISLANDER_ANIM_29;
         } else {
             islander->anim_id = ISLANDER_ANIM_31;
         }
         islander->anim_timer = (*gIslanderAnimData[islander->anim_id])->duration;
         islander->anim_frame = 0;
-        islander->sub_move_action = 4;
+        islander->action_state = 4;
     }
 }
 
 void Islander_BuryItem_State4(void) {
     Islander_AGB *islander = &gIslander;
-    u16 world_state = islander->world_state;
+    u16 world_state = islander->interaction_tile;
     u8 tile_idx = world_state;
     u8 *tilemap_vram;
 
@@ -9601,42 +9601,42 @@ void Islander_BuryItem_State4(void) {
     }
 
     if (Islander_PlayAnim(1) != 0) {
-        islander->_40 = 0;
-        islander->_B5[2] = 0;
-        islander->_B5[3] = 0;
+        islander->held_item_sprite = 0;
+        islander->dig_target_layer = 0;
+        islander->dig_target_tile_idx = 0;
 
-        tilemap_vram = (0x8000 & islander->world_state) ?
+        tilemap_vram = (0x8000 & islander->interaction_tile) ?
             (u8 *)BG_SCREEN_ADDR(25) : (u8 *)BG_SCREEN_ADDR(24);
         tilemap_vram += (tile_idx & 0xF0) * 8;
         tilemap_vram += (tile_idx & 0xF) * 4;
-        WriteItemTileToVRAM((u16*)tilemap_vram, islander->_7C[0]);
-        islander->_78 = 0x78;
-        if (islander->_7C[0] != 0x1270) {
+        WriteItemTileToVRAM((u16*)tilemap_vram, islander->buried_item_tile_base);
+        islander->digging_cooldown_timer = 0x78;
+        if (islander->buried_item_tile_base != 0x1270) {
             Sound_PlayEffect0(0x24);
         }
 
-        if (islander->emotion_anim_id == ISLANDER_ANIM_ANGRY) {
-            islander->_B2[0] = 0;
+        if (islander->reaction_anim_id == ISLANDER_ANIM_ANGRY) {
+            islander->collision_retry_count = 0;
             islander->item_work.held_item.type_idx = ITEM_TYPE_GYROID;
-            islander->_99[0] = 0x50;
-            islander->mood = 0;
+            islander->target_action = 0x50;
+            islander->mood_level = 0;
             islander->emotion = ISLANDER_EMOTION_ANGRY;
-            islander->move_proc_idx = MoveAction7;
+            islander->move_action = MoveAction7;
             IslanderMoveAction_UpdateEmotion();
         } else {
-            islander->_99[0] = 0x50;
-            islander->_B2[0] = 0;
+            islander->target_action = 0x50;
+            islander->collision_retry_count = 0;
             islander->anim_frame = 0;
             islander->anim_timer = 0;
             Islander_AdjustAnimForTool();
             islander->anim_timer = (*gIslanderAnimData[islander->anim_id])->duration;
-            islander->_10 = islander->_08;
-            islander->_14 = islander->_0C;
+            islander->target_x = islander->accepted_x;
+            islander->target_y = islander->accepted_y;
             islander->item_work.held_item.type_idx = ITEM_TYPE_GYROID;
-            islander->move_proc_idx = MoveAction4;
+            islander->move_action = MoveAction4;
             IslanderMoveAction_MoveToTarget();
         }
-        islander->world_state = 0;
+        islander->interaction_tile = 0;
     }
 }
 
@@ -9646,20 +9646,20 @@ void Islander_BuryItem_State5(void) {
     if (Islander_PlayAnim(1) != 0) {
         if ((islander->anim_id == ISLANDER_ANIM_2F) ||
             (islander->anim_id == ISLANDER_ANIM_37)) {
-            if (islander->_8B == 0) {
+            if (islander->direction == 0) {
                 islander->anim_id = ISLANDER_ANIM_29;
             } else {
                 islander->anim_id = ISLANDER_ANIM_31;
             }
-            islander->sub_move_action = 4;
-            islander->_7C[0] = 0x1270;
+            islander->action_state = 4;
+            islander->buried_item_tile_base = 0x1270;
         } else {
-            if (islander->_8B == 0) {
+            if (islander->direction == 0) {
                 islander->anim_id = ISLANDER_ANIM_2C;
             } else {
                 islander->anim_id = ISLANDER_ANIM_34;
             }
-            islander->sub_move_action = 3;
+            islander->action_state = 3;
         }
         islander->anim_timer = (*gIslanderAnimData[islander->anim_id])->duration;
         islander->anim_frame = 0;
@@ -9669,7 +9669,7 @@ void Islander_BuryItem_State5(void) {
 void IslanderMoveAction_Bury(void) {
     Islander_AGB* islander = &gIslander;
 
-    IslanderSubMoveAction_BuryProcTbl[islander->sub_move_action]();
+    IslanderSubMoveAction_BuryProcTbl[islander->action_state]();
 }
 
 void Islander_MoveAction20_Init(void) {
@@ -9681,27 +9681,27 @@ void Islander_MoveAction20_Init(void) {
     islander->item_work.move_action20.timer = 0;
     islander->anim_id = ISLANDER_ANIM_5E;
     islander->anim_timer = (*gIslanderAnimData[islander->anim_id])->duration;
-    islander->_7C[2] = 0x2A30;
-    islander->_10 = 0;
-    islander->_14 = 0;
-    islander->_08 = islander->_00;
-    islander->_0C = islander->_04;
-    islander->sub_move_action = 0;
-    islander->move_proc_idx = MoveAction20;
+    islander->carry_wait_timer = 0x2A30;
+    islander->target_x = 0;
+    islander->target_y = 0;
+    islander->accepted_x = islander->x;
+    islander->accepted_y = islander->y;
+    islander->action_state = 0;
+    islander->move_action = MoveAction20;
 }
 
 void Islander_MoveAction20_State0(void) {
     Islander_AGB* islander = &gIslander;
 
-    if (islander->_84 == 2) {
+    if (islander->carry_state == 2) {
         islander->item_work.move_action20.phase = 0;
         islander->item_work.move_action20.timer = 0;
-        islander->sub_move_action = 3;
+        islander->action_state = 3;
         return;
     }
 
     Islander_PlayAnim(0);
-    islander->_7C[2]--;
+    islander->carry_wait_timer--;
     if (islander->anim_timer == 0) {
         if (islander->anim_frame == 2) {
             Islander_SpawnReactionEffect(4, 0x20);
@@ -9709,13 +9709,13 @@ void Islander_MoveAction20_State0(void) {
         }
     }
 
-    if (islander->_7C[2] & 0x8000) {
-        gGameState.unk_824 |= 0x40;
-        gGameState.unk_826 |= 0x40;
-        gGameState.unk_828 |= 0x40;
-        islander->_84 = 1;
+    if (islander->carry_wait_timer & 0x8000) {
+        gGameState.bg1cnt |= 0x40;
+        gGameState.bg2cnt |= 0x40;
+        gGameState.bg3cnt |= 0x40;
+        islander->carry_state = 1;
         islander->item_work.move_action20.phase = 0;
-        islander->sub_move_action = 1;
+        islander->action_state = 1;
     }
 }
 
@@ -9728,28 +9728,28 @@ void Islander_MoveAction20_State1(void) {
 
     phase = (islander->item_work.move_action20.phase += 0x1111);
     if (phase == 0xFFFF) {
-        islander->_00 = house->x << 8;
+        islander->x = house->x << 8;
         player_y = house->y << 8;
-        islander->_04 = player_y + 0x1000;
+        islander->y = player_y + 0x1000;
         player->y = player_y;
-        player->x = islander->_00 + 0x1000;
-        gGameState.unk_840 = (player->x >> 8) - 0x80;
-        gGameState.unk_842 = (player->y >> 8) - 0x50;
-        if (gGameState.unk_842 & 0x800) {
-            gGameState.unk_842 = 0;
+        player->x = islander->x + 0x1000;
+        gGameState.bg1_hofs = (player->x >> 8) - 0x80;
+        gGameState.bg1_vofs = (player->y >> 8) - 0x50;
+        if (gGameState.bg1_vofs & 0x800) {
+            gGameState.bg1_vofs = 0;
         }
-        if (gGameState.unk_842 > 0x60) {
-            gGameState.unk_842 = 0x60;
+        if (gGameState.bg1_vofs > 0x60) {
+            gGameState.bg1_vofs = 0x60;
         }
-        if (gGameState.unk_840 & 0x800) {
-            gGameState.unk_840 = 0;
+        if (gGameState.bg1_hofs & 0x800) {
+            gGameState.bg1_hofs = 0;
         }
-        if (gGameState.unk_840 > 0x100) {
-            gGameState.unk_840 = 0x100;
+        if (gGameState.bg1_hofs > 0x100) {
+            gGameState.bg1_hofs = 0x100;
         }
-        gGameState.unk_844 = gGameState.unk_840;
-        gGameState.unk_846 = gGameState.unk_842;
-        islander->sub_move_action = 2;
+        gGameState.bg2_hofs = gGameState.bg1_hofs;
+        gGameState.bg2_vofs = gGameState.bg1_vofs;
+        islander->action_state = 2;
     }
     REG_MOSAIC = islander->item_work.move_action20.phase;
 }
@@ -9761,18 +9761,18 @@ void Islander_MoveAction20_State2(void) {
 
     mosaic = (islander->item_work.move_action20.phase -= 0x1111);
     if (mosaic == 0) {
-        gGameState.unk_824 ^= 0x40;
-        gGameState.unk_826 ^= 0x40;
-        gGameState.unk_828 ^= 0x40;
-        islander->_84 = 0;
-        islander->_10 = mosaic;
-        islander->_14 = mosaic;
-        islander->stand_on_tile_idx = island_field->special_tile_idx;
-        islander->mood = 0;
-        islander->_99[0] = 0x80;
-        islander->emotion_anim_id = ISLANDER_ANIM_ANGRY;
+        gGameState.bg1cnt ^= 0x40;
+        gGameState.bg2cnt ^= 0x40;
+        gGameState.bg3cnt ^= 0x40;
+        islander->carry_state = 0;
+        islander->target_x = mosaic;
+        islander->target_y = mosaic;
+        islander->tile_idx = island_field->special_tile_idx;
+        islander->mood_level = 0;
+        islander->target_action = 0x80;
+        islander->reaction_anim_id = ISLANDER_ANIM_ANGRY;
         islander->emotion = ISLANDER_EMOTION_ANGRY;
-        islander->move_proc_idx = MoveAction7;
+        islander->move_action = MoveAction7;
         IslanderMoveAction_UpdateEmotion();
     }
     REG_MOSAIC = islander->item_work.move_action20.phase;
@@ -9781,10 +9781,10 @@ void Islander_MoveAction20_State2(void) {
 void Islander_MoveAction20_State3(void) {
     Islander_AGB* islander = &gIslander;
 
-    if (islander->_84 == 1) {
+    if (islander->carry_state == 1) {
         islander->item_work.move_action20.timer = 0x10;
         islander->item_work.move_action20.phase = ISLANDER_MOVE_ACTION20_PHASE_BEGIN;
-        islander->sub_move_action = 4;
+        islander->action_state = 4;
     }
 }
 void Islander_MoveAction20_State4(void) {
@@ -9821,23 +9821,23 @@ void Islander_MoveAction20_State4(void) {
         islander->item_work.move_action20.timer = 0x10;
         break;
     case ISLANDER_MOVE_ACTION20_PHASE_CHECK_POSITION:
-        islander->dir_x = islander->_08 - islander->_00;
-        islander->dir_y = islander->_0C - islander->_04;
-        if (islander->dir_x < 0) {
-            islander->dir_x = -islander->dir_x;
+        islander->work_x = islander->accepted_x - islander->x;
+        islander->work_y = islander->accepted_y - islander->y;
+        if (islander->work_x < 0) {
+            islander->work_x = -islander->work_x;
         }
-        if (islander->dir_y < 0) {
-            islander->dir_y = -islander->dir_y;
+        if (islander->work_y < 0) {
+            islander->work_y = -islander->work_y;
         }
-        if (islander->dir_x <= 0x2000 && islander->dir_y <= 0x2000) {
+        if (islander->work_x <= 0x2000 && islander->work_y <= 0x2000) {
             islander->item_work.move_action20.timer = 2;
             islander->item_work.move_action20.phase = ISLANDER_MOVE_ACTION20_PHASE_RESTART;
             return;
         }
 
-        Islander_UpdateCollisionTiles(islander->_8B);
+        Islander_UpdateCollisionTiles(islander->direction);
         for (i = 0; i < 4; i++) {
-            collision = CheckSurroundingCollision(islander->_48[i], (u16*)islander->_44);
+            collision = CheckSurroundingCollision(islander->surrounding_item_types[i], (u16*)islander->collision_tilemap);
             if (collision != 0) {
                 islander->item_work.move_action20.timer = 2;
                 islander->item_work.move_action20.phase = ISLANDER_MOVE_ACTION20_PHASE_RESTART;
@@ -9845,24 +9845,24 @@ void Islander_MoveAction20_State4(void) {
             }
         }
 
-        islander->emotion_anim_id = ISLANDER_ANIM_59;
-        if (islander->mood < 3) {
-            islander->mood = 3;
+        islander->reaction_anim_id = ISLANDER_ANIM_59;
+        if (islander->mood_level < 3) {
+            islander->mood_level = 3;
             Islander_OnMoodChanged();
         }
-        islander->_99[0] = collision;
-        islander->_84 = collision;
-        islander->move_proc_idx = MoveAction7;
+        islander->target_action = collision;
+        islander->carry_state = collision;
+        islander->move_action = MoveAction7;
         IslanderMoveAction_UpdateEmotion();
         break;
     case ISLANDER_MOVE_ACTION20_PHASE_RESTART:
-        islander->_08 = islander->_00;
-        islander->_0C = islander->_04;
-        gGameState.unk_824 |= 0x40;
-        gGameState.unk_826 |= 0x40;
-        gGameState.unk_828 |= 0x40;
+        islander->accepted_x = islander->x;
+        islander->accepted_y = islander->y;
+        gGameState.bg1cnt |= 0x40;
+        gGameState.bg2cnt |= 0x40;
+        gGameState.bg3cnt |= 0x40;
         islander->item_work.move_action20.phase = ISLANDER_MOVE_ACTION20_PHASE_BEGIN;
-        islander->sub_move_action = 1;
+        islander->action_state = 1;
         break;
     }
 }
@@ -9877,7 +9877,7 @@ void Islander_MoveAction20_Move(void) {
     };
 
     Islander_AGB* islander = &gIslander; // I don't know why I have to pull this out to match, but I do
-    sub_move_procs[(u8)islander->sub_move_action]();
+    sub_move_procs[(u8)islander->action_state]();
 }
 
 /* Original address: 0x02023B58 */
@@ -9886,8 +9886,8 @@ void Islander_Draw(void) {
     IslanderOamData* source;
     s32 sprite_count;
 
-    islander->dir_y = islander->_04 >> 8;
-    islander->dir_x = islander->_00 >> 8;
+    islander->work_y = islander->y >> 8;
+    islander->work_x = islander->x >> 8;
     source = gIslanderAnimData[islander->anim_id][islander->anim_frame]->sprite_gfx_p;
 
     if (islander->anim_timer == 0xFE) {
@@ -9900,11 +9900,11 @@ void Islander_Draw(void) {
     }
 
     do {
-        IslanderOamData* oam = &((IslanderOamData*)gUnk3002410)[gGameState.unk_860];
+        IslanderOamData* oam = &((IslanderOamData*)gUnk3002410)[gGameState.oam_count];
         u32 x;
         u8 state;
 
-        oam->y = source->y + islander->dir_y - gGameState.unk_846;
+        oam->y = source->y + islander->work_y - gGameState.bg2_vofs;
         oam->obj_mode = source->obj_mode;
         oam->bpp = source->bpp;
         oam->shape = source->shape;
@@ -9925,33 +9925,33 @@ void Islander_Draw(void) {
             }
         }
 
-        oam->x = x + islander->dir_x - gGameState.unk_844;
+        oam->x = x + islander->work_x - gGameState.bg2_hofs;
         oam->priority = 1;
         oam->palette_num = source->palette_num;
         oam->tile_num = source->tile_num;
 
         {
-            u32 tile_override = islander->_40;
+            u32 tile_override = islander->held_item_sprite;
 
             if ((tile_override & 0xFFFF0000) != 0 && (tile_override & 0xFFFF) != 0 &&
                 oam->tile_num == ((tile_override >> 16) & 0xFFFF)) {
                 tile_override &= 0xFFF;
                 oam->tile_num = tile_override;
-                oam->palette_num = (islander->_40 & 0xF000) >> 12;
+                oam->palette_num = (islander->held_item_sprite & 0xF000) >> 12;
             }
         }
 
-        state = islander->state & 0xF;
+        state = islander->equipped_tool_state & 0xF;
         if ((state == 6 || state == 8 || state == 5 || state == 7) && oam->palette_num == 2) {
             oam->palette_num = 8;
         }
 
-        if ((u8)(islander->move_proc_idx - MoveAction3) <= 1) {
-            if (islander->_8B == 0) {
+        if ((u8)(islander->move_action - MoveAction3) <= 1) {
+            if (islander->direction == 0) {
                 if (source->tile_num == 0x40 || source->tile_num == 0x42) {
                     switch (islander->emotion) {
                     case 0:
-                        if (islander->_91[0] == 0) {
+                        if (islander->blink_frame == 0) {
                             oam->tile_num = 0x40;
                         } else {
                             oam->tile_num = 0x42;
@@ -9969,11 +9969,11 @@ void Islander_Draw(void) {
                     }
                 }
             } else {
-                if (((islander->_8B >= 1 && islander->_8B <= 2) || islander->_8B == 6 || islander->_8B == 7) &&
+                if (((islander->direction >= 1 && islander->direction <= 2) || islander->direction == 6 || islander->direction == 7) &&
                     (source->tile_num == 0 || source->tile_num == 2)) {
                     switch (islander->emotion) {
                     case 0:
-                        if (islander->_91[0] == 0) {
+                        if (islander->blink_frame == 0) {
                             oam->tile_num = 0;
                         } else {
                             oam->tile_num = 2;
@@ -9993,7 +9993,7 @@ void Islander_Draw(void) {
             }
         }
 
-        gGameState.unk_860++;
+        gGameState.oam_count++;
         sprite_count++;
         source++;
         if (sprite_count > 0x21) {
@@ -11310,7 +11310,7 @@ void FallingFruit_Draw(s32 fruit_index) {
     FallingFruit *fruit = &gFallingFruit[fruit_index];
     FallingFruitProfile *profile = &sFallingFruitProfiles[fruit->type];
     GameState *game = &gGameState;
-    IslanderOamData *oam = &((IslanderOamData *)gUnk3002410)[game->unk_860];
+    IslanderOamData *oam = &((IslanderOamData *)gUnk3002410)[game->oam_count];
 
     oam->shape = (profile->oam_attributes >> 14) & 3;
     oam->size = profile->oam_attributes >> 30;
@@ -11319,9 +11319,9 @@ void FallingFruit_Draw(s32 fruit_index) {
     oam->h_flip = fruit->anim_frame;
     oam->priority = 1;
     oam->palette_num = profile->palette;
-    oam->x = fruit->x - game->unk_844;
-    oam->y = fruit->y - (u8)game->unk_846;
-    game->unk_860++;
+    oam->x = fruit->x - game->bg2_hofs;
+    oam->y = fruit->y - (u8)game->bg2_vofs;
+    game->oam_count++;
 }
 
 /* Original address: 0x02024F08 */
@@ -11331,32 +11331,32 @@ void Entity_Reset(s32 entity_index) {
 
     entity->x = 0;
     entity->y = 0;
-    entity->_08 = 0;
-    entity->_0C = 0;
-    entity->_10 = 0;
-    entity->_14 = 0;
-    entity->_18 = 0;
-    entity->_1C = 0;
-    entity->_20 = 0;
-    entity->_24 = 0;
+    entity->height_offset = 0;
+    entity->precise_x = 0;
+    entity->base_y = 0;
+    entity->vertical_velocity_or_x_limit = 0;
+    entity->horizontal_velocity = 0;
+    entity->reserved_1C = 0;
+    entity->vertical_acceleration_or_bob_velocity = 0;
+    entity->depth_offset = 0;
     entity->anim_timer = 0;
-    entity->item_tile_frame = 0;
-    entity->type = 0;
+    entity->frame_index = 0;
+    entity->update_type = 0;
     entity->anim_id = 0;
     entity->lifetime = 10;
     entity->sprite_tile = 0;
     entity->palette = 0;
-    entity->_4B = 0;
-    entity->_51 = 0;
-    entity->_44 = 0;
-    entity->_42 = 0;
+    entity->reaction_type = 0;
+    entity->h_flip = 0;
+    entity->affine_scale = 0;
+    entity->rotation = 0;
     for (i = 0; i < 5; i++) {
-        entity->item_tile_no[i] = 0;
-        entity->item[i] = 0;
+        entity->item_type_indices[i] = 0;
+        entity->item_ids[i] = 0;
     }
-    entity->_52 = 0;
-    entity->_46 = 0;
-    entity->_48 = 0;
+    entity->landing_delay_timer = 0;
+    entity->bob_phase = 0;
+    entity->reserved_48 = 0;
     entity->landing_tile = 0;
 }
 
@@ -11364,12 +11364,12 @@ void Entity_Reset(s32 entity_index) {
 void Entity_PlaceLandedItem(s32 entity_index) {
     Entity *entity = &g_EntityTable[entity_index];
     IslandFieldWork *field = &gIslandFieldWork;
-    u16 item = entity->item[0];
+    u16 item = entity->item_ids[0];
     u8 tile_idx;
     u16 *tilemap;
     ItemGroupStruct *definition;
 
-    if (entity->item_is_resolved == 0) {
+    if (entity->items_are_resolved == 0) {
         ItemGeneratorDef *generator = &gItemGeneratorDefs[item];
         if (generator->use_island_id == 0) {
             item = generator->item;
@@ -11379,19 +11379,19 @@ void Entity_PlaceLandedItem(s32 entity_index) {
     }
     tile_idx = entity->landing_tile;
     if (!(entity->landing_tile & 0x1000)) {
-        field->fg_tiles[0][tile_idx] = entity->item_tile_no[0] | 0x8000;
+        field->fg_tiles[0][tile_idx] = entity->item_type_indices[0] | 0x8000;
         tilemap = (u16 *)BG_SCREEN_ADDR(24);
         tilemap += (tile_idx & 0xF0) * 4;
         tilemap += (tile_idx & 0xF) * 2;
         gIslandData->fgblock[0][0].items[tile_idx >> 4][tile_idx & 0xF] = item;
     } else {
-        field->fg_tiles[1][tile_idx] = entity->item_tile_no[0] | 0x8000;
+        field->fg_tiles[1][tile_idx] = entity->item_type_indices[0] | 0x8000;
         tilemap = (u16 *)BG_SCREEN_ADDR(25);
         tilemap += (tile_idx & 0xF0) * 4;
         tilemap += (tile_idx & 0xF) * 2;
         gIslandData->fgblock[0][1].items[tile_idx >> 4][tile_idx & 0xF] = item;
     }
-    definition = &g_ItemDefinitions[entity->item_tile_no[0]];
+    definition = &g_ItemDefinitions[entity->item_type_indices[0]];
     *tilemap++ = definition->field_tile_id;
     *tilemap = definition->field_tile_id + 1;
     tilemap += 31;
@@ -11418,7 +11418,7 @@ void Entity_BeginToppleEffect(s32 entity_index) {
 
     entity->anim_timer = sEntityToppleFrames[0]->duration;
     entity->anim_id = 1;
-    entity->type = 2;
+    entity->update_type = 2;
 }
 
 /* Original address: 0x02025118 */
@@ -11428,12 +11428,12 @@ void Entity_UpdateToppleEffect(s32 entity_index) {
 
     entity->anim_timer--;
     if (entity->anim_timer == 0) {
-        entity->item_tile_frame++;
-        if ((entity->item_tile_frame & 7) == 0) {
+        entity->frame_index++;
+        if ((entity->frame_index & 7) == 0) {
             field->entity_active[entity_index + 3] = 0;
             return;
         }
-        entity->anim_timer = sEntityToppleFrames[entity->item_tile_frame]->duration;
+        entity->anim_timer = sEntityToppleFrames[entity->frame_index]->duration;
     }
 }
 
@@ -11443,7 +11443,7 @@ void Entity_BeginLeafEffect(s32 entity_index) {
 
     entity->anim_timer = sEntityLeafFrames[0]->duration;
     entity->anim_id = 2;
-    entity->type = 4;
+    entity->update_type = 4;
 }
 
 /* Original address: 0x020251AC */
@@ -11453,21 +11453,21 @@ void Entity_UpdateLeafEffect(s32 entity_index) {
 
     entity->anim_timer--;
     if (entity->anim_timer == 0) {
-        entity->item_tile_frame++;
-        if (entity->item_tile_frame > 19) {
+        entity->frame_index++;
+        if (entity->frame_index > 19) {
             field->entity_active[entity_index + 3] = 0;
             return;
         }
-        entity->anim_timer = sEntityLeafFrames[entity->item_tile_frame]->duration;
+        entity->anim_timer = sEntityLeafFrames[entity->frame_index]->duration;
     }
 }
 
 /* Original address: 0x02025210 */
 void Entity_BeginReactionEffect(s32 entity_index) {
     Entity *entity = &g_EntityTable[entity_index];
-    AnimFrameData *frame = sEntityReactionAnimations[entity->_4B][0];
+    AnimFrameData *frame = sEntityReactionAnimations[entity->reaction_type][0];
 
-    switch (entity->_4B) {
+    switch (entity->reaction_type) {
     case 0:
         Sound_PlayEffect0(5);
         break;
@@ -11484,9 +11484,9 @@ void Entity_BeginReactionEffect(s32 entity_index) {
         break;
     }
     entity->anim_timer = frame->duration;
-    entity->item_tile_frame = 0;
+    entity->frame_index = 0;
     entity->anim_id = 3;
-    entity->type = 6;
+    entity->update_type = 6;
 }
 
 /* Original address: 0x0202529C */
@@ -11497,8 +11497,8 @@ void Entity_UpdateReactionEffect(s32 entity_index) {
 
     entity->anim_timer--;
     if (entity->anim_timer == 0) {
-        entity->item_tile_frame++;
-        frame = sEntityReactionAnimations[entity->_4B][entity->item_tile_frame];
+        entity->frame_index++;
+        frame = sEntityReactionAnimations[entity->reaction_type][entity->frame_index];
         if ((u8)frame->action_flag == 0xFF) {
             field->entity_active[entity_index + 3] = 0;
             return;
@@ -11511,14 +11511,14 @@ void Entity_UpdateReactionEffect(s32 entity_index) {
 void Entity_BeginItemDrop(s32 entity_index) {
     Entity *entity = &g_EntityTable[entity_index];
 
-    entity->_0C = entity->x << 8;
-    entity->_10 = entity->y << 8;
-    entity->_08 = 0;
-    entity->_14 = 0x200;
-    entity->_20 = 0x20;
+    entity->precise_x = entity->x << 8;
+    entity->base_y = entity->y << 8;
+    entity->height_offset = 0;
+    entity->vertical_velocity_or_x_limit = 0x200;
+    entity->vertical_acceleration_or_bob_velocity = 0x20;
     Sound_PlayEffect0(30);
     entity->anim_id = 0;
-    entity->type = 8;
+    entity->update_type = 8;
 }
 
 /* Original address: 0x02025354 */
@@ -11526,17 +11526,17 @@ void Entity_UpdateItemDrop(s32 entity_index) {
     Entity *entity = &g_EntityTable[entity_index];
     s32 landing_y;
 
-    entity->x = entity->_0C >> 8;
-    landing_y = entity->_10 >> 8;
-    entity->y = landing_y - (entity->_08 >> 8);
-    entity->_08 += entity->_14;
-    entity->_14 -= entity->_20;
-    if (entity->_52 == 0) {
+    entity->x = entity->precise_x >> 8;
+    landing_y = entity->base_y >> 8;
+    entity->y = landing_y - (entity->height_offset >> 8);
+    entity->height_offset += entity->vertical_velocity_or_x_limit;
+    entity->vertical_velocity_or_x_limit -= entity->vertical_acceleration_or_bob_velocity;
+    if (entity->landing_delay_timer == 0) {
         if (entity->y > landing_y + 8) {
             Entity_PlaceLandedItem(entity_index);
         }
     } else {
-        entity->_52--;
+        entity->landing_delay_timer--;
     }
 }
 
@@ -11544,18 +11544,18 @@ void Entity_UpdateItemDrop(s32 entity_index) {
 void Entity_BeginFloatingItem(s32 entity_index) {
     Entity *entity = &g_EntityTable[entity_index];
 
-    entity->_0C = entity->x << 8;
-    entity->_10 = entity->y << 8;
-    entity->_08 = 0;
-    entity->_20 = 0x20;
-    entity->_24 = 0;
+    entity->precise_x = entity->x << 8;
+    entity->base_y = entity->y << 8;
+    entity->height_offset = 0;
+    entity->vertical_acceleration_or_bob_velocity = 0x20;
+    entity->depth_offset = 0;
     entity->anim_timer = 16;
-    entity->item_tile_frame = 0;
-    entity->_44 = 0x300;
-    entity->_46 = 0;
-    entity->_48 = 0;
+    entity->frame_index = 0;
+    entity->affine_scale = 0x300;
+    entity->bob_phase = 0;
+    entity->reserved_48 = 0;
     entity->anim_id = 0;
-    entity->type = 10;
+    entity->update_type = 10;
 }
 
 /* Original address: 0x02025400 */
@@ -11567,69 +11567,69 @@ void Entity_UpdateFloatingItem(s32 entity_index) {
     ItemGroupStruct *definition;
     s32 wave;
 
-    entity->_0C += entity->_18;
-    entity->x = entity->_0C >> 8;
-    entity->y = (entity->_10 >> 8) - entity->_24 + (entity->_08 >> 8);
-    islander->_38 = entity->_0C;
-    islander->_3C = entity->_10;
-    entity->_08 += entity->_20;
-    if (entity->_18 >= 0) {
-        if (entity->x > entity->_14) {
+    entity->precise_x += entity->horizontal_velocity;
+    entity->x = entity->precise_x >> 8;
+    entity->y = (entity->base_y >> 8) - entity->depth_offset + (entity->height_offset >> 8);
+    islander->flying_item_x = entity->precise_x;
+    islander->flying_item_y = entity->base_y;
+    entity->height_offset += entity->vertical_acceleration_or_bob_velocity;
+    if (entity->horizontal_velocity >= 0) {
+        if (entity->x > entity->vertical_velocity_or_x_limit) {
             offscreen = 1;
         }
-    } else if (entity->x < entity->_14) {
+    } else if (entity->x < entity->vertical_velocity_or_x_limit) {
         offscreen = 1;
     }
-    if (islander->stored_item_tile_ids[4] != 0 || offscreen != 0) {
-        entity->_42 -= 0x700;
-        entity->_44 += 0x10;
-        if (entity->_24 > 0 && !(entity->_44 & 0x10)) {
-            entity->_24--;
+    if (islander->stored_item_type_plus_one[4] != 0 || offscreen != 0) {
+        entity->rotation -= 0x700;
+        entity->affine_scale += 0x10;
+        if (entity->depth_offset > 0 && !(entity->affine_scale & 0x10)) {
+            entity->depth_offset--;
         }
-        if (entity->_44 <= 0x300) {
+        if (entity->affine_scale <= 0x300) {
             return;
         }
-        entity->_44 = 0x300;
-        entity->_42 = 0;
+        entity->affine_scale = 0x300;
+        entity->rotation = 0;
         islander->flying_item_spawn_timer = 10800;
         islander->flying_item_spawn_timer += (rand_u16(&gGameState) % 109) * 100;
-        islander->_38 = 0;
-        islander->_3C = 0;
+        islander->flying_item_x = 0;
+        islander->flying_item_y = 0;
         field->entity_active[entity_index + 3] = 0;
         return;
     }
-    if (entity->_24 < 24) {
-        entity->_24++;
+    if (entity->depth_offset < 24) {
+        entity->depth_offset++;
     }
-    entity->_42 += 0x700;
-    entity->_44 -= 0x10;
-    if (entity->_44 < 0x100) {
-        entity->_44 = 0x100;
-        entity->_42 = 0;
+    entity->rotation += 0x700;
+    entity->affine_scale -= 0x10;
+    if (entity->affine_scale < 0x100) {
+        entity->affine_scale = 0x100;
+        entity->rotation = 0;
         if (entity->anim_timer == 0) {
             entity->anim_timer = 16;
-            entity->item_tile_frame++;
-            if (entity->item_tile_frame > 4) {
-                entity->item_tile_frame = 0;
+            entity->frame_index++;
+            if (entity->frame_index > 4) {
+                entity->frame_index = 0;
             }
-            if (entity->item[entity->item_tile_frame] == 0 &&
-                entity->item_tile_no[entity->item_tile_frame] == 0) {
-                entity->item_tile_frame = 0;
+            if (entity->item_ids[entity->frame_index] == 0 &&
+                entity->item_type_indices[entity->frame_index] == 0) {
+                entity->frame_index = 0;
             }
-            definition = &g_ItemDefinitions[entity->item_tile_no[entity->item_tile_frame]];
+            definition = &g_ItemDefinitions[entity->item_type_indices[entity->frame_index]];
             entity->sprite_tile = definition->held_item_oam_attr2 & 0x3FF;
             entity->palette = definition->held_item_oam_attr2 >> 12;
         }
         entity->anim_timer--;
     }
-    wave = sSineTable[entity->_46];
-    entity->_20 = wave >> 2;
+    wave = sSineTable[entity->bob_phase];
+    entity->vertical_acceleration_or_bob_velocity = wave >> 2;
     if (wave & 0x8000) {
-        entity->_20 |= 0xFFFF0000;
+        entity->vertical_acceleration_or_bob_velocity |= 0xFFFF0000;
     }
-    entity->_46 = (entity->_46 + 4) & 0xFF;
-    if (entity->_46 == 0) {
-        entity->_20 = 0;
+    entity->bob_phase = (entity->bob_phase + 4) & 0xFF;
+    if (entity->bob_phase == 0) {
+        entity->vertical_acceleration_or_bob_velocity = 0;
     }
 }
 
@@ -11637,27 +11637,27 @@ void Entity_UpdateFloatingItem(s32 entity_index) {
 void Entity_Update(s32 entity_index) {
     Entity *entity = &g_EntityTable[entity_index];
 
-    sEntityUpdateProcs[entity->type](entity_index);
+    sEntityUpdateProcs[entity->update_type](entity_index);
 }
 
 /* Original address: 0x02025618 */
 void Entity_DrawFloatingItemShadow(s32 entity_index) {
     Entity *entity = &g_EntityTable[entity_index];
 
-    if (entity->type == 10) {
+    if (entity->update_type == 10) {
         GameState *game = &gGameState;
-        IslanderOamData *oam = &((IslanderOamData *)gUnk3002410)[game->unk_860];
+        IslanderOamData *oam = &((IslanderOamData *)gUnk3002410)[game->oam_count];
         s32 camera_x;
 
-        oam->y = (entity->_10 >> 8) + (entity->_08 >> 8) - (u8)game->unk_846;
-        camera_x = game->unk_844 - 8;
+        oam->y = (entity->base_y >> 8) + (entity->height_offset >> 8) - (u8)game->bg2_vofs;
+        camera_x = game->bg2_hofs - 8;
         oam->x = entity->x - camera_x;
         oam->shape = 0;
         oam->size = 0;
         oam->tile_num = 0x200;
         oam->palette_num = 1;
         oam->priority = 1;
-        game->unk_860++;
+        game->oam_count++;
     }
 }
 
@@ -11674,54 +11674,54 @@ void Entity_DrawSprite(s32 entity_index) {
 
     switch (entity->anim_id) {
     case 1:
-        frame = sEntityToppleFrames[entity->item_tile_frame];
+        frame = sEntityToppleFrames[entity->frame_index];
         break;
     case 2:
-        frame = sEntityLeafFrames[entity->item_tile_frame];
+        frame = sEntityLeafFrames[entity->frame_index];
         break;
     case 3:
-        frame = sEntityReactionAnimations[entity->_4B][entity->item_tile_frame];
+        frame = sEntityReactionAnimations[entity->reaction_type][entity->frame_index];
         break;
     }
     if (entity->anim_id != 0) {
         sprite = frame->sprite_gfx_p;
         for (i = 0; i < 12 && sprite->affine_param != 0xFFFF; i++, sprite++) {
-            oam = &((IslanderOamData *)gUnk3002410)[gGameState.unk_860];
-            oam->y = sprite->y + entity->y - (u8)gGameState.unk_846;
+            oam = &((IslanderOamData *)gUnk3002410)[gGameState.oam_count];
+            oam->y = sprite->y + entity->y - (u8)gGameState.bg2_vofs;
             oam->obj_mode = sprite->obj_mode;
             oam->bpp = sprite->bpp;
             oam->shape = sprite->shape;
-            oam->x = sprite->x + entity->x - gGameState.unk_844;
-            oam->h_flip = entity->_51;
+            oam->x = sprite->x + entity->x - gGameState.bg2_hofs;
+            oam->h_flip = entity->h_flip;
             oam->v_flip = sprite->v_flip;
             oam->size = sprite->size;
             oam->tile_num = sprite->tile_num;
             oam->priority = 1;
-            if (entity->type == 6) {
+            if (entity->update_type == 6) {
                 oam->priority = 0;
             }
             oam->palette_num = sprite->palette_num;
             oam->mosaic = 1;
-            gGameState.unk_860++;
+            gGameState.oam_count++;
         }
     } else {
-        oam = &((IslanderOamData *)gUnk3002410)[gGameState.unk_860];
-        oam->y = entity->y - (u8)gGameState.unk_846;
-        oam->x = entity->x - gGameState.unk_844;
+        oam = &((IslanderOamData *)gUnk3002410)[gGameState.oam_count];
+        oam->y = entity->y - (u8)gGameState.bg2_vofs;
+        oam->x = entity->x - gGameState.bg2_hofs;
         oam->shape = 0;
         oam->size = 1;
         oam->tile_num = entity->sprite_tile;
         oam->palette_num = entity->palette;
         oam->mosaic = 1;
         oam->priority = 1;
-        gGameState.unk_860++;
-        if (entity->type == 10) {
+        gGameState.oam_count++;
+        if (entity->update_type == 10) {
             oam->affine_mode = 1;
             oam->matrix_num = 1;
             oam->obj_mode = 0;
-            transform.xScale = entity->_44;
-            transform.yScale = entity->_44;
-            transform.rotation = entity->_42;
+            transform.xScale = entity->affine_scale;
+            transform.yScale = entity->affine_scale;
+            transform.rotation = entity->rotation;
             ObjAffineSet(&transform, &matrix, 1, 2);
             ((IslanderOamData *)gUnk3002410)[4].affine_param = matrix.pa;
             ((IslanderOamData *)gUnk3002410)[5].affine_param = matrix.pb;
@@ -11740,13 +11740,13 @@ s32 PlayerHand_IsItemPlacementBlocked(void) {
     u16 item = 0;
     u16 terrain;
 
-    player->tile_idx = (player->_14 & ~0xF) | ((player->_10 & 0xF0) >> 4);
-    if (!(player->_10 & 0xFF00)) {
+    player->tile_idx = (player->work_y & ~0xF) | ((player->work_x & 0xF0) >> 4);
+    if (!(player->work_x & 0xFF00)) {
         if (field->fg_tiles[0][player->tile_idx] != 0xFFF &&
             field->fg_tiles[0][player->tile_idx] != 0x7777) {
             return 1;
         }
-        if (islander->_B5[2] == 0 && player->tile_idx == islander->_B5[3]) {
+        if (islander->dig_target_layer == 0 && player->tile_idx == islander->dig_target_tile_idx) {
             return 1;
         }
         if (field->fg_tiles[0][player->tile_idx] == 0xFFF ||
@@ -11762,7 +11762,7 @@ s32 PlayerHand_IsItemPlacementBlocked(void) {
             field->fg_tiles[1][player->tile_idx] != 0x7777) {
             return 1;
         }
-        if (islander->_B5[2] != 0 && player->tile_idx == islander->_B5[3]) {
+        if (islander->dig_target_layer != 0 && player->tile_idx == islander->dig_target_tile_idx) {
             return 1;
         }
         if (field->fg_tiles[1][player->tile_idx] == 0xFFF ||
@@ -11780,15 +11780,15 @@ s32 PlayerHand_IsItemPlacementBlocked(void) {
             (*tilemap & 0x3FF) == 0x13) {
             IslandBuilding *building = &gIslandBuildings[1];
             s32 cursor_x = (player->x >> 8) - 8;
-            player->_10 = building->interaction_x - cursor_x;
-            player->_14 = building->interaction_y - (player->y >> 8);
-            if (player->_10 < 0) {
-                player->_10 = -player->_10;
+            player->work_x = building->interaction_x - cursor_x;
+            player->work_y = building->interaction_y - (player->y >> 8);
+            if (player->work_x < 0) {
+                player->work_x = -player->work_x;
             }
-            if (player->_14 < 0) {
-                player->_14 = -player->_14;
+            if (player->work_y < 0) {
+                player->work_y = -player->work_y;
             }
-            if (player->_10 > 0x20 || player->_14 > 0x20) {
+            if (player->work_x > 0x20 || player->work_y > 0x20) {
                 return 0;
             }
         }
@@ -11805,7 +11805,7 @@ s32 PlayerHand_IsItemPlacementBlocked(void) {
 s32 PlayerHand_IsNearInteractionTarget(s32 x, s32 y, u16 range) {
     Player *player = &gPlayer;
     Islander_AGB *islander = &gIslander;
-    s32 dx = player->x - islander->_00;
+    s32 dx = player->x - islander->x;
     s32 dy;
 
     if (dx < 0) {
@@ -11835,15 +11835,15 @@ s32 PlayerHand_CheckHouseDoorInteraction(void) {
     Islander_AGB *islander = &gIslander;
     IslandBuilding *building = &gIslandBuildings[1];
 
-    player->_26 = 0;
+    player->near_house_door = 0;
     if (PlayerHand_IsNearInteractionTarget(building->interaction_x << 8, building->interaction_y << 8, 0x10U) != 0) {
-        player->_26 = 1;
+        player->near_house_door = 1;
     }
-    if (islander->move_proc_idx == 1) {
-        if ((player->_26 != 0) && (islander->anim_timer == 0xFE)) {
+    if (islander->move_action == 1) {
+        if ((player->near_house_door != 0) && (islander->anim_timer == 0xFE)) {
             islander->anim_timer = 4;
             building->state = 0;
-            player->_26 = 0;
+            player->near_house_door = 0;
         }
         return 1;
     }
@@ -11855,30 +11855,30 @@ s32 PlayerHand_TryInteractWithIslander(void) {
     Player *player = &gPlayer;
     Islander_AGB *islander = &gIslander;
 
-    if (islander->_99[1] == 0 && islander->move_proc_idx == 3) {
-        islander->_10 = player->x;
-        islander->_14 = player->y;
+    if (islander->collision_bypass_timer == 0 && islander->move_action == 3) {
+        islander->target_x = player->x;
+        islander->target_y = player->y;
     }
-    if (islander->move_proc_idx == 3) {
-        if (PlayerHand_IsNearInteractionTarget(islander->_00, islander->_04, 8)) {
-            islander->emotion_anim_id = 1;
+    if (islander->move_action == 3) {
+        if (PlayerHand_IsNearInteractionTarget(islander->x, islander->y, 8)) {
+            islander->reaction_anim_id = 1;
             Islander_SpawnReactionEffect(2, 0x30);
-            if (islander->state != 0) {
-                islander->state |= 0x40;
-                islander->emotion_anim_id = 0;
+            if (islander->equipped_tool_state != 0) {
+                islander->equipped_tool_state |= 0x40;
+                islander->reaction_anim_id = 0;
             }
-            player->_26 = 0;
-            islander->move_proc_idx = 10;
+            player->near_house_door = 0;
+            islander->move_action = 10;
             islander->click_cooldown_timer = 0x30;
-            player->state = 0;
+            player->action_state = 0;
             PlayerHand_ResetToIdle();
             return 1;
         }
-    } else if (islander->move_proc_idx == 20 && islander->sub_move_action == 0 &&
-               PlayerHand_IsNearInteractionTarget(islander->_00, islander->_04, 16)) {
+    } else if (islander->move_action == 20 && islander->action_state == 0 &&
+               PlayerHand_IsNearInteractionTarget(islander->x, islander->y, 16)) {
         Sound_PlayEffect0(3);
-        islander->_84 = 2;
-        player->state = 2;
+        islander->carry_state = 2;
+        player->action_state = 2;
         PlayerHand_BeginCarrying();
         return 1;
     }
@@ -11889,12 +11889,12 @@ s32 PlayerHand_TryInteractWithIslander(void) {
 s32 PlayerHand_TrySelectIslanderTarget(void) {
     u8 temp_r0_29010;
 
-    if ((gIslander.move_proc_idx == 3) && ((temp_r0_29010 = gIslander.state, (temp_r0_29010 == 1)) || (temp_r0_29010 == 5)) && (PlayerHand_IsNearInteractionTarget(gIslander._38, gIslander._3C, 0x10U) != 0)) {
-        gIslander.move_proc_idx = 9;
-        gIslander._10 = (s32) gIslander._38;
-        gIslander._14 = (s32) gIslander._3C;
-        gIslander.emotion_anim_id = 0;
-        gIslander._9F = 1;
+    if ((gIslander.move_action == 3) && ((temp_r0_29010 = gIslander.equipped_tool_state, (temp_r0_29010 == 1)) || (temp_r0_29010 == 5)) && (PlayerHand_IsNearInteractionTarget(gIslander.flying_item_x, gIslander.flying_item_y, 0x10U) != 0)) {
+        gIslander.move_action = 9;
+        gIslander.target_x = (s32) gIslander.flying_item_x;
+        gIslander.target_y = (s32) gIslander.flying_item_y;
+        gIslander.reaction_anim_id = 0;
+        gIslander.interaction_target_is_islander = 1;
         return 1;
     }
     return 0;
@@ -11906,48 +11906,48 @@ void PlayerHand_Init(void) {
 
     player->x = 0xF800;
     player->y = 0x8800;
-    player->_08 = 0xF800;
-    player->_0C = 0x8800;
+    player->saved_x = 0xF800;
+    player->saved_y = 0x8800;
     player->anim_frame = 0;
     player->anim_timer = 0;
     player->anim_id = 0;
-    player->_23 = 0;
+    player->interaction_attempt_active = 0;
     player->held_item_oam_attr2 = 0;
     player->tile_idx = 0;
     player->held_item = 0;
     player->held_item_type_idx = 0;
-    player->action_timer = 0;
-    player->_26 = 0;
-    player->_27 = 0;
-    player->_14 = 0;
-    player->_10 = 0;
+    player->placement_input_delay = 0;
+    player->near_house_door = 0;
+    player->interaction_cooldown_timer = 0;
+    player->work_y = 0;
+    player->work_x = 0;
     player->held_item_layer = 0;
     player->held_item_tile_idx = 0;
-    player->left_tile_idx = 0;
-    player->right_tile_idx = 0;
-    player->state = 0;
+    player->left_neighbor_tile_idx = 0;
+    player->right_neighbor_tile_idx = 0;
+    player->action_state = 0;
 }
 
 static inline void PlayerHand_UpdateCamera(Player *player) {
     GameState *camera = &gGameState;
     s32 camera_y;
-    camera->unk_840 = ((s32) player->x >> 8) - 0x80;
+    camera->bg1_hofs = ((s32) player->x >> 8) - 0x80;
     camera_y = ((s32) player->y >> 8) - 0x50;
-    camera->unk_842 = camera_y;
+    camera->bg1_vofs = camera_y;
     if (camera_y & 0x800) {
-        camera->unk_842 = 0;
+        camera->bg1_vofs = 0;
     }
-    if ((u32) camera->unk_842 > 0x60U) {
-        camera->unk_842 = 0x60;
+    if ((u32) camera->bg1_vofs > 0x60U) {
+        camera->bg1_vofs = 0x60;
     }
-    if (0x800 & camera->unk_840) {
-        camera->unk_840 = 0;
+    if (0x800 & camera->bg1_hofs) {
+        camera->bg1_hofs = 0;
     }
-    if ((u32) camera->unk_840 > 0x100U) {
-        camera->unk_840 = 0x100;
+    if ((u32) camera->bg1_hofs > 0x100U) {
+        camera->bg1_hofs = 0x100;
     }
-    camera->unk_844 = camera->unk_840;
-    camera->unk_846 = camera->unk_842;
+    camera->bg2_hofs = camera->bg1_hofs;
+    camera->bg2_vofs = camera->bg1_vofs;
 }
 
 /* Original address: 0x02025DC8 */
@@ -11976,7 +11976,7 @@ void PlayerHand_UpdateMovement(void) {
         if (0x100 & game->keys.buttons.held) {
             player->y = previous_y_down + 0x300;
         }
-        if (islander->_84 == 0) {
+        if (islander->carry_state == 0) {
             if (player->y > 0xF7FF) {
                 player->y = 0xF800;
             }
@@ -12015,14 +12015,14 @@ void PlayerHand_ResetToIdle(void) {
 
     player->anim_id = 0;
     frame = sPlayerHandAnimations[0][0];
-    player->_23 = 0;
+    player->interaction_attempt_active = 0;
     player->anim_frame = 0;
     player->anim_timer = frame->duration;
-    player->state = 1;
+    player->action_state = 1;
 }
 
 static inline s32 PlayerHand_IsTileBuried(Player *player) {
-    if (!(player->_10 & 0xFF00)) {
+    if (!(player->work_x & 0xFF00)) {
         if ((gIslandData->deposit[0][player->tile_idx >> 4] >> (player->tile_idx & 0xF)) & 1) {
             return 1;
         }
@@ -12047,11 +12047,11 @@ void PlayerHand_UpdateIdle(void) {
     mActor_name_t *tile;
     AnimFrameData *frame;
 
-    if ((player->_27 == 0 || --player->_27 == 0) && (gGameState.keys.buttons.pressed & 1)) {
-        player->_14 = (player->y >> 8) & 0xFF0;
-        player->_10 = (player->x >> 8) & 0xFF0;
-        player->tile_idx = player->_14 | ((player->_10 & 0xF0) >> 4);
-        if (!(player->_10 & 0xFF00)) {
+    if ((player->interaction_cooldown_timer == 0 || --player->interaction_cooldown_timer == 0) && (gGameState.keys.buttons.pressed & 1)) {
+        player->work_y = (player->y >> 8) & 0xFF0;
+        player->work_x = (player->x >> 8) & 0xFF0;
+        player->tile_idx = player->work_y | ((player->work_x & 0xF0) >> 4);
+        if (!(player->work_x & 0xFF00)) {
             item_type = field->fg_tiles[0][player->tile_idx];
         } else {
             item_type = field->fg_tiles[1][player->tile_idx];
@@ -12060,10 +12060,10 @@ void PlayerHand_UpdateIdle(void) {
         definition = &definitions[item_type];
         if (item_type == 0xFFF || item_type == 0x7777 || item_type == 0x3333 ||
             definition->interaction_type == 0xFFF) {
-            player->_23 = 1;
+            player->interaction_attempt_active = 1;
         } else {
             if (PlayerHand_IsTileBuried(player)) {
-                player->_23 = 1;
+                player->interaction_attempt_active = 1;
             } else {
                 item_type &= 0xFFF;
                 definition = &definitions[item_type];
@@ -12092,15 +12092,15 @@ void PlayerHand_UpdateIdle(void) {
                     player->held_item_oam_attr2 = definition->held_item_oam_attr2;
                     player->held_item = item;
                     Sound_PlayEffect0(3);
-                    player->state = 2;
+                    player->action_state = 2;
                     PlayerHand_BeginCarrying();
                     return;
                 }
-                player->_23 = 1;
+                player->interaction_attempt_active = 1;
             }
         }
     }
-    if (player->_23 == 0) {
+    if (player->interaction_attempt_active == 0) {
         PlayerHand_UpdateMovement();
     } else if (player->anim_timer == 0) {
         player->anim_timer--;
@@ -12111,15 +12111,15 @@ void PlayerHand_UpdateIdle(void) {
             player->anim_timer = frame->duration;
         } else if (PlayerHand_CheckHouseDoorInteraction() != 0) {
             Sound_PlayEffect0(2);
-            player->state = 0;
+            player->action_state = 0;
             PlayerHand_ResetToIdle();
         } else if (PlayerHand_TryInteractWithIslander() == 0) {
             if (PlayerHand_TrySelectIslanderTarget() != 0) {
-                player->state = 0;
+                player->action_state = 0;
                 PlayerHand_ResetToIdle();
             } else {
                 Sound_PlayEffect0(2);
-                player->state = 0;
+                player->action_state = 0;
                 PlayerHand_ResetToIdle();
             }
         }
@@ -12174,21 +12174,21 @@ void Field_RestoreAdjacentTreeTiles(u16 tile_idx, s32 x) {
     u8 row = tile_idx & 0xF0;
     left &= 0xF;
     right &= 0xF;
-    player->left_tile_idx = left | row;
-    player->right_tile_idx = right | row;
+    player->left_neighbor_tile_idx = left | row;
+    player->right_neighbor_tile_idx = right | row;
     if (!(player->x & 0xFF0000)) {
-        Field_RestoreNeighborTreeTile(tile_idx, x, player->left_tile_idx, 0, 0);
-        if (!(player->right_tile_idx & 0xF)) {
-            Field_RestoreNeighborTreeTile(tile_idx, x, player->right_tile_idx, 1, 1);
+        Field_RestoreNeighborTreeTile(tile_idx, x, player->left_neighbor_tile_idx, 0, 0);
+        if (!(player->right_neighbor_tile_idx & 0xF)) {
+            Field_RestoreNeighborTreeTile(tile_idx, x, player->right_neighbor_tile_idx, 1, 1);
         } else {
-            Field_RestoreNeighborTreeTile(tile_idx, x, player->right_tile_idx, 0, 1);
+            Field_RestoreNeighborTreeTile(tile_idx, x, player->right_neighbor_tile_idx, 0, 1);
         }
     } else {
-        Field_RestoreNeighborTreeTile(tile_idx, x, player->right_tile_idx, 1, 1);
-        if ((player->left_tile_idx & 0xF) == 0xF) {
-            Field_RestoreNeighborTreeTile(tile_idx, x, player->left_tile_idx, 0, 0);
+        Field_RestoreNeighborTreeTile(tile_idx, x, player->right_neighbor_tile_idx, 1, 1);
+        if ((player->left_neighbor_tile_idx & 0xF) == 0xF) {
+            Field_RestoreNeighborTreeTile(tile_idx, x, player->left_neighbor_tile_idx, 0, 0);
         } else {
-            Field_RestoreNeighborTreeTile(tile_idx, x, player->left_tile_idx, 1, 0);
+            Field_RestoreNeighborTreeTile(tile_idx, x, player->left_neighbor_tile_idx, 1, 0);
         }
     }
 }
@@ -12203,10 +12203,10 @@ void PlayerHand_BeginCarrying(void) {
 
     player->anim_id = 1;
     frame = sPlayerHandAnimations[1][0];
-    player->_23 = 0;
+    player->interaction_attempt_active = 0;
     player->anim_frame = 0;
     player->anim_timer = frame->duration;
-    if (islander->_84 == 0) {
+    if (islander->carry_state == 0) {
         field->entity_active[2] = 1;
         Entity_Reset(2);
         entity->lifetime = 0x30;
@@ -12218,11 +12218,11 @@ void PlayerHand_BeginCarrying(void) {
         WriteItemToTile(player->x, player->tile_idx, 0, 0x200);
         Field_RestoreAdjacentTreeTiles(player->tile_idx, player->x);
     } else {
-        islander->_00 = player->x;
-        islander->_04 = player->y + 0x1200;
+        islander->x = player->x;
+        islander->y = player->y + 0x1200;
     }
-    player->action_timer = 0x20;
-    player->state = 3;
+    player->placement_input_delay = 0x20;
+    player->action_state = 3;
 }
 
 /* Original address: 0x02026464 */
@@ -12233,25 +12233,25 @@ void PlayerHand_UpdateCarrying(void) {
     AnimFrameData *frame;
     AnimFrameData *blocked_frame;
 
-    if (islander->_84 == 0) {
+    if (islander->carry_state == 0) {
         if (player->held_item_layer == 0 && player->held_item_tile_idx == 0) {
-            player->state = 0;
+            player->action_state = 0;
             PlayerHand_ResetToIdle();
             return;
         }
     }
-    if ((player->action_timer == 0 || --player->action_timer == 0) &&
+    if ((player->placement_input_delay == 0 || --player->placement_input_delay == 0) &&
         (gGameState.keys.buttons.pressed & 1)) {
-        if (islander->_84 != 0) {
-            player->_10 = ((player->x >> 8) - 8) & 0xFF0;
-            player->_14 = ((player->y >> 8) + 0x18) & 0xFF0;
+        if (islander->carry_state != 0) {
+            player->work_x = ((player->x >> 8) - 8) & 0xFF0;
+            player->work_y = ((player->y >> 8) + 0x18) & 0xFF0;
         } else {
-            player->_10 = entity->x + 8;
-            player->_14 = entity->y + 8;
+            player->work_x = entity->x + 8;
+            player->work_y = entity->y + 8;
         }
         if (PlayerHand_IsItemPlacementBlocked() == 0) {
             Sound_PlayEffect0(4);
-            player->state = 4;
+            player->action_state = 4;
             PlayerHand_BeginPlacing();
             return;
         }
@@ -12262,13 +12262,13 @@ void PlayerHand_UpdateCarrying(void) {
         Sound_PlayEffect0(0x12);
     }
     PlayerHand_UpdateMovement();
-    if (islander->_84 == 0) {
+    if (islander->carry_state == 0) {
         entity->lifetime = 0x30;
         entity->x = (player->x >> 8) - 8;
         entity->y = (player->y >> 8) - 2;
     } else {
-        islander->_00 = player->x;
-        islander->_04 = player->y + 0x1200;
+        islander->x = player->x;
+        islander->y = player->y + 0x1200;
     }
     if (player->anim_timer == 0) {
         player->anim_frame++;
@@ -12291,7 +12291,7 @@ void PlayerHand_BeginPlacing(void) {
     frame = sPlayerHandAnimations[2][0];
     player->anim_frame = 0;
     player->anim_timer = frame->duration;
-    player->state = 5;
+    player->action_state = 5;
 }
 
 /* Original address: 0x020265D4 */
@@ -12304,8 +12304,8 @@ void PlayerHand_UpdatePlacing(void) {
     ItemGroupStruct *definition;
     s32 dx, dy;
 
-    if (islander->_84 == 0 && player->held_item_layer == 0 && player->held_item_tile_idx == 0) {
-        player->state = 0;
+    if (islander->carry_state == 0 && player->held_item_layer == 0 && player->held_item_tile_idx == 0) {
+        player->action_state = 0;
         PlayerHand_ResetToIdle();
         return;
     }
@@ -12322,7 +12322,7 @@ void PlayerHand_UpdatePlacing(void) {
         player->anim_timer = frame->duration;
         return;
     }
-    if (islander->_84 == 0) {
+    if (islander->carry_state == 0) {
         definition = &g_ItemDefinitions[player->held_item_type_idx];
         WriteItemToTile(player->x, player->tile_idx, player->held_item, definition->field_tile_id);
         if (player->held_item_layer == 0) {
@@ -12337,35 +12337,35 @@ void PlayerHand_UpdatePlacing(void) {
         }
         player->held_item_layer = 0;
         player->held_item_tile_idx = 0;
-        if (islander->move_proc_idx == 3) {
-            if (islander->stored_item_tile_ids[4] == 0) {
-                if (islander->state == 0) {
+        if (islander->move_action == 3) {
+            if (islander->stored_item_type_plus_one[4] == 0) {
+                if (islander->equipped_tool_state == 0) {
                     attract_islander = 1;
-                } else if (islander->state == 3 || islander->state == 7) {
+                } else if (islander->equipped_tool_state == 3 || islander->equipped_tool_state == 7) {
                     if (definition->interaction_type <= 3 || definition->interaction_type == 5 ||
                         definition->interaction_type == 6) {
                         attract_islander = 1;
                     }
                 }
-            } else if (islander->state == 0 && (u16)(definition->interaction_type - 5) <= 9) {
+            } else if (islander->equipped_tool_state == 0 && (u16)(definition->interaction_type - 5) <= 9) {
                 attract_islander = 1;
             }
         }
-        dx = player->x - islander->_00;
+        dx = player->x - islander->x;
         if (dx < 0) dx = -dx;
-        dy = player->y - islander->_04;
+        dy = player->y - islander->y;
         if (dy < 0) dy = -dy;
         if (dx <= 0x2FFF && dy <= 0x2FFF && attract_islander == 1) {
-            islander->_10 = (player->x & 0xFF0000) | (((player->tile_idx & 0xF) << 12) + 0x800);
-            islander->_14 = ((player->tile_idx & 0xF0) << 8) + 0x800;
-            islander->move_proc_idx = 9;
+            islander->target_x = (player->x & 0xFF0000) | (((player->tile_idx & 0xF) << 12) + 0x800);
+            islander->target_y = ((player->tile_idx & 0xF0) << 8) + 0x800;
+            islander->move_action = 9;
         }
     } else {
-        islander->_84 = 1;
+        islander->carry_state = 1;
     }
-    player->_27 = 0x20;
-    islander->_9D = player->tile_idx;
-    player->state = 0;
+    player->interaction_cooldown_timer = 0x20;
+    islander->player_interaction_tile_idx = player->tile_idx;
+    player->action_state = 0;
     PlayerHand_ResetToIdle();
 }
 
@@ -12376,8 +12376,8 @@ void PlayerHand_Update(void) {
     IslandFieldWork *field = &gIslandFieldWork;
     field->entity_active[0] = 1;
     field->entity_active[1] = 1;
-    if (islander->move_proc_idx != 0x14 || islander->sub_move_action == 0 || islander->_84 == 2) {
-        sPlayerHandUpdateProcs[player->state]();
+    if (islander->move_action != 0x14 || islander->action_state == 0 || islander->carry_state == 2) {
+        sPlayerHandUpdateProcs[player->action_state]();
     }
 }
 
@@ -12388,8 +12388,8 @@ void PlayerHand_Draw(void) {
     IslanderOamData *oam;
     u32 i;
 
-    player->_14 = player->y >> 8;
-    player->_10 = player->x >> 8;
+    player->work_y = player->y >> 8;
+    player->work_x = player->x >> 8;
     sprite = sPlayerHandAnimations[player->anim_id][player->anim_frame]->sprite_gfx_p;
     gIslandFieldWork.entity_active[0] = 0;
     gIslandFieldWork.entity_active[1] = 0;
@@ -12398,21 +12398,21 @@ void PlayerHand_Draw(void) {
         return;
     }
     do {
-        oam = &((IslanderOamData *)gUnk3002410)[gGameState.unk_860];
+        oam = &((IslanderOamData *)gUnk3002410)[gGameState.oam_count];
         oam->obj_mode = sprite->obj_mode;
         oam->bpp = sprite->bpp;
         oam->shape = sprite->shape;
         oam->h_flip = sprite->h_flip;
         oam->v_flip = sprite->v_flip;
         oam->size = sprite->size;
-        oam->y = sprite->y + player->_14 - (u8)gGameState.unk_846;
-        oam->x = sprite->x + player->_10 - gGameState.unk_844;
+        oam->y = sprite->y + player->work_y - (u8)gGameState.bg2_vofs;
+        oam->x = sprite->x + player->work_x - gGameState.bg2_hofs;
         oam->tile_num = sprite->tile_num;
         oam->mosaic = 1;
         oam->priority = 0;
         oam->palette_num = sprite->palette_num;
         gIslandFieldWork.entity_active[i] = 1;
-        gGameState.unk_860++;
+        gGameState.oam_count++;
         i++;
         sprite++;
     } while (sprite->affine_param != 0xFFFF);

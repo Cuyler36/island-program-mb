@@ -800,15 +800,16 @@ enum {
 
 
 typedef struct GameState {
-    u32 unk_000;
-    int _004;
-    int _008;
-    u32 rngValue;
-    u32 game_time_frames; // time of day represented by number of frames
-    /* Original address: 0x03001B64; offset 0x014, size 0x800. */
+    /* 0x000 */ u32 reserved_000;
+    /* 0x004 */ s32 reserved_004;
+    /* 0x008 */ s32 sleep_timer;
+    /* 0x00C */ u32 rng_state;
+    /* 0x010 */ u32 game_time_frames;
+    /* 0x014; original address: 0x03001B64; size 0x800. */
     u32 interrupt_code[0x200];
-    vu16 unk_814; // thanks jiang
-    u16 unk_816;
+    /* 0x814 */ vu16 vblank_flags;
+    /* 0x816 */ u16 current_music_id;
+    /* 0x818 */
     union {
         struct {
             u16 held;
@@ -817,44 +818,40 @@ typedef struct GameState {
         /* 0x818: held and newly pressed keys, accessed together. */
         u32 combined;
     } keys;
-    u16 unk_81C;
-    u16 unk_81E;
-    u16 unk_820;
-    u16 unk_822;
-    u16 unk_824;
-    u16 unk_826;
-    u16 unk_828;
-    u16 unk_82A;
-    u8 pad_82C[0x10];
-    u16 unk_83C;
-    u16 unk_83E;
-    u16 unk_840;
-    u16 unk_842;
-    u16 unk_844;
-    u16 unk_846;
-    u16 unk_848;
-    u16 bg3_vofs;
-    u8 unk_84C;
-    u8 unk_84D;
-    u8 unk_84E;
-    u8 unk_84F;
-    u8 unk_850;
-    u8 unk_851;
-    u8 unk_852;
-    u8 unk_853;
-    u8 unk_854;
-    u8 unk_855;
-    u8 unk_856;
-    u8 unk_857;
-    u8 unk_858;
-    u8 unk_859;
-    u8 unk_85A;
-    u8 unk_85B;
-    u8 unk_85C;
-    u8 unk_85D;
-    u8 unk_85E;
-    u8 unk_85F;
-    u8 unk_860;
+    /* 0x81C */ u16 bldalpha;
+    /* 0x81E */ u16 bldy;
+    /* 0x820 */ u16 bldcnt;
+    /* 0x822 */ u16 bg0cnt;
+    /* 0x824 */ u16 bg1cnt;
+    /* 0x826 */ u16 bg2cnt;
+    /* 0x828 */ u16 bg3cnt;
+    /* 0x82A */ u16 dispcnt;
+    /* 0x82C */ u8 reserved_82C[0x10];
+    /* 0x83C */ u16 bg0_hofs;
+    /* 0x83E */ u16 bg0_vofs;
+    /* 0x840 */ u16 bg1_hofs;
+    /* 0x842 */ u16 bg1_vofs;
+    /* 0x844 */ u16 bg2_hofs;
+    /* 0x846 */ u16 bg2_vofs;
+    /* 0x848 */ u16 bg3_hofs;
+    /* 0x84A */ u16 bg3_vofs;
+    /* 0x84C */ u8 transfer_requested;
+    /* 0x84D */ u8 transfer_dialog_active;
+    /* 0x84E */ u8 sleep_requested;
+    /* 0x84F */ u8 sleep_dialog_active;
+    /* 0x850 */ u8 sleep_mode_active;
+    /* 0x851 */ u8 sleep_ready;
+    /* 0x852 */ u8 palette_dirty;
+    /* 0x853 */ u8 reserved_853[3];
+    /* 0x856 */ u8 joybus_notice_requested;
+    /* 0x857 */ u8 joybus_notice_active;
+    /* 0x858 */ u8 reserved_858;
+    /* 0x859 */ u8 vblank_latch; /* cleared after a committed frame; producer unknown */
+    /* 0x85A */ u8 pcm_disable_pending;
+    /* 0x85B */ u8 vblank_counter;
+    /* 0x85C */ u8 reserved_85C[3];
+    /* 0x85F */ u8 frame_committed;
+    /* 0x860 */ u8 oam_count;
 } GameState;
 
 /* Island field tile data and scene-wide runtime state. */
@@ -1037,27 +1034,27 @@ typedef struct FieldObject {
     /* 0x08 */ u16 *drop_tilemap;
     /* 0x0C */ u16 type;
     /* 0x0E */ u16 tile_idx;
-    /* 0x10 */ u16 _10;
-    /* 0x12 */ u16 _12;
-    /* 0x14 */ u16 _14;
-    /* 0x16 */ u16 _16;
-    /* 0x18 */ u16 _18;
-    /* 0x1A */ u16 _1A;
-    /* 0x1C */ u16 entity_id;
-    /* 0x1E */ u16 _1E;
-    /* 0x20 */ u16 _20;
-    /* 0x22 */ u16 _22;
+    /* 0x10 */ u16 rotation;
+    /* 0x12 */ u16 rotation_speed;
+    /* 0x14 */ u16 rotation_threshold;
+    /* 0x16 */ u16 topple_x_offset;
+    /* 0x18 */ u16 topple_y_offset;
+    /* 0x1A */ u16 topple_extra_x_offset;
+    /* 0x1C */ u16 falling_fruit_id; /* slot plus one; 0xFFFF means multiple fruits */
+    /* 0x1E */ u16 drop_tile_x;
+    /* 0x20 */ u16 drop_tile_y;
+    /* 0x22 */ mActor_name_t drop_existing_item;
     /* 0x24 */ u8 layer;
     /* 0x25 */ u8 anim_frame;
     /* 0x26 */ u8 anim_counter;
     /* 0x27 */ u8 anim_timer;
-    /* 0x28 */ u8 state;
+    /* 0x28 */ u8 action_state;
     /* 0x29 */ u8 x_flip;
-    /* 0x2A */ u8 state_timer;
-    /* 0x2B */ u8 _2B;
-    /* 0x2C */ u8 _2C;
-    /* 0x2D */ u8 _2D;
-    /* 0x2E */ u8 pad_2E[2];
+    /* 0x2A */ u8 hits_remaining;
+    /* 0x2B */ u8 fruit_drop_processed;
+    /* 0x2C */ u8 shake_animation_paused;
+    /* 0x2D */ u8 favorite_hour_item_eligible;
+    /* 0x2E */ u8 reserved_2E[2];
 } FieldObject;
 
 /* sizeof(FieldObjectSpriteFrame) == 0x10; records at 0x0202FF78. */
@@ -1074,60 +1071,60 @@ typedef struct FieldObjectSpriteFrame {
 typedef struct Player {
     /* 0x00 */ s32 x;
     /* 0x04 */ s32 y;
-    /* 0x08 */ s32 _08;
-    /* 0x0C */ s32 _0C;
-    /* 0x10 */ s32 _10;
-    /* 0x14 */ s32 _14;
+    /* 0x08 */ s32 saved_x; /* initialized with x; consumer unknown */
+    /* 0x0C */ s32 saved_y; /* initialized with y; consumer unknown */
+    /* 0x10 */ s32 work_x; /* tile-aligned target, distance, or draw position */
+    /* 0x14 */ s32 work_y; /* tile-aligned target, distance, or draw position */
     /* 0x18 */ u16 held_item_oam_attr2;
     /* 0x1A */ mActor_name_t held_item;
-    /* 0x1C */ u8 left_tile_idx;
-    /* 0x1D */ u8 right_tile_idx;
+    /* 0x1C */ u8 left_neighbor_tile_idx;
+    /* 0x1D */ u8 right_neighbor_tile_idx;
     /* 0x1E */ u8 tile_idx;
-    /* 0x1F */ u8 state;
+    /* 0x1F */ u8 action_state;
     /* 0x20 */ u8 anim_id;
     /* 0x21 */ u8 anim_frame;
     /* 0x22 */ u8 anim_timer;
-    /* 0x23 */ u8 _23;
+    /* 0x23 */ u8 interaction_attempt_active;
     /* 0x24 */ u8 held_item_type_idx;
-    /* 0x25 */ u8 action_timer;
-    /* 0x26 */ u8 _26;
-    /* 0x27 */ u8 _27;
+    /* 0x25 */ u8 placement_input_delay;
+    /* 0x26 */ u8 near_house_door;
+    /* 0x27 */ u8 interaction_cooldown_timer;
     /* 0x28 */ u8 held_item_layer;
     /* 0x29 */ u8 held_item_tile_idx;
-    /* 0x2A */ u8 pad_2A[2];
+    /* 0x2A */ u8 reserved_2A[2];
 } Player;
 
 /* sizeof(Entity) == 0x54. Shared item and transient-effect state. */
 typedef struct Entity {
-    /* 0x00 */ int x;
-    /* 0x04 */ int y;
-    /* 0x08 */ int _08;
-    /* 0x0C */ int _0C;
-    /* 0x10 */ int _10;
-    /* 0x14 */ int _14;
-    /* 0x18 */ int _18;
-    /* 0x1C */ int _1C;
-    /* 0x20 */ int _20;
-    /* 0x24 */ int _24;
-    /* 0x28 */ u16 item_tile_no[5];
-    /* 0x32 */ u16 item[5];
-    /* 0x3C */ u16 landing_tile;
+    /* 0x00 */ s32 x;
+    /* 0x04 */ s32 y;
+    /* 0x08 */ s32 height_offset;
+    /* 0x0C */ s32 precise_x;
+    /* 0x10 */ s32 base_y;
+    /* 0x14 */ s32 vertical_velocity_or_x_limit;
+    /* 0x18 */ s32 horizontal_velocity;
+    /* 0x1C */ s32 reserved_1C;
+    /* 0x20 */ s32 vertical_acceleration_or_bob_velocity;
+    /* 0x24 */ s32 depth_offset;
+    /* 0x28 */ u16 item_type_indices[5];
+    /* 0x32 */ mActor_name_t item_ids[5]; /* unresolved entries are item-generator indices */
+    /* 0x3C */ u16 landing_tile; /* layer is encoded in bit 0x1000 */
     /* 0x3E */ u16 sprite_tile;
     /* 0x40 */ u16 lifetime;
-    /* 0x42 */ u16 _42;
-    /* 0x44 */ u16 _44;
-    /* 0x46 */ u16 _46;
-    /* 0x48 */ u16 _48;
-    /* 0x4A */ u8 item_is_resolved;
-    /* 0x4B */ u8 _4B;
-    /* 0x4C */ u8 item_tile_frame;
+    /* 0x42 */ u16 rotation;
+    /* 0x44 */ u16 affine_scale;
+    /* 0x46 */ u16 bob_phase;
+    /* 0x48 */ u16 reserved_48;
+    /* 0x4A */ u8 items_are_resolved;
+    /* 0x4B */ u8 reaction_type;
+    /* 0x4C */ u8 frame_index;
     /* 0x4D */ u8 anim_timer;
-    /* 0x4E */ u8 type;
+    /* 0x4E */ u8 update_type;
     /* 0x4F */ u8 anim_id;
     /* 0x50 */ u8 palette;
-    /* 0x51 */ u8 _51;
-    /* 0x52 */ u8 _52;
-    /* 0x53 */ u8 _53;
+    /* 0x51 */ u8 h_flip;
+    /* 0x52 */ u8 landing_delay_timer;
+    /* 0x53 */ u8 reserved_53;
 } Entity;
 
 typedef struct EntitySpawnParams {
@@ -1293,56 +1290,56 @@ typedef struct JoybusTransferWork {
 /* Main menu/message state used by the island program. */
 /* sizeof(IslandProgramWork) == 0x80 */
 typedef struct IslandProgramWork {
-    /* 0x00 */ u8 _00[8];
-    /* 0x08 */ mMsg_Window_c* _08;
-    /* 0x0C */ mMsg_Window_c* _0C;
-    /* 0x10 */ mMsg_Window_c* _10;
+    /* 0x00 */ u8 reserved_00[8];
+    /* 0x08 */ mMsg_Window_c* notice_saved_window;
+    /* 0x0C */ mMsg_Window_c* sleep_saved_window;
+    /* 0x10 */ mMsg_Window_c* transfer_saved_window;
     /* 0x14 */ mMsg_Window_c* current_window;
-    /* 0x18 */ s32 elapsed_milliseconds;
-    /* 0x1C */ u8 _1C[0xC];
-    /* 0x28 */ s32 wait_timer;
-    /* 0x2C */ s16 input_timer;
-    /* 0x2E */ u8 _2E[6];
-    /* 0x34 */ u16 _34;
-    /* 0x36 */ u16 _36;
-    /* 0x38 */ u8 _38[0xC];
-    /* 0x44 */ u16 _44;
-    /* 0x46 */ u16 _46;
-    /* 0x48 */ u16 _48;
-    /* 0x4A */ u8 _4A[6];
-    /* 0x50 */ s8 _50;
-    /* 0x51 */ u8 _51;
+    /* 0x18 */ s32 elapsed_milliseconds; /* producer is outside the recovered code */
+    /* 0x1C */ u8 reserved_1C[0xC];
+    /* 0x28 */ s32 notice_result_wait_timer;
+    /* 0x2C */ s16 input_idle_timer;
+    /* 0x2E */ u8 reserved_2E[6];
+    /* 0x34 */ u16 saved_bg3cnt;
+    /* 0x36 */ u16 saved_dispcnt;
+    /* 0x38 */ u8 reserved_38[0xC];
+    /* 0x44 */ u16 saved_bg3_vofs;
+    /* 0x46 */ u16 saved_bg3_hofs;
+    /* 0x48 */ u16 saved_bldy;
+    /* 0x4A */ u8 reserved_4A[6];
+    /* 0x50 */ s8 dialog_display_owner;
+    /* 0x51 */ u8 reserved_51;
     /* 0x52 */ s8 mode;
-    /* 0x53 */ s8 _53;
-    /* 0x54 */ s8 _54;
-    /* 0x55 */ s8 _55;
-    /* 0x56 */ u8 _56;
+    /* 0x53 */ s8 notice_state;
+    /* 0x54 */ s8 sleep_state;
+    /* 0x55 */ s8 transfer_state;
+    /* 0x56 */ u8 reserved_56;
     /* 0x57 */ s8 pending_mode;
-    /* 0x58 */ s8 _58;
-    /* 0x59 */ s8 _59;
-    /* 0x5A */ s8 _5A;
-    /* 0x5B */ u8 _5B[2];
-    /* 0x5D */ s8 _5D;
-    /* 0x5E */ s8 _5E;
-    /* 0x5F */ s8 _5F;
-    /* 0x60 */ s8 _60;
-    /* 0x61 */ u8 _61;
-    /* 0x62 */ s8 _62;
+    /* 0x58 */ s8 pending_notice_state;
+    /* 0x59 */ s8 pending_sleep_state;
+    /* 0x5A */ s8 pending_transfer_state;
+    /* 0x5B */ u8 reserved_5B[2];
+    /* 0x5D */ s8 notice_return_window_id;
+    /* 0x5E */ s8 sleep_return_window_id;
+    /* 0x5F */ s8 transfer_return_window_id;
+    /* 0x60 */ s8 joybus_result;
+    /* 0x61 */ u8 reserved_61;
+    /* 0x62 */ s8 notice_result_state; /* cleared when a notice result opens; consumer unknown */
     /* 0x63 */ s8 time_of_day;
-    /* 0x64 */ u8 window_ready[5];
-    /* 0x69 */ u8 _69;
-    /* 0x6A */ s8 _6A;
-    /* 0x6B */ u8 _6B[2];
-    /* 0x6D */ u8 _6D;
-    /* 0x6E */ u8 _6E;
-    /* 0x6F */ u8 _6F;
-    /* 0x70 */ u8 _70;
-    /* 0x71 */ u8 _71;
+    /* 0x64 */ u8 window_ready[5]; /* dialog transition/resume latches, indexed by window ID */
+    /* 0x69 */ u8 link_transfer_started;
+    /* 0x6A */ s8 joybus_transfer_mode; /* 1: send, 2: receive; consumer unknown */
+    /* 0x6B */ u8 reserved_6B[2];
+    /* 0x6D */ u8 transfer_succeeded;
+    /* 0x6E */ u8 use_cool_dialog_palette; /* producer unknown */
+    /* 0x6F */ u8 use_warm_dialog_palette; /* producer unknown */
+    /* 0x70 */ u8 notice_send_active; /* command 0xFFFE0101 */
+    /* 0x71 */ u8 joybus_sending;
     /* 0x72 */ u8 transition_requested;
     /* 0x73 */ u8 weather_scroll;
     /* 0x74 */ u8 retry_timer;
     /* 0x75 */ u8 retry_result;
-    /* 0x76 */ u8 _76[0xA];
+    /* 0x76 */ u8 reserved_76[0xA];
 } IslandProgramWork;
 
 typedef void (*mMsg_Callback)(mMsg_Window_c*);
@@ -1601,67 +1598,77 @@ extern mActor_name_t sIslanderFlowerItems[9];
 
 /* sizeof(Islander_AGB) == 0xC0 */
 typedef struct Islander_AGB {
-    /* 0x00 */ s32 _00;
-    /* 0x04 */ s32 _04;
-    /* 0x08 */ s32 _08;
-    /* 0x0C */ s32 _0C;
-    /* 0x10 */ s32 _10;
-    /* 0x14 */ s32 _14;
-    /* 0x18 */ s32 _18;
-    /* 0x1C */ s32 _1C;
-    /* 0x20 */ s32 dir_x;
-    /* 0x24 */ s32 dir_y;
-    /* Original address: 0x030041C8 */
-    /* 0x28 */ s32 tree_approach_work[2]; /* tile indices, then horizontal distance scores */
-    /* Original address: 0x030041D0 */
+    /* 0x00 */ s32 x;
+    /* 0x04 */ s32 y;
+    /* 0x08 */ s32 accepted_x;
+    /* 0x0C */ s32 accepted_y;
+    /* 0x10 */ s32 target_x;
+    /* 0x14 */ s32 target_y;
+    /* 0x18 */ s32 next_target_x;
+    /* 0x1C */ s32 next_target_y;
+    /* 0x20 */ s32 work_x; /* target delta, distance, or draw position */
+    /* 0x24 */ s32 work_y; /* target delta, distance, or draw position */
+    /* 0x28 */ s32 tree_approach_eval[2]; /* tile indices, then horizontal distance scores */
     /* 0x30 */ s32 tree_approach_x[2]; /* right and left approach positions */
-    /* 0x38 */ s32 _38;
-    /* 0x3C */ s32 _3C;
-    /* 0x40 */ s32 _40;
-    /* 0x44 */ u16 *_44; /* surrounding terrain tilemap */
-    /* 0x48 */ u16 _48[4];
+    /* 0x38 */ s32 flying_item_x;
+    /* 0x3C */ s32 flying_item_y;
+    /* 0x40 */ u32 held_item_sprite; /* packed OAM attr2 and display flag */
+    /* 0x44 */ u16 *collision_tilemap;
+    /* 0x48 */ u16 surrounding_item_types[4];
     /* 0x50 */ u16 surrounding_tile_indices[4];
-    /* 0x58 */ u16 _58;
-    /* 0x5A */ u16 stored_item_tile_ids[5];
-    /* 0x64 */ mActor_name_t stored_items[5];
+    /* 0x58 */ u16 wander_timer;
+    /* 0x5A */ u16 stored_item_type_plus_one[5];
+    /* 0x64 */ mActor_name_t stored_item_ids[5];
     /* 0x6E */ IslanderItemWork item_work;
-    /* 0x72 */ u16 _72;
-    /* 0x74 */ u16 _74;
+    /* 0x72 */ mActor_name_t removed_tool_item;
+    /* 0x74 */ u16 fishing_cooldown_timer;
     /* 0x76 */ u16 flying_item_spawn_timer;
-    /* 0x78 */ u16 _78;
-    /* 0x7A */ u16 world_state;
-    /* 0x7C */ u16 _7C[4];
-    /* 0x84 */ u8 _84;
-    /* 0x85 */ u8 _85;
-    /* 0x86 */ u8 _86;
-    /* 0x87 */ u8 move_proc_idx; /* IslanderMoveAction_1 */
+    /* 0x78 */ u16 digging_cooldown_timer;
+    /* 0x7A */ u16 interaction_tile; /* tile index plus layer flag 0x8000 */
+    /* 0x7C */ u16 buried_item_tile_base;
+    /* 0x7E */ u16 tree_action_cooldown_timer;
+    /* 0x80 */ u16 carry_wait_timer;
+    /* 0x82 */ u16 equipped_tool_timer;
+    /* 0x84 */ u8 carry_state;
+    /* 0x85 */ u8 removed_tool_layer;
+    /* 0x86 */ u8 removed_tool_tile_idx;
+    /* 0x87 */ u8 move_action; /* IslanderMoveAction_1 */
     /* 0x88 */ u8 anim_id; /* IslanderAnim_1_e */
     /* 0x89 */ u8 anim_frame;
     /* 0x8A */ u8 anim_timer;
-    /* 0x8B */ u8 _8B;
-    /* 0x8C */ u8 _8C;
-    /* 0x8D */ u8 state;
-    /* 0x8E */ u8 stand_on_tile_idx;
-    /* 0x8F */ u8 _8F;
+    /* 0x8B */ u8 direction;
+    /* 0x8C */ u8 previous_direction;
+    /* 0x8D */ u8 equipped_tool_state; /* tool in low nibble; flags in high nibble */
+    /* 0x8E */ u8 tile_idx;
+    /* 0x8F */ u8 terrain_tile_idx;
     /* 0x90 */ u8 emotion; /* EMOTION_TYPE */
-    /* 0x91 */ u8 _91[2];
-    /* 0x93 */ u8 mood;
-    /* 0x94 */ u8 _94[2];
+    /* 0x91 */ u8 blink_frame;
+    /* 0x92 */ u8 blink_timer;
+    /* 0x93 */ u8 mood_level;
+    /* 0x94 */ u8 direction_change_cooldown_timer;
+    /* 0x95 */ u8 stored_item_slot;
     /* 0x96 */ u8 islander_npc_idx;
-    /* 0x97 */ u8 emotion_anim_id; /* IslanderAnim_1_e */
+    /* 0x97 */ u8 reaction_anim_id; /* IslanderAnim_1_e */
     /* 0x98 */ u8 click_cooldown_timer;
-    /* 0x99 */ u8 _99[3];
-    /* 0x9C */ u8 sub_move_action;
-    /* 0x9D */ u8 _9D;
+    /* 0x99 */ u8 target_action;
+    /* 0x9A */ u8 collision_bypass_timer;
+    /* 0x9B */ u8 target_field_object_idx;
+    /* 0x9C */ u8 action_state;
+    /* 0x9D */ u8 player_interaction_tile_idx;
     /* 0x9E */ u8 floating_balloon_target_entity_id;
-    /* 0x9F */ u8 _9F;
-    /* 0xA0 */ u8 _A0;
+    /* 0x9F */ u8 interaction_target_is_islander;
+    /* 0xA0 */ u8 immediate_item_type_plus_one;
     /* 0xA1 */ u8 reward_adjust;
-    /* 0xA2 */ u8 _A2[8];
-    /* 0xAA */ u8 _AA[8];
-    /* 0xB2 */ u8 _B2[2];
-    /* 0xB4 */ u8 _B4;
-    /* 0xB5 */ u8 _B5[0xB];
+    /* 0xA2 */ u8 blocked_directions[8];
+    /* 0xAA */ u8 direction_candidates[8];
+    /* 0xB2 */ u8 collision_retry_count;
+    /* 0xB3 */ u8 collision_recovery_timer;
+    /* 0xB4 */ u8 favorite_hour_item_spawned;
+    /* 0xB5 */ u8 tree_action_skipped;
+    /* 0xB6 */ u8 removed_field_item_type;
+    /* 0xB7 */ u8 dig_target_layer;
+    /* 0xB8 */ u8 dig_target_tile_idx;
+    /* 0xB9 */ u8 reserved_B9[7];
 } Islander_AGB;
 
 
