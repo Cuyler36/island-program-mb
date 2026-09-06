@@ -2,8 +2,184 @@
 #include "m_name_table.h"
 #include <string.h>
 
-void sub_0201A0D4();                                   /* extern */
-void sub_02027040();                                   /* extern */
+/* sizeof(IslandBuildingSprite) == 0x14. */
+typedef struct IslandBuildingSprite {
+    /* 0x00 */ u32 oam_attributes;
+    /* 0x04 */ s32 y_offset;
+    /* 0x08 */ s32 x_offset;
+    /* 0x0C */ u16 tile_num;
+    /* 0x0E */ u8 palette_num;
+    /* 0x0F */ u8 h_flip;
+    /* 0x10 */ u8 v_flip;
+    /* 0x11 */ u8 pad_11[3];
+} IslandBuildingSprite;
+
+/* sizeof(AnimatedFieldObject) == 0x0C. */
+typedef struct AnimatedFieldObject {
+    /* 0x00 */ s32 x;
+    /* 0x04 */ s32 y;
+    /* 0x08 */ u8 anim_timer;
+    /* 0x09 */ u8 anim_frame;
+    /* 0x0A */ u8 pad_0A[2];
+} AnimatedFieldObject;
+
+/* Original address: 0x0202FD40 */
+extern IslandBuildingSprite sIslandBuildingSprites[6];
+/* Original address: 0x03003BF0 */
+extern AnimatedFieldObject gAnimatedFieldObjects[];
+/* Original address: 0x0202FEB0 */
+extern AnimFrameData *sFieldAnimationFrames[7];
+/* sizeof(FallingFruit) == 0x2C. */
+typedef struct FallingFruit {
+    /* 0x00 */ s32 x;
+    /* 0x04 */ s32 y;
+    /* 0x08 */ s32 height;
+    /* 0x0C */ s32 landing_y;
+    /* 0x10 */ s32 landing_x;
+    /* 0x14 */ s32 origin_y;
+    /* 0x18 */ s32 velocity_y;
+    /* 0x1C */ s32 gravity;
+    /* 0x20 */ u16 tile_idx;
+    /* 0x22 */ u8 state;
+    /* 0x23 */ u8 type;
+    /* 0x24 */ u8 anim_frame;
+    /* 0x25 */ u8 acre;
+    /* 0x26 */ u8 timer;
+    /* 0x27 */ u8 sound_played;
+    /* 0x28 */ u8 can_land;
+    /* 0x29 */ u8 pad_29[3];
+} FallingFruit;
+
+/* Original address: 0x03004260 */
+extern FallingFruit gFallingFruit[30];
+/* sizeof(FallingFruitProfile) == 0x18. */
+typedef struct FallingFruitProfile {
+    /* 0x00 */ u32 oam_attributes;
+    /* 0x04 */ s32 y_offset;
+    /* 0x08 */ s32 x_offset;
+    /* 0x0C */ u16 sprite_tile;
+    /* 0x0E */ u16 ground_tile;
+    /* 0x10 */ mActor_name_t item;
+    /* 0x12 */ u8 palette;
+    /* 0x13 */ u8 h_flip;
+    /* 0x14 */ u8 field_tile;
+    /* 0x15 */ u8 pad_15[3];
+} FallingFruitProfile;
+
+/* Original address: 0x020344E8 */
+extern void (*sFallingFruitUpdateProcs[4])(s32);
+/* Original address: 0x020344F8 */
+extern FallingFruitProfile sFallingFruitProfiles[23];
+/* Original address: 0x020300F8 */
+extern u8 sFruitDropOffsetsX[3][4];
+/* Original address: 0x02030104 */
+extern u8 sFruitDropOffsetsY[3][4];
+/* Original address: 0x02030110 */
+extern u8 sFieldObjectInitialTimers[19];
+/* Original address: 0x02030123 */
+extern u8 sFieldObjectShakeFrames[9];
+
+
+/* Original address: 0x02034C24 */
+extern AnimFrameData *sEntityToppleFrames[8];
+/* Original address: 0x02034C44 */
+extern AnimFrameData *sEntityLeafFrames[20];
+/* Original address: 0x02034CE0 */
+extern AnimFrameData **sEntityReactionAnimations[5];
+/* Original address: 0x02034E0C */
+extern void (*sPlayerHandUpdateProcs[6])(void);
+/* Original address: 0x02034ED4 */
+extern AnimFrameData **sPlayerHandAnimations[4];
+/* Original address: 0x020347E0 */
+extern void (*sEntityUpdateProcs[11])(s32);
+/* Original address: 0x0202AD34 */
+extern const s16 sSineTable[320];
+
+/* Original address: 0x03003250 */
+extern m_msg_sprite_c gMsgSprites[12];
+/* Original address: 0x0202B2FC */
+extern const mMsg_SpriteProfile* const sMsgSpriteProfiles[13];
+/* Original address: 0x0202B378 */
+extern AnimFrameData* const sMsgContinuePromptAnimations[1];
+/* Original address: 0x0202B3DC */
+extern AnimFrameData* const sMsgChoiceCursorAnimations[1];
+
+/* Original address: 0x0203E9A0 */
+extern u16 gIslandDataReceived;
+
+/* Original address: 0x0202B3FC */
+extern const u16 sIslandRightAcreTilemaps[4][1024];
+/* Original address: 0x0202D3FC */
+extern const u16 sIslandLeftAcreTilemaps[4][1024];
+/* Original address: 0x0202FC1C */
+extern const u16 sCabanaTilemap[64];
+/* Original address: 0x0202FC9C */
+extern const u16 sIslanderHouseTilemap[48];
+/* Original address: 0x0202FCFC */
+extern const u8 sCabanaFootprint[16];
+/* Original address: 0x0202FD0C */
+extern const u8 sIslanderHouseFootprint[9];
+/* Original address: 0x0202FD16 */
+extern const u16 sFieldEntityBaseTiles[9];
+
+/* Serial island exchange work; sizeof(IslandLinkWork) == 0x38. */
+typedef struct IslandLinkWork {
+    /* 0x00 */ u8 master;
+    /* 0x01 */ u8 state;
+    /* 0x02 */ u8 connected_players;
+    /* 0x03 */ u8 checksum_ok;
+    /* 0x04 */ u8 checksum_bad;
+    /* 0x05 */ u8 _05[3];
+    /* 0x08 */ u16* send_data;
+    /* 0x0C */ u16* receive_data;
+    /* 0x10 */ s32 send_index;
+    /* 0x14 */ s32 receive_index;
+    /* 0x18 */ s32 send_packet_index;
+    /* 0x1C */ s32 receive_packet_index;
+    /* 0x20 */ s32 timeout;
+    /* 0x24 */ u16 received_checksum;
+    /* 0x26 */ u16 receive_packet_checksum;
+    /* 0x28 */ u16 send_packet_checksum;
+    /* 0x2A */ u16 send_checksum;
+    /* 0x2C */ u16 receive_checksum;
+    /* 0x2E */ s16 checksum_index;
+    /* 0x30 */ s8 result;
+    /* 0x31 */ u8 packet_error;
+    /* 0x32 */ u8 serial_error;
+    /* 0x33 */ u8 handshake_delay;
+    /* 0x34 */ u8 send_handshake;
+    /* 0x35 */ u8 _35[3];
+} IslandLinkWork;
+
+/* Original address: 0x030036D0 */
+extern IslandLinkWork gIslandLinkWork;
+/* Original address: 0x03002970 */
+extern Island_agb_c* gIslandTransferData;
+
+/* Word access also includes the adjacent multiplayer send register. */
+#define ISLAND_SERIAL_WORD (*(vu32*)REG_ADDR_SIOCNT)
+#define ISLAND_LINK_HALFWORDS 0x1CC0
+
+typedef union IslandSerialStatus {
+    u32 word;
+    struct {
+        u32 baud_rate : 2;
+        u32 slave : 1;
+        u32 ready : 1;
+        u32 player_id : 2;
+        u32 error : 1;
+        u32 busy : 1;
+        u32 _08 : 4;
+        u32 mode : 2;
+        u32 irq_enable : 1;
+        u32 _0F : 17;
+    } bits;
+} IslandSerialStatus;
+
+#define ISLAND_SERIAL_STATUS (*(volatile IslandSerialStatus*)REG_ADDR_SIOCNT)
+
+void IslandProgram_Main();                                   /* extern */
+void SoundDriver_DisablePcm();                                   /* extern */
 extern u8 sub_02029004[];
 extern u8 sub_020290C4[];
 extern u8 sub_020291E4[];
@@ -18,7 +194,8 @@ static u8 sMsgPreviousTextX;
 /* Original address: 0x03001B50 */
 GameState gGameState;
 
-mISL_landinfo_agb_c gIslandLandInfo; // @0x03002400
+/* Original address: 0x03002400 */
+mISL_landinfo_agb_c gIslandLandInfo;
 
 /* Original address: 0x03003120 */
 JoybusTransferWork gTransWork;
@@ -28,30 +205,34 @@ IslandFieldWork gIslandFieldWork;
 IslandBuilding gIslandBuildings[ISLAND_BUILDING_COUNT]; // @0x03003BB0
 FieldObject gFieldObjects[FIELD_OBJECT_COUNT]; // @0x03003C00
 Islander_AGB gIslander; // @0x030041A0
-Entity g_EntityTable[12]; // @0x03004790
+/* Original address: 0x03004790 */
+Entity g_EntityTable[12];
 Player gPlayer; // @0x03004B80
-Island_agb_c* gIslandData; // @0x03001B40
+/* Original address: 0x03001B40 */
+Island_agb_c* gIslandData;
 
 void AgbMain(void) {
-    sub_02019E88();
+    InitializeHardware();
     transfer_size = sizeof(Island_agb_c);
-    sub_0201A0D4();
+    IslandProgram_Main();
 }
 
-void sub_02018228(void) {
+/* Original address: 0x02018228 */
+void UnusedInterruptHandler(void) {
     // nothing
 }
 
 static u8 gUnk3002410[0x400];
 
-void sub_0201822C(void) {
+/* Original address: 0x0201822C */
+void VBlankInterruptHandler(void) {
     u8 temp_r5;
     u16 temp;
 
-    sub_02019D28();
+    GameAudio_VBlank();
     if (gGameState.unk_85A == 1) {
         gGameState.unk_85A = 0;
-        sub_02027040();
+        SoundDriver_DisablePcm();
     }
     temp_r5 = gGameState.unk_85F;
     if (temp_r5 == 0) {
@@ -83,14 +264,16 @@ void sub_0201822C(void) {
 
     REG_IF = gGameState.unk_814 = 1;
     REG_DISPSTAT = 8;
-    sub_02019D40();
+    GameAudio_UpdateDriver();
 }
 
-void sub_02018364(void) {
+/* Original address: 0x02018364 */
+void HBlankInterruptHandler(void) {
     // nothing
 }
 
-void sub_02018368(void) {
+/* Original address: 0x02018368 */
+void VCountInterruptHandler(void) {
     // nothing
 }
 
@@ -263,7 +446,7 @@ void mMsg_MainSetup_Appear(mMsg_Window_c* msg) {
         msg->requested_mode = -1;
         msg->text_offset = 0;
         mMsg_ClearText(msg);
-        sub_02019D78(0x1F);
+        GameAudio_PlayEffect0(0x1F);
     }
 }
 
@@ -441,7 +624,7 @@ int mMsg_Cont_SoundTrgSys(mMsg_Window_c* msg, s16* offset) {
     u8 sound = *(msg->text + *offset + 2);
 
     if (sound == 7 || sound == 8) {
-        sub_02019D78(sound == 7 ? 0x10 : 0x02);
+        GameAudio_PlayEffect0(sound == 7 ? 0x10 : 0x02);
     }
 
     *offset += mFont_CodeSize_get(msg->text + *offset);
@@ -655,7 +838,7 @@ static void mMsg_Main_Cursor(mMsg_Window_c* msg) {
 }
 
 static int mMsg_CheckAdvanceInput(void) {
-    return gGameState.keys_pressed & (u16)(A_BUTTON | B_BUTTON);
+    return gGameState.keys.buttons.pressed & (u16)(A_BUTTON | B_BUTTON);
 }
 
 static void mMsg_MainSetup_Normal(mMsg_Window_c* msg) {
@@ -721,9 +904,9 @@ static void mMsg_Main_Normal(mMsg_Window_c* msg) {
     if (!mMsg_CheckControlCode(msg->text, mFont_CONT_CODE_CONTINUE, msg->text_offset) &&
         msg->lock_continue == 0 && msg->continue_prompt == ((void *)0)) {
         if (msg->message_id == 1 || msg->message_id == 2)
-            msg->continue_prompt = sub_0201C310(0xA, 0xC8, 0x68, 1);
+            msg->continue_prompt = mMsg_CreateSprite(0xA, 0xC8, 0x68, 1);
         else
-            msg->continue_prompt = sub_0201C310(0xA, 0xC8, 0x68, 0);
+            msg->continue_prompt = mMsg_CreateSprite(0xA, 0xC8, 0x68, 0);
     }
 }
 
@@ -731,7 +914,7 @@ static void mMsg_MainSetup_Disappear(mMsg_Window_c* msg) {
     msg->transition_frame = 12;
     msg->current_mode = msg->requested_mode;
     msg->requested_mode = -1;
-    sub_02019D78(0x20);
+    GameAudio_PlayEffect0(0x20);
 }
 
 static void mMsg_Main_Disappear(mMsg_Window_c* msg) {
@@ -749,21 +932,43 @@ static void mMsg_Main_Disappear(mMsg_Window_c* msg) {
 
 /* Original address: 0x03003100 */
 extern mFont_GlyphDraw_c gMsgGlyph;
-#define gMsgCodeBuffers ((u8*)0x02000400)
-#define gMsgTileBuffers ((u8*)0x02001D80)
-#define gMsgWindowTileData ((u8*)0x0200F580)
+/* Original address: 0x02000400 */
+extern u8 gMsgCodeBuffers[9][0x220];
+/* Original address: 0x02001D80 */
+extern u8 gMsgTileBuffers[9][0x1200];
+/* Original address: 0x02001720 */
+extern u8 gMsgMainText[0x220];
+/* Original address: 0x02001940 */
+extern u8 gMsgPromptText[0x220];
+/* Original address: 0x02001B60 */
+extern u8 gMsgNoticeText[0x220];
+/* Original address: 0x0200BF80 */
+extern u8 gMsgMainTiles[0x1200];
+/* Original address: 0x0200D180 */
+extern u8 gMsgPromptTiles[0x1200];
+/* Original address: 0x0200E380 */
+extern u8 gMsgNoticeTiles[0x1200];
+/* Original address: 0x0200F580 */
+extern u8 gMsgWindowTileData[2 * 0x480];
+/* Original address: 0x020147E0 */
+extern u8 gMsgThreeChoiceTileData[3][0xD80];
 #define gMsgVram ((u8 *)(BG_VRAM + TILE_OFFSET_4BPP(0x100)))
-#define gObjPaletteBuffer ((u16*)0x02000200)
+/* Original address: 0x02000000 */
+extern u16 gBgPaletteBuffer[256];
+/* Original address: 0x02000200 */
+extern u16 gObjPaletteBuffer[256];
 
-#define gMsgTwoChoiceHighlightTiles ((void**)0x0202AAC8)
-#define gMsgThreeChoiceHighlightTiles ((void**)0x0202AAD0)
 /* These tables are indexed by the one-based mMsg_MODE_* values. */
 // #define gMsgModeSetupCallbacks ((mMsg_Callback*)0x0202AADC)
 #define gMsgModeCallbacks ((mMsg_Callback*)0x0202AB00)
-#define gMsgChoiceTemplateParams ((u8*)0x0202AD18)
-#define gUnk_0202AD1C ((void**)0x0202AD1C)
-#define gUnk_0202AD28 ((u32*)0x0202AD28)
-#define gUnk_0202AFB4 ((u32*)0x0202AFB4)
+/* Original address: 0x0202AD18 */
+extern const u8 gMsgChoiceTemplateParams[4];
+/* Original address: 0x0202AD1C */
+extern void *const sFontTileBufferVramDestinations[3];
+/* Original address: 0x0202AD28 */
+extern const u32 sFontTileBufferSizes[3];
+/* Original address: 0x0202AFB4 */
+extern const IslanderOamData sHiddenOamAttributes;
 
 typedef void (*mMsg_SETUP_PROC)(mMsg_Window_c*);
 typedef void (*mMsg_MAIN_PROC)(mMsg_Window_c*);
@@ -1070,39 +1275,39 @@ static u8 gMsgTextData[2002] = {
     0x7F, 0x01
 };
 
-// @0x02035778 - big endian byte array
-static u8 sMsgOffsets[31][4] = {
-    {0x00, 0x00, 0x00, 0x72},
-    {0x00, 0x00, 0x00, 0xFE},
-    {0x00, 0x00, 0x01, 0x1F},
-    {0x00, 0x00, 0x01, 0x79},
-    {0x00, 0x00, 0x01, 0xAD},
-    {0x00, 0x00, 0x02, 0x17},
-    {0x00, 0x00, 0x02, 0x46},
-    {0x00, 0x00, 0x02, 0xB3},
-    {0x00, 0x00, 0x03, 0x0B},
-    {0x00, 0x00, 0x03, 0x42},
-    {0x00, 0x00, 0x03, 0x8F},
-    {0x00, 0x00, 0x03, 0xFA},
-    {0x00, 0x00, 0x04, 0x39},
-    {0x00, 0x00, 0x04, 0x55},
-    {0x00, 0x00, 0x04, 0x76},
-    {0x00, 0x00, 0x04, 0x97},
-    {0x00, 0x00, 0x04, 0xC0},
-    {0x00, 0x00, 0x05, 0x00},
-    {0x00, 0x00, 0x05, 0x3E},
-    {0x00, 0x00, 0x05, 0x5A},
-    {0x00, 0x00, 0x05, 0x79},
-    {0x00, 0x00, 0x05, 0xB2},
-    {0x00, 0x00, 0x06, 0x07},
-    {0x00, 0x00, 0x06, 0x3D},
-    {0x00, 0x00, 0x06, 0x53},
-    {0x00, 0x00, 0x06, 0x9C},
-    {0x00, 0x00, 0x07, 0x01},
-    {0x00, 0x00, 0x07, 0x6C},
-    {0x00, 0x00, 0x07, 0x8C},
-    {0x00, 0x00, 0x07, 0xBD},
-    {0x00, 0x00, 0x07, 0xD2},
+/* Original address: 0x02035778; big-endian message end offsets. */
+static u32 sMsgOffsets[31] = {
+    0x72000000,
+    0xFE000000,
+    0x1F010000,
+    0x79010000,
+    0xAD010000,
+    0x17020000,
+    0x46020000,
+    0xB3020000,
+    0x0B030000,
+    0x42030000,
+    0x8F030000,
+    0xFA030000,
+    0x39040000,
+    0x55040000,
+    0x76040000,
+    0x97040000,
+    0xC0040000,
+    0x00050000,
+    0x3E050000,
+    0x5A050000,
+    0x79050000,
+    0xB2050000,
+    0x07060000,
+    0x3D060000,
+    0x53060000,
+    0x9C060000,
+    0x01070000,
+    0x6C070000,
+    0x8C070000,
+    0xBD070000,
+    0xD2070000,
 };
 
 /* Original address: 0x020357F4 */
@@ -1242,40 +1447,42 @@ static mFont_ControlCodeInfo_c sMsgControlCodeInfo[] = {
     {3, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_CHECK_CHOICE
 };
 
-/* Message and font routines recovered from the m2c seed output. */
+/* Original address: 0x02018D10 */
 s32 mMsg_CheckChoiceNext(mMsg_Window_c *msg) {
     s32 result;
-    s32 button;
 
     if (msg->message_id == 0x19) {
         result = 0;
-        button = DPAD_DOWN;
+        if ((gGameState.keys.buttons.pressed & DPAD_DOWN) &&
+            msg->choice_count - 1 > msg->choice_index) {
+            result = 1;
+        }
     } else {
         result = 0;
-        button = DPAD_RIGHT;
-    }
-    if ((button & gGameState.keys_pressed) && ((s32) (msg->choice_count - 1) > (s32) msg->choice_index)) {
-        result = 1;
+        if ((gGameState.keys.buttons.pressed & DPAD_RIGHT) &&
+            msg->choice_count - 1 > msg->choice_index) {
+            result = 1;
+        }
     }
     return result;
 }
 
+/* Original address: 0x02018D64 */
 s32 mMsg_CheckChoicePrevious(mMsg_Window_c *msg) {
-    s32 button;
-    u32 result;
+    s32 result;
 
     if (msg->message_id == 0x19) {
         result = 0;
-        button = DPAD_UP;
+        if (gGameState.keys.buttons.pressed & DPAD_UP) {
+            result = msg->choice_index != 0;
+        }
     } else {
         result = 0;
-        button = DPAD_LEFT;
+        if (gGameState.keys.buttons.pressed & DPAD_LEFT) {
+            result = msg->choice_index != 0;
+        }
     }
-    if (button & gGameState.keys_pressed) {
-        u8 choice_index = msg->choice_index;
-        result = (u32) ((0 - choice_index) | choice_index) >> 0x1F;
-    }
-    return (s32) result;
+    return result;
 }
 
 void mMsg_UpdateChoiceCursorPosition(mMsg_Window_c *msg) {
@@ -1288,29 +1495,35 @@ void mMsg_UpdateChoiceCursorPosition(mMsg_Window_c *msg) {
     }
 }
 
+/* Original address: 0x02018DE8 */
 void mMsg_UpdateChoiceHighlight(mMsg_Window_c *msg) {
-    void *choice_tiles[5];
-    s8 tile_stride;
-    u16 first_choice_tile;
+    /* Original address: 0x0202AAC8 (initializer). */
+    void *two_choice_tiles[2] = {gMsgWindowTileData, gMsgWindowTileData + 0x480};
+    /* Original address: 0x0202AAD0 (initializer). */
+    void *three_choice_tiles[3] = {
+        gMsgThreeChoiceTileData[0], gMsgThreeChoiceTileData[1], gMsgThreeChoiceTileData[2]
+    };
+    u16 first_choice_tile = msg->tile_stride * msg->choices[0].line;
 
-    choice_tiles[0] = gMsgThreeChoiceHighlightTiles[0];
-    choice_tiles[1] = gMsgThreeChoiceHighlightTiles[1];
-    choice_tiles[2] = gMsgThreeChoiceHighlightTiles[2];
-    choice_tiles[3] = gMsgTwoChoiceHighlightTiles[0];
-    choice_tiles[4] = gMsgTwoChoiceHighlightTiles[1];
-    tile_stride = msg->tile_stride;
-    first_choice_tile = tile_stride * msg->choices[0].line;
     if (msg->message_id == 0x19) {
-        CpuFastSet(choice_tiles[msg->choice_index], gMsgVram + (first_choice_tile << 5), (tile_stride * 0x30) & 0x1FFFFF);
-        CpuFastSet(choice_tiles[msg->choice_index], msg->tile_data + (first_choice_tile << 5), (msg->tile_stride * 0x30) & 0x1FFFFF);
-        return;
+        CpuFastSet(three_choice_tiles[msg->choice_index],
+                   (void *)(BG_VRAM + TILE_OFFSET_4BPP(first_choice_tile + 0x100)),
+                   (msg->tile_stride * 0x30) & 0x1FFFFF);
+        CpuFastSet(three_choice_tiles[msg->choice_index],
+                   msg->tile_data + TILE_OFFSET_4BPP(first_choice_tile),
+                   (msg->tile_stride * 0x30) & 0x1FFFFF);
+    } else {
+        CpuFastSet(two_choice_tiles[msg->choice_index],
+                   (void *)(BG_VRAM + TILE_OFFSET_4BPP(first_choice_tile + 0x100)),
+                   (msg->tile_stride * 0x10) & 0x1FFFFF);
+        CpuFastSet(two_choice_tiles[msg->choice_index],
+                   msg->tile_data + TILE_OFFSET_4BPP(first_choice_tile),
+                   (msg->tile_stride * 0x10) & 0x1FFFFF);
     }
-    CpuFastSet(choice_tiles[msg->choice_index + 3], gMsgVram + (first_choice_tile << 5), (tile_stride * 0x10) & 0x1FFFFF);
-    CpuFastSet(choice_tiles[msg->choice_index + 3], msg->tile_data + (first_choice_tile << 5), (msg->tile_stride * 0x10) & 0x1FFFFF);
 }
 
 void mMsg_MainSetup_Choice(mMsg_Window_c *msg) {
-    msg->choice_cursor = sub_0201C310(0xBU, 0, 0, 0);
+    msg->choice_cursor = mMsg_CreateSprite(0xBU, 0, 0, 0);
     mMsg_UpdateChoiceCursorPosition(msg);
     mMsg_UpdateChoiceHighlight(msg);
     msg->current_mode = (s8) (u8) msg->requested_mode;
@@ -1328,29 +1541,29 @@ void mMsg_Main_Choice(mMsg_Window_c *msg) {
         }
     } else {
         if (msg->choice_cursor == NULL) {
-            msg->choice_cursor = sub_0201C310(0xBU, 0, 0, 0);
+            msg->choice_cursor = mMsg_CreateSprite(0xBU, 0, 0, 0);
             mMsg_UpdateChoiceCursorPosition(msg);
             mMsg_UpdateChoiceHighlight(msg);
             return;
         }
-        if ((A_BUTTON & gGameState.keys_pressed) && (mMsg_RequestCursor(msg) != 0)) {
+        if ((A_BUTTON & gGameState.keys.buttons.pressed) && (mMsg_RequestCursor(msg) != 0)) {
             msg->force_next = 1;
             choice_index = msg->choice_index;
             msg->selected_choice = choice_index;
             __asm__("" : "+r" (choice_index)); // @HACK
             sound = choice_index == 0 ? 0x10 : 0x11;
             mMsg_SetTimer(msg, 0x14);
-            sub_02019D78(sound);
+            GameAudio_PlayEffect0(sound);
             return;
         }
         if (mMsg_CheckChoiceNext(msg) != 0) {
             msg->choice_index += 1;
-            sub_02019D78(0xFU);
+            GameAudio_PlayEffect0(0xFU);
             mMsg_UpdateChoiceHighlight(msg);
         }
         if (mMsg_CheckChoicePrevious(msg) != 0) {
             msg->choice_index -= 1;
-            sub_02019D78(0xFU);
+            GameAudio_PlayEffect0(0xFU);
             mMsg_UpdateChoiceHighlight(msg);
         }
         mMsg_UpdateChoiceCursorPosition(msg);
@@ -1362,7 +1575,7 @@ void mMsg_MainSetup_DisappearWait(mMsg_Window_c *msg) {
     msg->saved_mode = msg->current_mode;
     msg->current_mode = msg->requested_mode;
     msg->requested_mode = -1;
-    sub_02019D78(0x20U);
+    GameAudio_PlayEffect0(0x20U);
 }
 
 void mMsg_Main_DisappearWait(mMsg_Window_c *msg) {
@@ -1378,7 +1591,7 @@ void mMsg_MainSetup_AppearWait(mMsg_Window_c *msg) {
     msg->transition_frame = 0;
     msg->current_mode = (s8) (u8) msg->requested_mode;
     msg->requested_mode = -1;
-    sub_02019D78(0x1FU);
+    GameAudio_PlayEffect0(0x1FU);
 }
 
 void mMsg_Main_AppearWait(mMsg_Window_c *msg) {
@@ -1459,44 +1672,38 @@ s8 mMsg_RequestAppearWait(mMsg_Window_c *msg) {
     return 0;
 }
 
-// @0x020191e8
-s8 mMsg_GetMessageBody(u32 index, u8 **data, u16 *size) {
-    s32 message_offset;
-    u32 message_size;
-    u32 msg_ofs;
-    u8* msg_ofs_ptr;
-    u8* message_offset_ptr;
+static inline void mMsg_SwapWordBytes(mMsg_U32Bytes_c *encoded, mMsg_U32Bytes_c *decoded) {
+    decoded->bytes[3] = encoded->bytes[0];
+    decoded->bytes[2] = encoded->bytes[1];
+    decoded->bytes[1] = encoded->bytes[2];
+    decoded->bytes[0] = encoded->bytes[3];
+}
 
-    if (index >= 0x1F) {
+/* Original address: 0x020191E8 */
+s32 mMsg_GetMessageBody(u32 index, u8 **data, s16 *size) {
+    mMsg_U32Bytes_c encoded;
+    mMsg_U32Bytes_c decoded;
+    u32 message_offset;
+    u32 message_size;
+
+    if (index >= ARRAY_COUNT(sMsgOffsets)) {
         *data = NULL;
         *size = 0;
         return 0;
     }
     if (index != 0) {
-        message_offset_ptr = (u8*)&message_offset;
-        msg_ofs = *(u32*)sMsgOffsets[index - 1];
-        msg_ofs_ptr = (u8*)&msg_ofs;
-
-        message_offset_ptr[0] = msg_ofs_ptr[3];
-        message_offset_ptr[1] = msg_ofs_ptr[2];
-        message_offset_ptr[2] = msg_ofs_ptr[1];
-        message_offset_ptr[3] = msg_ofs_ptr[0];
+        encoded.word = (sMsgOffsets + index)[-1];
+        mMsg_SwapWordBytes(&encoded, &decoded);
+        message_offset = decoded.word;
     } else {
         message_offset = 0;
     }
-    message_offset_ptr = (u8*)&message_offset;
-    msg_ofs = *(u32*)sMsgOffsets[index];
-    msg_ofs_ptr = (u8*)&msg_ofs;
-
-    message_offset_ptr[0] = msg_ofs_ptr[3];
-    message_offset_ptr[1] = msg_ofs_ptr[2];
-    message_offset_ptr[2] = msg_ofs_ptr[1];
-    message_offset_ptr[3] = msg_ofs_ptr[0];
-
-    message_size = msg_ofs - message_offset;
+    encoded.word = sMsgOffsets[index];
+    mMsg_SwapWordBytes(&encoded, &decoded);
+    message_size = decoded.word - message_offset;
     if (message_size < 0x200) {
         *data = &gMsgTextData[message_offset];
-        *size = (u16)message_size;
+        *size = message_size;
     } else {
         *size = 0;
         *data = NULL;
@@ -1536,12 +1743,13 @@ s8 mFont_CodeSize_get(u8 *code) {
     return (s8) size;
 }
 
+/* Original address: 0x020192E8 */
 s16 mMsg_LoadMessage(u8 *text, s32 index) {
-    u16 size;
+    s16 size;
     u8 *source;
 
-    if ((mMsg_GetMessageBody((u32) index, &source, &size) == 1) && (source != NULL) && ((s16) size != 0)) {
-        mMsg_Copy(source, text, (s32) (s16) size);
+    if ((mMsg_GetMessageBody((u32) index, &source, &size) == 1) && (source != NULL) && (size != 0)) {
+        mMsg_Copy(source, text, size);
         return mMsg_GetMessageLength(text);
     }
     return 0;
@@ -1620,12 +1828,12 @@ void mMsg_DestroySprites(mMsg_Window_c *msg) {
 
     sprite = msg->choice_cursor;
     if (sprite != NULL) {
-        sub_0201C300(sprite);
+        mMsg_DeactivateSprite(sprite);
         msg->choice_cursor = NULL;
     }
     sprite = msg->continue_prompt;
     if (sprite != NULL) {
-        sub_0201C300(sprite);
+        mMsg_DeactivateSprite(sprite);
         msg->continue_prompt = NULL;
     }
 }
@@ -1700,6 +1908,7 @@ s32 mMsg_ProcessText(mMsg_Window_c *msg, u8 *tile_data, s32 max_characters) {
     return result;
 }
 
+/* Original address: 0x02019580 */
 void mMsg_Init(void) {
     u8 init_data[4];
     s32 i;
@@ -1709,17 +1918,16 @@ void mMsg_Init(void) {
     for (i = 0; i < 2; i++) {
         mMsg_Window_c* msg = &sMsgWindows[i];
 
-        mMsg_InitWindow(msg, gMsgCodeBuffers + i * 0x220,
-                        gMsgTileBuffers + i * 0x1200);
-        msg->text_x = msg->text_start_x;
-        msg->text_row = 0;
-        msg->message_length = mMsg_LoadMessage(msg->text, 0x18);
-        msg->text[5] = init_data[i * 2];
-        msg->text[0xF] = init_data[i * 2 + 1];
-        msg->tile_data = gMsgWindowTileData + i * 0x480;
-        CpuFastFill(0x55555555, msg->tile_data, 0x480);
+        mMsg_InitWindow(msg, gMsgCodeBuffers[i], gMsgTileBuffers[i]);
+        sMsgWindows[i].text_x = sMsgWindows[i].text_start_x;
+        sMsgWindows[i].text_row = 0;
+        sMsgWindows[i].message_length = mMsg_LoadMessage(sMsgWindows[i].text, 0x18);
+        sMsgWindows[i].text[5] = init_data[i * 2];
+        sMsgWindows[i].text[0xF] = init_data[i * 2 + 1];
+        sMsgWindows[i].tile_data = gMsgWindowTileData + i * 0x480;
+        CpuFastFill(0x55555555, sMsgWindows[i].tile_data, 0x480);
 
-        while (mMsg_ProcessText(msg, msg->tile_data, 1) == 1) {
+        while (mMsg_ProcessText(&sMsgWindows[i], sMsgWindows[i].tile_data, 1) == 1) {
         }
     }
 
@@ -1727,17 +1935,16 @@ void mMsg_Init(void) {
         mMsg_Window_c* msg = &sMsgWindows[i];
         u16 saved_text_offset;
 
-        mMsg_InitWindow(msg, gMsgCodeBuffers + i * 0x220,
-                        gMsgTileBuffers + i * 0x1200);
+        mMsg_InitWindow(msg, gMsgCodeBuffers[i], gMsgTileBuffers[i]);
         mMsg_ClearText(msg);
-        msg->message_id = sCachedMessageIds[i];
-        msg->message_length = mMsg_LoadMessage(msg->text, msg->message_id);
-        msg->current_mode = mMsg_MODE_CURSOR;
+        sMsgWindows[i].message_id = sCachedMessageIds[i];
+        sMsgWindows[i].message_length = mMsg_LoadMessage(sMsgWindows[i].text, sMsgWindows[i].message_id);
+        sMsgWindows[i].current_mode = mMsg_MODE_CURSOR;
 
         do {
-            saved_text_offset = msg->text_offset;
-        } while (mMsg_ProcessText(msg, msg->tile_data, 1) == 1);
-        msg->text_offset = saved_text_offset;
+            saved_text_offset = sMsgWindows[i].text_offset;
+        } while (mMsg_ProcessText(msg, sMsgWindows[i].tile_data, 1) == 1);
+        sMsgWindows[i].text_offset = saved_text_offset;
     }
 }
 
@@ -1814,41 +2021,37 @@ void mFont_DrawCharToTiles(u8 *tile_data, s32 tile_offset, s32 row, s32 tile_str
     mFont_BlitGlyphToTiles(glyph, width);
 }
 
-void sub_020198B8(s8 index) {
+/* Original address: 0x020198B8 */
+void mFont_CopyTileBufferToVram(s8 index) {
     void* dest[3];
     void* src[3];
     u32 size[3];
 
-    dest[0] = gUnk_0202AD1C[0];
-    dest[1] = gUnk_0202AD1C[1];
-    dest[2] = gUnk_0202AD1C[2];
+    memcpy(dest, sFontTileBufferVramDestinations, sizeof(dest));
     memset(src, 0, sizeof(src));
-    size[0] = gUnk_0202AD28[0];
-    size[1] = gUnk_0202AD28[1];
-    size[2] = gUnk_0202AD28[2];
+    memcpy(size, sFontTileBufferSizes, sizeof(size));
 
     if (index >= 0) {
-        CpuFastSet(src[index], dest[index], (size[index] << 9) >> 11);
+        CpuFastCopy(src[index], dest[index], size[index]);
     }
 }
 
-void sub_02019910(u8 value, s8 index) {
+/* Original address: 0x02019910 */
+void mFont_FillTileBuffer(u8 value, s8 index) {
     void* dest[3];
     u32 size[3];
-    s32 sp18;
+    u32 pixels;
     s32 i;
 
     memset(dest, 0, sizeof(dest));
-    size[0] = gUnk_0202AD28[0];
-    size[1] = gUnk_0202AD28[1];
-    size[2] = gUnk_0202AD28[2];
+    memcpy(size, sFontTileBufferSizes, sizeof(size));
 
     if (index >= 0) {
-        sp18 = 0;
+        pixels = 0;
         for (i = 0; i < 8; i++) {
-            sp18 |= (value & 0xF) << (i * 4);
+            pixels |= (value & 0xF) << (i * 4);
         }
-        CpuFastFill(sp18, dest[index], size[index]);
+        CpuFastFill(pixels, dest[index], size[index]);
     }
 }
 
@@ -1896,81 +2099,62 @@ void mFont_BlitGlyphToTiles(mFont_GlyphDraw_c *glyph, s32 width) {
     }
 }
 
-s16 sub_02019ABC(s16 lhs, s16 rhs) {
-    s32 var_r0_3371;
-
-    var_r0_3371 = rhs * lhs;
-    if (var_r0_3371 < 0) {
-        var_r0_3371 += 0xFF;
-    }
-    return (s16) ((s32) (var_r0_3371 << 8) >> 0x10);
+/* Original address: 0x02019ABC */
+s16 FixedMul8(s16 lhs, s16 rhs) {
+    return (lhs * rhs) / 256;
 }
 
-s16 sub_02019AD8(s16 numerator, s16 denominator) {
+/* Original address: 0x02019AD8 */
+s16 FixedDiv8(s16 numerator, s16 denominator) {
     return (s16) (((s32) (numerator << 0x10) >> 8) / (s32) denominator);
 }
 
 s32 rand_u16(GameState *state) {
-    u32 temp_r0_3407;
-
-    temp_r0_3407 = (state->rngValue * 0x41C64E6D) + (state->unk_85B + 0x3039);
-    state->rngValue = temp_r0_3407;
-    return (s32)((u32)(temp_r0_3407 * 2) >> 0x11);
+    u32 m = state->rngValue * 0x41C64E6D;
+    u32 a = state->unk_85B + 0x3039;
+    state->rngValue = m + a;
+    return (s32)((u32)(state->rngValue << 1) >> 0x11);
 }
 
-void sub_02019B18(GameState *state, u32 seed) {
+/* Original address: 0x02019B18 */
+void GameState_SeedRandom(GameState *state, u32 seed) {
     state->rngValue = seed;
 }
 
-void sub_02019B1C(GameState *state, u16 target, u16 blend_control, u16 intensity) {
-    s32 var_r0_3434;
-    u16 var_r3_3431;
-
-    var_r3_3431 = intensity;
-    if (target == 1) {
-        var_r0_3434 = 0xC0;
+/* Original address: 0x02019B1C */
+void GameState_SetBrightnessFade(GameState *state, u16 darken, u16 blend_control, u16 intensity) {
+    if (darken == 1) {
+        state->unk_820 = blend_control | 0xC0;
     } else {
-        var_r0_3434 = 0x80;
+        state->unk_820 = blend_control | 0x80;
     }
-    state->unk_820 = blend_control | var_r0_3434;
-    if ((u32) var_r3_3431 > 0x10U) {
-        var_r3_3431 = 0x10;
+    if (intensity > 16) {
+        intensity = 16;
     }
-    state->unk_81E = var_r3_3431;
+    state->unk_81E = intensity;
 }
 
-u16 sub_02019B58(GameState *state, u8 direction, u8 amount) {
-    s32 temp_r0_3473;
-    s32 temp_r0_3486;
-    u16 temp_r0_3472;
-    u16 temp_r0_3485;
-    u16 var_r3_3469;
-    u8 temp_r1_3463;
-    u8 temp_r2_3465;
+/* Original address: 0x02019B58 */
+u16 GameState_StepBrightnessFade(GameState *state, u8 direction, u8 amount) {
+    u16 intensity = state->unk_81E;
 
-    temp_r1_3463 = direction;
-    temp_r2_3465 = amount;
-    var_r3_3469 = state->unk_81E;
-    if (temp_r1_3463 == 1) {
-        temp_r0_3472 = var_r3_3469 + temp_r2_3465;
-        temp_r0_3473 = temp_r0_3472 << 0x10;
-        var_r3_3469 = temp_r0_3472;
-        if ((s32) (temp_r0_3473 >> 0x10) > 0x10) {
-            var_r3_3469 = 0x10;
+    if (direction == 1) {
+        intensity += amount;
+        if ((s16)intensity > 16) {
+            intensity = 16;
         }
-    } else if (temp_r1_3463 == 0) {
-        temp_r0_3485 = var_r3_3469 - temp_r2_3465;
-        temp_r0_3486 = temp_r0_3485 << 0x10;
-        var_r3_3469 = temp_r0_3485;
-        if (temp_r0_3486 < 0) {
-            var_r3_3469 = 0;
+    } else if (direction == 0) {
+        intensity -= amount;
+        if ((s16)intensity < 0) {
+            intensity = 0;
         }
     }
-    state->unk_81E = var_r3_3469;
+    state->unk_81E = intensity;
     return state->unk_81E;
 }
 
-void sub_02019BA8(u16 *palette, u8 x, u8 y, u8 *red, u8 *green, u8 *blue) {
+/* Original address: 0x02019BA8 */
+void GetPaletteColor(u16 *palette, u8 x, u8 y, u8 *red, u8 *green, u8 *blue) {
     u16 temp_r1_3514;
 
     temp_r1_3514 = palette[((0xF & x) * 0x10) + (y & 0xF)];
@@ -1979,49 +2163,49 @@ void sub_02019BA8(u16 *palette, u8 x, u8 y, u8 *red, u8 *green, u8 *blue) {
     *red = temp_r1_3514 & 0x1F;
 }
 
-void sub_02019BD8(u8 palette, u8 x, u8 y, u8 red, u8 green, u8 blue) {
-    u16 *var_r5_3547;
+/* Original address: 0x02019BD8 */
+void SetPaletteColor(u8 palette, u8 bank, u8 color, u8 red, u8 green, u8 blue) {
+    u16 *buffer = gBgPaletteBuffer;
+    u16 packed_color;
 
-    var_r5_3547 = (u16 *)0x02000000;
     if (palette == 1) {
-        var_r5_3547 = gObjPaletteBuffer;
+        buffer = gObjPaletteBuffer;
     }
-    var_r5_3547[((x & 0xF) * 0x10) + (y & 0xF)] = (red & 0x1F) | ((((u8) (s32) blue & 0x1F) << 0xA) | (((u8) (s32) green & 0x1F) << 5));
+    packed_color = RGB(red, green, blue);
+    buffer[(bank & 0xF) * 16 + (color & 0xF)] = packed_color;
     gGameState.unk_852 = 1;
 }
 
-void sub_02019C3C(void) {
-    gGameState.unk_814 &= 0xFFFE;
-    if (!(1 & gGameState.unk_814)) {
-        do {
-
-        } while (!(1 & gGameState.unk_814));
+/* Original address: 0x02019C3C */
+void WaitForVBlank(void) {
+    gGameState.unk_814 &= ~1;
+    while (!(gGameState.unk_814 & 1)) {
     }
-    gGameState.unk_814 &= 0xFFFE;
+    gGameState.unk_814 &= ~1;
 }
 
-void sub_02019C88(void) {
-    u32 *end;
-    u32 *oam;
+/* Original address: 0x02019C88 */
+void ClearOamBuffer(void) {
+    IslanderOamData *oam = (IslanderOamData *)gUnk3002410;
+    IslanderOamData *end = (IslanderOamData *)(gUnk3002410 + sizeof(gUnk3002410));
 
-    oam = (u32*)gUnk3002410;
-    end = (u32*)(gUnk3002410 + sizeof(gUnk3002410));
     while (oam < end) {
-        *oam++ = gUnk_0202AFB4[0];
-        *oam++ = gUnk_0202AFB4[1];
+        *oam++ = sHiddenOamAttributes;
     }
     gGameState.unk_860 = 0;
 }
 
-void sub_02019CC0(void) {
+/* Original address: 0x02019CC0 */
+void GameState_ReadKeys(void) {
     u16 temp_r2_3660;
 
     temp_r2_3660 = 0x3FF ^ REG_KEYINPUT;
-    gGameState.keys_pressed = temp_r2_3660 & ~gGameState.keys_held;
-    gGameState.keys_held = temp_r2_3660;
+    gGameState.keys.buttons.pressed = temp_r2_3660 & ~gGameState.keys.buttons.held;
+    gGameState.keys.buttons.held = temp_r2_3660;
 }
 
-void sub_02019CFC(void) {
+/* Original address: 0x02019CFC */
+void EnableVBlankInterrupt(void) {
     REG_IME = 0;
     REG_DISPCNT = 0x80;
     REG_DISPSTAT = 8;
@@ -2030,40 +2214,49 @@ void sub_02019CFC(void) {
     REG_IME = 1;
 }
 
-void sub_02019D28(void) {
-    sub_02026F0C();
+/* Original address: 0x02019D28 */
+void GameAudio_VBlank(void) {
+    SoundDriver_VBlank();
 }
 
-void sub_02019D34(void) {
-    sub_020269C8();
+/* Original address: 0x02019D34 */
+void GameAudio_Init(void) {
+    Audio_Init();
 }
 
-void sub_02019D40(void) {
-    sub_02026F18();
+/* Original address: 0x02019D40 */
+void GameAudio_UpdateDriver(void) {
+    SoundDriver_Update();
 }
 
-void sub_02019D4C(void) {
-    sub_020269E0();
+/* Original address: 0x02019D4C */
+void GameAudio_Update(void) {
+    Audio_Update();
 }
 
-void sub_02019D58(u16 value) {
-    sub_02026B48(value);
+/* Original address: 0x02019D58 */
+void GameAudio_PlayEffect2(u16 value) {
+    Sound_PlayEffect2(value);
 }
 
-void sub_02019D68(u16 value) {
-    sub_02026BC8(value);
+/* Original address: 0x02019D68 */
+void GameAudio_StopEffect2(u16 value) {
+    Sound_StopEffect2(value);
 }
 
-void sub_02019D78(u16 value) {
-    sub_02026A38(value);
+/* Original address: 0x02019D78 */
+void GameAudio_PlayEffect0(u16 value) {
+    Sound_PlayEffect0(value);
 }
 
-void sub_02019D88(u16 value) {
-    sub_02026C10(value);
+/* Original address: 0x02019D88 */
+void GameAudio_PlayMusic(u16 value) {
+    Sound_PlayMusic(value);
 }
 
-void sub_02019D98(u16 value) {
-    sub_02026C68(value);
+/* Original address: 0x02019D98 */
+void GameAudio_StopMusic(u16 value) {
+    Sound_StopMusic(value);
 }
 
 void mMsg_ReplaceChar(u8 *data, u8 from, u8 to, s32 length) {
@@ -2126,106 +2319,109 @@ void mMsg_Fill(u8 value, u8 *dest, s32 length) {
     }
 }
 
-void sub_02019E88(void) {
-    s32 sp0;
+/* Original address: 0x02029698 */
+extern const u32 sInitialIntrTable[14];
+/* Original address: 0x020359F4 */
+extern const u16 sInitialObjPalette[256];
+/* Original address: 0x0203B000 */
+extern Island_agb_c gInitialIsland;
+/* Original address: 0x020102A0 */
+extern Island_agb_c gIsland;
+/* Original address: 0x03002810 */
+extern u32 gFontGlyphBlitterCode[0x58];
 
+/* Original address: 0x02019E88 */
+void InitializeHardware(void) {
     RegisterRamReset(RESET_SOUND_REGS | RESET_REGS);
-    sp0 = 0;
-    REG_DMA3SAD = (u32)&sp0;
-    REG_DMA3DAD = 0x03000000;
-    REG_DMA3CNT = 0x85001E00;
+    DmaFill32(3, 0, IWRAM_START, 0x7800);
     REG_WAITCNT = 0x4014;
-    REG_DMA3SAD = 0x02029698;
-    REG_DMA3DAD = 0x030023C0;
-    REG_DMA3CNT = 0x8000001C;
-    REG_DMA3SAD = (u32)_intr;
-    REG_DMA3DAD = 0x03001B64;
-    REG_DMA3CNT = 0x80000400;
-    *(u32*)0x03007FFC = 0x03001B64;
-    sub_02019D34();
+    DmaCopy16(3, sInitialIntrTable, gIntrTable, sizeof(sInitialIntrTable));
+    DmaCopy16(3, _intr, gGameState.interrupt_code, sizeof(gGameState.interrupt_code));
+    INTR_VECTOR = gGameState.interrupt_code;
+    GameAudio_Init();
 }
 
-/* Initial m2c reconstructions after sub_02019E88. */
+/* Initial m2c reconstructions after InitializeHardware. */
 
 /* Initial reconstructions; progressively replace raw field accesses with recovered types. */
 
 /* Forward declarations retain m2c's current inferred signatures. */
 void sub_02019F08(void);
-void sub_02019F0C(void);
-void sub_0201A0C8(void);
-void sub_0201A0D4(void);
+void InitializeIsland(void);
+void IslandProgram_UpdateFrame(void);
+void IslandProgram_Main(void);
 s32 Swap32(u32 *arg0);
-void sub_0201A218(void);
+void Joybus_Init(void);
 void JoybootHandler(void);
-void sub_0201A620(void);
-s32 sub_0201A688(u8 arg0);
-void sub_0201A6C8(void);
-s32 sub_0201A714(IslandProgramWork *work, s8 arg1);
-s32 sub_0201A780(IslandProgramWork *work, s8 arg1);
-u8 sub_0201A7C8(IslandProgramWork *work);
-s32 sub_0201A810(s16 *arg0, s32 arg1);
-void sub_0201A854(IslandProgramWork *work, s8 arg1);
-void sub_0201AA98(IslandProgramWork *work, u8 arg1);
-void sub_0201AB3C(IslandProgramWork *work, s8 arg1);
-void sub_0201ABBC(IslandProgramWork *work);
-s32 sub_0201ABE4(IslandProgramWork *work, u8 arg1);
-s32 sub_0201AC38(IslandProgramWork *work, u8 arg1);
-s32 sub_0201AC8C(IslandProgramWork *work, u8 arg1);
-void sub_0201ACCC(IslandProgramWork *work);
-s8 sub_0201ACF8(IslandProgramWork *work);
-void sub_0201AD34(IslandProgramWork *work);
-s16 sub_0201AD84(IslandProgramWork *work);
+void Joybus_Reset(void);
+s32 Joybus_CheckTimeout(u8 arg0);
+void IslandProgram_Restart(void);
+s32 IslandProgram_PrepareDialogTransition(IslandProgramWork *work, s8 arg1);
+s32 IslandProgram_CheckWindowResumed(IslandProgramWork *work, s8 arg1);
+u8 IslandProgram_CheckSleepRequest(IslandProgramWork *work);
+s32 IslandProgram_UpdateInputTimeout(s16 *arg0, s32 arg1);
+void IslandProgram_SetDialogPalette(IslandProgramWork *work, s8 arg1);
+void IslandProgram_SetupDialogDisplay(IslandProgramWork *work, u8 arg1);
+void IslandProgram_RestoreDialogDisplay(IslandProgramWork *work, s8 arg1);
+void IslandProgram_UpdateMessages(IslandProgramWork *work);
+s32 IslandProgram_TryOpenTransferDialog(IslandProgramWork *work, u8 arg1);
+s32 IslandProgram_TryOpenNoticeDialog(IslandProgramWork *work, u8 arg1);
+s32 IslandProgram_TryOpenSleepDialog(IslandProgramWork *work, u8 arg1);
+void IslandProgram_BeginJoybusReceive(IslandProgramWork *work);
+s8 IslandProgram_PollJoybusReceive(IslandProgramWork *work);
+void IslandProgram_BeginJoybusSend(IslandProgramWork *work);
+s16 IslandProgram_PollJoybusSend(IslandProgramWork *work);
 void sub_0201ADDC(void);
-s32 sub_0201ADE0(IslandProgramWork *work, s8 arg1);
-s32 sub_0201ADE8(IslandProgramWork *work);
-s32 sub_0201ADF4(IslandProgramWork *work);
-s32 sub_0201AE00(IslandProgramWork *work);
-void sub_0201AE0C(IslandProgramWork *work);
-void sub_0201AE40(IslandProgramWork *work);
-void sub_0201AEBC(IslandProgramWork *work);
-void sub_0201AF48(IslandProgramWork *work);
-void sub_0201B04C(IslandProgramWork *work);
-void sub_0201B168(IslandProgramWork *work);
-void sub_0201B16C(void);
-s32 sub_0201B18C(IslandProgramWork *work, s8 arg1);
-s32 sub_0201B194(IslandProgramWork *work);
-s32 sub_0201B1A0(IslandProgramWork *work);
-s32 sub_0201B1AC(IslandProgramWork *work);
-void sub_0201B1B8(IslandProgramWork *work);
-void sub_0201B1EC(IslandProgramWork *work);
-void sub_0201B238(IslandProgramWork *work);
-void sub_0201B2E8(IslandProgramWork *work);
-void sub_0201B328(IslandProgramWork *work);
-void sub_0201B420(IslandProgramWork *work);
-void sub_0201B464(IslandProgramWork *work);
-void sub_0201B4B0(void);
-void sub_0201B594(IslandProgramWork *work);
-s32 sub_0201B680(IslandProgramWork *work, s8 arg1);
-s32 sub_0201B688(IslandProgramWork *work);
-s32 sub_0201B694(IslandProgramWork *work);
-s32 sub_0201B6A0(IslandProgramWork *work);
-s32 sub_0201B6AC(IslandProgramWork *work);
-s32 sub_0201B6B8(IslandProgramWork *work);
-s32 sub_0201B6C4(IslandProgramWork *work);
-void sub_0201B6D0(IslandProgramWork *work);
-void sub_0201B6FC(IslandProgramWork *work);
-void sub_0201B75C(IslandProgramWork *work);
-void sub_0201B7B0(IslandProgramWork *work);
-void sub_0201B824(IslandProgramWork *work);
-void sub_0201B90C(IslandProgramWork *work);
-void sub_0201B91C(IslandProgramWork *work);
-void sub_0201B960(IslandProgramWork *work);
-void sub_0201B970(IslandProgramWork *work);
-void sub_0201B994(IslandProgramWork *work);
-void sub_0201BA54(IslandProgramWork *work);
-void sub_0201BB20(IslandProgramWork *work);
-void sub_0201BB24(void);
-s32 sub_0201BB44(IslandProgramWork *work, s8 arg1);
-s32 sub_0201BB4C(IslandProgramWork *work);
-s32 sub_0201BB58(IslandProgramWork *work);
-s32 sub_0201BB64(IslandProgramWork *work);
-s32 sub_0201BB70(IslandProgramWork *work);
-s32 sub_0201BB7C(IslandProgramWork *work);
+s32 IslandProgram_RequestNoticeState(IslandProgramWork *work, s8 arg1);
+s32 IslandProgram_RequestNoticeTransfer(IslandProgramWork *work);
+s32 IslandProgram_RequestNoticeResult(IslandProgramWork *work);
+s32 IslandProgram_RequestNoticeRestart(IslandProgramWork *work);
+void IslandProgram_ApplyPendingNoticeState(IslandProgramWork *work);
+void IslandProgram_EnterNoticeTransfer(IslandProgramWork *work);
+void IslandProgram_UpdateNoticeTransfer(IslandProgramWork *work);
+void IslandProgram_EnterNoticeResult(IslandProgramWork *work);
+void IslandProgram_UpdateNoticeResult(IslandProgramWork *work);
+void IslandProgram_EnterNoticeRestart(IslandProgramWork *work);
+void IslandProgram_UpdateNoticeRestart(IslandProgramWork *work);
+s32 IslandProgram_RequestSleepState(IslandProgramWork *work, s8 arg1);
+s32 IslandProgram_RequestSleepPrompt(IslandProgramWork *work);
+s32 IslandProgram_RequestSleepMode(IslandProgramWork *work);
+s32 IslandProgram_RequestSleepCleanup(IslandProgramWork *work);
+void IslandProgram_ApplyPendingSleepState(IslandProgramWork *work);
+void IslandProgram_EnterSleepPrompt(IslandProgramWork *work);
+void IslandProgram_UpdateSleepPrompt(IslandProgramWork *work);
+void IslandProgram_EnterSleepMode(IslandProgramWork *work);
+void IslandProgram_UpdateSleepMode(IslandProgramWork *work);
+void IslandProgram_EnterSleepCleanup(IslandProgramWork *work);
+void IslandProgram_UpdateSleepCleanup(IslandProgramWork *work);
+void IslandProgram_SetupOverviewDisplay(void);
+void IslandProgram_UpdateTimeOfDayPalette(IslandProgramWork *work);
+s32 IslandProgram_RequestTransferState(IslandProgramWork *work, s8 arg1);
+s32 IslandProgram_RequestTransferPrompt(IslandProgramWork *work);
+s32 IslandProgram_RequestTransferProgress(IslandProgramWork *work);
+s32 IslandProgram_RequestTransferRetry(IslandProgramWork *work);
+s32 IslandProgram_RequestTransferComplete(IslandProgramWork *work);
+s32 IslandProgram_RequestTransferCleanup(IslandProgramWork *work);
+s32 IslandProgram_RequestTransferRestart(IslandProgramWork *work);
+void IslandProgram_ApplyPendingTransferState(IslandProgramWork *work);
+void IslandProgram_EnterTransferPrompt(IslandProgramWork *work);
+void IslandProgram_UpdateTransferPrompt(IslandProgramWork *work);
+void IslandProgram_EnterTransferProgress(IslandProgramWork *work);
+void IslandProgram_UpdateTransferProgress(IslandProgramWork *work);
+void IslandProgram_EnterTransferRetry(IslandProgramWork *work);
+void IslandProgram_UpdateTransferRetry(IslandProgramWork *work);
+void IslandProgram_EnterTransferComplete(IslandProgramWork *work);
+void IslandProgram_UpdateTransferComplete(IslandProgramWork *work);
+void IslandProgram_EnterTransferCleanup(IslandProgramWork *work);
+void IslandProgram_UpdateTransferCleanup(IslandProgramWork *work);
+void IslandProgram_EnterTransferRestart(IslandProgramWork *work);
+void IslandProgram_UpdateTransferRestart(IslandProgramWork *work);
+s32 IslandProgram_RequestMode(IslandProgramWork *work, s8 arg1);
+s32 IslandProgram_RequestNormalMode(IslandProgramWork *work);
+s32 IslandProgram_RequestFieldLoadMode(IslandProgramWork *work);
+s32 IslandProgram_RequestMosaicCoverMode(IslandProgramWork *work);
+s32 IslandProgram_RequestMosaicRevealMode(IslandProgramWork *work);
+s32 IslandProgram_RequestMessageMode(IslandProgramWork *work);
 void IslandProgram_ApplyPendingMode(IslandProgramWork *work);
 void IslandProgram_EnterNormalMode(IslandProgramWork *work);
 void IslandProgram_UpdateNormalMode(IslandProgramWork *work);
@@ -2236,68 +2432,79 @@ void IslandProgram_UpdateMosaicCoverMode(IslandProgramWork *work);
 void IslandProgram_EnterMosaicRevealMode(IslandProgramWork *work);
 void IslandProgram_UpdateMosaicRevealMode(IslandProgramWork *work);
 void IslandProgram_EnterMessageMode(IslandProgramWork *work);
-void sub_0201BEB0(IslandProgramWork *work);
-void sub_0201BF10(void);
-void sub_0201BF58(void);
+void IslandProgram_UpdateMessageMode(IslandProgramWork *work);
+void IslandProgram_InitWork(void);
+void IslandProgram_Update(void);
 void sub_0201C198(void);
-u16 sub_0201C19C(void);
-s32 sub_0201C1B8(void);
-void sub_0201C1C4(IslandProgramWork *work, u8 arg1, u8 arg2, u8 arg3, s32 arg4);
-void sub_0201C2E0(void);
-void sub_0201C300(m_msg_sprite_c *sprite);
-m_msg_sprite_c *sub_0201C310(u8 type, s32 x, s32 y, s32 param);
-s32 sub_0201C3C8(u8 arg0);
-s32 sub_0201C3F8(void *arg0, s32 arg1);
-void sub_0201C428(void *arg0, s32 arg1, s16 arg2);
-void sub_0201C444(void *arg0, s32 arg1);
-void sub_0201C490(void *arg0, void *arg1, void *arg2);
-void sub_0201C5A0(void);
+u16 IslandProgram_GetElapsedSeconds(void);
+s32 IslandProgram_UpdateLinkTransfer(void);
+void IslandProgram_TryOpenPendingDialog(IslandProgramWork *work, u8 window, u8 allow_notice, u8 allow_transfer, u8 allow_prompt);
+void mMsg_InitSprites(void);
+void mMsg_DeactivateSprite(m_msg_sprite_c *sprite);
+m_msg_sprite_c *mMsg_CreateSprite(u8 type, s32 x, s32 y, s32 param);
+s32 mMsg_FindSpriteByType(u8 arg0);
+s32 mMsg_IsSpriteAnimationFinished(m_msg_sprite_c *sprite, AnimFrameData *const *animations);
+void mMsg_StartSpriteAnimation(m_msg_sprite_c *sprite, AnimFrameData *const *animations, s16 animation);
+void mMsg_UpdateSpriteAnimation(m_msg_sprite_c *sprite, AnimFrameData *const *animations);
+void mMsg_CopySpriteOam(m_msg_sprite_c *sprite, IslanderOamData *source, IslanderOamData *dest);
+void mMsg_UpdateAndDrawSprites(void);
 void sub_0201C5F8(void *arg0);
-void sub_0201C5FC(s32 arg0);
-void sub_0201C668(void *arg0);
-void sub_0201C69C(void *arg0);
-void sub_0201C6C8(void);
-void sub_0201C6CC(void *arg0);
-void sub_0201C6EC(void *arg0);
-void sub_0201C740(void *arg0);
-void sub_0201C744(void *arg0);
-void sub_0201C768(void);
-void sub_0201C76C(void *arg0);
-void sub_0201C78C(void *arg0);
-void sub_0201C7E0(s32 arg0);
-void sub_0201C870(void);
-s32 sub_0201C8C0(void);
-void sub_0201CB50(void);
-s32 sub_0201CDA0(u16 arg0, s32 arg1, u8 arg2);
-void sub_0201CF3C(u16 arg0, s32 arg1, u8 arg2);
-void sub_0201D19C(void);
+void mMsg_ContinuePromptSetColor(s32 arg0);
+void mMsg_ContinuePromptCycleColor(void *arg0);
+void mMsg_ContinuePromptInit(void *arg0);
+void mMsg_ContinuePromptDestroy(void);
+void mMsg_ContinuePromptUpdate(m_msg_sprite_c* sprite);
+void mMsg_ContinuePromptDraw(m_msg_sprite_c* sprite);
+void mMsg_ChoiceCursorIdle(void *arg0);
+void mMsg_ChoiceCursorInit(void *arg0);
+void mMsg_ChoiceCursorDestroy(void);
+void mMsg_ChoiceCursorUpdate(m_msg_sprite_c* sprite);
+void mMsg_ChoiceCursorDraw(m_msg_sprite_c* sprite);
+void InitIslandLinkTransfer(s32 arg0);
+void StopIslandLinkTransfer(void);
+s32 UpdateIslandLinkTransfer(void);
+void IslandLinkSerialInterrupt(void);
+s32 LoadIslandBuildingTiles(u16 arg0, s32 arg1, u8 arg2);
+void LoadIslandFieldEntity(u16 arg0, s32 arg1, u8 arg2);
+void LoadIslandForeground(void);
 void UpdateHourlyPalette(void);
-void sub_0201D5C4(void);
-void sub_0201D7AC(void);
-s32 sub_0201D800(u8 arg0);
-u8 sub_0201D904(void);
-void sub_0201D94C(void);
-void sub_0201DCE4(void);
-void sub_0201DD24(void);
-void sub_0201DD64(void);
-void sub_0201DD94(void);
-void sub_0201DF9C(s32 arg0, s32 arg1, s8 arg2, u8 arg3);
+void InitIslandField(void);
+void ExpandIslandBg3(void);
+/* Original address: 0x0202FD28 */
+extern void (*const sIslandFieldUpdateProcs[4])(void);
+/* Original address: 0x0202F3FC */
+extern const u16 sFieldPaletteAnimation0[256];
+/* Original address: 0x0202F5FC */
+extern const u16 sFieldPaletteAnimation2[256];
+/* Original address: 0x02000000 */
+#define gFieldPaletteBuffer ((u16 *)0x02000000)
+/* Original address: 0x02000040 */
+#define gFieldPaletteBuffer2 ((u16 *)0x02000040)
+
+s32 UpdateIslandMosaic(u8 cover);
+s32 UpdateIslandField(void);
+void GameStateUpdateFunc_Normal(void);
+void IslandField_UpdateJoybusExit(void);
+void IslandField_UpdateSleepExit(void);
+void IslandField_UpdateOverviewExit(void);
+void DrawIslandField(void);
+void InitIslandBuilding(s32 index, u8 type, s32 tile, u8 acre);
 void sub_0201E030(void);
 void sub_0201E034(void);
-void sub_0201E038(u8 arg0, u8 arg1);
-void sub_0201E060(void *arg0, s32 arg1, u8 arg2);
-void sub_0201E178(s32 arg0, u8 arg1);
-void sub_0201E1E0(s32 arg0, s32 arg1, u8 arg2);
-void sub_0201E230(s32 arg0);
-void sub_0201E27C(s32 arg0);
-void sub_0201E3DC(s32 arg0, u8 arg1);
-void sub_0201E430(s32 arg0, u16 arg1, u8 arg2, u8 arg3);
-void sub_0201E538(s32 arg0);
-void sub_0201E560(void);
-void sub_0201E564(s32 arg0);
-void sub_0201E608(s32 arg0);
-void sub_0201E710(s32 arg0);
-void sub_0201EB48(s32 arg0);
+void IslandBuilding_Update(u8 arg0, u8 arg1);
+void IslandBuilding_DrawSprite(IslandBuildingSprite *sprite, s32 building_index, u8 sprite_index);
+void IslandBuilding_Draw(s32 arg0, u8 arg1);
+void AnimatedFieldObject_Init(s32 arg0, s32 arg1, u8 arg2);
+void AnimatedFieldObject_Update(s32 arg0);
+void AnimatedFieldObject_Draw(s32 arg0);
+void FieldObject_AttachEntity(s32 arg0, s32 arg1);
+void FieldObject_Init(s32 arg0, u16 arg1, s32 arg2, u8 arg3);
+void FieldObject_Update(s32 arg0);
+void FieldObject_Idle(s32 idx);
+void FieldObject_SpawnToppleEffect(s32 arg0);
+void FieldObject_UpdateForegroundItem(s32 arg0);
+void FieldObject_HandleHit(s32 arg0);
+void FieldObject_UpdateShake(s32 arg0);
 void FieldObject_UpdateTopple(s32 object_index);
 void FieldObject_Deactivate(s32 arg0);
 void FieldObject_DrawSprite(FieldObjectSpriteFrame *frame, s32 object_index);
@@ -2310,7 +2517,7 @@ s32 Islander_ChangeMoveDir(s32 target_x, s32 target_y, u8 move_mode);
 void Islander_UpdateCollisionTiles(u8 direction);
 void WriteItemToTile(s32 x, u8 tile_idx, u16 item, u16 item_tile);
 s32 CheckSurroundingCollision(u16 arg0, u16 *arg1);
-s32 sub_0201F78C(u8 arg0);
+s32 Islander_ChooseNewMoveDirection(u8 arg0);
 s32 Islander_CanMoveInDirection(u8 direction);
 void Islander_BuryRandomItem(s32 arg0);
 void Islander_PlantRandomFlower(void);
@@ -2342,22 +2549,22 @@ s32 Islander_TryInteractWithCurrentTile(void);
 s32 Islander_TryStartDigging(void);
 void RestoreHeldItemsToField(void);
 void Islander_UpdateMovement(void);
-void sub_020215D0(void);
+void Islander_StartHouseTransition(void);
 void Islander_MoveIndoorsOrOutdoors(void);
 void Islander_StartWandering(void);
-void sub_020217AC(void);
+void Islander_UpdateWandering(void);
 void IslanderMoveAction_MoveToTarget(void);
 void Islander_StartFoodProcessing(void);
 void Islander_ProcessFood(void);
 void IslanderMoveAction_UpdateEmotion(void);
-void sub_02022054(void);
-void sub_020221C0(void);
+void Islander_UpdateEmotionAnimation(void);
+void Islander_StartClickReaction(void);
 void Islander_CheckClickedOnTimer(void);
-void sub_020223AC(void);
+void Islander_StartFieldObjectInteraction(void);
 void Islander_MoveAction11_State0(void);
 void Islander_MoveAction11_State1(void);
 void Islander_MoveAction11_State2(void);
-void sub_0202275C(void);
+void Islander_UpdateFieldObjectInteraction(void);
 void Islander_Fishing_Init(void);
 void Islander_Fishing_State0(void);
 void Islander_Fishing_State1(void);
@@ -2480,234 +2687,229 @@ s32 Item_IsReserved(mActor_name_t arg0);
 s32 Item_GetTypeIndex(mActor_name_t arg0);
 mActor_name_t Item_GetItemFromTypeIndex(s32 idx);
 mActor_name_t Item_TypeToIslandItem(s32 idx);
-void sub_02024B08(s32 arg0, u16 arg1, u8 arg2, u8 arg3);
+void FallingFruit_Init(s32 arg0, u16 arg1, u8 arg2, u8 arg3);
 void sub_02024C00(void);
 void sub_02024C04(void);
-void sub_02024C08(s32 arg0);
-void sub_02024C44(s32 arg0);
-void sub_02024DD0(s32 arg0);
-void sub_02024DF8(s32 arg0);
-void Unk_Struct_Size54_ResetIdx(s32 arg0);
-void sub_02024F8C(s32 arg0);
-void sub_020250B0(s32 arg0);
-void sub_020250EC(s32 arg0);
-void sub_02025118(s32 arg0);
-void sub_02025180(s32 arg0);
-void sub_020251AC(s32 arg0);
-void sub_02025210(s32 arg0);
-void sub_0202529C(s32 arg0);
-void sub_02025310(s32 arg0);
-void sub_02025354(s32 arg0);
-void sub_020253A8(s32 arg0);
-void sub_02025400(s32 arg0);
-void sub_020255F0(s32 arg0);
-void sub_02025618(s32 arg0);
-void sub_020256D0(s32 arg0);
-s32 sub_020259C8(void);
-s32 sub_02025B94(s32 arg0, s32 arg1, u16 arg2);
-s32 sub_02025BEC(void);
-s8 sub_02025C4C(void);
-s8 sub_02025D1C(void);
-void sub_02025D70(void);
-void sub_02025DC8(void);
-void sub_02025F60(void);
-void sub_02025F90(void);
-void sub_0202622C(u16 arg0, s32 arg1, u8 arg2, s32 arg3, s32 arg4);
-void sub_020262DC(u16 arg0, s32 arg1);
-void sub_020263A0(void);
-void sub_02026464(void);
-void sub_020265A8(void);
-void sub_020265D4(void);
-void sub_020267D0(void);
-void sub_02026830(void);
-void sub_020269C8(void);
-void sub_020269E0(void);
-void sub_020269F0(void);
+void FallingFruit_BeginFall(s32 arg0);
+void FallingFruit_UpdateFall(s32 arg0);
+void FallingFruit_Update(s32 arg0);
+void FallingFruit_Draw(s32 arg0);
+void Entity_Reset(s32 arg0);
+void Entity_PlaceLandedItem(s32 arg0);
+void Entity_UpdateLifetime(s32 arg0);
+void Entity_BeginToppleEffect(s32 arg0);
+void Entity_UpdateToppleEffect(s32 arg0);
+void Entity_BeginLeafEffect(s32 arg0);
+void Entity_UpdateLeafEffect(s32 arg0);
+void Entity_BeginReactionEffect(s32 arg0);
+void Entity_UpdateReactionEffect(s32 arg0);
+void Entity_BeginItemDrop(s32 arg0);
+void Entity_UpdateItemDrop(s32 arg0);
+void Entity_BeginFloatingItem(s32 arg0);
+void Entity_UpdateFloatingItem(s32 arg0);
+void Entity_Update(s32 arg0);
+void Entity_DrawFloatingItemShadow(s32 arg0);
+void Entity_DrawSprite(s32 arg0);
+s32 PlayerHand_IsItemPlacementBlocked(void);
+s32 PlayerHand_IsNearInteractionTarget(s32 arg0, s32 arg1, u16 arg2);
+s32 PlayerHand_CheckHouseDoorInteraction(void);
+s32 PlayerHand_TryInteractWithIslander(void);
+s32 PlayerHand_TrySelectIslanderTarget(void);
+void PlayerHand_Init(void);
+void PlayerHand_UpdateMovement(void);
+void PlayerHand_ResetToIdle(void);
+void PlayerHand_UpdateIdle(void);
+void Field_RestoreNeighborTreeTile(u16 tile_idx, s32 x, u8 neighbor_tile, u8 acre, u8 right_side);
+void Field_RestoreAdjacentTreeTiles(u16 arg0, s32 arg1);
+void PlayerHand_BeginCarrying(void);
+void PlayerHand_UpdateCarrying(void);
+void PlayerHand_BeginPlacing(void);
+void PlayerHand_UpdatePlacing(void);
+void PlayerHand_Update(void);
+void PlayerHand_Draw(void);
+void Audio_Init(void);
+void Audio_Update(void);
+void Sound_InitEffects(void);
 void sub_02026A34(void);
-void sub_02026A38(u16 value);
-void sub_02026AB8(u16 arg0);
-void sub_02026B38(u8 arg0);
-void sub_02026B48(u16 value);
-void sub_02026BC8(u16 value);
-void sub_02026BD8(void);
+void Sound_PlayEffect0(u16 value);
+void Sound_PlayEffect1(u16 arg0);
+void Sound_StopEffect1(u8 arg0);
+void Sound_PlayEffect2(u16 value);
+void Sound_StopEffect2(u16 value);
+void Sound_InitMusic(void);
 void sub_02026C0C(void);
-void sub_02026C10(u16 value);
-void sub_02026C68(u16 value);
+void Sound_PlayMusic(u16 value);
+void Sound_StopMusic(u16 value);
 void ChangeEmotion(u8 arg0);
-void sub_02026D74(void **arg0, u8 arg1, u8 arg2, u16 arg3);
-void sub_02026DFC(void *arg0, u8 arg1);
-void sub_02026E4C(s32 arg0);
-void sub_02026F0C(void);
-void sub_02026F18(void);
-void sub_02026F3C(s32 arg0);
-void sub_02026FAC(void);
-void sub_02027040(void);
-void sub_02027068(void);
-void sub_02027074(void);
-void sub_020271FC(u8 *arg0);
-void sub_0202720C(u8 *arg0);
-s32 sub_02027294(u8 *arg0, u8 arg1, u8 arg2);
-u8 sub_020272E8(u16 arg0);
-s32 sub_02027300(u8 *arg0);
+typedef struct SoundTrack SoundTrack;
+void Sound_PlayEmotionNote(SoundTrack *arg0, u8 arg1, u8 arg2, u16 arg3);
+void Sound_ApplyEmotionTrackDelay(SoundTrack *arg0, u8 arg1);
+void SoundDriver_Init(const void *bank);
+void SoundDriver_VBlank(void);
+void SoundDriver_Update(void);
+void SoundDriver_InitPcmBuffers(s8 *buffers);
+void SoundDriver_SwapPcmBuffers(void);
+void SoundDriver_DisablePcm(void);
+void SoundDriver_EnablePcm(void);
+void SoundDriver_InitChannelLists(void);
+void Sound_UnlinkChannel(u8 *arg0);
+typedef struct SoundChannel SoundChannel;
+
+void Sound_InsertPcmChannelByPriority(SoundChannel *arg0);
+s32 Sound_NoteToPitch(SoundChannel *arg0, u8 arg1, u8 arg2);
+u8 Sound_NoteToNoiseControl(u16 arg0);
+s32 Sound_UpdateChannelEnvelope(SoundChannel *arg0);
 void sub_02027370(u8 arg0);
-u32 sub_02027374(u8 *arg0);
-u8 sub_020273D0(u8 *arg0, u8 arg1);
-u32 sub_020274D0(u8 *arg0);
-void sub_02027610(void);
-void sub_02027728(void);
-void sub_020279BC(void **arg0, u8 arg1, u8 arg2, u16 arg3);
-void sub_02027B94(u8 *arg0);
-void sub_02027C78(u8 *arg0);
-void sub_02027D14(u8 *arg0, u8 arg1);
-u8 *sub_02027E74(u8 arg0, u8 arg1, u8 arg2);
-u8 sub_02027F0C(u8 *arg0, u16 arg1, u32 arg2, u8 arg3);
-void sub_02028098(void);
-void sub_020280B4(void **arg0, u8 arg1, void **arg2);
-void sub_02028190(void);
-void sub_020281C4(void *arg0);
-void sub_020281FC(void);
-void sub_0202828C(s32 arg0, u32 arg1);
-void sub_020282B4(s32 arg0, u16 arg1, u32 arg2);
-void sub_020282E0(s32 arg0, s8 *arg1, s32 arg2);
-void sub_02028368(s32 arg0, s32 arg1, s32 arg2, u32 arg3);
-void sub_020283D4(s32 arg0);
-void sub_02028410(s32 arg0, s16 arg1);
-void sub_02028448(s32 arg0, u8 arg1);
-u8 sub_0202846C(s32 arg0);
-void sub_02028480(void);
-void **sub_020284A0(void);
-void sub_020284C4(void **arg0, void *arg1, void *arg2);
-void sub_02028580(void **arg0);
-void sub_020285B0(void **arg0);
-s32 sub_020285C8(void **arg0);
-void sub_02028A34(void **arg0, u8 *arg1);
-void sub_02028A4C(void *arg0, u8 *arg1);
-u16 sub_02028A74(void **arg0);
-void sub_02028A98(void **arg0, s16 arg1);
-void sub_02028ACC(void);
-void *sub_02028B0C(void);
-void sub_02028B44(void);
-void sub_02028B58(u16 arg0, u16 arg1);
-void sub_02028B90(s32 arg0, u16 arg1, u16 arg2);
-void sub_02028BCC(u16 arg0, u16 arg1);
-void sub_02028C04(u16 arg0, u8 arg1);
-void sub_02028C3C(u16 arg0, s16 arg1);
-void sub_02028C74(u16 arg0, u8 arg1);
-void sub_02028CAC(u16 arg0, u8 arg1);
-void sub_02028CE4(s32 arg0, s32 arg1, u8 arg2);
-void sub_02028D1C(s32 arg0, s32 arg1, u8 arg2);
-void sub_02028D54(s32 arg0, s32 arg1, u8 arg2);
-void sub_02028D8C(u8 arg0);
-void sub_02028DB8(s32 arg0, s32 arg1);
-void sub_02028DE8(void (*arg0)(void *, u8));
-void sub_02028E10(void (*arg0)(void **, u8, u8, u16));
-void sub_02028E38(void);
+u32 Sound_UpdatePcmChannelVolume(SoundChannel *arg0);
+u8 Sound_GetPsgEnvelopeControl(SoundChannel *arg0, u8 arg1);
+u32 Sound_UpdateChannelPitch(SoundChannel *arg0);
+void Sound_UpdatePcmChannels(void);
+void Sound_UpdatePsgChannels(void);
+void Sound_PlayNote(SoundTrack *track, u8 key, u8 velocity, u16 duration);
+void Sound_ReleaseChannel(SoundChannel *channel);
+void Sound_StopChannel(SoundChannel *channel);
+void Sound_StartPsgChannel(SoundChannel *channel, u8 envelope);
+SoundChannel *Sound_AllocateChannel(u8 type, SoundTrack *track, u8 priority);
+u8 Sound_MixPcmChannel(SoundChannel *channel, u32 volume, u32 pitch, u8 pan);
+void Sound_InitKeySampleInstrument(void);
+typedef struct SoundInstrumentResult SoundInstrumentResult;
+typedef struct SoundPlayer SoundPlayer;
+void Sound_ResolveInstrument(SoundTrack *track, u8 key, SoundInstrumentResult *result);
+void Sound_InitPlayers(void);
+void Sound_ResetPlayerParameters(SoundPlayer *player);
+void Sound_UpdatePlayers(void);
+void Sound_StartMusic(s32 player, u32 music);
+void Sound_StartEffect(s32 player, u32 group, u32 effect);
+void Sound_StartMusicSequence(s32 index, const u8 *sequence, const u16 *bank);
+void Sound_StartEffectSequence(s32 index, const u8 *sequence, const u16 *bank, u32 effect);
+void Sound_StopPlayer(s32 arg0);
+void Sound_FadeOutPlayer(s32 index, s32 frames);
+void Sound_SetPlayerPaused(s32 arg0, u8 arg1);
+u32 Sound_GetPlayerStatus(s32 arg0);
+void Sound_InitTracks(void);
+SoundTrack *Sound_FindFreeTrack(void);
+void Sound_StartTrack(SoundTrack *track, SoundPlayer *player, const u8 *sequence);
+void Sound_ReleaseTrackChannels(void **arg0);
+void Sound_StopTrack(void **arg0);
+s32 Sound_UpdateTrack(SoundTrack *track);
+void Sound_AttachChannelToTrack(SoundTrack *track, SoundChannel *channel);
+void Sound_DetachChannelFromTrack(SoundTrack *track, SoundChannel *channel);
+u16 Sound_ReadSequenceDuration(SoundTrack *track);
+void Sound_SetTrackBank(SoundTrack *track, u32 bank);
+typedef struct SoundCommand SoundCommand;
+typedef void (*SoundNoteCallback)(SoundTrack *track, u8 key, u8 velocity, u16 duration);
+typedef void (*SoundControlCallback)(SoundTrack *track, u8 code);
+void Sound_InitCommandQueue(void);
+SoundCommand *Sound_ReadCommand(void);
+void Sound_CommitCommands(void);
+void Sound_QueueStartMusic(u16 player, u16 music);
+void Sound_QueueStartEffect(u32 player, u16 group, u16 effect);
+void Sound_QueueFadeOutPlayer(u16 player, u16 frames);
+void Sound_QueueSetPlayerPaused(u16 player, u8 paused);
+void Sound_QueueSetPlayerTempoAdjust(u16 player, s16 adjustment);
+void Sound_QueueSetPlayerMasterVolume(u16 player, u8 volume);
+void Sound_QueueSetPlayerTempoMode(u16 player, u8 mode);
+void Sound_QueueSetTracksMuted(u32 player, u32 tracks, u8 muted);
+void Sound_QueueSetTracksExpression(u32 player, u32 tracks, u8 expression);
+void Sound_QueueSetTracksPan(u32 player, u32 tracks, u8 pan);
+void Sound_QueueCommand10(u8 value);
+void Sound_QueueCallback(void (*callback)(u32), u32 argument);
+void Sound_QueueSetControlCallback(SoundControlCallback callback);
+void Sound_QueueSetNoteCallback(SoundNoteCallback callback);
+void Sound_ProcessCommands(void);
 
 void sub_02019F08(void) {
 
 }
 
-void sub_02019F0C(void) {
-    s32 *var_r4_4019;
-    s32 var_r2_4016;
-    u32 temp_r0_4038;
-    u32 temp_r0_4046;
-    void *temp_r3_4030;
+/* Original address: 0x02019F0C */
+void InitializeIsland(void) {
+    s32 i;
+    u32 *land_info;
 
-    REG_DMA3SAD = 0x020357F4;
-    REG_DMA3DAD = 0x02000000;
-    REG_DMA3CNT = 0x80000100;
-    REG_DMA3SAD = 0x020359F4;
-    REG_DMA3DAD = (u32) gObjPaletteBuffer;
-    REG_DMA3CNT = 0x80000100;
-    REG_DMA3SAD = 0x02000000;
-    REG_DMA3DAD = 0x05000000;
-    REG_DMA3CNT = 0x80000200;
-    *(void **)0x03002970 = (void *)0x0203B000;
-    *(s32 *)0x03001B40 = 0x020102A0;
-    CpuSet((void *)0x0203B000, (void *)0x020102A0, 0x04000E60U);
-    var_r2_4016 = 0;
-    var_r4_4019 = (s32 *)0x03002400;
+    DmaCopy16(3, sBgPalettes, gBgPaletteBuffer, BG_PLTT_SIZE);
+    DmaCopy16(3, sInitialObjPalette, gObjPaletteBuffer, OBJ_PLTT_SIZE);
+    DmaCopy16(3, gBgPaletteBuffer, PLTT, PLTT_SIZE);
+    gIslandTransferData = &gInitialIsland;
+    gIslandData = &gIsland;
+    CpuCopy32(&gInitialIsland, &gIsland, sizeof(gIsland));
+    i = 0;
+    land_info = (u32 *)&gIslandLandInfo;
     do {
-        *var_r4_4019 = (*(s32 *)((u8 *)(((var_r2_4016 * 4) + *(void **)0x03002970)) + (0x14)));
-        var_r4_4019 += 4;
-        var_r2_4016 += 1;
-    } while (var_r2_4016 <= 3);
-    temp_r3_4030 = *(void **)0x03002970;
-    temp_r0_4038 = (*(u8 *)((u8 *)(temp_r3_4030) + (0x193E))) * 0xE10;
-    gGameState.game_time_frames = temp_r0_4038;
-    temp_r0_4046 = temp_r0_4038 + ((*(u8 *)((u8 *)(temp_r3_4030) + (0x193D))) * 0x3C);
-    gGameState.game_time_frames = temp_r0_4046;
-    gGameState.game_time_frames = (temp_r0_4046 + (*(u8 *)((u8 *)(temp_r3_4030) + (0x193C)))) * 0x3C;
+        *land_info++ = ((u32 *)&gIslandTransferData->landinfo)[i];
+        i++;
+    } while (i < (s32)(sizeof(gIslandLandInfo) / sizeof(u32)));
+    gGameState.game_time_frames = gIslandTransferData->renew_time.hour * 3600;
+    gGameState.game_time_frames += gIslandTransferData->renew_time.min * 60;
+    gGameState.game_time_frames = (gGameState.game_time_frames + gIslandTransferData->renew_time.sec) * 60;
     gGameState.unk_822 = 0x1C00;
     gGameState.unk_824 = 0xD801;
     gGameState.unk_826 = 0xD402;
     gGameState.unk_828 = 0xD003;
-    CpuFastSet(*(void **)0x03002970 + 0x1948, (void *)0x06000000, 0x400U);
-    CpuFastSet(*(void **)0x03002970 + 0x2948, (void *)0x06010000, 0x400U);
-    CpuFastSet(*(void **)0x03002970 + 0x3948, (void *)0x02000220, 8U);
-    CpuFastSet((void *)0x02000220, (void *)0x05000220, 8U);
+    CpuFastCopy(gIslandTransferData->earth_tex, (void *)BG_VRAM, sizeof(gIslandTransferData->earth_tex));
+    CpuFastCopy(gIslandTransferData->npc_tex, (void *)OBJ_VRAM0, sizeof(gIslandTransferData->npc_tex));
+    CpuFastCopy(gIslandTransferData->npc_pal, &gObjPaletteBuffer[16], sizeof(gIslandTransferData->npc_pal));
+    CpuFastCopy(&gObjPaletteBuffer[16], (void *)(OBJ_PLTT + PLTT_OFFSET_4BPP(1)), PLTT_SIZE_4BPP);
     gGameState.unk_82A = 0;
-    sub_0201A218();
-    sub_0201C2E0();
-    mMsg_InitWindow((mMsg_Window_c *)0x03002FC0, (u8 *)0x02001720, (u8 *)0x0200BF80);
-    mMsg_InitWindow((mMsg_Window_c *)0x03003060, (u8 *)0x02001940, (u8 *)0x0200D180);
-    mMsg_InitWindow((mMsg_Window_c *)0x03002980, (u8 *)0x02001B60, (u8 *)0x0200E380);
-    sub_0201BF10();
+    Joybus_Init();
+    mMsg_InitSprites();
+    mMsg_InitWindow(&sMsgWindow_03002fc0, gMsgMainText, gMsgMainTiles);
+    mMsg_InitWindow(&sMsgWindow_03003060, gMsgPromptText, gMsgPromptTiles);
+    mMsg_InitWindow(&sMsgWindow_03002980, gMsgNoticeText, gMsgNoticeTiles);
+    IslandProgram_InitWork();
 }
 
-void sub_0201A0C8(void) {
-    sub_0201BF58();
+/* Original address: 0x0201A0C8 */
+void IslandProgram_UpdateFrame(void) {
+    IslandProgram_Update();
 }
 
-void sub_0201A0D4(void) {
-    s32 sp0;
-    s32 temp_r1_4245;
-    u32 temp_r1_4262;
-    u32 temp_r2_4261;
-
-    CpuFastSet(mFont_BlitGlyphToTiles, (void *)0x03002810, 0x58U);
+/* Original address: 0x0201A0D4 */
+void IslandProgram_Main(void) {
+    CpuFastCopy(mFont_BlitGlyphToTiles, gFontGlyphBlitterCode, sizeof(gFontGlyphBlitterCode));
     mMsg_Init();
-    sub_02019CFC();
+    EnableVBlankInterrupt();
     gGameState.unk_85F = 1;
     gGameState.unk_816 = 0xFFFF;
     sub_02019F08();
-    sub_02019F0C();
-loop_1:
-    sub_02019CC0();
-    if ((*(u16 *)((u8 *)(&gGameState) + (0x850))) == 0x101) {
-        (*(u16 *)((u8 *)(&sp0) + (0))) = (u16) REG_IE;
-        (*(u16 *)((u8 *)(&sp0) + (2))) = (u16) *(u16 *)0x04000000;
-        *(u16 *)0x04000000 = 0x80;
-        *(s16 *)0x04000132 = 0x8204;
-        REG_IE = 0x1000;
-        SoundBiasReset();
-        asm("swi 0x3"); /* BIOS Stop */
-        SoundBiasSet();
-        REG_IE = (*(u16 *)((u8 *)(&sp0) + (0)));
-        *(s16 *)0x04000132 = 0;
-        gGameState.unk_856 = 0;
-        gGameState.unk_857 = 0;
-        gGameState.unk_851 = 0;
-        gGameState.unk_850 = 0;
-        sub_0201A620();
+    InitializeIsland();
+    for (;;) {
+        GameState_ReadKeys();
+        if (gGameState.unk_850 == 1 && gGameState.unk_851 == 1) {
+            u16 saved_interrupt_enable;
+            u16 saved_display_control;
+
+            saved_interrupt_enable = REG_IE;
+            /* The original reads DISPCNT here without restoring it directly. */
+            saved_display_control = REG_DISPCNT;
+            REG_DISPCNT = 0x80;
+            REG_KEYCNT = 0x8204;
+            REG_IE = 0x1000;
+            SoundBiasReset();
+            asm("swi 0x3"); /* BIOS Stop */
+            SoundBiasSet();
+            REG_IE = saved_interrupt_enable;
+            REG_KEYCNT = 0;
+            gGameState.unk_856 = 0;
+            gGameState.unk_857 = 0;
+            gGameState.unk_851 = 0;
+            gGameState.unk_850 = 0;
+            Joybus_Reset();
+        }
+        ClearOamBuffer();
+        if ((gTransWork.command >= 0xFFFE0101 && gTransWork.command <= 0xFFFE0102) ||
+            gTransWork.command == 0xFFFE0202) {
+            gGameState.unk_856 = 1;
+        }
+        IslandProgram_UpdateFrame();
+        gGameState.game_time_frames++;
+        if (gGameState.game_time_frames >= 24 * 60 * 60 * 60) {
+            gGameState.game_time_frames -= 24 * 60 * 60 * 60;
+        }
+        GameAudio_Update();
+        gGameState.unk_85F = 0;
+        WaitForVBlank();
     }
-    sub_02019C88();
-    temp_r1_4245 = (*(s32 *)((u8 *)((void *)0x03003120) + (0x18)));
-    if (((u32) (temp_r1_4245 + 0x1FEFF) <= 1U) || (temp_r1_4245 == 0xFFFE0202)) {
-        gGameState.unk_856 = 1;
-    }
-    sub_0201A0C8();
-    temp_r2_4261 = gGameState.game_time_frames;
-    temp_r1_4262 = temp_r2_4261 + 1;
-    gGameState.game_time_frames = temp_r1_4262;
-    if (temp_r1_4262 > 0x4F19FFU) {
-        gGameState.game_time_frames = temp_r2_4261 + 0xFFB0E601;
-    }
-    sub_02019D4C();
-    gGameState.unk_85F = 0;
-    sub_02019C3C();
-    goto loop_1;
 }
 
 s32 Swap32(u32 *arg0) {
@@ -2722,22 +2924,21 @@ s32 Swap32(u32 *arg0) {
     return *(s32*)bytes;
 }
 
-void sub_0201A218(void) {
-    s32 sp0;
-    u16 temp_r4_4318;
+/* Original address: 0x0201A218 */
+void Joybus_Init(void) {
+    u16 saved_ime = REG_IME;
 
-    temp_r4_4318 = REG_IME;
     REG_IME = 0;
-    (*(s16 *)((u8 *)((void *)0x04000134) + (0))) = 0xC000;
-    *(s16 *)0x04000158 = 0;
-    *(s32 *)0x04000154 = 0;
-    (*(s16 *)((u8 *)((void *)0x04000134) + (0xC))) = 0x47;
-    *(s16 *)0x04000202 = 0x80;
-    *(s16 *)0x04000202 = 0x80;
+    REG_RCNT = 0xC000;
+    REG_JOYSTAT = 0;
+    (void)REG_JOY_RECV;
+    REG_JOY_TRANS = 0;
+    REG_JOYCNT = 0x47;
+    REG_IF = 0x80;
+    REG_IF = 0x80;
     REG_IE |= 0x80;
-    sp0 = 0;
-    CpuFastSet(&sp0, (void *)0x03003120, 0x01000010U);
-    REG_IME = temp_r4_4318;
+    CpuFastFill(0, &gTransWork, sizeof(gTransWork));
+    REG_IME = saved_ime;
 }
 
 /* Original address: 0x0202AFBC */
@@ -2889,53 +3090,58 @@ void JoybootHandler(void) {
     gTransWork.interrupt_count = 0;
 }
 
-void sub_0201A620(void) {
-    s32 sp0;
-    u16 temp_r4_4840;
+/* Original address: 0x0201A620 */
+void Joybus_Reset(void) {
+    u16 saved_ime = REG_IME;
 
-    temp_r4_4840 = REG_IME;
     REG_IME = 0;
-    (*(s16 *)((u8 *)((void *)0x04000134) + (0))) = 0x8000;
-    (*(s16 *)((u8 *)((void *)0x04000134) + (0))) = 0xC000;
-    *(s16 *)0x04000158 = 0;
-    *(s32 *)0x04000154 = 0;
-    (*(s16 *)((u8 *)((void *)0x04000134) + (0xC))) = 0x47;
-    (*(s16 *)((u8 *)(((void *)0x04000134 + 0xC)) + (0xC2))) = 0x80;
-    sp0 = 0;
-    CpuFastSet(&sp0, (void *)0x03003120, 0x01000010U);
-    REG_IME = temp_r4_4840;
+    REG_RCNT = 0x8000;
+    REG_RCNT = 0xC000;
+    REG_JOYSTAT = 0;
+    (void)REG_JOY_RECV;
+    REG_JOY_TRANS = 0;
+    REG_JOYCNT = 0x47;
+    REG_IF = 0x80;
+    CpuFastFill(0, &gTransWork, sizeof(gTransWork));
+    REG_IME = saved_ime;
 }
 
-s32 sub_0201A688(u8 arg0) {
-    s32 var_r2_4888;
-    u8 temp_r1_4892;
+/* Original address: 0x0201A688 */
+s32 Joybus_CheckTimeout(u8 reset_on_timeout) {
+    s32 timed_out = FALSE;
 
-    var_r2_4888 = 0;
-    temp_r1_4892 = *(u8 *)0x0300314A;
-    if ((u32) temp_r1_4892 <= 0xAU) {
+    if (gTransWork.interrupt_count <= 10U) {
         REG_IME = 0;
-        *(u8 *)0x0300314A = temp_r1_4892 + 1;
+        gTransWork.interrupt_count++;
         REG_IME = 1;
     } else {
-        if (arg0 != 0) {
-            sub_0201A620();
+        if (reset_on_timeout) {
+            Joybus_Reset();
         }
-        var_r2_4888 = 1;
+        timed_out = TRUE;
     }
-    return var_r2_4888;
+    return timed_out;
 }
 
-void sub_0201A6C8(void) {
-    *(s16 *)0x0203E9A0 = 0;
+/* Interworking trampoline used to enter the ARM startup code. */
+/* Original address: 0x02029308 */
+void _call_via_r0(void (*entry)(void));
+
+/* Original address: 0x0201A6C8 */
+void IslandProgram_Restart(void) {
+    void (*entry)(void) = _start;
+
+    gIslandDataReceived = 0;
     REG_IME = 0;
-    *(s16 *)0x04000004 = 0;
+    REG_DISPSTAT = 0;
     REG_IE = 0;
-    *(s16 *)0x04000202 = 0xFFFF;
-    *(s16 *)0x04000000 = 0x80;
-    _start();
+    REG_IF = 0xFFFF;
+    REG_DISPCNT = 0x80;
+    _call_via_r0(entry);
 }
 
-s32 sub_0201A714(IslandProgramWork *work, s8 arg1) {
+/* Original address: 0x0201A714 */
+s32 IslandProgram_PrepareDialogTransition(IslandProgramWork *work, s8 arg1) {
     s32 var_r7_4955;
 
     var_r7_4955 = 0;
@@ -2954,7 +3160,8 @@ s32 sub_0201A714(IslandProgramWork *work, s8 arg1) {
     return var_r7_4955;
 }
 
-s32 sub_0201A780(IslandProgramWork *work, s8 arg1) {
+/* Original address: 0x0201A780 */
+s32 IslandProgram_CheckWindowResumed(IslandProgramWork *work, s8 arg1) {
     s32 var_r5_5036 = 0;
 
     if (work->current_window == NULL) {
@@ -2975,26 +3182,28 @@ s32 sub_0201A780(IslandProgramWork *work, s8 arg1) {
     return var_r5_5036;
 }
 
-u8 sub_0201A7C8(IslandProgramWork* work) {
+/* Original address: 0x0201A7C8 */
+u8 IslandProgram_CheckSleepRequest(IslandProgramWork* work) {
     u8 var_r4_5054 = 0;
 
     if (gGameState.unk_84E == 1) {
         var_r4_5054 = 1;
-    } else if (gGameState.keys_pressed & SELECT_BUTTON) {
+    } else if (gGameState.keys.buttons.pressed & SELECT_BUTTON) {
         var_r4_5054 = 1;
-    } else if (sub_0201A810(&work->input_timer, 18000) == 1) {
+    } else if (IslandProgram_UpdateInputTimeout(&work->input_timer, 18000) == 1) {
         var_r4_5054 = 1;
     }
     return var_r4_5054;
 }
 
-s32 sub_0201A810(s16 *arg0, s32 arg1) {
+/* Original address: 0x0201A810 */
+s32 IslandProgram_UpdateInputTimeout(s16 *arg0, s32 arg1) {
     s32 var_r3_5091;
 
     var_r3_5091 = 0;
     if (arg1 <= *arg0) {
         var_r3_5091 = 1;
-    } else if (KEYS_MASK & gGameState.keys_held) {
+    } else if (KEYS_MASK & gGameState.keys.buttons.held) {
         *arg0 = 0;
     } else {
         *arg0 = (u16) *arg0 + 1;
@@ -3003,7 +3212,7 @@ s32 sub_0201A810(s16 *arg0, s32 arg1) {
 }
 
 /* Original address: 0x0201A854 */
-void sub_0201A854(IslandProgramWork *work, s8 arg1) {
+void IslandProgram_SetDialogPalette(IslandProgramWork *work, s8 arg1) {
     u8 r;
     u8 g;
     u8 b;
@@ -3011,50 +3220,51 @@ void sub_0201A854(IslandProgramWork *work, s8 arg1) {
 
     switch (arg1) {
         case 4:
-            sub_02019BD8(0, 7, 1, 0x10, 0x17, 0x11);
-            sub_02019BD8(0, 7, 2, 0x15, 0x1B, 0x13);
-            sub_02019BD8(0, 7, 3, 0x1A, 0x1F, 0x1A);
-            sub_02019BD8(0, 7, 4, 0x17, 0x1E, 0x14);
-            sub_02019BD8(0, 7, 5, 0x16, 0x1D, 0x16);
+            SetPaletteColor(0, 7, 1, 0x10, 0x17, 0x11);
+            SetPaletteColor(0, 7, 2, 0x15, 0x1B, 0x13);
+            SetPaletteColor(0, 7, 3, 0x1A, 0x1F, 0x1A);
+            SetPaletteColor(0, 7, 4, 0x17, 0x1E, 0x14);
+            SetPaletteColor(0, 7, 5, 0x16, 0x1D, 0x16);
             break;
         case 3:
-            sub_02019BD8(0, 7, 1, 0x17, 0x17, 0x11);
-            sub_02019BD8(0, 7, 2, 0x1B, 0x1B, 0x13);
-            sub_02019BD8(0, 7, 3, 0x1F, 0x1F, 0x1A);
-            sub_02019BD8(0, 7, 4, 0x1D, 0x1D, 0x15);
-            sub_02019BD8(0, 7, 5, 0x1E, 0x1F, 9);
-            sub_02019BD8(0, 7, 6, 0xA, 0xB, 8);
+            SetPaletteColor(0, 7, 1, 0x17, 0x17, 0x11);
+            SetPaletteColor(0, 7, 2, 0x1B, 0x1B, 0x13);
+            SetPaletteColor(0, 7, 3, 0x1F, 0x1F, 0x1A);
+            SetPaletteColor(0, 7, 4, 0x1D, 0x1D, 0x15);
+            SetPaletteColor(0, 7, 5, 0x1E, 0x1F, 9);
+            SetPaletteColor(0, 7, 6, 0xA, 0xB, 8);
             break;
         case 1:
             if (work->_6F == 1) {
-                sub_02019BD8(0, 7, 1, 0x16, 0xA, 4);
-                sub_02019BD8(0, 7, 2, 0x1A, 0xE, 6);
-                sub_02019BD8(0, 7, 3, 0x1E, 0xD, 3);
-                sub_02019BD8(0, 7, 4, 0x1D, 0x15, 0xC);
-                sub_02019BD8(0, 7, 5, 0x1F, 0x1F, 0x15);
+                SetPaletteColor(0, 7, 1, 0x16, 0xA, 4);
+                SetPaletteColor(0, 7, 2, 0x1A, 0xE, 6);
+                SetPaletteColor(0, 7, 3, 0x1E, 0xD, 3);
+                SetPaletteColor(0, 7, 4, 0x1D, 0x15, 0xC);
+                SetPaletteColor(0, 7, 5, 0x1F, 0x1F, 0x15);
                 break;
             } else if (work->_6E == 1) {
-                sub_02019BD8(0, 7, 1, 8, 0x10, 0x14);
-                sub_02019BD8(0, 7, 2, 0xA, 0x14, 0x1B);
-                sub_02019BD8(0, 7, 3, 0x15, 0x19, 0x1F);
-                sub_02019BD8(0, 7, 4, 0x10, 0x17, 0x1D);
-                sub_02019BD8(0, 7, 5, 7, 0xF, 0x1F);
-                sub_02019BD8(0, 7, 6, 0x1F, 0x1F, 0x1F);
+                SetPaletteColor(0, 7, 1, 8, 0x10, 0x14);
+                SetPaletteColor(0, 7, 2, 0xA, 0x14, 0x1B);
+                SetPaletteColor(0, 7, 3, 0x15, 0x19, 0x1F);
+                SetPaletteColor(0, 7, 4, 0x10, 0x17, 0x1D);
+                SetPaletteColor(0, 7, 5, 7, 0xF, 0x1F);
+                SetPaletteColor(0, 7, 6, 0x1F, 0x1F, 0x1F);
                 break;
             }
         // fallthrough 1 -> 2/default
         case 2:
         default:
             for (i = 1; i <= 6; i++) {
-                sub_02019BA8(sBgPalettes[0], 7, i, &r, &g, &b);
-                sub_02019BD8(0, 7, i, r, g, b);
+                GetPaletteColor(sBgPalettes[0], 7, i, &r, &g, &b);
+                SetPaletteColor(0, 7, i, r, g, b);
             }
             break;
     }
     CpuFastSet((void *)0x020000E0, (void *)0x050000E0, 8U);
 }
 
-void sub_0201AA98(IslandProgramWork *work, u8 arg1) {
+/* Original address: 0x0201AA98 */
+void IslandProgram_SetupDialogDisplay(IslandProgramWork *work, u8 arg1) {
     if (work->_50 == 0 && arg1 != 1) {
         work->_34 = gGameState.unk_828;
         work->_36 = gGameState.unk_82A;
@@ -3070,7 +3280,8 @@ void sub_0201AA98(IslandProgramWork *work, u8 arg1) {
     gGameState.unk_848 = 0;
 }
 
-void sub_0201AB3C(IslandProgramWork *work, s8 arg1) {
+/* Original address: 0x0201AB3C */
+void IslandProgram_RestoreDialogDisplay(IslandProgramWork *work, s8 arg1) {
     u16 temp_r1_5496;
 
     if (arg1 == work->_50) {
@@ -3086,62 +3297,67 @@ void sub_0201AB3C(IslandProgramWork *work, s8 arg1) {
     }
 }
 
-void sub_0201ABBC(IslandProgramWork *work) {
+/* Original address: 0x0201ABBC */
+void IslandProgram_UpdateMessages(IslandProgramWork *work) {
     mMsg_Window_c *temp_r1_5544;
 
     temp_r1_5544 = work->current_window;
     if ((temp_r1_5544 != NULL) && (gGameState.unk_850 == 0)) {
         mMsg_Main_Window(temp_r1_5544);
     }
-    sub_0201C5A0();
+    mMsg_UpdateAndDrawSprites();
 }
 
-s32 sub_0201ABE4(IslandProgramWork *work, u8 arg1) {
+/* Original address: 0x0201ABE4 */
+s32 IslandProgram_TryOpenTransferDialog(IslandProgramWork *work, u8 arg1) {
     s32 var_r1_5569;
 
     var_r1_5569 = 0;
     if ((gGameState.unk_850 == 0) && (work->_5A != 0)) {
-        if (sub_0201A714(work, arg1) == 1) {
+        if (IslandProgram_PrepareDialogTransition(work, arg1) == 1) {
             work->_5F = arg1;
             work->_10 = work->current_window;
-            sub_0201B6D0(work);
+            IslandProgram_ApplyPendingTransferState(work);
         }
         var_r1_5569 = 1;
     }
     return var_r1_5569;
 }
 
-s32 sub_0201AC38(IslandProgramWork *work, u8 arg1) {
+/* Original address: 0x0201AC38 */
+s32 IslandProgram_TryOpenNoticeDialog(IslandProgramWork *work, u8 arg1) {
     s32 var_r1_5613;
 
     var_r1_5613 = 0;
     if ((gGameState.unk_850 == 0) && (work->_58 != 0)) {
-        if (sub_0201A714(work, arg1) == 1) {
+        if (IslandProgram_PrepareDialogTransition(work, arg1) == 1) {
             work->_5D = arg1;
             work->_08 = work->current_window;
-            sub_0201AE0C(work);
+            IslandProgram_ApplyPendingNoticeState(work);
         }
         var_r1_5613 = 1;
     }
     return var_r1_5613;
 }
 
-s32 sub_0201AC8C(IslandProgramWork *work, u8 arg1) {
+/* Original address: 0x0201AC8C */
+s32 IslandProgram_TryOpenSleepDialog(IslandProgramWork *work, u8 arg1) {
     s32 var_r1_5657;
 
     var_r1_5657 = 0;
     if (work->_59 != 0) {
-        if (sub_0201A714(work, arg1) == 1) {
+        if (IslandProgram_PrepareDialogTransition(work, arg1) == 1) {
             work->_5E = arg1;
             work->_0C = work->current_window;
-            sub_0201B1B8(work);
+            IslandProgram_ApplyPendingSleepState(work);
         }
         var_r1_5657 = 1;
     }
     return var_r1_5657;
 }
 
-void sub_0201ACCC(IslandProgramWork *work) {
+/* Original address: 0x0201ACCC */
+void IslandProgram_BeginJoybusReceive(IslandProgramWork *work) {
     Island_agb_c* island = gIslandData;
     s32 transfer_size = sizeof(*island);
 
@@ -3152,7 +3368,8 @@ void sub_0201ACCC(IslandProgramWork *work) {
     work->_71 = 0;
 }
 
-s8 sub_0201ACF8(IslandProgramWork *work) {
+/* Original address: 0x0201ACF8 */
+s8 IslandProgram_PollJoybusReceive(IslandProgramWork *work) {
     s32 var_r1_5714;
 
     var_r1_5714 = 0;
@@ -3170,7 +3387,7 @@ s8 sub_0201ACF8(IslandProgramWork *work) {
 }
 
 /* Original address: 0x0201AD34 */
-void sub_0201AD34(IslandProgramWork *work) {
+void IslandProgram_BeginJoybusSend(IslandProgramWork *work) {
     Island_agb_c* island = gIslandData;
     s32 transfer_size = sizeof(*island);
 
@@ -3188,7 +3405,8 @@ void sub_0201AD34(IslandProgramWork *work) {
     work->_71 = 1;
 }
 
-s16 sub_0201AD84(IslandProgramWork *work) {
+/* Original address: 0x0201AD84 */
+s16 IslandProgram_PollJoybusSend(IslandProgramWork *work) {
     s32 var_r3_5792;
 
     var_r3_5792 = 0;
@@ -3209,32 +3427,37 @@ void sub_0201ADDC(void) {
 
 }
 
-s32 sub_0201ADE0(IslandProgramWork *work, s8 arg1) {
+/* Original address: 0x0201ADE0 */
+s32 IslandProgram_RequestNoticeState(IslandProgramWork *work, s8 arg1) {
     work->_58 = arg1;
     return 1;
 }
 
-s32 sub_0201ADE8(IslandProgramWork *work) {
+/* Original address: 0x0201ADE8 */
+s32 IslandProgram_RequestNoticeTransfer(IslandProgramWork *work) {
     work->_58 = 1;
     return 1;
 }
 
-s32 sub_0201ADF4(IslandProgramWork *work) {
+/* Original address: 0x0201ADF4 */
+s32 IslandProgram_RequestNoticeResult(IslandProgramWork *work) {
     work->_58 = 2;
     return 1;
 }
 
-s32 sub_0201AE00(IslandProgramWork *work) {
+/* Original address: 0x0201AE00 */
+s32 IslandProgram_RequestNoticeRestart(IslandProgramWork *work) {
     work->_58 = 3;
     return 1;
 }
 
-void sub_0201AE0C(IslandProgramWork *work) {
+/* Original address: 0x0201AE0C */
+void IslandProgram_ApplyPendingNoticeState(IslandProgramWork *work) {
     static const IslandProgramModeProc sIslandProgramWorkProcs[] = {
         NULL,
-        sub_0201AE40,
-        sub_0201AF48,
-        sub_0201B168,
+        IslandProgram_EnterNoticeTransfer,
+        IslandProgram_EnterNoticeResult,
+        IslandProgram_EnterNoticeRestart,
     };
 
     IslandProgramModeProc proc;
@@ -3248,17 +3471,18 @@ void sub_0201AE0C(IslandProgramWork *work) {
     }
 }
 
-void sub_0201AE40(IslandProgramWork *work) {
+/* Original address: 0x0201AE40 */
+void IslandProgram_EnterNoticeTransfer(IslandProgramWork *work) {
     int msg_id = gTransWork.command == 0xFFFE0101 ? 30 : 11;
 
     if (mMsg_RequestAppear(&sMsgWindow_03002980, msg_id) == 1) {
         if (gTransWork.command == 0xFFFE0202) {
-            sub_0201ACCC(work);
+            IslandProgram_BeginJoybusReceive(work);
         } else {
-            sub_0201AD34(work);
+            IslandProgram_BeginJoybusSend(work);
         }
-        sub_0201A854(work, 2);
-        sub_0201AA98(work, 2);
+        IslandProgram_SetDialogPalette(work, 2);
+        IslandProgram_SetupDialogDisplay(work, 2);
 
         work->_53 = work->_58;
         work->current_window = &sMsgWindow_03002980;
@@ -3267,12 +3491,13 @@ void sub_0201AE40(IslandProgramWork *work) {
     work->_58 = 0;
 }
 
-void sub_0201AEBC(IslandProgramWork *work) {
+/* Original address: 0x0201AEBC */
+void IslandProgram_UpdateNoticeTransfer(IslandProgramWork *work) {
     if (work->_71 == 0) {
-        work->_60 = sub_0201ACF8(work);
+        work->_60 = IslandProgram_PollJoybusReceive(work);
     } else {
         if (work->retry_timer == 0) {
-            work->retry_result = sub_0201AD84(work);
+            work->retry_result = IslandProgram_PollJoybusSend(work);
             if (work->retry_result != 0) {
                 work->retry_timer = 60;
             } else {
@@ -3285,12 +3510,13 @@ void sub_0201AEBC(IslandProgramWork *work) {
             }
         }
     }
-    if ((work->current_window->current_mode >= mMsg_MODE_CURSOR) && (work->current_window->current_mode <= mMsg_MODE_CHOICE) && (work->_60 != 0) && (sub_0201ADF4(work) != 0)) {
-        sub_0201AE0C(work);
+    if ((work->current_window->current_mode >= mMsg_MODE_CURSOR) && (work->current_window->current_mode <= mMsg_MODE_CHOICE) && (work->_60 != 0) && (IslandProgram_RequestNoticeResult(work) != 0)) {
+        IslandProgram_ApplyPendingNoticeState(work);
     }
 }
 
-void sub_0201AF48(IslandProgramWork *work) {
+/* Original address: 0x0201AF48 */
+void IslandProgram_EnterNoticeResult(IslandProgramWork *work) {
     s32 sp[2] = { 13, 20 }; // static data placed at 0x0202B00C
 
     if (work->_70 == 1) {
@@ -3304,13 +3530,13 @@ void sub_0201AF48(IslandProgramWork *work) {
             work->wait_timer = 0;
         } else {
             work->wait_timer = 60;
-            sub_02019D78(0x28U);
+            GameAudio_PlayEffect0(0x28U);
         }
         work->_53 = work->_58;
         work->_62 = 0;
     } else {
         if ((mMsg_ChangeMsgData(work->current_window, sp[work->_60 - 1]) == 1) && ((mMsg_RequestCursor(work->current_window)) != 0)) {
-            sub_02019D78(work->_60 == 1 ? 0x27 : 0x28);
+            GameAudio_PlayEffect0(work->_60 == 1 ? 0x27 : 0x28);
             gGameState.unk_856 = 0;
             gGameState.unk_857 = 0;
             mMsg_MainSetup_Window(work->current_window);
@@ -3321,7 +3547,8 @@ void sub_0201AF48(IslandProgramWork *work) {
     work->_58 = 0;
 }
 
-void sub_0201B04C(IslandProgramWork *work) {
+/* Original address: 0x0201B04C */
+void IslandProgram_UpdateNoticeResult(IslandProgramWork *work) {
     s32 temp_r0_6172;
     s32 temp_r0_6175;
     s8 temp_r0_6232;
@@ -3340,7 +3567,7 @@ void sub_0201B04C(IslandProgramWork *work) {
         if (!work->current_window->draw_enabled) {
             if (work->_6D == 1) {
                 work->_53 = 3;
-                sub_02019B1C(&gGameState, 0x80U, 0x3FU, 0U);
+                GameState_SetBrightnessFade(&gGameState, 0x80U, 0x3FU, 0U);
                 gGameState.unk_82A &= 0xFEFF;
                 work->_6D = 0;
                 return;
@@ -3350,14 +3577,14 @@ void sub_0201B04C(IslandProgramWork *work) {
             work->_70 = 0;
             switch (work->_5D) {
                 case 1:
-                    sub_0201A854(work, 1);
+                    IslandProgram_SetDialogPalette(work, 1);
                     break;
                 case 3:
-                    sub_0201A854(work, 3);
+                    IslandProgram_SetDialogPalette(work, 3);
                     break;
             }
             work->current_window = work->_08;
-            sub_0201AB3C(work, 2);
+            IslandProgram_RestoreDialogDisplay(work, 2);
             mMsg_CopyTilesToVram(0, 0x90, work->current_window->tile_data);
             if (gGameState.unk_856 == 1) {
                 work->transition_requested = 1;
@@ -3369,42 +3596,49 @@ void sub_0201B04C(IslandProgramWork *work) {
     }
 }
 
-void sub_0201B168(IslandProgramWork *work) {
+/* Original address: 0x0201B168 */
+void IslandProgram_EnterNoticeRestart(IslandProgramWork *work) {
 
 }
 
-void sub_0201B16C(void) {
-    if (sub_02019B58(&gGameState, 1, 1) == 0x10) {
-        sub_0201A6C8();
+/* Original address: 0x0201B16C */
+void IslandProgram_UpdateNoticeRestart(IslandProgramWork *work) {
+    if (GameState_StepBrightnessFade(&gGameState, 1, 1) == 0x10) {
+        IslandProgram_Restart();
     }
 }
 
-s32 sub_0201B18C(IslandProgramWork *work, s8 arg1) {
+/* Original address: 0x0201B18C */
+s32 IslandProgram_RequestSleepState(IslandProgramWork *work, s8 arg1) {
     work->_59 = arg1;
     return 1;
 }
 
-s32 sub_0201B194(IslandProgramWork *work) {
+/* Original address: 0x0201B194 */
+s32 IslandProgram_RequestSleepPrompt(IslandProgramWork *work) {
     work->_59 = 1;
     return 1;
 }
 
-s32 sub_0201B1A0(IslandProgramWork *work) {
+/* Original address: 0x0201B1A0 */
+s32 IslandProgram_RequestSleepMode(IslandProgramWork *work) {
     work->_59 = 2;
     return 1;
 }
 
-s32 sub_0201B1AC(IslandProgramWork *work) {
+/* Original address: 0x0201B1AC */
+s32 IslandProgram_RequestSleepCleanup(IslandProgramWork *work) {
     work->_59 = 3;
     return 1;
 }
 
-void sub_0201B1B8(IslandProgramWork *work) {
+/* Original address: 0x0201B1B8 */
+void IslandProgram_ApplyPendingSleepState(IslandProgramWork *work) {
     static const IslandProgramModeProc sIslandProgramWorkProcs[] = {
         NULL,
-        sub_0201B1EC,
-        sub_0201B2E8,
-        sub_0201B420,
+        IslandProgram_EnterSleepPrompt,
+        IslandProgram_EnterSleepMode,
+        IslandProgram_EnterSleepCleanup,
     };
     IslandProgramModeProc proc;
 
@@ -3417,10 +3651,11 @@ void sub_0201B1B8(IslandProgramWork *work) {
     }
 }
 
-void sub_0201B1EC(IslandProgramWork *work) {
+/* Original address: 0x0201B1EC */
+void IslandProgram_EnterSleepPrompt(IslandProgramWork *work) {
     if (mMsg_RequestAppear(&sMsgWindow_03003060, 21) == 1) {
-        sub_0201A854(work, 3);
-        sub_0201AA98(work, 3);
+        IslandProgram_SetDialogPalette(work, 3);
+        IslandProgram_SetupDialogDisplay(work, 3);
         work->_54 = work->_59;
         work->input_timer = 0;
         work->current_window = &sMsgWindow_03003060;
@@ -3428,27 +3663,28 @@ void sub_0201B1EC(IslandProgramWork *work) {
     work->_59 = 0;
 }
 
-void sub_0201B238(IslandProgramWork *work) {
+/* Original address: 0x0201B238 */
+void IslandProgram_UpdateSleepPrompt(IslandProgramWork *work) {
     if (!work->current_window->draw_enabled) {
-        if (sub_0201B1AC(work) == 1) {
-            sub_0201B1B8(work);
+        if (IslandProgram_RequestSleepCleanup(work) == 1) {
+            IslandProgram_ApplyPendingSleepState(work);
         }
     } else if (work->current_window->current_mode >= mMsg_MODE_CURSOR && work->current_window->current_mode <= mMsg_MODE_CHOICE) {
         if (work->current_window->selected_choice != -1) {
             if ((mMsg_CheckControlCode(work->current_window->text, 1, work->current_window->text_offset) == 0) || (work->current_window->message_id != 22)) {
-                if (sub_0201A810(&work->input_timer, 600) == 1) {
-                    if (sub_0201B1A0(work) != 0) {
-                        sub_0201B1B8(work);
+                if (IslandProgram_UpdateInputTimeout(&work->input_timer, 600) == 1) {
+                    if (IslandProgram_RequestSleepMode(work) != 0) {
+                        IslandProgram_ApplyPendingSleepState(work);
                     }
                 }
             } else {
-                if (sub_0201B1A0(work) != 0) {
-                    sub_0201B1B8(work);
+                if (IslandProgram_RequestSleepMode(work) != 0) {
+                    IslandProgram_ApplyPendingSleepState(work);
                 }
             }
-        } else if (sub_0201A810(&work->input_timer, 600) == 1) {
-            if (sub_0201B1A0(work) != 0) {
-                sub_0201B1B8(work);
+        } else if (IslandProgram_UpdateInputTimeout(&work->input_timer, 600) == 1) {
+            if (IslandProgram_RequestSleepMode(work) != 0) {
+                IslandProgram_ApplyPendingSleepState(work);
             }
         } else if (gGameState.unk_856 != 0) {
             work->transition_requested = 1;
@@ -3456,17 +3692,19 @@ void sub_0201B238(IslandProgramWork *work) {
     }
 }
 
-void sub_0201B2E8(IslandProgramWork *work) {
+/* Original address: 0x0201B2E8 */
+void IslandProgram_EnterSleepMode(IslandProgramWork *work) {
     work->_54 = work->_59;
     work->_59 = 0;
     work->input_timer = 0;
     gGameState._008 = 0;
     gGameState.unk_850 = 1;
     gGameState.unk_85A = 1;
-    sub_02019D98(0x14U);
+    GameAudio_StopMusic(0x14U);
 }
 
-void sub_0201B328(IslandProgramWork *work) {
+/* Original address: 0x0201B328 */
+void IslandProgram_UpdateSleepMode(IslandProgramWork *work) {
 
     if (gGameState.unk_850 == 1) {
         if (gGameState._008 > 120) {
@@ -3483,20 +3721,20 @@ void sub_0201B328(IslandProgramWork *work) {
     }
 
     if (!work->current_window->draw_enabled) {
-        if (sub_0201B1AC(work) == 1) {
-            sub_0201B1B8(work);
+        if (IslandProgram_RequestSleepCleanup(work) == 1) {
+            IslandProgram_ApplyPendingSleepState(work);
         }
     } else if (work->current_window->current_mode >= mMsg_MODE_CURSOR && work->current_window->current_mode <= mMsg_MODE_CHOICE) {
         if (work->current_window->selected_choice != -1) {
             if ((mMsg_CheckControlCode(work->current_window->text, 1, work->current_window->text_offset) != 0) && (work->current_window->message_id == 23)) {
-                if (sub_0201B1A0(work) != 0) {
-                    sub_0201B1B8(work);
+                if (IslandProgram_RequestSleepMode(work) != 0) {
+                    IslandProgram_ApplyPendingSleepState(work);
                     gGameState._008 = 120;
                 }
             }
-        } else if (sub_0201A810(&work->input_timer, 600) == 1) {
-            if (sub_0201B1A0(work) != 0) {
-                sub_0201B1B8(work);
+        } else if (IslandProgram_UpdateInputTimeout(&work->input_timer, 600) == 1) {
+            if (IslandProgram_RequestSleepMode(work) != 0) {
+                IslandProgram_ApplyPendingSleepState(work);
                 gGameState._008 = 120;
             }
         } else if (gGameState.unk_856 != 0) {
@@ -3505,33 +3743,36 @@ void sub_0201B328(IslandProgramWork *work) {
     }
 }
 
-void sub_0201B420(IslandProgramWork *work) {
+/* Original address: 0x0201B420 */
+void IslandProgram_EnterSleepCleanup(IslandProgramWork *work) {
     work->_54 = work->_59;
     work->_59 = 0;
     if (gGameState._008 != 0) {
         if ((s16) gGameState.unk_816 != -1) {
-            sub_02019D88(gGameState.unk_816);
+            GameAudio_PlayMusic(gGameState.unk_816);
         }
-        sub_02027068();
+        SoundDriver_EnablePcm();
         gGameState._008 = 0;
     }
 }
 
-void sub_0201B464(IslandProgramWork *work) {
+/* Original address: 0x0201B464 */
+void IslandProgram_UpdateSleepCleanup(IslandProgramWork *work) {
     if (!work->current_window->draw_enabled) {
         work->_54 = 0;
         if (work->_5E == 1) {
-            sub_0201A854(work, 1);
+            IslandProgram_SetDialogPalette(work, 1);
         }
         work->_5E = 0;
         work->current_window = work->_0C;
-        sub_0201AB3C(work, 3);
+        IslandProgram_RestoreDialogDisplay(work, 3);
         mMsg_CopyTilesToVram(0, 0x90, work->current_window->tile_data);
         work->input_timer = 0;
     }
 }
 
-void sub_0201B4B0(void) {
+/* Original address: 0x0201B4B0 */
+void IslandProgram_SetupOverviewDisplay(void) {
     gGameState.unk_82A = (gGameState.unk_82A & 0xE0FF) | 0x700;
     gGameState.unk_828 &= 0xFFFC;
     gGameState.unk_824 = (gGameState.unk_824 & 0xFFFC) | 1;
@@ -3552,7 +3793,7 @@ void sub_0201B4B0(void) {
 }
 
 /* Original address: 0x0201B594 */
-void sub_0201B594(IslandProgramWork *work) {
+void IslandProgram_UpdateTimeOfDayPalette(IslandProgramWork *work) {
     u8 time_of_day = (u8)(gGameState.game_time_frames / 216000U);
 
     if (time_of_day != work->time_of_day) {
@@ -3568,61 +3809,69 @@ void sub_0201B594(IslandProgramWork *work) {
         palette = &time_of_day_palettes[time_of_day * 4];
         CpuCopy16(palette, current_time_of_day_palette0, sizeof(current_time_of_day_palette0));
         CpuCopy16(palette, current_time_of_day_palette1, sizeof(current_time_of_day_palette1));
-        CpuFastCopy(time_of_day_palette_buffer0, (void *)(BG_PLTT + 0x100), PLTT_SIZE_4BPP);
-        CpuFastCopy(time_of_day_palette_buffer1, (void *)(BG_PLTT + 0x120), PLTT_SIZE_4BPP);
+        CpuFastCopy(current_time_of_day_palette0, (void *)(BG_PLTT + 0x100), PLTT_SIZE_4BPP);
+        CpuFastCopy(current_time_of_day_palette1, (void *)(BG_PLTT + 0x120), PLTT_SIZE_4BPP);
         work->time_of_day = time_of_day;
     }
     gGameState.unk_820 = 0x2441;
     gGameState.unk_81C = 0x1006;
 }
 
-s32 sub_0201B680(IslandProgramWork *work, s8 arg1) {
+/* Original address: 0x0201B680 */
+s32 IslandProgram_RequestTransferState(IslandProgramWork *work, s8 arg1) {
     work->_5A = arg1;
     return 1;
 }
 
-s32 sub_0201B688(IslandProgramWork *work) {
+/* Original address: 0x0201B688 */
+s32 IslandProgram_RequestTransferPrompt(IslandProgramWork *work) {
     work->_5A = 1;
     return 1;
 }
 
-s32 sub_0201B694(IslandProgramWork *work) {
+/* Original address: 0x0201B694 */
+s32 IslandProgram_RequestTransferProgress(IslandProgramWork *work) {
     work->_5A = 2;
     return 1;
 }
 
-s32 sub_0201B6A0(IslandProgramWork *work) {
+/* Original address: 0x0201B6A0 */
+s32 IslandProgram_RequestTransferRetry(IslandProgramWork *work) {
     work->_5A = 3;
     return 1;
 }
 
-s32 sub_0201B6AC(IslandProgramWork *work) {
+/* Original address: 0x0201B6AC */
+s32 IslandProgram_RequestTransferComplete(IslandProgramWork *work) {
     work->_5A = 4;
     return 1;
 }
 
-s32 sub_0201B6B8(IslandProgramWork *work) {
+/* Original address: 0x0201B6B8 */
+s32 IslandProgram_RequestTransferCleanup(IslandProgramWork *work) {
     work->_5A = 5;
     return 1;
 }
 
-s32 sub_0201B6C4(IslandProgramWork *work) {
+/* Original address: 0x0201B6C4 */
+s32 IslandProgram_RequestTransferRestart(IslandProgramWork *work) {
     work->_5A = 6;
     return 1;
 }
 
-void sub_0201B6D0(IslandProgramWork *work) {
+/* Original address: 0x0201B6D0 */
+void IslandProgram_ApplyPendingTransferState(IslandProgramWork *work) {
     IslandProgramModeProc proc;
 
     if ((u8)work->_5A <= 6) {
         static const IslandProgramModeProc sIslandProgramWorkProcs[] = {
             NULL,
-            sub_0201B6FC,
-            sub_0201B7B0,
-            sub_0201B90C,
-            sub_0201B960,
-            sub_0201B994,
-            sub_0201BB20,
+            IslandProgram_EnterTransferPrompt,
+            IslandProgram_EnterTransferProgress,
+            IslandProgram_EnterTransferRetry,
+            IslandProgram_EnterTransferComplete,
+            IslandProgram_EnterTransferCleanup,
+            IslandProgram_EnterTransferRestart,
         };
 
         proc = sIslandProgramWorkProcs[work->_5A];
@@ -3632,30 +3881,33 @@ void sub_0201B6D0(IslandProgramWork *work) {
     }
 }
 
-void sub_0201B6FC(IslandProgramWork *work) {
+/* Original address: 0x0201B6FC */
+void IslandProgram_EnterTransferPrompt(IslandProgramWork *work) {
     if (mMsg_RequestAppear(&sMsgWindow_03002980, 4) == 1) {
-        sub_0201A854(work, 4);
-        sub_0201AA98(work, 4U);
-        sub_0201C7E0(0);
-        sub_0201C870();
-        *gIntrTable = (u32) sub_0201CB50;
+        IslandProgram_SetDialogPalette(work, 4);
+        IslandProgram_SetupDialogDisplay(work, 4U);
+        InitIslandLinkTransfer(0);
+        StopIslandLinkTransfer();
+        *gIntrTable = (u32) IslandLinkSerialInterrupt;
         work->_55 = work->_5A;
         work->current_window = &sMsgWindow_03002980;
     }
     work->_5A = 0;
 }
 
-void sub_0201B75C(IslandProgramWork *work) {
+/* Original address: 0x0201B75C */
+void IslandProgram_UpdateTransferPrompt(IslandProgramWork *work) {
     if (!work->current_window->draw_enabled) {
-        if (sub_0201B6B8(work) == 1) {
-            sub_0201B6D0(work);
+        if (IslandProgram_RequestTransferCleanup(work) == 1) {
+            IslandProgram_ApplyPendingTransferState(work);
         }
-    } else if ((mMsg_CheckControlCode(work->current_window->text, 1, work->current_window->text_offset) != 0) && (work->current_window->message_id == 6) && (sub_0201B694(work) == 1)) {
-        sub_0201B6D0(work);
+    } else if ((mMsg_CheckControlCode(work->current_window->text, 1, work->current_window->text_offset) != 0) && (work->current_window->message_id == 6) && (IslandProgram_RequestTransferProgress(work) == 1)) {
+        IslandProgram_ApplyPendingTransferState(work);
     }
 }
 
-void sub_0201B7B0(IslandProgramWork *work) {
+/* Original address: 0x0201B7B0 */
+void IslandProgram_EnterTransferProgress(IslandProgramWork *work) {
     s32 var_r2_7139;
     int i;
 
@@ -3670,37 +3922,38 @@ void sub_0201B7B0(IslandProgramWork *work) {
             ((s32*)&gIslandData->landinfo)[i] = 0;
         }
         work->_69 = 1;
-        sub_0201C7E0(0);
+        InitIslandLinkTransfer(0);
     }
     work->_5A = 0;
 }
 
-void sub_0201B824(IslandProgramWork *work) {
+/* Original address: 0x0201B824 */
+void IslandProgram_UpdateTransferProgress(IslandProgramWork *work) {
     s32 temp_r0_7180;
     s32 temp_r0_7232;
     u32 temp_r0_7182;
 
-    temp_r0_7180 = sub_0201C1B8();
+    temp_r0_7180 = IslandProgram_UpdateLinkTransfer();
     temp_r0_7182 = temp_r0_7180 - 7;
     switch (temp_r0_7182) {
     case 1:
     case 3:
     case 9:
-        if ((sub_0201B6A0(work) == 1) && (mMsg_ChangeMsgData(work->current_window, temp_r0_7180) == 1) && ((mMsg_RequestCursor(work->current_window)) != 0)) {
+        if ((IslandProgram_RequestTransferRetry(work) == 1) && (mMsg_ChangeMsgData(work->current_window, temp_r0_7180) == 1) && ((mMsg_RequestCursor(work->current_window)) != 0)) {
             mMsg_MainSetup_Window(work->current_window);
             mMsg_ClearText(work->current_window);
-            sub_0201B6D0(work);
+            IslandProgram_ApplyPendingTransferState(work);
             return;
         }
     default:
         return;
     case 2:
-        if (sub_0201B6AC(work) == 1) {
+        if (IslandProgram_RequestTransferComplete(work) == 1) {
             temp_r0_7232 = mMsg_ChangeMsgData(work->current_window, temp_r0_7180);
             if ((temp_r0_7232 == 1) && (mMsg_RequestCursor(work->current_window) != 0)) {
                 mMsg_MainSetup_Window(work->current_window);
                 mMsg_ClearText(work->current_window);
-                sub_0201B6D0(work);
+                IslandProgram_ApplyPendingTransferState(work);
                 work->_6D = temp_r0_7232;
                 return;
             }
@@ -3715,12 +3968,14 @@ void sub_0201B824(IslandProgramWork *work) {
     }
 }
 
-void sub_0201B90C(IslandProgramWork *work) {
+/* Original address: 0x0201B90C */
+void IslandProgram_EnterTransferRetry(IslandProgramWork *work) {
     work->_55 = work->_5A;
     work->_5A = 0;
 }
 
-void sub_0201B91C(IslandProgramWork *work) {
+/* Original address: 0x0201B91C */
+void IslandProgram_UpdateTransferRetry(IslandProgramWork *work) {
     s32 temp_r0_7298;
 
     if (mMsg_CheckControlCode(work->current_window->text, 1, work->current_window->text_offset) != 0) {
@@ -3732,18 +3987,21 @@ void sub_0201B91C(IslandProgramWork *work) {
     }
 }
 
-void sub_0201B960(IslandProgramWork *work) {
+/* Original address: 0x0201B960 */
+void IslandProgram_EnterTransferComplete(IslandProgramWork *work) {
     work->_55 = work->_5A;
     work->_5A = 0;
 }
 
-void sub_0201B970(IslandProgramWork* work) {
-    if (!work->current_window->draw_enabled && sub_0201B6B8(work) == 1) {
-        sub_0201B6D0(work);
+/* Original address: 0x0201B970 */
+void IslandProgram_UpdateTransferComplete(IslandProgramWork* work) {
+    if (!work->current_window->draw_enabled && IslandProgram_RequestTransferCleanup(work) == 1) {
+        IslandProgram_ApplyPendingTransferState(work);
     }
 }
 
-void sub_0201B994(IslandProgramWork *work) {
+/* Original address: 0x0201B994 */
+void IslandProgram_EnterTransferCleanup(IslandProgramWork *work) {
     s32 *var_r7_7399;
     s32 temp_r0_7404;
     s32 var_r3_7393;
@@ -3774,7 +4032,8 @@ void sub_0201B994(IslandProgramWork *work) {
     work->_5A = 0;
 }
 
-void sub_0201BA54(IslandProgramWork *work) {
+/* Original address: 0x0201BA54 */
+void IslandProgram_UpdateTransferCleanup(IslandProgramWork *work) {
     s8 temp_r2_7459;
     s8 var_r1_7472;
     u8 temp_r0_7450;
@@ -3784,67 +4043,75 @@ void sub_0201BA54(IslandProgramWork *work) {
 
         switch (work->_5F) {
             case 1:
-                sub_0201A854(work, 1);
+                IslandProgram_SetDialogPalette(work, 1);
                 break;
             case 3:
-                sub_0201A854(work, 3);
+                IslandProgram_SetDialogPalette(work, 3);
                 break;
             default:
-                sub_0201AB3C(work, 4);
+                IslandProgram_RestoreDialogDisplay(work, 4);
                 break;
         }
 
         work->_5F = 0;
         work->current_window = work->_10;
-        sub_0201AB3C(work, 4);
+        IslandProgram_RestoreDialogDisplay(work, 4);
         mMsg_CopyTilesToVram(0, 0x90, work->current_window->tile_data);
         if (work->_6D == 1) {
             work->_55 = 6;
-            sub_02019B1C(&gGameState, 0x80U, 0x3FU, 0U);
+            GameState_SetBrightnessFade(&gGameState, 0x80U, 0x3FU, 0U);
             gGameState.unk_82A &= 0xFEFF;
-            sub_02019D98(0x14U);
+            GameAudio_StopMusic(0x14U);
             work->_6D = 0;
         }
         work->_69 = 0;
         work->input_timer = 0;
         *gIntrTable = (u32)JoybootHandler;
-        sub_0201A218();
+        Joybus_Init();
     }
 }
 
-void sub_0201BB20(IslandProgramWork *work) {
+/* Original address: 0x0201BB20 */
+void IslandProgram_EnterTransferRestart(IslandProgramWork *work) {
 
 }
 
-void sub_0201BB24(void) {
-    if (sub_02019B58(&gGameState, 1U, 1U) == 0x10) {
-        sub_0201A6C8();
+/* Original address: 0x0201BB24 */
+void IslandProgram_UpdateTransferRestart(IslandProgramWork *work) {
+    if (GameState_StepBrightnessFade(&gGameState, 1U, 1U) == 0x10) {
+        IslandProgram_Restart();
     }
 }
 
-s32 sub_0201BB44(IslandProgramWork *work, s8 arg1) {
+/* Original address: 0x0201BB44 */
+s32 IslandProgram_RequestMode(IslandProgramWork *work, s8 arg1) {
     work->pending_mode = arg1;
     return 1;
 }
 
-s32 sub_0201BB4C(IslandProgramWork *work) {
-    return sub_0201BB44(work, 1);
+/* Original address: 0x0201BB4C */
+s32 IslandProgram_RequestNormalMode(IslandProgramWork *work) {
+    return IslandProgram_RequestMode(work, 1);
 }
 
-s32 sub_0201BB58(IslandProgramWork *work) {
-    return sub_0201BB44(work, 2);
+/* Original address: 0x0201BB58 */
+s32 IslandProgram_RequestFieldLoadMode(IslandProgramWork *work) {
+    return IslandProgram_RequestMode(work, 2);
 }
 
-s32 sub_0201BB64(IslandProgramWork *work) {
-    return sub_0201BB44(work, 4);
+/* Original address: 0x0201BB64 */
+s32 IslandProgram_RequestMosaicCoverMode(IslandProgramWork *work) {
+    return IslandProgram_RequestMode(work, 4);
 }
 
-s32 sub_0201BB70(IslandProgramWork *work) {
-    return sub_0201BB44(work, 3);
+/* Original address: 0x0201BB70 */
+s32 IslandProgram_RequestMosaicRevealMode(IslandProgramWork *work) {
+    return IslandProgram_RequestMode(work, 3);
 }
 
-s32 sub_0201BB7C(IslandProgramWork *work) {
-    return sub_0201BB44(work, 5);
+/* Original address: 0x0201BB7C */
+s32 IslandProgram_RequestMessageMode(IslandProgramWork *work) {
+    return IslandProgram_RequestMode(work, 5);
 }
 
 /* Original address: 0x0201BB88 */
@@ -3867,15 +4134,15 @@ void IslandProgram_EnterNormalMode(IslandProgramWork *work) {
     work->pending_mode = 0;
     work->current_window = NULL;
     gGameState.unk_816 = 0;
-    sub_02019D88(0);
+    GameAudio_PlayMusic(0);
     gGameState.unk_85A = 1;
-    sub_0201B4B0();
+    IslandProgram_SetupOverviewDisplay();
 }
 
 /* Original address: 0x0201BBF8 */
 void IslandProgram_UpdateNormalMode(IslandProgramWork *work) {
     if (*(u16 *)0x0203E9A0 == 0) {
-        if ((gGameState.keys_pressed & 9) && sub_0201BB64(work) == 1) {
+        if ((gGameState.keys.buttons.pressed & 9) && IslandProgram_RequestMosaicCoverMode(work) == 1) {
             IslandProgram_ApplyPendingMode(work);
             return;
         }
@@ -3884,7 +4151,7 @@ void IslandProgram_UpdateNormalMode(IslandProgramWork *work) {
             work->transition_requested = 1;
         }
     } else {
-        if ((gGameState.keys_pressed & 1) && sub_0201BB7C(work) == 1) {
+        if ((gGameState.keys.buttons.pressed & 1) && IslandProgram_RequestMessageMode(work) == 1) {
             IslandProgram_ApplyPendingMode(work);
             return;
         }
@@ -3901,8 +4168,8 @@ void IslandProgram_EnterFieldLoadMode(IslandProgramWork *work) {
     work->mode = prev;
     work->pending_mode = 0;
     gGameState.unk_816 = 1;
-    sub_02019D88(gGameState.unk_816);
-    sub_02027068();
+    GameAudio_PlayMusic(gGameState.unk_816);
+    SoundDriver_EnablePcm();
     gGameState.unk_82A = (0xE0FF & gGameState.unk_82A) | 0x1F00;
     gGameState.unk_822 &= 0xFFFC;
     gGameState.unk_824 = (0xFFFC & gGameState.unk_824) | 1;
@@ -3922,9 +4189,9 @@ void IslandProgram_EnterFieldLoadMode(IslandProgramWork *work) {
 void IslandProgram_UpdateFieldLoadMode(IslandProgramWork *work) {
     u8 temp_r4_7859;
 
-    temp_r4_7859 = sub_0201D904();
-    sub_0201DD94();
-    if ((temp_r4_7859 == 1) && ((s32) sub_0201BB70(work) == 1)) {
+    temp_r4_7859 = UpdateIslandField();
+    DrawIslandField();
+    if ((temp_r4_7859 == 1) && ((s32) IslandProgram_RequestMosaicRevealMode(work) == 1)) {
         IslandProgram_ApplyPendingMode(work);
     }
 }
@@ -3935,12 +4202,12 @@ void IslandProgram_EnterMosaicCoverMode(IslandProgramWork *work) {
 
     work->mode = prev;
     work->pending_mode = 0;
-    sub_02019D98(0x14U);
+    GameAudio_StopMusic(0x14U);
 }
 
 /* Original address: 0x0201BDC4 */
 void IslandProgram_UpdateMosaicCoverMode(IslandProgramWork *work) {
-    if (sub_0201D800(1U) == 1 && sub_0201BB58(work) == 1) {
+    if (UpdateIslandMosaic(1U) == 1 && IslandProgram_RequestFieldLoadMode(work) == 1) {
         IslandProgram_ApplyPendingMode(work);
     }
 }
@@ -3952,8 +4219,8 @@ void IslandProgram_EnterMosaicRevealMode(IslandProgramWork *work) {
     work->mode = prev;
     work->pending_mode = 0;
     gGameState.unk_816 = 0;
-    sub_02019D88(0U);
-    sub_0201B4B0();
+    GameAudio_PlayMusic(0U);
+    IslandProgram_SetupOverviewDisplay();
     gGameState.unk_842 = 0x100;
     gGameState.unk_840 = 0x100;
     gGameState.unk_846 = 0x100;
@@ -3964,7 +4231,7 @@ void IslandProgram_EnterMosaicRevealMode(IslandProgramWork *work) {
 void IslandProgram_UpdateMosaicRevealMode(IslandProgramWork *work) {
     s32 transition_complete;
 
-    transition_complete = sub_0201D800(0U);
+    transition_complete = UpdateIslandMosaic(0U);
     if (transition_complete == 1) {
         work->mode = transition_complete;
         gGameState.unk_85A = transition_complete;
@@ -3976,8 +4243,8 @@ void IslandProgram_EnterMessageMode(IslandProgramWork *work) {
     if (mMsg_RequestAppear(&sMsgWindow_03002fc0, 0x1A) == 1) {
         s8 prev;
 
-        sub_0201A854(work, 1);
-        sub_0201AA98(work, 1U);
+        IslandProgram_SetDialogPalette(work, 1);
+        IslandProgram_SetupDialogDisplay(work, 1U);
         prev = work->pending_mode;
         work->mode = prev;
         work->current_window = &sMsgWindow_03002fc0;
@@ -3985,7 +4252,8 @@ void IslandProgram_EnterMessageMode(IslandProgramWork *work) {
     work->pending_mode = 0;
 }
 
-void sub_0201BEB0(IslandProgramWork *work) {
+/* Original address: 0x0201BEB0 */
+void IslandProgram_UpdateMessageMode(IslandProgramWork *work) {
     if (!work->current_window->draw_enabled) {
         work->mode = 1;
     } else if ((work->current_window->current_mode >= mMsg_MODE_CURSOR) && (work->current_window->current_mode <= mMsg_MODE_CHOICE) && (work->current_window->selected_choice == -1) && ((gGameState.unk_856 != 0) || (gGameState.unk_84E != 0))) {
@@ -3993,343 +4261,311 @@ void sub_0201BEB0(IslandProgramWork *work) {
     }
 }
 
-void sub_0201BF10(void) {
+/* Original address: 0x0201BF10 */
+void IslandProgram_InitWork(void) {
     CpuFastFill(0, &gIslandProgramWork, sizeof(IslandProgramWork));
     gIslandProgramWork.time_of_day = -1;
-    sub_0201D5C4();
-    if (sub_0201BB4C(&gIslandProgramWork) == 1) {
+    InitIslandField();
+    if (IslandProgram_RequestNormalMode(&gIslandProgramWork) == 1) {
         IslandProgram_ApplyPendingMode(&gIslandProgramWork);
     }
-    sub_0201B594(&gIslandProgramWork);
+    IslandProgram_UpdateTimeOfDayPalette(&gIslandProgramWork);
 }
 
-void sub_0201BF58(void) {
-    s8 temp_r2_8284;
-    u8 temp_r0_8354;
-    u8 temp_r1_8313;
-    u8 temp_r2_8238;
-    u8 temp_r7_8176;
-    u8 var_r8_8104;
-    void *temp_r0_8259;
-    void *temp_r0_8343;
+/* Original address: 0x0202AFDC */
+IslandProgramModeProc const sIslandProgramNoticeUpdateProcs[4] = {
+    NULL,
+    IslandProgram_UpdateNoticeTransfer,
+    IslandProgram_UpdateNoticeResult,
+    IslandProgram_UpdateNoticeRestart,
+};
+
+/* Original address: 0x0202AFFC */
+IslandProgramModeProc const sIslandProgramPromptUpdateProcs[4] = {
+    NULL,
+    IslandProgram_UpdateSleepPrompt,
+    IslandProgram_UpdateSleepMode,
+    IslandProgram_UpdateSleepCleanup,
+};
+
+/* Original address: 0x0202B2A0 */
+IslandProgramModeProc const sIslandProgramTransferUpdateProcs[7] = {
+    NULL,
+    IslandProgram_UpdateTransferPrompt,
+    IslandProgram_UpdateTransferProgress,
+    IslandProgram_UpdateTransferRetry,
+    IslandProgram_UpdateTransferComplete,
+    IslandProgram_UpdateTransferCleanup,
+    IslandProgram_UpdateTransferRestart,
+};
+
+/* Original address: 0x0202B2D4 */
+IslandProgramModeProc const sIslandProgramModeUpdateProcs[6] = {
+    NULL,
+    IslandProgram_UpdateNormalMode,
+    IslandProgram_UpdateFieldLoadMode,
+    IslandProgram_UpdateMosaicRevealMode,
+    IslandProgram_UpdateMosaicCoverMode,
+    IslandProgram_UpdateMessageMode,
+};
+
+/* Original address: 0x0201BF58 */
+void IslandProgram_Update(void) {
+    u8 transition_requested;
+    u8 allow_link_reset;
     IslandProgramWork *work = &gIslandProgramWork;
 
-    var_r8_8104 = 1;
+    allow_link_reset = 1;
     if ((work->_53 != 3) && (work->_55 != 6) && (work->mode != 2)) {
-        sub_0201B594(work);
+        IslandProgram_UpdateTimeOfDayPalette(work);
     }
-    if ((*(u8 *)((u8 *)(*(void **)0x03001B40) + (0x193A))) != 0) {
-        gGameState.unk_83C = ((u16) gGameState.unk_844 >> 1) + work->weather_scroll;
+    if (gIslandData->weather != 0) {
+        gGameState.unk_83C = work->weather_scroll + ((u16)gGameState.unk_844 >> 1);
         gGameState.unk_83E -= 4;
         work->weather_scroll += 1;
     }
-    sub_0201ABBC(work);
+    IslandProgram_UpdateMessages(work);
     if (work->_53 != 0) {
-        ((void (*)(void *))*(u32 *)(0x0202AFDC + (work->_53 * 4)))(work);
-        temp_r7_8176 = work->transition_requested;
-        if (temp_r7_8176 != 1) {
-
-        } else {
-            sub_0201ADE8(work);
+        sIslandProgramNoticeUpdateProcs[work->_53](work);
+        transition_requested = work->transition_requested;
+        if (transition_requested == 1) {
+            IslandProgram_RequestNoticeTransfer(work);
             work->transition_requested = 0;
-            sub_0201AE0C(work);
-            gGameState.unk_857 = temp_r7_8176;
+            IslandProgram_ApplyPendingNoticeState(work);
+            gGameState.unk_857 = transition_requested;
             gGameState.unk_84E = 0;
             gGameState.unk_84F = 0;
         }
     } else if (work->_55 != 0) {
-        ((void (*)(void *))*(u32 *)(0x0202B2A0 + (work->_55 * 4)))(work);
-        var_r8_8104 = 0;
+        sIslandProgramTransferUpdateProcs[work->_55](work);
+        allow_link_reset = 0;
     } else if (work->_54 != 0) {
-        temp_r2_8238 = work->transition_requested;
-        if (temp_r2_8238 == 0) {
+        if (work->transition_requested == 0) {
             if (work->window_ready[3] == 0) {
-                ((void (*)(void *))*(u32 *)(0x0202AFFC + (work->_54 * 4)))(work);
-            } else {
-                temp_r0_8259 = work->current_window;
-                if ((temp_r0_8259 == NULL) || ((*(u8 *)((u8 *)(temp_r0_8259) + (0x7C))) == 1)) {
-                    work->window_ready[3] = temp_r2_8238;
-                }
+                sIslandProgramPromptUpdateProcs[work->_54](work);
+            } else if ((work->current_window == NULL) || (work->current_window->draw_enabled == 1)) {
+                work->window_ready[3] = 0;
             }
         }
         if (work->transition_requested == 1) {
-            sub_0201C1C4(work, 3U, 1U, 1U, 0);
+            IslandProgram_TryOpenPendingDialog(work, 3U, 1U, 1U, 0);
         }
-    } else {
-        temp_r2_8284 = work->mode;
-        if (temp_r2_8284 != 0) {
-            if ((temp_r2_8284 == 1) && (*(u16 *)0x0203E9A0 == 0) && (2 & gGameState.keys_pressed)) {
-                gGameState.unk_84C = (u8) temp_r2_8284;
+    } else if (work->mode != 0) {
+        if ((work->mode == 1) && (gIslandDataReceived == 0) && (gGameState.keys.buttons.pressed & B_BUTTON)) {
+            gGameState.unk_84C = 1;
+        }
+        gGameState.unk_84E = IslandProgram_CheckSleepRequest(work);
+        if (work->transition_requested == 0) {
+            if (work->window_ready[1] == 0) {
+                sIslandProgramModeUpdateProcs[gIslandProgramWork.mode](&gIslandProgramWork);
+            } else if ((work->current_window == NULL) || (work->current_window->draw_enabled == 1)) {
+                work->window_ready[1] = 0;
+                work->input_timer = 0;
             }
-            gGameState.unk_84E = sub_0201A7C8(work);
-            temp_r1_8313 = work->transition_requested;
-            if (temp_r1_8313 == 0) {
-                if (work->window_ready[1] == 0) {
-                    ((void (*)(void))*(u32 *)(0x0202B2D4 + (work->mode * 4)))();
-                } else {
-                    temp_r0_8343 = work->current_window;
-                    if ((temp_r0_8343 == NULL) || ((*(u8 *)((u8 *)(temp_r0_8343) + (0x7C))) == 1)) {
-                        work->window_ready[1] = temp_r1_8313;
-                        work->input_timer = (s16) temp_r1_8313;
-                    }
-                }
-            }
-            temp_r0_8354 = work->transition_requested;
-            if (temp_r0_8354 == 1) {
-                sub_0201C1C4(work, 1U, 1U, 1U, (s32) temp_r0_8354);
-            }
+        }
+        if (work->transition_requested == 1) {
+            IslandProgram_TryOpenPendingDialog(work, 1U, 1U, 1U, (s32) work->transition_requested);
         }
     }
-    sub_0201A688(var_r8_8104);
+    Joybus_CheckTimeout(allow_link_reset);
 }
 
 void sub_0201C198(void) {
 
 }
 
-u16 sub_0201C19C(void) {
+/* Original address: 0x0201C19C */
+u16 IslandProgram_GetElapsedSeconds(void) {
     return (u16) (gIslandProgramWork.elapsed_milliseconds / 1000);
 }
 
-s32 sub_0201C1B8(void) {
-    return sub_0201C8C0();
+/* Original address: 0x0201C1B8 */
+s32 IslandProgram_UpdateLinkTransfer(void) {
+    return UpdateIslandLinkTransfer();
 }
 
-void sub_0201C1C4(IslandProgramWork *arg0, u8 arg1, u8 arg2, u8 arg3, s32 arg4) {
-    u8 temp_r0_8422;
-    u8 temp_r7_8419;
+/* Original address: 0x0201C1C4 */
+void IslandProgram_TryOpenPendingDialog(IslandProgramWork *work, u8 window, u8 allow_notice, u8 allow_transfer, u8 allow_prompt) {
+    s32 ready = IslandProgram_PrepareDialogTransition(work, (s8)window);
 
-    temp_r7_8419 = arg1;
-    temp_r0_8422 = sub_0201A714(arg0, (s8) arg1);
-    if (temp_r0_8422 == 1) {
-        if ((arg2 != 0) && (gGameState.unk_856 != 0)) {
-            sub_0201ADE8(arg0);
-            (*(s8 *)((u8 *)(arg0) + (0x72))) = 0;
-            *(u32 *)((arg0 + 0x72) - 0x15) = temp_r7_8419;
-            (*(s32 *)((u8 *)(arg0) + (8))) = (s32) (*(s32 *)((u8 *)(arg0) + (0x14)));
-            sub_0201AE0C(arg0);
-            gGameState.unk_857 = temp_r0_8422;
-            goto block_7;
-        }
-        if ((arg3 != 0) && (gGameState.unk_84C != 0)) {
-            sub_0201B688(arg0);
-            (*(s8 *)((u8 *)(arg0) + (0x72))) = 0;
-            *(u32 *)((arg0 + 0x72) - 0x13) = temp_r7_8419;
-            (*(s32 *)((u8 *)(arg0) + (0x10))) = (s32) (*(s32 *)((u8 *)(arg0) + (0x14)));
-            sub_0201B6D0(arg0);
-            gGameState.unk_84D = 1;
-block_7:
+    if (ready == 1) {
+        if (allow_notice != 0 && gGameState.unk_856 != 0) {
+            IslandProgram_RequestNoticeTransfer(work);
+            work->transition_requested = 0;
+            work->_5D = window;
+            work->_08 = work->current_window;
+            IslandProgram_ApplyPendingNoticeState(work);
+            gGameState.unk_857 = ready;
             gGameState.unk_84E = 0;
             gGameState.unk_84F = 0;
-            return;
-        }
-        if (((u8) arg4 != 0) && (gGameState.unk_84E != 0)) {
-            sub_0201B194(arg0);
-            (*(s8 *)((u8 *)(arg0) + (0x72))) = 0;
-            (*(u8 *)((u8 *)(arg0) + (0x5E))) = temp_r7_8419;
-            (*(s32 *)((u8 *)(arg0) + (0xC))) = (s32) (*(s32 *)((u8 *)(arg0) + (0x14)));
-            sub_0201B1B8(arg0);
+        } else if (allow_transfer != 0 && gGameState.unk_84C != 0) {
+            IslandProgram_RequestTransferPrompt(work);
+            work->transition_requested = 0;
+            work->_5F = window;
+            work->_10 = work->current_window;
+            IslandProgram_ApplyPendingTransferState(work);
+            gGameState.unk_84D = 1;
+            gGameState.unk_84E = 0;
+            gGameState.unk_84F = 0;
+        } else if (allow_prompt != 0 && gGameState.unk_84E != 0) {
+            IslandProgram_RequestSleepPrompt(work);
+            work->transition_requested = 0;
+            work->_5E = window;
+            work->_0C = work->current_window;
+            IslandProgram_ApplyPendingSleepState(work);
             gGameState.unk_84F = 1;
         }
     }
 }
 
-void sub_0201C2E0(void) {
+/* Original address: 0x0201C2E0 */
+void mMsg_InitSprites(void) {
     s32 sp0;
 
     sp0 = 0;
     CpuFastSet(&sp0, (void *)0x03003250, 0x01000120U);
 }
 
-void sub_0201C300(m_msg_sprite_c *sprite) {
+/* Original address: 0x0201C300 */
+void mMsg_DeactivateSprite(m_msg_sprite_c *sprite) {
     sprite->_57 = 0;
-    sprite->_08 = 0;
-    sprite->_0C = 0;
+    sprite->update = NULL;
+    sprite->draw = NULL;
 }
 
-m_msg_sprite_c *sub_0201C310(u8 type, s32 x, s32 y, s32 param) {
-    s32 sp0;
-    s32 sp4;
-    s32 (*temp_r1_8632)(m_msg_sprite_c *);
-    m_msg_sprite_c *temp_r7_8592;
-    m_msg_sprite_c *var_r4_8576;
-    s32 temp_r0_8578;
-    s32 temp_r4_8590;
-    u8 temp_r0_8574;
-    void *temp_r5_8586;
+/* Original address: 0x0201C310 */
+m_msg_sprite_c *mMsg_CreateSprite(u8 type, s32 x, s32 y, s32 param) {
+    u32 zero;
+    m_msg_sprite_c *result = NULL;
+    s32 index = mMsg_FindSpriteByType(0);
 
-    sp4 = param;
-    temp_r0_8574 = type;
-    var_r4_8576 = NULL;
-    temp_r0_8578 = sub_0201C3C8(0U);
-    if (temp_r0_8578 >= 0) {
-        temp_r5_8586 = *(u32 *)(0x0202B2FC + (temp_r0_8574 * 4));
-        sp0 = 0;
-        temp_r4_8590 = temp_r0_8578 * 0x60;
-        temp_r7_8592 = temp_r4_8590 + 0x03003250;
-        CpuFastSet(&sp0, temp_r7_8592, 0x01000018U);
-        *(u32 *)(0x03003250 + temp_r4_8590) = (s32 (*)(m_msg_sprite_c *)) (*(s32 (**)(m_msg_sprite_c *))((u8 *)(temp_r5_8586) + (0)));
-        *(u32 *)(0x03003254 + temp_r4_8590) = (s32) (*(s32 *)((u8 *)(temp_r5_8586) + (4)));
-        *(u32 *)(0x03003258 + temp_r4_8590) = (s32) (*(s32 *)((u8 *)(temp_r5_8586) + (8)));
-        *(u32 *)(0x0300325C + temp_r4_8590) = (s32) (*(s32 *)((u8 *)(temp_r5_8586) + (0xC)));
-        temp_r7_8592->_57 = temp_r0_8574;
-        *(u32 *)(0x0300327C + temp_r4_8590) = x;
-        *(u32 *)(0x03003280 + temp_r4_8590) = y;
-        *(u32 *)(0x03003264 + temp_r4_8590) = sp4;
-        temp_r1_8632 = *(u32 *)(0x03003250 + temp_r4_8590);
-        if (temp_r1_8632 != NULL) {
-            temp_r1_8632(temp_r7_8592);
+    if (index >= 0) {
+        const mMsg_SpriteProfile *profile = sMsgSpriteProfiles[type];
+        m_msg_sprite_c *sprite;
+
+        zero = 0;
+        sprite = &gMsgSprites[index];
+        CpuFastSet(&zero, sprite, 0x01000018);
+        gMsgSprites[index].init = profile->init;
+        gMsgSprites[index].destroy = profile->destroy;
+        gMsgSprites[index].update = profile->update;
+        gMsgSprites[index].draw = profile->draw;
+        sprite->_57 = type;
+        gMsgSprites[index]._2C = x;
+        gMsgSprites[index]._30 = y;
+        gMsgSprites[index]._14 = param;
+        if (sprite->init != NULL) {
+            sprite->init(sprite);
         }
-        var_r4_8576 = temp_r7_8592;
+        result = sprite;
     }
-    return var_r4_8576;
+    return result;
 }
 
-s32 sub_0201C3C8(u8 arg0) {
-    s32 var_r0_8676;
-    s32 var_r2_8659;
-    u8 *var_r1_8662;
+static inline s32 mMsg_ScanSpriteType(u8 type) {
+    s32 i;
 
-    var_r2_8659 = 0;
-    var_r1_8662 = (u8 *)0x030032A7;
-loop_2:
-    if (*var_r1_8662 != arg0) {
-        var_r1_8662 += 0x60;
-        var_r2_8659 += 1;
-        if (var_r2_8659 <= 0xB) {
-            goto loop_2;
+    for (i = 0; i < 12; i++) {
+        if (gMsgSprites[i]._57 == type) {
+            break;
         }
     }
-    var_r0_8676 = var_r2_8659;
-    if (var_r0_8676 > 0xB) {
-        var_r0_8676 = -1;
+    return i;
+}
+
+/* Original address: 0x0201C3C8 */
+s32 mMsg_FindSpriteByType(u8 type) {
+    s32 index = mMsg_ScanSpriteType(type);
+
+    if (index >= 12) {
+        index = -1;
     }
-    return var_r0_8676;
+    return index;
 }
 
-s32 sub_0201C3F8(void *arg0, s32 arg1) {
-    s32 var_r3_8689;
+/* Original address: 0x0201C3F8 */
+s32 mMsg_IsSpriteAnimationFinished(m_msg_sprite_c *sprite, AnimFrameData *const *animations) {
+    s32 finished = 0;
+    AnimFrameData *frames = animations[sprite->animation_index];
 
-    var_r3_8689 = 0;
-    if (((*(s16 *)((u8 *)(arg0) + (0x34))) == 0) && ((*(s32 *)((u8 *)((((*(s16 *)((u8 *)(arg0) + (0x36))) * 8) + *(u32 *)(((*(s16 *)((u8 *)(arg0) + (0x38))) * 4) + arg1))) + (8))) == 0)) {
-        var_r3_8689 = 1;
+    if (sprite->frame_timer == 0 && frames[sprite->frame_index + 1].sprite_gfx_p == NULL) {
+        finished = 1;
     }
-    return var_r3_8689;
+    return finished;
 }
 
-void sub_0201C428(void *arg0, s32 arg1, s16 arg2) {
-    (*(s16 *)((u8 *)(arg0) + (0x38))) = arg2;
-    (*(u16 *)((u8 *)(arg0) + (0x34))) = (u16) (*(u16 *)((u8 *)(*(u32 *)(((*(s16 *)((u8 *)(arg0) + (0x38))) * 4) + arg1)) + (4)));
-    (*(s16 *)((u8 *)(arg0) + (0x36))) = 0;
+/* Original address: 0x0201C428 */
+void mMsg_StartSpriteAnimation(m_msg_sprite_c *sprite, AnimFrameData *const *animations, s16 animation) {
+    sprite->animation_index = animation;
+    sprite->frame_timer = animations[sprite->animation_index][0].duration;
+    sprite->frame_index = 0;
 }
 
-void sub_0201C444(void *arg0, s32 arg1) {
-    s32 temp_r1_8748;
-    s32 temp_r3_8738;
-    u8 var_r0_8751;
-    void *temp_r0_8747;
+/* Original address: 0x0201C444 */
+void mMsg_UpdateSpriteAnimation(m_msg_sprite_c *sprite, AnimFrameData *const *animations) {
+    AnimFrameData *frames = animations[sprite->animation_index];
 
-    temp_r3_8738 = *(u32 *)(((*(s16 *)((u8 *)(arg0) + (0x38))) * 4) + arg1);
-    if ((s32) ((*(s16 *)((u8 *)(arg0) + (0x34))) - 1) <= 0) {
-        temp_r0_8747 = ((*(s16 *)((u8 *)(arg0) + (0x36))) * 8) + temp_r3_8738;
-        temp_r1_8748 = (*(s32 *)((u8 *)(temp_r0_8747) + (8)));
-        if (temp_r1_8748 == 0) {
-            var_r0_8751 = (*(u8 *)((u8 *)(temp_r0_8747) + (6)));
-            if (var_r0_8751 != 0) {
-                (*(s16 *)((u8 *)(arg0) + (0x36))) = (s16) temp_r1_8748;
-                goto block_5;
+    if (sprite->frame_timer - 1 <= 0) {
+        u8 action_flag;
+
+        if (frames[sprite->frame_index + 1].sprite_gfx_p == NULL) {
+            action_flag = (u8)frames[sprite->frame_index].action_flag;
+            if (action_flag != 0) {
+                sprite->frame_index = 0;
+            } else {
+                sprite->frame_timer = 0;
+                return;
             }
         } else {
-            (*(s16 *)((u8 *)(arg0) + (0x36))) = (s16) ((u16) (*(s16 *)((u8 *)(arg0) + (0x36))) + 1);
-block_5:
-            var_r0_8751 = (u8) (*(u16 *)((u8 *)((((*(s16 *)((u8 *)(arg0) + (0x36))) * 8) + temp_r3_8738)) + (4)));
+            sprite->frame_index++;
         }
+        sprite->frame_timer = frames[sprite->frame_index].duration;
     } else {
-        var_r0_8751 = (u16) (*(s16 *)((u8 *)(arg0) + (0x34))) - 1;
+        sprite->frame_timer--;
     }
-    (*(s16 *)((u8 *)(arg0) + (0x34))) = (s16) var_r0_8751;
 }
 
-void sub_0201C490(void *arg0, void *arg1, void *arg2) {
-    u8 temp_r3_8822;
-    u8 temp_r3_8853;
-    u8 temp_r4_8794;
-    u8 temp_r4_8860;
-    u8 temp_r5_8803;
-    u8 temp_r5_8866;
-    u8 temp_r5_8888;
-    u8 temp_r6_8813;
-
-    (*(s8 *)((u8 *)(arg2) + (0))) = (s8) ((*(s32 *)((u8 *)(arg0) + (0x24))) + ((*(u8 *)((u8 *)(arg1) + (0))) + (*(s32 *)((u8 *)(arg0) + (0x30)))));
-    temp_r4_8794 = (-4 & (*(u8 *)((u8 *)(arg2) + (1)))) | ((u32) ((*(u8 *)((u8 *)(arg1) + (1))) << 0x1E) >> 0x1E);
-    (*(u8 *)((u8 *)(arg2) + (1))) = temp_r4_8794;
-    temp_r5_8803 = (-0xD & temp_r4_8794) | (0xC & (*(u8 *)((u8 *)(arg1) + (1))));
-    (*(u8 *)((u8 *)(arg2) + (1))) = temp_r5_8803;
-    temp_r6_8813 = (-0x11 & temp_r5_8803) | (0x10 & (*(u8 *)((u8 *)(arg1) + (1))));
-    (*(u8 *)((u8 *)(arg2) + (1))) = temp_r6_8813;
-    temp_r3_8822 = (-0x21 & temp_r6_8813) | (0x20 & (*(u8 *)((u8 *)(arg1) + (1))));
-    (*(u8 *)((u8 *)(arg2) + (1))) = temp_r3_8822;
-    (*(u8 *)((u8 *)(arg2) + (1))) = (u8) ((temp_r3_8822 & 0x3F) | (((u8) (*(u8 *)((u8 *)(arg1) + (1))) >> 6) << 6));
-    (*(u16 *)((u8 *)(arg2) + (2))) = (u16) ((0xFFFFFE00 & (*(u16 *)((u8 *)(arg2) + (2)))) | ((((u32) ((*(u16 *)((u8 *)(arg1) + (2))) << 0x17) >> 0x17) + (*(s32 *)((u8 *)(arg0) + (0x2C))) + (*(s32 *)((u8 *)(arg0) + (0x20)))) & 0x1FF));
-    temp_r3_8853 = (-0xF & (*(u8 *)((u8 *)(arg2) + (3)))) | (0xE & (*(u8 *)((u8 *)(arg1) + (3))));
-    (*(u8 *)((u8 *)(arg2) + (3))) = temp_r3_8853;
-    temp_r4_8860 = (-0x11 & temp_r3_8853) | (0x10 & (*(u8 *)((u8 *)(arg1) + (3))));
-    (*(u8 *)((u8 *)(arg2) + (3))) = temp_r4_8860;
-    temp_r5_8866 = (-0x21 & temp_r4_8860) | (0x20 & (*(u8 *)((u8 *)(arg1) + (3))));
-    (*(u8 *)((u8 *)(arg2) + (3))) = temp_r5_8866;
-    (*(u8 *)((u8 *)(arg2) + (3))) = (u8) ((temp_r5_8866 & 0x3F) | (((u8) (*(u8 *)((u8 *)(arg1) + (3))) >> 6) << 6));
-    (*(u16 *)((u8 *)(arg2) + (4))) = (u16) ((0xFFFFFC00 & (*(u16 *)((u8 *)(arg2) + (4)))) | ((u32) ((*(u16 *)((u8 *)(arg1) + (4))) << 0x16) >> 0x16));
-    temp_r5_8888 = (-0xD & (*(u8 *)((u8 *)(arg2) + (5)))) | (0xC & (*(u8 *)((u8 *)(arg1) + (5))));
-    (*(u8 *)((u8 *)(arg2) + (5))) = temp_r5_8888;
-    (*(u8 *)((u8 *)(arg2) + (5))) = (u8) ((temp_r5_8888 & 0xF) | (((u8) (*(u8 *)((u8 *)(arg1) + (5))) >> 4) * 0x10));
-    (*(u16 *)((u8 *)(arg2) + (6))) = (u16) (*(u16 *)((u8 *)(arg1) + (6)));
+/* Original address: 0x0201C490 */
+void mMsg_CopySpriteOam(m_msg_sprite_c *sprite, IslanderOamData *source, IslanderOamData *dest) {
+    dest->y = source->y + sprite->_30 + sprite->offset_y;
+    dest->affine_mode = source->affine_mode;
+    dest->obj_mode = source->obj_mode;
+    dest->mosaic = source->mosaic;
+    dest->bpp = source->bpp;
+    dest->shape = source->shape;
+    dest->x = source->x + sprite->_2C + sprite->offset_x;
+    dest->matrix_num = source->matrix_num;
+    dest->h_flip = source->h_flip;
+    dest->v_flip = source->v_flip;
+    dest->size = source->size;
+    dest->tile_num = source->tile_num;
+    dest->priority = source->priority;
+    dest->palette_num = source->palette_num;
+    dest->affine_param = source->affine_param;
 }
 
-void sub_0201C5A0(void) {
-    s32 (*temp_r1_8924)(void *);
-    s32 (*temp_r1_8944)(void *);
-    s32 var_r5_8919;
-    s32 var_r5_8939;
-    u8 *var_r6_8917;
-    u8 *var_r6_8937;
-    void *var_r4_8918;
-    void *var_r4_8938;
+/* Original address: 0x0201C5A0 */
+void mMsg_UpdateAndDrawSprites(void) {
+    s32 i;
 
-    var_r6_8917 = (u8 *)0x030032A7;
-    var_r4_8918 = (void *)0x03003250;
-    var_r5_8919 = 0xB;
-    do {
-        if (*var_r6_8917 != 0) {
-            temp_r1_8924 = (*(s32 (**)(void *))((u8 *)(var_r4_8918) + (8)));
-            if (temp_r1_8924 != NULL) {
-                temp_r1_8924(var_r4_8918);
-            }
+    for (i = 0; i < 12; i++) {
+        if (gMsgSprites[i]._57 != 0 && gMsgSprites[i].update != NULL) {
+            gMsgSprites[i].update(&gMsgSprites[i]);
         }
-        var_r6_8917 += 0x60;
-        var_r4_8918 += 0x60;
-        var_r5_8919 -= 1;
-    } while (var_r5_8919 >= 0);
-    var_r6_8937 = (u8 *)0x030032A7;
-    var_r4_8938 = (void *)0x03003250;
-    var_r5_8939 = 0xB;
-    do {
-        if (*var_r6_8937 != 0) {
-            temp_r1_8944 = (*(s32 (**)(void *))((u8 *)(var_r4_8938) + (0xC)));
-            if (temp_r1_8944 != NULL) {
-                temp_r1_8944(var_r4_8938);
-            }
+    }
+    for (i = 0; i < 12; i++) {
+        if (gMsgSprites[i]._57 != 0 && gMsgSprites[i].draw != NULL) {
+            gMsgSprites[i].draw(&gMsgSprites[i]);
         }
-        var_r6_8937 += 0x60;
-        var_r4_8938 += 0x60;
-        var_r5_8939 -= 1;
-    } while (var_r5_8939 >= 0);
+    }
 }
 
 void sub_0201C5F8(void *arg0) {
 
 }
 
-void sub_0201C5FC(s32 arg0) {
+/* Original address: 0x0201C5FC */
+void mMsg_ContinuePromptSetColor(s32 arg0) {
     u8 red[8];
     u8 green[8];
     u8 blue[8];
@@ -4337,14 +4573,15 @@ void sub_0201C5FC(s32 arg0) {
     memcpy(red, (void *)0x0202B37C, sizeof(red));
     memcpy(green, (void *)0x0202B384, sizeof(green));
     memcpy(blue, (void *)0x0202B38C, sizeof(blue));
-    sub_02019BD8(1U, 7U, 6U, red[arg0], green[arg0], blue[arg0]);
+    SetPaletteColor(1U, 7U, 6U, red[arg0], green[arg0], blue[arg0]);
     CpuFastSet((void *)0x020002E0, (void *)0x050002E0, 8U);
 }
 
-void sub_0201C668(void *arg0) {
+/* Original address: 0x0201C668 */
+void mMsg_ContinuePromptCycleColor(void *arg0) {
     s32 temp_r0_9026;
 
-    sub_0201C5FC(((*(s32 *)((u8 *)(arg0) + (0x18))) & 3) + ((*(s32 *)((u8 *)(arg0) + (0x14))) * 4));
+    mMsg_ContinuePromptSetColor(((*(s32 *)((u8 *)(arg0) + (0x18))) & 3) + ((*(s32 *)((u8 *)(arg0) + (0x14))) * 4));
     temp_r0_9026 = (*(s32 *)((u8 *)(arg0) + (0x1C))) + 1;
     (*(s32 *)((u8 *)(arg0) + (0x1C))) = temp_r0_9026;
     if (temp_r0_9026 > 0xA) {
@@ -4354,590 +4591,531 @@ void sub_0201C668(void *arg0) {
     sub_0201C5F8(arg0);
 }
 
-void sub_0201C69C(void *arg0) {
-    sub_0201C428(arg0, 0x0202B378, 0);
+/* Original address: 0x0201C69C */
+void mMsg_ContinuePromptInit(void *arg0) {
+    mMsg_StartSpriteAnimation(arg0, sMsgContinuePromptAnimations, 0);
     sub_0201C5F8(arg0);
-    (*(void (**)(void *))((u8 *)(arg0) + (0x10))) = sub_0201C668;
-    sub_0201C668(arg0);
+    (*(void (**)(void *))((u8 *)(arg0) + (0x10))) = mMsg_ContinuePromptCycleColor;
+    mMsg_ContinuePromptCycleColor(arg0);
 }
 
-void sub_0201C6C8(void) {
+/* Original address: 0x0201C6C8 */
+void mMsg_ContinuePromptDestroy(void) {
 
 }
 
-void sub_0201C6CC(void *arg0) {
-    s32 (*temp_r1_9071)();
-
-    temp_r1_9071 = (*(s32 (**)())((u8 *)(arg0) + (0x10)));
-    if (temp_r1_9071 != NULL) {
-        temp_r1_9071();
+/* Original address: 0x0201C6CC */
+void mMsg_ContinuePromptUpdate(m_msg_sprite_c* sprite) {
+    if (sprite->state_proc != NULL) {
+        sprite->state_proc(sprite);
     }
-    sub_0201C444(arg0, 0x0202B378);
+    mMsg_UpdateSpriteAnimation(sprite, sMsgContinuePromptAnimations);
 }
 
-void sub_0201C6EC(void *arg0) {
-    void *var_r4_9095;
+/* Original address: 0x0201C6EC */
+void mMsg_ContinuePromptDraw(m_msg_sprite_c* sprite) {
+    IslanderOamData* oam = sMsgContinuePromptAnimations[sprite->animation_index]->sprite_gfx_p;
 
-    var_r4_9095 = **(u32 **)(0x0202B378 + ((*(s16 *)((u8 *)(arg0) + (0x38))) * 4));
-    if ((*(u16 *)((u8 *)(var_r4_9095) + (6))) != 0xFFFF) {
-        do {
-            sub_0201C490(arg0, var_r4_9095, (*(u8 *)0x030023B0 * 8) + gUnk3002410);
-            *(u8 *)0x030023B0 += 1;
-            var_r4_9095 += 8;
-        } while ((*(u16 *)((u8 *)(var_r4_9095) + (6))) != 0xFFFF);
+    while (oam->affine_param != 0xFFFF) {
+        mMsg_CopySpriteOam(sprite, oam, (IslanderOamData *)gUnk3002410 + gGameState.unk_860);
+        gGameState.unk_860++;
+        oam++;
     }
 }
 
-void sub_0201C740(void *arg0) {
+/* Original address: 0x0201C740 */
+void mMsg_ChoiceCursorIdle(void *arg0) {
 
 }
 
-void sub_0201C744(void *arg0) {
-    sub_0201C428(arg0, 0x0202B3DC, 0);
-    (*(void (**)(void *))((u8 *)(arg0) + (0x10))) = sub_0201C740;
-    sub_0201C740(arg0);
+/* Original address: 0x0201C744 */
+void mMsg_ChoiceCursorInit(void *arg0) {
+    mMsg_StartSpriteAnimation(arg0, sMsgChoiceCursorAnimations, 0);
+    (*(void (**)(void *))((u8 *)(arg0) + (0x10))) = mMsg_ChoiceCursorIdle;
+    mMsg_ChoiceCursorIdle(arg0);
 }
 
-void sub_0201C768(void) {
+/* Original address: 0x0201C768 */
+void mMsg_ChoiceCursorDestroy(void) {
 
 }
 
-void sub_0201C76C(void *arg0) {
-    s32 (*temp_r1_9159)();
-
-    temp_r1_9159 = (*(s32 (**)())((u8 *)(arg0) + (0x10)));
-    if (temp_r1_9159 != NULL) {
-        temp_r1_9159();
+/* Original address: 0x0201C76C */
+void mMsg_ChoiceCursorUpdate(m_msg_sprite_c* sprite) {
+    if (sprite->state_proc != NULL) {
+        sprite->state_proc(sprite);
     }
-    sub_0201C444(arg0, 0x0202B3DC);
+    mMsg_UpdateSpriteAnimation(sprite, sMsgChoiceCursorAnimations);
 }
 
-void sub_0201C78C(void *arg0) {
-    void *var_r4_9183;
+/* Original address: 0x0201C78C */
+void mMsg_ChoiceCursorDraw(m_msg_sprite_c* sprite) {
+    IslanderOamData* oam = sMsgChoiceCursorAnimations[sprite->animation_index]->sprite_gfx_p;
 
-    var_r4_9183 = **(u32 **)(0x0202B3DC + ((*(s16 *)((u8 *)(arg0) + (0x38))) * 4));
-    if ((*(u16 *)((u8 *)(var_r4_9183) + (6))) != 0xFFFF) {
-        do {
-            sub_0201C490(arg0, var_r4_9183, (*(u8 *)0x030023B0 * 8) + gUnk3002410);
-            *(u8 *)0x030023B0 += 1;
-            var_r4_9183 += 8;
-        } while ((*(u16 *)((u8 *)(var_r4_9183) + (6))) != 0xFFFF);
+    while (oam->affine_param != 0xFFFF) {
+        mMsg_CopySpriteOam(sprite, oam, (IslanderOamData *)gUnk3002410 + gGameState.unk_860);
+        gGameState.unk_860++;
+        oam++;
     }
 }
 
-void sub_0201C7E0(s32 arg0) {
-    s32 sp0;
+/* Original address: 0x0201C7E0 */
+void InitIslandLinkTransfer(s32 unused) {
+    u32 zero;
 
     REG_IME = 0;
     REG_IE &= 0xFF3F;
     REG_IME = 1;
-    *(s16 *)0x04000134 = 0;
-    *(s32 *)0x04000128 = 0x2000;
-    *(s32 *)0x04000128 = (s16) ((u16) *(s32 *)0x04000128 | 0x4003);
-    sp0 = 0;
-    CpuSet(&sp0, (void *)0x030036D0, 0x0500000EU);
-    (*(s32 *)((u8 *)((void *)0x030036D0) + (0x18))) = -1;
-    (*(s32 *)((u8 *)((void *)0x030036D0) + (0x1C))) = -1;
+    REG_RCNT = 0;
+    ISLAND_SERIAL_WORD = 0x2000;
+    REG_SIOCNT |= 0x4003;
+    zero = 0;
+    CpuSet(&zero, &gIslandLinkWork, 0x05000000 | (sizeof(gIslandLinkWork) / 4));
+    gIslandLinkWork.send_packet_index = -1;
+    gIslandLinkWork.receive_packet_index = -1;
     REG_IME = 0;
     REG_IE |= 0x80;
     REG_IME = 1;
 }
 
-void sub_0201C870(void) {
+/* Original address: 0x0201C870 */
+void StopIslandLinkTransfer(void) {
     REG_IME = 0;
     REG_IE &= 0xFF3F;
     REG_IME = 1;
-    *(s16 *)0x04000134 = 0;
-    *(s16 *)0x04000128 = 0x2003;
-    (*(s32 *)((u8 *)((void *)0x0400010C) + (0))) = 0xA4FB;
-    (*(s16 *)((u8 *)((void *)0x0400010C) + (0xF6))) = 0xC0;
+    REG_RCNT = 0;
+    REG_SIOCNT = 0x2003;
+    REG_TM3CNT = 0xA4FB;
+    REG_IF = 0xC0;
 }
 
-s32 sub_0201C8C0(void) {
-    s32 temp_r2_9322;
-    s32 temp_r5_9525;
-    s32 var_r2_9419;
-    s32 var_r4_9526;
-    s32 var_r7_9324;
-    s8 temp_r0_9612;
-    u16 *var_r1_9411;
-    u16 temp_r0_9562;
-    u16 var_r0_9652;
-    u16 var_r3_9417;
-    u8 temp_r0_9327;
-    u8 temp_r0_9376;
-    u8 temp_r0_9506;
-    u8 temp_r1_9460;
-    u8 temp_r3_9456;
-    u8 temp_r4_9368;
+/* Original address: 0x0201C8C0 */
+s32 UpdateIslandLinkTransfer(void) {
+    IslandSerialStatus serial;
+    s32 result;
 
-    temp_r2_9322 = (*(s32 *)((u8 *)((void *)0x04000128) + (0)));
-    var_r7_9324 = -1;
-    temp_r0_9327 = (*(u8 *)((u8 *)((void *)0x030036D0) + (1)));
-    switch (temp_r0_9327) {                         /* irregular */
-    case 3:
-        temp_r5_9525 = (*(s32 *)((u8 *)((void *)0x030036D0) + (0x14)));
-        var_r4_9526 = temp_r5_9525;
-        if (((*(u8 *)((u8 *)((void *)0x030036D0) + (0x32))) != 0) || ((s32) (*(s32 *)((u8 *)((void *)0x030036D0) + (0x20))) > 1) || ((*(u8 *)((u8 *)((void *)0x030036D0) + (0x31))) != 0)) {
-            var_r7_9324 = 0xA;
-        } else {
-            if (temp_r5_9525 > 0x1CC0) {
-                var_r4_9526 = 0x1CC0;
-            } else if (temp_r5_9525 < 0) {
-                var_r4_9526 = 0;
-            }
-            if ((s32) (*(s16 *)((u8 *)((void *)0x030036D0) + (0x2E))) < var_r4_9526) {
-                do {
-                    temp_r0_9562 = (u16) (*(s16 *)((u8 *)((void *)0x030036D0) + (0x2E)));
-                    (*(s16 *)((u8 *)((void *)0x030036D0) + (0x2E))) = (s16) (temp_r0_9562 + 1);
-                    (*(u16 *)((u8 *)((void *)0x030036D0) + (0x2C))) = (u16) (*(u32 *)(((s32) (temp_r0_9562 << 0x10) >> 0xF) + (*(s32 *)((u8 *)((void *)0x030036D0) + (0xC)))) + (*(u16 *)((u8 *)((void *)0x030036D0) + (0x2C))));
-                } while ((s32) (*(s16 *)((u8 *)((void *)0x030036D0) + (0x2E))) < var_r4_9526);
-                (*(s32 *)((u8 *)((void *)0x030036D0) + (0x20))) = 0;
-            }
-            if (temp_r5_9525 > 0x1CC0) {
-                if ((s16) ((*(u16 *)((u8 *)((void *)0x030036D0) + (0x2C))) + (*(u16 *)((u8 *)((void *)0x030036D0) + (0x24)))) == -1) {
-                    (*(s8 *)((u8 *)((void *)0x030036D0) + (3))) = 1;
-                } else {
-                    (*(s8 *)((u8 *)((void *)0x030036D0) + (4))) = 1;
-                }
-                (*(s32 *)((u8 *)((void *)0x030036D0) + (0x20))) = 0;
-                (*(u8 *)((u8 *)((void *)0x030036D0) + (1))) = 4U;
-            }
-        }
-        break;
-    case 4:
-        temp_r0_9612 = (s8) (*(u8 *)((u8 *)((void *)0x030036D0) + (0x30)));
-        if (temp_r0_9612 == 1) {
-            var_r7_9324 = 9;
-        } else if ((temp_r0_9612 == -1) || ((*(u8 *)((u8 *)((void *)0x030036D0) + (0x32))) != 0) || ((s32) (*(s32 *)((u8 *)((void *)0x030036D0) + (0x20))) > 6)) {
-            var_r7_9324 = 0xA;
-        }
-        if (var_r7_9324 != -1) {
-            (*(u8 *)((u8 *)((void *)0x030036D0) + (1))) = 5U;
-        }
-        break;
+    serial.word = ISLAND_SERIAL_WORD;
+    result = -1;
+    switch (gIslandLinkWork.state) {
     case 0:
-        if ((s32) (*(s32 *)((u8 *)((void *)0x030036D0) + (0x20))) > 0x258) {
-            var_r7_9324 = 0x10;
-            if ((temp_r2_9322 & 0x88) == 8) {
+        if (gIslandLinkWork.timeout > 600) {
+            u32 connection = serial.word & 0x88;
 
+            result = 16;
+            if (connection != 8) {
+                result = 8;
+            }
+        } else if ((u8)(serial.word & 0x88) == 8) {
+            u16* data;
+            s32 remaining;
+            u16 checksum;
+
+            if ((u8)(serial.word & 4) == 0) {
+                REG_IME = 0;
+                REG_IE &= 0xFF7F;
+                REG_IE |= 0x40;
+                REG_IME = 1;
+                ISLAND_SERIAL_STATUS.bits.irq_enable = 0;
+                REG_IF = 0xC0;
+                REG_TM3CNT = 0xA4FB;
+                gIslandLinkWork.master = 8;
+                ISLAND_SERIAL_STATUS.bits.busy = 1;
+            }
+            data = (u16*)gIslandData;
+            gIslandLinkWork.send_data = data;
+            gIslandLinkWork.receive_data = (u16*)gIslandTransferData;
+            checksum = 0;
+            remaining = ISLAND_LINK_HALFWORDS;
+            do {
+                checksum += *data++;
+            } while (--remaining != 0);
+            gIslandLinkWork.send_checksum = ~checksum;
+            if (gIslandLinkWork.master != 0) {
+                REG_TM3CNT_H = 0xC0;
+            }
+            gIslandLinkWork.timeout = 0;
+            gIslandLinkWork.state = 2;
+        }
+        break;
+    case 2:
+        if (gIslandLinkWork.serial_error != 0) {
+            result = 8;
+        } else if ((gIslandLinkWork.connected_players & 1) && (gIslandLinkWork.connected_players & 0xE)) {
+            if ((u32)serial.bits.player_id > 1) {
+                result = 8;
             } else {
-block_12:
-                var_r7_9324 = 8;
+                result = 7;
+                gIslandLinkWork.timeout = 0;
+                gIslandLinkWork.state = 3;
+                GameAudio_PlayEffect2(0x29);
+            }
+        } else if (gIslandLinkWork.timeout > 600) {
+            result = 16;
+        } else if (!((gIslandLinkWork.connected_players >> serial.bits.player_id) & 1)) {
+            if (gIslandLinkWork.handshake_delay <= 7) {
+                gIslandLinkWork.handshake_delay++;
+            } else {
+                gIslandLinkWork.send_handshake = 1;
             }
         } else {
-            temp_r4_9368 = temp_r2_9322 & 0x88;
-            if (temp_r4_9368 != 8) {
+            gIslandLinkWork.handshake_delay = 0;
+        }
+        break;
+    case 3: {
+        s32 received = gIslandLinkWork.receive_index;
+        s32 count = received;
 
-            } else {
-                temp_r0_9376 = temp_r2_9322 & 4;
-                if (temp_r0_9376 == 0) {
-                    REG_IME = (u16) temp_r0_9376;
-                    REG_IE &= 0xFF7F;
-                    REG_IE |= 0x40;
-                    REG_IME = 1;
-                    (*(u8 *)((u8 *)((void *)0x04000128) + (1))) = (u8) (-0x41 & (*(u8 *)((u8 *)((void *)0x04000128) + (1))));
-                    *(s16 *)0x04000202 = 0xC0;
-                    *(s32 *)0x0400010C = 0xA4FB;
-                    (*(u8 *)((u8 *)((void *)0x030036D0) + (0))) = temp_r4_9368;
-                    (*(s32 *)((u8 *)((void *)0x04000128) + (0))) = (s8) ((u8) (*(s32 *)((u8 *)((void *)0x04000128) + (0))) | 0x80);
-                }
-                var_r1_9411 = *(u16 **)0x03001B40;
-                (*(u16 **)((u8 *)((void *)0x030036D0) + (8))) = var_r1_9411;
-                (*(s32 *)((u8 *)((void *)0x030036D0) + (0xC))) = (s32) *(s32 *)0x03002970;
-                var_r3_9417 = 0;
-                var_r2_9419 = 0x1CC0;
+        if (gIslandLinkWork.serial_error != 0 || gIslandLinkWork.timeout > 1 || gIslandLinkWork.packet_error != 0) {
+            result = 10;
+        } else {
+            if (received > ISLAND_LINK_HALFWORDS) {
+                count = ISLAND_LINK_HALFWORDS;
+            } else if (received < 0) {
+                count = 0;
+            }
+            if (gIslandLinkWork.checksum_index < count) {
+                IslandLinkWork* work = &gIslandLinkWork;
+
                 do {
-                    var_r3_9417 += *var_r1_9411;
-                    var_r1_9411 += 2;
-                    var_r2_9419 -= 1;
-                } while (var_r2_9419 != 0);
-                (*(u16 *)((u8 *)((void *)0x030036D0) + (0x2A))) = (u16) ~var_r3_9417;
-                if ((*(u8 *)((u8 *)((void *)0x030036D0) + (0))) != 0) {
-                    *(s16 *)0x0400010E = 0xC0;
+                    work->receive_checksum += work->receive_data[work->checksum_index++];
+                } while (work->checksum_index < count);
+                work->timeout = 0;
+            }
+            if (received > ISLAND_LINK_HALFWORDS) {
+                if ((s16)(gIslandLinkWork.received_checksum + gIslandLinkWork.receive_checksum) == -1) {
+                    gIslandLinkWork.checksum_ok = 1;
+                } else {
+                    gIslandLinkWork.checksum_bad = 1;
                 }
-                (*(s32 *)((u8 *)((void *)0x030036D0) + (0x20))) = var_r2_9419;
-                (*(u8 *)((u8 *)((void *)0x030036D0) + (1))) = 2U;
+                gIslandLinkWork.timeout = 0;
+                gIslandLinkWork.state = 4;
             }
         }
         break;
-    case 2:
-        temp_r3_9456 = (*(u8 *)((u8 *)((void *)0x030036D0) + (0x32)));
-        if (temp_r3_9456 == 0) {
-            temp_r1_9460 = (*(u8 *)((u8 *)((void *)0x030036D0) + (2)));
-            if ((1 & temp_r1_9460) && (0xE & temp_r1_9460)) {
-                var_r7_9324 = 8;
-                if ((u32) ((u32) (temp_r2_9322 << 0x1A) >> 0x1E) > 1U) {
+    }
+    case 4:
+        if (gIslandLinkWork.result == 1) {
+            result = 9;
+        } else if (gIslandLinkWork.result == -1 || gIslandLinkWork.serial_error != 0 || gIslandLinkWork.timeout > 6) {
+            result = 10;
+        }
+        if (result != -1) {
+            gIslandLinkWork.state = 5;
+        }
+        break;
+    }
+    gIslandLinkWork.timeout++;
+    if (result != -1 && result != 7) {
+        u16 sound;
 
-                } else {
-                    var_r7_9324 = 7;
-                    (*(s32 *)((u8 *)((void *)0x030036D0) + (0x20))) = (s32) temp_r3_9456;
-                    (*(u8 *)((u8 *)((void *)0x030036D0) + (1))) = 3U;
-                    sub_02019D58(0x29U);
-                }
-            } else if ((s32) (*(s32 *)((u8 *)((void *)0x030036D0) + (0x20))) > 0x258) {
-                var_r7_9324 = 0x10;
-            } else if (!(((s32) (*(u8 *)((u8 *)((void *)0x030036D0) + (2))) >> ((u32) (temp_r2_9322 << 0x1A) >> 0x1E)) & 1)) {
-                temp_r0_9506 = (*(u8 *)((u8 *)((void *)0x030036D0) + (0x33)));
-                if ((u32) temp_r0_9506 <= 7U) {
-                    (*(u8 *)((u8 *)((void *)0x030036D0) + (0x33))) = (u8) (temp_r0_9506 + 1);
-                } else {
-                    (*(s8 *)((u8 *)((void *)0x030036D0) + (0x34))) = 1;
-                }
-            } else {
-                (*(u8 *)((u8 *)((void *)0x030036D0) + (0x33))) = 0U;
-            }
-        } else {
-            goto block_12;
+        GameAudio_StopEffect2(0x29);
+        sound = 0x28;
+        if (result == 9) {
+            sound = 0x27;
         }
-        break;
+        GameAudio_PlayEffect0(sound);
+        StopIslandLinkTransfer();
     }
-    (*(s32 *)((u8 *)((void *)0x030036D0) + (0x20))) = (s32) ((*(s32 *)((u8 *)((void *)0x030036D0) + (0x20))) + 1);
-    if ((var_r7_9324 != -1) && (var_r7_9324 != 7)) {
-        sub_02019D68(0x29U);
-        var_r0_9652 = 0x28;
-        if (var_r7_9324 == 9) {
-            var_r0_9652 = 0x27;
-        }
-        sub_02019D78(var_r0_9652);
-        sub_0201C870();
-    }
-    return var_r7_9324;
+    return result;
 }
 
-void sub_0201CB50(void) {
-    s32 sp0;
-    s32 sp4;
-    u16 *var_r2_9691;
-    s32 temp_r1_9678;
-    s32 temp_r2_9772;
-    s32 temp_r2_9853;
-    s32 temp_r2_9895;
-    s32 temp_r3_9684;
-    s32 var_r3_9688;
-    s8 *var_r1_9840;
-    s8 var_r0_9841;
-    u16 *temp_r0_9898;
-    u16 temp_r1_9744;
-    u16 temp_r1_9818;
-    u16 temp_r2_9828;
-    u16 var_r1_9941;
-    u32 temp_r4_9735;
-    u8 temp_r2_9933;
+/* Original address: 0x0201CB50 */
+void IslandLinkSerialInterrupt(void) {
+    union {
+        u64 all;
+        u16 halfwords[4];
+    } received;
+    IslandLinkWork *work;
+    IslandSerialStatus serial;
+    s32 player;
+    u16 *data;
+    u16 result0;
+    u16 result1;
+    u16 response;
 
-    sp0 = (*(s32 *)((u8 *)((void *)0x04000120) + (0)));
-    sp4 = (*(s32 *)((u8 *)((void *)0x04000120) + (4)));
-    temp_r1_9678 = (*(s32 *)((u8 *)((void *)0x04000128) + (0)));
-    *(s8 *)0x03003702 = (s8) ((u32) (temp_r1_9678 << 0x19) >> 0x1F);
-    temp_r3_9684 = (*(s32 *)((u8 *)((void *)0x030036D0) + (0x1C)));
-    if (temp_r3_9684 < 0) {
-        var_r3_9688 = 0;
-        var_r2_9691 = (u16 *)&sp0;
+    received.all = REG_SIOMLT_RECV;
+    work = &gIslandLinkWork;
+    serial.word = ISLAND_SERIAL_WORD;
+    work->serial_error = serial.bits.error;
+    if (work->receive_packet_index < 0) {
+        player = 0;
+        data = received.halfwords;
         do {
-            if (*var_r2_9691 == 0xFEFE) {
-                (*(u8 *)((u8 *)((void *)0x030036D0) + (2))) = (u8) ((1 << var_r3_9688) | (*(u8 *)((u8 *)((void *)0x030036D0) + (2))));
+            if (*data == 0xFEFE) {
+                work->connected_players |= 1 << player;
             }
-            var_r2_9691 += 1;
-            var_r3_9688 += 1;
-        } while (var_r3_9688 <= 3);
-        if ((3 & (*(u8 *)((u8 *)((void *)0x030036D0) + (2)))) != 3) {
-
-        } else {
-            (*(s32 *)((u8 *)((void *)0x030036D0) + (0x18))) = (s32) ((*(s32 *)((u8 *)((void *)0x030036D0) + (0x18))) + 1);
-            (*(s32 *)((u8 *)((void *)0x030036D0) + (0x1C))) = (s32) ((*(s32 *)((u8 *)((void *)0x030036D0) + (0x1C))) + 1);
-            (*(u16 *)((u8 *)((void *)0x030036D0) + (0x28))) = 0U;
-            (*(u16 *)((u8 *)((void *)0x030036D0) + (0x26))) = 0U;
+            data++;
+            player++;
+        } while (player <= 3);
+        if ((work->connected_players & 3) == 3) {
+            work->send_packet_index++;
+            work->receive_packet_index++;
+            work->send_packet_checksum = 0;
+            work->receive_packet_checksum = 0;
         }
-    } else if (temp_r3_9684 <= 0x1DAD) {
-        temp_r4_9735 = temp_r1_9678 << 0x1A;
-        temp_r1_9744 = *(u16 *)((u8 *)&sp0 + (((temp_r4_9735 >> 0x1E) ^ 1) * 2)) + (*(u16 *)((u8 *)((void *)0x030036D0) + (0x26)));
-        (*(u16 *)((u8 *)((void *)0x030036D0) + (0x26))) = temp_r1_9744;
-        if ((temp_r3_9684 & 0x1F) == 0x1F) {
-            if ((s16) temp_r1_9744 != -1) {
-                (*(u8 *)((u8 *)((void *)0x030036D0) + (0x31))) = (u8) ((*(u8 *)((u8 *)((void *)0x030036D0) + (0x31))) | 1);
+    } else if (work->receive_packet_index <= 0x1DAD) {
+        work->receive_packet_checksum += received.halfwords[serial.bits.player_id ^ 1];
+        if ((work->receive_packet_index & 31) == 31) {
+            if ((s16)work->receive_packet_checksum != -1) {
+                work->packet_error |= 1;
             }
-            (*(u16 *)((u8 *)((void *)0x030036D0) + (0x26))) = 0U;
+            work->receive_packet_checksum = 0;
         } else {
-            temp_r2_9772 = (*(s32 *)((u8 *)((void *)0x030036D0) + (0x14)));
-            if (temp_r2_9772 <= 0x1CBF) {
-                *(u16 *)((temp_r2_9772 * 2) + (*(s32 *)((u8 *)((void *)0x030036D0) + (0xC)))) = *(u16 *)((u8 *)&sp0 + (((temp_r4_9735 >> 0x1E) ^ 1) * 2));
-                (*(s32 *)((u8 *)((void *)0x030036D0) + (0x14))) = (s32) (temp_r2_9772 + 1);
+            s32 index = work->receive_index;
+            if (index < ISLAND_LINK_HALFWORDS) {
+                work->receive_data[index] = received.halfwords[serial.bits.player_id ^ 1];
+                work->receive_index = index + 1;
             }
         }
-        (*(s32 *)((u8 *)((void *)0x030036D0) + (0x1C))) = (s32) ((*(s32 *)((u8 *)((void *)0x030036D0) + (0x1C))) + 1);
-    } else if (temp_r3_9684 == 0x1DAE) {
-        (*(u16 *)((u8 *)((void *)0x030036D0) + (0x24))) = *(u16 *)((u8 *)&sp0 + ((1 ^ ((u32) (temp_r1_9678 << 0x1A) >> 0x1E)) * 2));
-        (*(s32 *)((u8 *)((void *)0x030036D0) + (0x1C))) = (s32) (temp_r3_9684 + 1);
-        (*(s32 *)((u8 *)((void *)0x030036D0) + (0x14))) = (s32) ((*(s32 *)((u8 *)((void *)0x030036D0) + (0x14))) + 1);
+        work->receive_packet_index++;
+    } else if (work->receive_packet_index == 0x1DAE) {
+        work->received_checksum = received.halfwords[1 ^ serial.bits.player_id];
+        work->receive_packet_index = work->receive_packet_index + 1;
+        work->receive_index++;
     } else {
-        temp_r1_9818 = (*(u16 *)((u8 *)(&sp0) + (0)));
-        if ((u32) (u16) (temp_r1_9818 + 0x104) <= 1U) {
-            temp_r2_9828 = (*(u16 *)((u8 *)(&sp0) + (2)));
-            if ((u32) (u16) (temp_r2_9828 + 0x104) <= 1U) {
-                if ((temp_r1_9818 == 0xFEFD) && (temp_r2_9828 == temp_r1_9818)) {
-                    var_r1_9840 = (void *)0x030036D0 + 0x30;
-                    var_r0_9841 = 1;
+        result0 = received.halfwords[0];
+        if (result0 >= 0xFEFC && result0 <= 0xFEFD) {
+            result1 = received.halfwords[1];
+            if (result1 >= 0xFEFC && result1 <= 0xFEFD) {
+                if (result0 == 0xFEFD && result1 == result0) {
+                    work->result = 1;
                 } else {
-                    var_r1_9840 = (void *)0x030036D0 + 0x30;
-                    var_r0_9841 = 0xFF;
+                    work->result = -1;
                 }
-                *var_r1_9840 = var_r0_9841;
             }
         }
     }
-    temp_r2_9853 = (*(s32 *)((u8 *)((void *)0x030036D0) + (0x18)));
-    if (temp_r2_9853 < 0) {
-        if ((*(u8 *)((u8 *)((void *)0x030036D0) + (0x34))) != 0) {
-            (*(u16 *)((u8 *)((void *)0x04000128) + (2))) = 0xFEFEU;
+    if (work->send_packet_index < 0) {
+        if (work->send_handshake) {
+            REG_SIOMLT_SEND = 0xFEFE;
         }
-        (*(u16 *)((u8 *)((void *)0x030036D0) + (0x28))) = 0U;
-    } else if (temp_r2_9853 <= 0x1DAD) {
-        if ((temp_r2_9853 & 0x1F) == 0x1F) {
-            (*(u16 *)((u8 *)((void *)0x04000128) + (2))) = (u16) ~(*(u16 *)((u8 *)((void *)0x030036D0) + (0x28)));
-            (*(u16 *)((u8 *)((void *)0x030036D0) + (0x28))) = 0U;
+        work->send_packet_checksum = 0;
+    } else if (work->send_packet_index <= 0x1DAD) {
+        if ((work->send_packet_index & 31) == 31) {
+            REG_SIOMLT_SEND = ~work->send_packet_checksum;
+            work->send_packet_checksum = 0;
         } else {
-            temp_r2_9895 = (*(s32 *)((u8 *)((void *)0x030036D0) + (0x10)));
-            temp_r0_9898 = (temp_r2_9895 * 2) + (*(s32 *)((u8 *)((void *)0x030036D0) + (8)));
-            (*(u16 *)((u8 *)((void *)0x04000128) + (2))) = (u16) *temp_r0_9898;
-            (*(u16 *)((u8 *)((void *)0x030036D0) + (0x28))) = (u16) (*temp_r0_9898 + (*(u16 *)((u8 *)((void *)0x030036D0) + (0x28))));
-            (*(s32 *)((u8 *)((void *)0x030036D0) + (0x10))) = (s32) (temp_r2_9895 + 1);
+            s32 index = work->send_index;
+            u16 *send = &work->send_data[index];
+            REG_SIOMLT_SEND = *send;
+            work->send_packet_checksum += *send;
+            work->send_index = index + 1;
         }
-        (*(s32 *)((u8 *)((void *)0x030036D0) + (0x18))) = (s32) ((*(s32 *)((u8 *)((void *)0x030036D0) + (0x18))) + 1);
-    } else if (temp_r2_9853 == 0x1DAE) {
-        (*(u16 *)((u8 *)((void *)0x04000128) + (2))) = (u16) (*(u16 *)((u8 *)((void *)0x030036D0) + (0x2A)));
-        (*(s32 *)((u8 *)((void *)0x030036D0) + (0x18))) = (s32) (temp_r2_9853 + 1);
-    } else if ((temp_r2_9853 > 0x1DAE) && ((temp_r2_9933 = (*(u8 *)((u8 *)((void *)0x030036D0) + (3))), (temp_r2_9933 != 0)) || ((*(u8 *)((u8 *)((void *)0x030036D0) + (4))) != 0))) {
-        var_r1_9941 = 0xFEFC;
-        if (temp_r2_9933 != 0) {
-            var_r1_9941 = 0xFEFD;
+        work->send_packet_index++;
+    } else if (work->send_packet_index == 0x1DAE) {
+        REG_SIOMLT_SEND = work->send_checksum;
+        work->send_packet_index = work->send_packet_index + 1;
+    } else if (work->send_packet_index > 0x1DAE && (work->checksum_ok || work->checksum_bad)) {
+        response = 0xFEFC;
+        if (work->checksum_ok) {
+            response = 0xFEFD;
         }
-        (*(u16 *)((u8 *)((void *)0x04000128) + (2))) = var_r1_9941;
+        REG_SIOMLT_SEND = response;
     }
-    if ((*(u8 *)((u8 *)((void *)0x030036D0) + (0))) == 8) {
-        *(s16 *)0x0400010E = 0;
-        (*(s32 *)((u8 *)((void *)0x04000128) + (0))) = (s16) ((u16) (*(s32 *)((u8 *)((void *)0x04000128) + (0))) | 0x80);
-        *(s16 *)0x0400010E = 0xC0;
+    if (work->master == 8) {
+        REG_TM3CNT_H = 0;
+        REG_SIOCNT |= 0x80;
+        REG_TM3CNT_H = 0xC0;
     }
 }
 
-s32 sub_0201CDA0(u16 arg0, s32 arg1, u8 arg2) {
-    s32 sp0;
-    s16 *var_r0_10141;
-    s32 temp_r1_10000;
-    s32 temp_r1_10073;
-    s32 var_r2_10011;
-    s32 var_r2_10098;
-    s32 var_r4_10082;
-    u16 *var_r5_10018;
-    u16 *var_r5_10101;
-    u16 temp_r0_9985;
-    u16 temp_r3_10021;
-    u16 temp_r3_10105;
-    u8 *var_r2_10129;
-    u8 temp_r7_9987;
-    void *var_r3_10039;
+/* Original address: 0x0201CDA0 */
+s32 LoadIslandBuildingTiles(u16 tile_id, s32 pos, u8 acre) {
+    IslandFieldWork *field = &gIslandFieldWork;
+    s32 origin;
+    s32 i;
+    u32 tilemap;
+    const u16 *source;
+    const u8 *offset;
+    s32 tile;
+    u16 *dest;
+    u16 *field_tile;
 
-    temp_r0_9985 = arg0;
-    temp_r7_9987 = arg2;
-    switch (temp_r0_9985) {                         /* irregular */
+    switch (tile_id) {
     case 1:
-        temp_r1_10000 = arg1 - 0x11;
-        var_r2_10011 = 0;
-        sp0 = temp_r1_10000;
-        var_r5_10018 = (u16 *)0x0202FC1C;
+        origin = pos - 0x11;
+        tilemap = ((u32)BG_SCREEN_ADDR(24) + ((origin & 0xFF0) << 3));
+        tilemap += (origin & 15) * 4;
+        i = 0;
+        source = sCabanaTilemap;
         do {
-            temp_r3_10021 = *var_r5_10018;
-            if (temp_r3_10021 != 0) {
-                *(u32 *)(((0xFF0 & temp_r1_10000) * 8) + 0x0600C000 + ((0xF & temp_r1_10000) * 4) + ((var_r2_10011 & 0xFF8) * 8) + ((var_r2_10011 & 7) * 2)) = temp_r3_10021;
+            tile = *source;
+            if (tile != 0) {
+                dest = (u16 *)(tilemap + ((i & 0xFF8) << 3));
+                dest += i & 7;
+                *dest = tile;
             }
-            var_r5_10018 += 2;
-            var_r2_10011 += 1;
-        } while (var_r2_10011 <= 0x3F);
-        var_r3_10039 = NULL;
-        do {
-            *(u32 *)(0x03003720 + ((u32) ((sp0 + *(u32 *)(0x0202FCFC + (s32) var_r3_10039)) << 0x18) >> 0x17)) = 0x1F;
-            var_r3_10039 += 1;
-        } while ((s32) var_r3_10039 <= 0xF);
-        *(s8 *)0x03003B36 = 1;
-        sub_0201DF9C(0, 0, arg1, 0U);
-block_23:
-        return 0;
-    case 2:
-        temp_r1_10073 = arg1 - 0x11;
-        sp0 = temp_r1_10073;
-        if (temp_r7_9987 == 0) {
-            var_r4_10082 = ((0xFF0 & temp_r1_10073) * 8) + 0x0600C000;
-        } else {
-            var_r4_10082 = ((0xFF0 & temp_r1_10073) * 8) + 0x0600C800;
+            source++;
+            i++;
+        } while (i <= 63);
+        for (i = 0; i <= 15; i++) {
+            field->fg_tiles[0][(u8)(origin + sCabanaFootprint[i])] = ITEM_TYPE_CABANA;
         }
-        var_r2_10098 = 0;
-        var_r5_10101 = (u16 *)0x0202FC9C;
+        field->entity_active[15] = 1;
+        InitIslandBuilding(0, 0, pos, 0);
+        break;
+    case 2:
+        origin = pos - 0x11;
+        if (acre == 0) {
+            tilemap = ((u32)BG_SCREEN_ADDR(24) + ((origin & 0xFF0) << 3));
+        } else {
+            tilemap = ((u32)BG_SCREEN_ADDR(25) + ((origin & 0xFF0) << 3));
+        }
+        tilemap += (origin & 15) * 4;
+        i = 0;
+        source = sIslanderHouseTilemap;
         do {
-            temp_r3_10105 = *var_r5_10101;
-            if (temp_r3_10105 != 0) {
-                *(u32 *)(var_r4_10082 + ((0xF & temp_r1_10073) * 4) + ((var_r2_10098 & 0xFF8) * 8) + ((var_r2_10098 & 7) * 2)) = temp_r3_10105;
+            tile = *source;
+            if (tile != 0) {
+                dest = (u16 *)(tilemap + ((i & 0xFF8) << 3));
+                dest += i & 7;
+                *dest = tile;
             }
-            var_r5_10101 += 2;
-            var_r2_10098 += 1;
-        } while (var_r2_10098 <= 0x2F);
-        var_r2_10129 = (u8 *)0x0202FD0C;
+            source++;
+            i++;
+        } while (i <= 47);
+        offset = sIslanderHouseFootprint;
         do {
-            if (temp_r7_9987 == 0) {
-                var_r0_10141 = ((u32) ((*var_r2_10129 + sp0) << 0x18) >> 0x17) + 0x03003720;
+            if (acre == 0) {
+                field_tile = &field->fg_tiles[0][(u8)(*offset + origin)];
             } else {
-                var_r0_10141 = ((u32) ((*var_r2_10129 + sp0) << 0x18) >> 0x17) + 0x03003920;
+                field_tile = &field->fg_tiles[1][(u8)(*offset + origin)];
             }
-            *var_r0_10141 = 0x20;
-            var_r2_10129 += 1;
-        } while ((s32) var_r2_10129 <= 0x0202FD14);
-        *(s8 *)0x03003BAA = sp0 + 0x21;
-        *(s8 *)0x03003B39 = 1;
-        sub_0201DF9C(1, 2, arg1, temp_r7_9987);
-        goto block_23;
+            *field_tile = ITEM_TYPE_ISLANDER_HOUSE;
+            offset++;
+        } while (offset <= &sIslanderHouseFootprint[8]);
+        field->special_tile_idx = origin + 0x21;
+        field->entity_active[18] = 1;
+        InitIslandBuilding(1, 2, pos, acre);
+        break;
     default:
         return 1;
     }
+    return 0;
 }
 
-void sub_0201CF3C(u16 arg0, s32 arg1, u8 arg2) {
-    s32 sp0;
-    s16 temp_r2_10406;
-    s16 var_r2_10303;
-    s32 temp_r1_10376;
-    s32 temp_r1_10393;
-    s32 temp_r3_10243;
-    s32 var_r0_10381;
-    s32 var_r1_10384;
-    s32 var_r2_10344;
-    s32 var_r3_10312;
-    s32 var_r4_10252;
-    s32 var_sl_10202;
-    u16 *var_r4_10382;
-    u16 temp_r2_10292;
-    u16 temp_r7_10196;
-    u32 temp_r0_10203;
-    u8 *var_r1_10462;
-    u8 *var_r3_10346;
-    u8 temp_r2_10198;
-    u16 *var_r4_10302;
-    void *temp_r1_10403;
-    void *temp_r1_10426;
-    void *temp_r4_10287;
+/* Original address: 0x0201CF3C */
+void LoadIslandFieldEntity(u16 type, s32 pos, u8 acre) {
+    IslandFieldWork *field = &gIslandFieldWork;
+    s32 right_acre = 0;
+    s32 left_pos;
+    u32 tilemap;
+    u16 *dest;
+    u16 tile;
+    s32 next_tile;
+    s32 remaining;
+    s32 slot;
+    u8 *active;
+    u16 ground_tile;
+    s32 column_offset;
+    u16 *ground;
 
-    temp_r7_10196 = arg0;
-    temp_r2_10198 = arg2;
-    var_sl_10202 = 0;
-    temp_r0_10203 = temp_r7_10196 - 3;
-    switch (temp_r0_10203) {                        /* irregular */
-    case 2:
-    case 3:
-    case 4:
+    switch (type) {
     case 5:
     case 6:
     case 7:
     case 8:
     case 9:
     case 10:
-        temp_r3_10243 = (((arg1 & 0xF) - 1) & 0xF) | (0xF0 & arg1);
-        if ((temp_r2_10198 == 0) || ((temp_r3_10243 & 0xF) == 0xF)) {
-            var_r4_10252 = 0x0600C000;
-            *(u32 *)0x03003B24 = (u16) *(u32 *)(0x03003720 + (temp_r3_10243 * 2));
-        } else {
-            var_r4_10252 = 0x0600C800;
-            *(u16 *)0x03003B24 = *(u32 *)(0x03003920 + (temp_r3_10243 * 2));
-            var_sl_10202 = 1;
-        }
-        temp_r4_10287 = var_r4_10252 + ((0xFF0 & temp_r3_10243) * 8) + ((temp_r3_10243 & 0xF) * 4);
-        temp_r2_10292 = *(u32 *)(0x0202FD16 + ((temp_r7_10196 - 5) * 2));
-        if (*(u32 *)0x03003B24 == 0xFFF) {
-            (*(u16 *)((u8 *)(temp_r4_10287) + (0x42))) = temp_r2_10292;
-        }
-        var_r4_10302 = temp_r4_10287 + 0x42 + 2;
-        var_r2_10303 = temp_r2_10292 + 1;
-        sp0 = temp_r7_10196 - 0xC;
-        var_r3_10312 = 2;
-        do {
-            if ((var_sl_10202 == 0) && ((var_r4_10302 == 0) || (var_r4_10302 == 0x40) || (var_r4_10302 == 0x80) || (var_r4_10302 == 0xC0))) {
-                var_r4_10302 += 0x7C0;
-            }
-            *var_r4_10302 = var_r2_10303;
-            var_r3_10312 -= 1;
-            var_r4_10302 += 1;
-            var_r2_10303 += 1;
-        } while (var_r3_10312 >= 0);
-        if ((u32) (u16) sp0 <= 1U) {
-            return;
-        }
-        var_r2_10344 = 0;
-        var_r3_10346 = (u8 *)0x03003B5D;
-loop_20:
-        if (*var_r3_10346 != 0) {
-            var_r3_10346 += 1;
-            var_r2_10344 += 1;
-            if (var_r2_10344 > 0x1D) {
-                return;
-            }
-            goto loop_20;
-        }
-        *var_r3_10346 = 1;
-block_32:
-        sub_0201E430(var_r2_10344, temp_r7_10196, arg1, temp_r2_10198);
-        return;
-    case 16:
-        sub_0201E1E0(0x54, arg1, temp_r2_10198);
-        return;
-    case 17:
-        if (temp_r2_10198 == 0) {
-            temp_r1_10376 = (0xFF0 & arg1) * 8;
-            var_r0_10381 = (0xF & arg1) * 4;
-            var_r4_10382 = temp_r1_10376 + 0x0600A000 + var_r0_10381;
-            var_r1_10384 = temp_r1_10376 + 0x0600C000;
-        } else {
-            temp_r1_10393 = (0xFF0 & arg1) * 8;
-            var_r0_10381 = (0xF & arg1) * 4;
-            var_r4_10382 = temp_r1_10393 + 0x0600A800 + var_r0_10381;
-            var_r1_10384 = temp_r1_10393 + 0x0600C800;
-        }
-        temp_r1_10403 = var_r1_10384 + var_r0_10381;
-        temp_r2_10406 = 0x3FF & *var_r4_10382;
-        *(s16 *)0x03003B22 = temp_r2_10406;
-        if (((u32) (u16) (temp_r2_10406 - 0xA) <= 5U) || ((u32) (u16) (temp_r2_10406 - 0xC6) <= 5U)) {
-            (*(s16 *)((u8 *)(temp_r1_10403) + (0))) = 0x22AC;
-            temp_r1_10426 = temp_r1_10403 + 2;
-            (*(s16 *)((u8 *)(temp_r1_10403) + (2))) = 0x22AD;
-            (*(s16 *)((u8 *)(temp_r1_10426) + (0x3E))) = 0x22AE;
-            (*(s16 *)((u8 *)((temp_r1_10426 + 0x3E)) + (2))) = 0x22AF;
-            return;
-        }
-        return;
-    case 0:
-    case 1:
     case 11:
     case 12:
     case 13:
+        left_pos = (((pos & 15) - 1) & 15) | (pos & 0xF0);
+        if (acre == 0 || (left_pos & 15) == 15) {
+            dest = (u16 *)BG_SCREEN_ADDR(24);
+            field->tile_id_scratch = field->fg_tiles[0][left_pos];
+        } else {
+            dest = (u16 *)BG_SCREEN_ADDR(25);
+            field->tile_id_scratch = field->fg_tiles[1][left_pos];
+            right_acre = 1;
+        }
+        dest = (u16 *)((u32)dest + ((left_pos & 0xFF0) << 3));
+        dest += (left_pos & 15) * 2;
+        tile = sFieldEntityBaseTiles[type - 5];
+        dest += 33;
+        if (field->tile_id_scratch == 0xFFF) {
+            *dest = tile;
+        }
+        dest++;
+        next_tile = tile + 1;
+        remaining = 2;
+        do {
+            /* Continue the row in the next screen block at an acre boundary. */
+            if (right_acre == 0 && (((u32)dest & 0xFF) == 0 || ((u32)dest & 0xFF) == 0x40 ||
+                                    ((u32)dest & 0xFF) == 0x80 || ((u32)dest & 0xFF) == 0xC0)) {
+                dest += 0x3E0;
+            }
+            *dest = next_tile;
+            remaining--;
+            dest++;
+            next_tile++;
+        } while (remaining >= 0);
+        if (type >= 12 && type <= 13) {
+            return;
+        }
+        slot = 0;
+        active = &field->entity_active[54];
+        do {
+            if (*active == 0) {
+                *active = 1;
+                FieldObject_Init(slot, type, pos, acre);
+                return;
+            }
+            active++;
+            slot++;
+        } while (slot <= 29);
+        break;
+    case 19:
+        AnimatedFieldObject_Init(84, pos, acre);
+        break;
+    case 20:
+        if (acre == 0) {
+            ground = (u16 *)(BG_SCREEN_ADDR(20) + ((pos & 0xFF0) << 3));
+            column_offset = (pos & 15) << 2;
+            ground = (u16 *)((u32)ground + column_offset);
+            tilemap = BG_SCREEN_ADDR(24) + ((pos & 0xFF0) << 3);
+        } else {
+            ground = (u16 *)(BG_SCREEN_ADDR(21) + ((pos & 0xFF0) << 3));
+            column_offset = (pos & 15) << 2;
+            ground = (u16 *)((u32)ground + column_offset);
+            tilemap = BG_SCREEN_ADDR(25) + ((pos & 0xFF0) << 3);
+        }
+        dest = (u16 *)(tilemap + column_offset);
+        ground_tile = *ground & 0x3FF;
+        field->tile_render_scratch = ground_tile;
+        if ((ground_tile >= 10 && ground_tile <= 15) || (ground_tile >= 0xC6 && ground_tile <= 0xCB)) {
+            *dest++ = 0x22AC;
+            *dest = 0x22AD;
+            dest += 31;
+            *dest = 0x22AE;
+            dest[1] = 0x22AF;
+        }
+        break;
+    case 3:
+    case 4:
     case 14:
     case 15:
-        var_r2_10344 = 0;
-        var_r1_10462 = (u8 *)0x03003B5D;
-loop_34:
-        if (*var_r1_10462 != 0) {
-            var_r1_10462 += 1;
-            var_r2_10344 += 1;
-            if (var_r2_10344 > 0x1D) {
-
-            } else {
-                goto loop_34;
+    case 16:
+    case 17:
+    case 18:
+        slot = 0;
+        active = &field->entity_active[54];
+        do {
+            if (*active == 0) {
+                *active = 1;
+                FieldObject_Init(slot, type, pos, acre);
+                return;
             }
-        } else {
-            *var_r1_10462 = 1;
-            goto block_32;
-        }
+            active++;
+            slot++;
+        } while (slot <= 29);
         break;
     }
 }
 
 /* Original address: 0x0201D19C */
-void sub_0201D19C(void) {
+void LoadIslandForeground(void) {
+    IslandFieldWork *field = &gIslandFieldWork;
     ItemGroupStruct *definition;
     u16 *fg0_tile;
     u16 *fg1_tile;
@@ -4948,7 +5126,7 @@ void sub_0201D19C(void) {
     s32 result;
     s32 pos;
 
-    gIslandFieldWork.tile_render_scratch = 0x5851;
+    field->tile_render_scratch = 0x5851;
     pos = 0;
     vram_tile = (u16 *)BG_SCREEN_ADDR(24);
     do {
@@ -4957,8 +5135,8 @@ void sub_0201D19C(void) {
         vram_tile++;
     } while (pos <= 0xFFF);
 
-    fg0_tile = gIslandFieldWork.fg_tiles[0];
-    fg1_tile = gIslandFieldWork.fg_tiles[1];
+    fg0_tile = field->fg_tiles[0];
+    fg1_tile = field->fg_tiles[1];
     pos = 0xFF;
     do {
         *fg0_tile = 0xFFF;
@@ -4974,42 +5152,42 @@ void sub_0201D19C(void) {
             if (item_type <= ITEM_TYPE_RESERVED) {
                 definition = &g_ItemDefinitions[item_type];
                 if (item_type == ITEM_TYPE_RESERVED) {
-                    if (gIslandFieldWork.fg_tiles[0][pos] == 0xFFF) {
-                        gIslandFieldWork.fg_tiles[0][pos] = 0x7777;
+                    if (field->fg_tiles[0][pos] == 0xFFF) {
+                        field->fg_tiles[0][pos] = 0x7777;
                     }
                 } else {
-                    gIslandFieldWork.fg_tiles[0][pos] = item_type;
+                    field->fg_tiles[0][pos] = item_type;
                 }
 
                 if (definition->field_tile_id == 0x270) {
                     gIslandData->deposit[0][(pos >> 4) & 0xF] |= 1 << (pos & 0xF);
                     gIslandData->fgblock[0][0].items[(pos >> 4) & 0xF][pos & 0xF] = ITM_PITFALL;
-                    gIslandFieldWork.fg_tiles[0][pos] = 0x10;
+                    field->fg_tiles[0][pos] = 0x10;
                 }
 
                 if (item_type != ITEM_TYPE_RESERVED) {
-                    result = sub_0201CDA0(definition->field_tile_id, pos, 0);
+                    result = LoadIslandBuildingTiles(definition->field_tile_id, pos, 0);
                     if (result == 1) {
                         tile_id = definition->field_tile_id;
-                        gIslandFieldWork.tile_id_scratch = tile_id;
+                        field->tile_id_scratch = tile_id;
                         if ((gIslandData->deposit[0][(pos >> 4) & 0xF] >> (pos & 0xF)) & result) {
-                            gIslandFieldWork.tile_id_scratch = 0x1270;
+                            field->tile_id_scratch = 0x1270;
                         }
 
                         render_offset = 0;
-                        gIslandFieldWork.tile_render_scratch = 0;
+                        field->tile_render_scratch = 0;
                         do {
-                            vram_tile = (u16 *)(BG_SCREEN_ADDR(24) + render_offset +
+                            vram_tile = (u16 *)((u32)BG_SCREEN_ADDR(24) + render_offset +
                                                 ((pos & 0xFF0) << 3) + ((pos & 0xF) << 2));
-                            vram_tile[0] = gIslandFieldWork.tile_render_scratch +
-                                           gIslandFieldWork.tile_id_scratch;
-                            vram_tile[1] = gIslandFieldWork.tile_render_scratch +
-                                           gIslandFieldWork.tile_id_scratch + 1;
+                            vram_tile[0] = field->tile_render_scratch +
+                                           field->tile_id_scratch;
+                            vram_tile[1] = field->tile_render_scratch +
+                                           field->tile_id_scratch + 1;
                             render_offset += 0x40;
-                            gIslandFieldWork.tile_render_scratch = 2;
+                            field->tile_render_scratch = 2;
                         } while (render_offset <= 0x4F);
 
-                        sub_0201CF3C(definition->field_entity_type, pos, 0);
+                        LoadIslandFieldEntity(definition->field_entity_type, pos, 0);
                     }
                 }
             }
@@ -5020,42 +5198,42 @@ void sub_0201D19C(void) {
             if (item_type <= ITEM_TYPE_RESERVED) {
                 definition = &g_ItemDefinitions[item_type];
                 if (item_type == ITEM_TYPE_RESERVED) {
-                    if (gIslandFieldWork.fg_tiles[1][pos] == 0xFFF) {
-                        gIslandFieldWork.fg_tiles[1][pos] = 0x7777;
+                    if (field->fg_tiles[1][pos] == 0xFFF) {
+                        field->fg_tiles[1][pos] = 0x7777;
                     }
                 } else {
-                    gIslandFieldWork.fg_tiles[1][pos] = item_type;
+                    field->fg_tiles[1][pos] = item_type;
                 }
 
                 if (definition->field_tile_id == 0x270) {
                     gIslandData->deposit[1][(pos >> 4) & 0xF] |= 1 << (pos & 0xF);
                     gIslandData->fgblock[0][1].items[(pos >> 4) & 0xF][pos & 0xF] = 0x2512;
-                    gIslandFieldWork.fg_tiles[1][pos] = 0x10;
+                    field->fg_tiles[1][pos] = 0x10;
                 }
 
                 if (item_type != ITEM_TYPE_RESERVED) {
-                    result = sub_0201CDA0(definition->field_tile_id, pos, 1);
+                    result = LoadIslandBuildingTiles(definition->field_tile_id, pos, 1);
                     if (result == 1) {
                         tile_id = definition->field_tile_id;
-                        gIslandFieldWork.tile_id_scratch = tile_id;
+                        field->tile_id_scratch = tile_id;
                         if ((gIslandData->deposit[1][(pos >> 4) & 0xF] >> (pos & 0xF)) & result) {
-                            gIslandFieldWork.tile_id_scratch = 0x1270;
+                            field->tile_id_scratch = 0x1270;
                         }
 
                         render_offset = 0;
-                        gIslandFieldWork.tile_render_scratch = 0;
+                        field->tile_render_scratch = 0;
                         do {
-                            vram_tile = (u16 *)(BG_SCREEN_ADDR(25) + render_offset +
+                            vram_tile = (u16 *)((u32)BG_SCREEN_ADDR(25) + render_offset +
                                                 ((pos & 0xFF0) << 3) + ((pos & 0xF) << 2));
-                            vram_tile[0] = gIslandFieldWork.tile_render_scratch +
-                                           gIslandFieldWork.tile_id_scratch;
-                            vram_tile[1] = gIslandFieldWork.tile_render_scratch +
-                                           gIslandFieldWork.tile_id_scratch + 1;
+                            vram_tile[0] = field->tile_render_scratch +
+                                           field->tile_id_scratch;
+                            vram_tile[1] = field->tile_render_scratch +
+                                           field->tile_id_scratch + 1;
                             render_offset += 0x40;
-                            gIslandFieldWork.tile_render_scratch = 2;
+                            field->tile_render_scratch = 2;
                         } while (render_offset <= 0x4F);
 
-                        sub_0201CF3C(definition->field_entity_type, pos, 1);
+                        LoadIslandFieldEntity(definition->field_entity_type, pos, 1);
                     }
                 }
             }
@@ -5075,12 +5253,10 @@ void UpdateHourlyPalette(void) {
 
     hour = gGameState.game_time_frames / (60 * 60 * 60);
     if (field->last_palette_hour != hour) {
+        do { i = 0; } while (0);
+        palette0 = current_time_of_day_palette0 + 1;
+        palette1 = current_time_of_day_palette1 + 1;
         do {
-        i = 0;
-        } while(0);
-        palette0 = current_time_of_day_palette0;
-        palette1 = current_time_of_day_palette1;
-        while (i < 4) {
             palette_index = (hour << 2) + i;
             color = time_of_day_palettes[palette_index];
             *palette0 = color;
@@ -5088,129 +5264,111 @@ void UpdateHourlyPalette(void) {
             i++;
             palette0++;
             palette1++;
-        }
+        } while (i < 4);
+
         field->last_palette_hour = hour;
     }
 }
 
-void sub_0201D5C4(void) {
-    s32 temp_r2_11087;
-    s32 temp_r2_11156;
-    s32 var_r2_11017;
-    s32 var_r2_11210;
-    s8 *var_r0_11212;
-    u16 *var_r3_11019;
-    u16 *var_r4_11018;
-    u16 temp_r0_11029;
-    u32 var_r0_11120;
-    u32 var_r0_11179;
-    u32 var_r1_11022;
-    u8 temp_r5_11011;
-
-    temp_r5_11011 = (u8) ((u32) gGameState.game_time_frames / 216000U);
-    if (*(u8 *)0x03003B26 != temp_r5_11011) {
-        var_r2_11017 = 0;
-        var_r4_11018 = (u16 *)0x02000102;
-        var_r3_11019 = (u16 *)0x02000122;
-        var_r1_11022 = temp_r5_11011 << 0x12;
-        do {
-            temp_r0_11029 = *(u32 *)(0x02034EE4 + ((var_r1_11022 >> 0x10) * 2));
-            *var_r4_11018 = temp_r0_11029;
-            *var_r3_11019 = temp_r0_11029;
-            var_r1_11022 += 0x10000;
-            var_r2_11017 += 1;
-            var_r4_11018 += 2;
-            var_r3_11019 += 2;
-        } while (var_r2_11017 <= 3);
-        *(u32 *)0x03003B26 = temp_r5_11011;
-    }
-    *(u32 *)0x03003B26 = 0xFFU;
-    *(s8 *)0x03003B27 = 1;
-    sub_02025D70();
-    Islander_Init();
-    *(s8 *)0x03003BA7 = 4;
-    *(s8 *)0x03003BA8 = 0;
-    *(s8 *)0x03003BA9 = 0;
-    *(s8 *)0x03003BAA = 0;
-    (*(s32 *)((u8 *)((void *)0x03003710) + (8))) = 0;
-    (*(s32 *)((u8 *)((void *)0x03003710) + (0xC))) = 0;
-    (*(s32 *)((u8 *)((void *)0x03003710) + (0))) = 0;
-    (*(s32 *)((u8 *)((void *)0x03003710) + (4))) = 0;
-    (*(s8 *)((u8 *)((void *)0x03003710) + (0x49B))) = 0;
-    (*(s16 *)((u8 *)((void *)0x03003710) + (0x410))) = 0;
-    (*(s8 *)((u8 *)((void *)0x03003710) + (0x49D))) = 0;
-    temp_r2_11087 = 3 & (*(u8 *)((u8 *)(*(void **)0x03001B40) + (0x1938)));
-    (*(s8 *)((u8 *)((void *)0x03003710) + (0x49C))) = 0;
-    switch (temp_r2_11087) {                        /* switch 1; irregular */
-    case 0:                                         /* switch 1 */
-        var_r0_11120 = 0x0202D3FC;
-block_15:
-        REG_DMA3SAD = var_r0_11120;
-        REG_DMA3DAD = 0x0600A000;
-        REG_DMA3CNT = 0x84000200;
+static inline void LoadAcreTilemap(s32 terrain, s32 acre) {
+    switch (terrain) {
+    case 0:
+        DmaCopy32(3, sIslandLeftAcreTilemaps[0], BG_SCREEN_ADDR(20 + acre), 0x800);
         break;
-    case 1:                                         /* switch 1 */
-        var_r0_11120 = 0x0202DBFC;
-        goto block_15;
-    case 2:                                         /* switch 1 */
-        var_r0_11120 = 0x0202E3FC;
-        goto block_15;
-    case 3:                                         /* switch 1 */
-        var_r0_11120 = 0x0202EBFC;
-        goto block_15;
-    }
-    temp_r2_11156 = 3 & (*(u8 *)((u8 *)(*(u32 *)0x03001B40) + (0x1939)));
-    switch (temp_r2_11156) {                        /* switch 2; irregular */
-    case 0:                                         /* switch 2 */
-        var_r0_11179 = 0x0202B3FC;
-block_27:
-        REG_DMA3SAD = var_r0_11179;
-        REG_DMA3DAD = 0x0600A800;
-        REG_DMA3CNT = 0x84000200;
+    case 1:
+        DmaCopy32(3, sIslandLeftAcreTilemaps[1], BG_SCREEN_ADDR(20 + acre), 0x800);
         break;
-    case 1:                                         /* switch 2 */
-        var_r0_11179 = 0x0202BBFC;
-        goto block_27;
-    case 2:                                         /* switch 2 */
-        var_r0_11179 = 0x0202C3FC;
-        goto block_27;
-    case 3:                                         /* switch 2 */
-        var_r0_11179 = 0x0202CBFC;
-        goto block_27;
+    case 2:
+        DmaCopy32(3, sIslandLeftAcreTilemaps[2], BG_SCREEN_ADDR(20 + acre), 0x800);
+        break;
+    case 3:
+        DmaCopy32(3, sIslandLeftAcreTilemaps[3], BG_SCREEN_ADDR(20 + acre), 0x800);
+        break;
     }
-    var_r2_11210 = 0x7F;
-    var_r0_11212 = (void *)0x03003710 + 0x496;
-    do {
-        *var_r0_11212 = 0;
-        var_r0_11212 -= 1;
-        var_r2_11210 -= 1;
-    } while (var_r2_11210 >= 0);
-    sub_0201D19C();
 }
 
-void sub_0201D7AC(void) {
-    if (!(0xC000 & *(u16 *)0x0400000E)) {
+void InitIslandField(void) {
+    IslandFieldWork *field = &gIslandFieldWork;
+    s32 terrain;
+    s32 i;
+    u8 hour = gGameState.game_time_frames / (60 * 60 * 60);
+
+    if (field->last_palette_hour != hour) {
+        {
+            u16 *palette0;
+            u16 *palette1;
+            u16 color;
+            u16 palette_index;
+        
+        
+            i = 0;
+            palette0 = current_time_of_day_palette0;
+            palette1 = current_time_of_day_palette1;
+            do {
+                palette_index = (hour << 2) + i;
+                color = time_of_day_palettes[palette_index];
+                *palette0 = color;
+                *palette1 = color;
+                i++;
+                palette0++;
+                palette1++;
+            } while (i < 4);
+        }
+        field->last_palette_hour = hour;
+    }
+    field->last_palette_hour = 0xFF;
+    field->entity_active[0] = 1;
+    PlayerHand_Init();
+    Islander_Init();
+    field->palette_anim_timer = 4;
+    field->palette_anim_frame = 0;
+    field->unk_499 = 0;
+    field->special_tile_idx = 0;
+    field->entity_dist_x = 0;
+    field->entity_dist_y = 0;
+    field->bg3_scroll_y = 0;
+    field->unk_004 = 0;
+    field->transition_state = 0;
+    field->mosaic = 0;
+    field->unk_49D = 0;
+    terrain = gIslandData->bg_data[0] & 3;
+    field->transition_proc_idx = 0;
+    LoadAcreTilemap(terrain, 0);
+    terrain = gIslandData->bg_data[1] & 3;
+    LoadAcreTilemap(terrain, 1);
+
+    for (i = 0; i < ARRAY_COUNT(field->entity_active); i++) {
+        field->entity_active[i] = 0;
+    }
+    LoadIslandForeground();
+}
+
+/* Original address: 0x0201D7AC */
+void ExpandIslandBg3(void) {
+    if (!(0xC000 & REG_BG3CNT)) {
         gGameState.unk_828 = (0xC000 | gGameState.unk_828) ^ 0x300;
-        if ((*(u8 *)((u8 *)(*(void **)0x03001B40) + (0x193A))) != 0) {
-            sub_02026BC8(0x26U);
+        if (gIslandData->weather != 0) {
+            Sound_StopEffect2(0x26U);
         }
     }
 }
 
-s32 sub_0201D800(u8 arg0) {
+/* Original address: 0x0201D800 */
+s32 UpdateIslandMosaic(u8 cover) {
     IslandFieldWork *field = &gIslandFieldWork;
-    u16 mosaic;
 
-    if (arg0 != 0) {
+    if (cover != 0) {
         gGameState.unk_824 |= 0x40;
         gGameState.unk_826 |= 0x40;
         gGameState.unk_828 |= 0x40;
-        mosaic = field->mosaic + 0x1111;
-        field->mosaic = mosaic;
-        if ((mosaic << 16) == 0xFFFF0000) {
+        field->mosaic += 0x1111;
+        if (field->mosaic == 0xFFFF) {
             field->transition_state = 2;
-            REG_MOSAIC = mosaic;
+            REG_MOSAIC = field->mosaic;
             return 1;
+        } else {
+            REG_MOSAIC = field->mosaic;
+            return 0;
         }
     } else if (gGameState.unk_824 & 0x40) {
         if (field->mosaic == 0) {
@@ -5218,350 +5376,337 @@ s32 sub_0201D800(u8 arg0) {
         }
         field->transition_state = 0;
         field->transition_proc_idx = 0;
-        mosaic = field->mosaic - 0x1111;
-        field->mosaic = mosaic;
-        if ((mosaic << 16) == 0) {
+        field->mosaic -= 0x1111;
+        if (field->mosaic == 0) {
             gGameState.unk_824 ^= 0x40;
             gGameState.unk_826 ^= 0x40;
             gGameState.unk_828 ^= 0x40;
-            REG_MOSAIC = mosaic;
+            REG_MOSAIC = field->mosaic;
             return 1;
+        } else {
+            REG_MOSAIC = field->mosaic;
+            return 0;
         }
-    } else {
+    }
+    return 1;
+}
+
+/* Original address: 0x0201D904 */
+s32 UpdateIslandField(void) {
+    IslandFieldWork *field = &gIslandFieldWork;
+
+    REG_MOSAIC = 0;
+    sIslandFieldUpdateProcs[field->transition_proc_idx]();
+    if (field->transition_state == 3) {
         return 1;
     }
-    REG_MOSAIC = mosaic;
     return 0;
 }
 
-u8 sub_0201D904(void) {
-    *(s16 *)0x0400004C = 0;
-    ((void (*)(void))*(u32 *)(0x0202FD28 + (*(u8 *)0x03003BAC * 4)))();
-    if (*(u8 *)0x03003BAB != 3) {
-        return 0U;
-    }
-    return 1U;
-}
-
 /* Original address: 0x0201D94C */
-void sub_0201D94C(void) {
-    s32 temp_r1_11723;
-    s32 temp_r1_11766;
-    s32 var_r4_11712;
-    s32 var_r4_11778;
-    s32 var_r4_11792;
-    s32 var_r4_11814;
-    u16 *var_r3_11707;
-    u16 *var_r5_11706;
-    u16 temp_r0_11470;
-    u16 temp_r4_11631;
-    u32 var_r2_11717;
-    u8 temp_r0_11457;
-    u8 temp_r0_11698;
-    u8 temp_r0_11741;
-    u8 temp_r4_11537;
-    u8 temp_r4_11576;
+void GameStateUpdateFunc_Normal(void) {
+    Islander_AGB *islander = &gIslander;
+    Player *player = &gPlayer;
+    IslandFieldWork *field = &gIslandFieldWork;
+    s32 i;
+    u16 palette_index;
+    u8 frame;
+    s32 scroll_y;
+    u16 *palette2;
+    u16 *palette0;
+    s32 camera_y;
+    u16 mosaic_enabled;
+    s32 mosaic_complete;
+    u8 exit_requested;
+    u8 transfer_requested;
 
     UpdateHourlyPalette();
     gGameState.unk_820 = 0x3E41;
     gGameState.unk_81C = 0x1006;
-    if (gIslander._84 != 1) {
-        temp_r0_11457 = sub_0201D800(0U);
-        if (temp_r0_11457 == 0) {
-            gGameState.unk_840 = ((s32) gPlayer.x >> 8) - 0x80;
-            temp_r0_11470 = ((s32) gPlayer.y >> 8) - 0x50;
-            gGameState.unk_842 = temp_r0_11470;
-            if (temp_r0_11470 & 0x800) {
-                gGameState.unk_842 = (u16) temp_r0_11457;
+    if (islander->_84 != 1) {
+        mosaic_complete = UpdateIslandMosaic(0U);
+        if (mosaic_complete == 0) {
+            gGameState.unk_840 = ((s32) player->x >> 8) - 0x80;
+            camera_y = ((s32) player->y >> 8) - 0x50;
+            gGameState.unk_842 = camera_y;
+            if (camera_y & 0x800) {
+                gGameState.unk_842 = 0;
             }
             if ((u32) gGameState.unk_842 > 0x60U) {
                 gGameState.unk_842 = 0x60;
             }
             if (0x800 & gGameState.unk_840) {
-                gGameState.unk_840 = (u16) temp_r0_11457;
+                gGameState.unk_840 = 0;
             }
             if ((u32) gGameState.unk_840 > 0x100U) {
                 gGameState.unk_840 = 0x100;
             }
-            ChangeEmotion((u8) (gIslander.emotion + 1));
+            ChangeEmotion((u8) (islander->emotion + 1));
             gGameState.unk_844 = gGameState.unk_840;
             gGameState.unk_846 = gGameState.unk_842;
-            gIslandFieldWork.gameplay_active = 1;
+            field->gameplay_active = 1;
             return;
         }
     }
-    temp_r4_11537 = gGameState.unk_856;
-    if ((temp_r4_11537 == 1) && (gIslander._84 != 1)) {
-        sub_02026C68(0x14U);
-        sub_02026BD8();
-        gIslandFieldWork.mosaic = 0;
-        gIslandFieldWork.unk_49D = 0;
-        gIslandFieldWork.gameplay_active = 0;
-        gIslandFieldWork.transition_state = temp_r4_11537;
-        gIslandFieldWork.transition_proc_idx = temp_r4_11537;
+    exit_requested = gGameState.unk_856;
+    if ((exit_requested == 1) && (islander->_84 != 1)) {
+        Sound_StopMusic(0x14U);
+        Sound_InitMusic();
+        field->mosaic = 0;
+        field->unk_49D = 0;
+        field->gameplay_active = 0;
+        field->transition_state = exit_requested;
+        field->transition_proc_idx = exit_requested;
         return;
     }
-    temp_r4_11576 = gGameState.unk_84E;
-    if ((temp_r4_11576 == 1) && (gIslander._84 != 1)) {
-        sub_02026C68(0x14U);
-        sub_02026BD8();
-        gIslandFieldWork.mosaic = 0U;
-        gIslandFieldWork.unk_49D = 0;
-        gIslandFieldWork.gameplay_active = 0;
-        gIslandFieldWork.transition_state = temp_r4_11576;
-        gIslandFieldWork.transition_proc_idx = 2U;
+    transfer_requested = gGameState.unk_84E;
+    if ((transfer_requested == 1) && (islander->_84 != 1)) {
+        Sound_StopMusic(0x14U);
+        Sound_InitMusic();
+        field->mosaic = 0U;
+        field->unk_49D = 0;
+        field->gameplay_active = 0;
+        field->transition_state = transfer_requested;
+        field->transition_proc_idx = 2U;
         return;
     }
-    if ((2 & gGameState.keys_pressed) && (gIslander._84 != 1)) {
-        temp_r4_11631 = 0x40 & gGameState.unk_824;
-        if (temp_r4_11631 == 0) {
-            sub_02026C68(0x14U);
-            sub_02026BD8();
-            gIslandFieldWork.mosaic = temp_r4_11631;
-            gIslandFieldWork.unk_49D = 0;
-            gIslandFieldWork.gameplay_active = 0;
-            gIslandFieldWork.transition_state = 1U;
-            gIslandFieldWork.transition_proc_idx = 3U;
+    if ((2 & gGameState.keys.buttons.pressed) && (islander->_84 != 1)) {
+        mosaic_enabled = 0x40 & gGameState.unk_824;
+        if (mosaic_enabled == 0) {
+            Sound_StopMusic(0x14U);
+            Sound_InitMusic();
+            field->mosaic = mosaic_enabled;
+            field->unk_49D = 0;
+            field->gameplay_active = 0;
+            field->transition_state = 1U;
+            field->transition_proc_idx = 3U;
             return;
         }
     }
     if ((0xC000 & REG_BG3CNT) && (0xC000 & gGameState.unk_828)) {
         gGameState.unk_828 = (0xC000 ^ gGameState.unk_828) | 0x300;
         if (gIslandData->weather != 0) {
-            sub_02026B48(0x26U);
+            Sound_PlayEffect2(0x26U);
         }
     }
-    temp_r0_11698 = gIslandFieldWork.palette_anim_timer - 1;
-    gIslandFieldWork.palette_anim_timer = temp_r0_11698;
-    if ((temp_r0_11698 << 0x18) == 0) {
-        gIslandFieldWork.palette_anim_timer = 8;
-        var_r5_11706 = (u16 *)0x02000000;
-        var_r3_11707 = (u16 *)0x02000040;
-        var_r4_11712 = 0;
-        var_r2_11717 = gIslandFieldWork.palette_anim_frame << 0x14;
+    if (--field->palette_anim_timer == 0) {
+        field->palette_anim_timer = 8;
+        palette0 = gFieldPaletteBuffer;
+        palette2 = gFieldPaletteBuffer2;
+        frame = field->palette_anim_frame;
+        i = 0;
         do {
-            temp_r1_11723 = (var_r2_11717 >> 0x10) * 2;
-            *var_r5_11706 = *(u32 *)(0x0202F3FC + temp_r1_11723);
-            *var_r3_11707 = *(u32 *)(0x0202F5FC + temp_r1_11723);
-            var_r2_11717 += 0x10000;
-            var_r4_11712 += 1;
-            var_r5_11706 += 2;
-            var_r3_11707 += 2;
-        } while (var_r4_11712 <= 0xF);
-        temp_r0_11741 = gIslandFieldWork.palette_anim_frame + 1;
-        gIslandFieldWork.palette_anim_frame = temp_r0_11741;
-        if ((u32) temp_r0_11741 > 0xDU) {
-            gIslandFieldWork.palette_anim_frame = 0U;
+            palette_index = frame * 16 + i;
+            *palette0 = sFieldPaletteAnimation0[palette_index];
+            *palette2 = sFieldPaletteAnimation2[palette_index];
+            i += 1;
+            palette0++;
+            palette2++;
+        } while (i <= 0xF);
+        if (++field->palette_anim_frame > 13) {
+            field->palette_anim_frame = 0U;
         }
     }
-    CpuSet((void *)0x02000000, (void *)PLTT, 0x200U);
+    CpuSet(gFieldPaletteBuffer, (void *)PLTT, 0x200U);
     gGameState.unk_848 = gGameState.unk_840;
-    temp_r1_11766 = gIslandFieldWork.bg3_scroll_y + 0x40;
-    gIslandFieldWork.bg3_scroll_y = temp_r1_11766;
-    gGameState.bg3_vofs = (u16) ((s32) (gGameState.unk_842 + temp_r1_11766) >> 8);
-    sub_020267D0();
+    scroll_y = field->bg3_scroll_y + 0x40;
+    field->bg3_scroll_y = scroll_y;
+    gGameState.bg3_vofs = (u16) ((s32) (gGameState.unk_842 + scroll_y) >> 8);
+    PlayerHand_Update();
     Islander_UpdateMovement();
-    var_r4_11778 = 0;
+    i = 0;
     do {
-        if (gIslandFieldWork.entity_active[var_r4_11778 + 21] == 1) {
-            sub_02024DD0(var_r4_11778);
+        if (field->entity_active[i + 21] == 1) {
+            FallingFruit_Update(i);
         }
-        var_r4_11778 += 1;
-    } while (var_r4_11778 <= 0x1D);
-    var_r4_11792 = 0;
+        i += 1;
+    } while (i <= 0x1D);
+    i = 0;
     do {
-        if (gIslandFieldWork.entity_active[var_r4_11792 + 54] == 1) {
-            sub_0201E538(var_r4_11792);
+        if (field->entity_active[i + 54] == 1) {
+            FieldObject_Update(i);
         }
-        var_r4_11792 += 1;
-    } while (var_r4_11792 <= 0x1D);
-    if (gIslandFieldWork.entity_active[2] == 1) {
-        sub_020255F0(2);
+        i += 1;
+    } while (i <= 0x1D);
+    if (field->entity_active[2] == 1) {
+        Entity_Update(2);
     }
-    var_r4_11814 = 3;
+    i = 3;
     do {
-        if (gIslandFieldWork.entity_active[var_r4_11814 + 3] == 1) {
-            sub_020255F0(var_r4_11814);
+        if (field->entity_active[i + 3] == 1) {
+            Entity_Update(i);
         }
-        var_r4_11814 += 1;
-    } while (var_r4_11814 <= 0xB);
-    sub_0201E038(1U, 2);
-    sub_0201E230(0x54);
+        i += 1;
+    } while (i <= 0xB);
+    IslandBuilding_Update(1U, 2);
+    AnimatedFieldObject_Update(0x54);
 }
 
-void sub_0201DCE4(void) {
-    sub_0201D800(*(u8 *)0x03003BAB);
-    if (*(u8 *)0x03003BAB == 2) {
-        sub_0201D7AC();
+/* Original address: 0x0201DCE4 */
+void IslandField_UpdateJoybusExit(void) {
+    UpdateIslandMosaic(gIslandFieldWork.transition_state);
+    if (gIslandFieldWork.transition_state == 2) {
+        ExpandIslandBg3();
         RestoreHeldItemsToField();
         gGameState.unk_857 = 1;
-        *(u8 *)0x03003BAB = 3;
+        gIslandFieldWork.transition_state = 3;
     }
 }
 
-void sub_0201DD24(void) {
-    sub_0201D800(*(u8 *)0x03003BAB);
-    if (*(u8 *)0x03003BAB == 2) {
-        sub_0201D7AC();
+/* Original address: 0x0201DD24 */
+void IslandField_UpdateSleepExit(void) {
+    UpdateIslandMosaic(gIslandFieldWork.transition_state);
+    if (gIslandFieldWork.transition_state == 2) {
+        ExpandIslandBg3();
         RestoreHeldItemsToField();
         gGameState.unk_84F = 1;
-        *(u8 *)0x03003BAB = 3;
+        gIslandFieldWork.transition_state = 3;
     }
 }
 
-void sub_0201DD64(void) {
-    sub_0201D800(*(u8 *)0x03003BAB);
-    if (*(u8 *)0x03003BAB == 2) {
-        sub_0201D7AC();
+/* Original address: 0x0201DD64 */
+void IslandField_UpdateOverviewExit(void) {
+    UpdateIslandMosaic(gIslandFieldWork.transition_state);
+    if (gIslandFieldWork.transition_state == 2) {
+        ExpandIslandBg3();
         RestoreHeldItemsToField();
-        *(u8 *)0x03003BAB = 3;
+        gIslandFieldWork.transition_state = 3;
+    }
+}
+
+static inline void DrawIslanderBehindFieldObjects(Islander_AGB *islander) {
+    if (islander->move_proc_idx == 0x14) {
+        if (islander->_84 == 2) {
+            Islander_Draw();
+        }
     }
 }
 
 /* Original address: 0x0201DD94 */
-void sub_0201DD94(void) {
-    s32 sp0;
-    s32 sp4;
-    s32 temp_r0_12027;
-    s32 temp_r0_12114;
-    s32 temp_r2_12102;
-    s32 temp_r3_12104;
-    s32 var_r4_12083;
-    s32 var_r6_11991;
-    s32 var_r6_12013;
-    s32 var_r6_12174;
-    s32 var_r8_12020;
-    s32 var_sl_12008;
-    u16 temp_r1_12058;
-    FieldObject *temp_r5_12029;
-    void *var_r6_11978;
+void DrawIslandField(void) {
+    Islander_AGB *islander = &gIslander;
+    IslandFieldWork *field = &gIslandFieldWork;
+    s32 i;
+    s32 house_drawn;
+    s32 islander_drawn;
+    s32 distance_y;
+    s32 distance_x;
+    s32 islander_y;
+    s32 entity;
+    s32 cabana_drawn;
+    u32 entity_id;
 
     gGameState.unk_860 = 0;
-    if (gIslandFieldWork.entity_active[2] == 1) {
-        sub_020256D0(2);
+    if (field->entity_active[2] == 1) {
+        Entity_DrawSprite(2);
     }
-    if ((gIslander.move_proc_idx == 0x14) && (gIslander._84 == 2)) {
-        Islander_Draw();
-    }
-    var_r6_11978 = NULL;
+    DrawIslanderBehindFieldObjects(islander);
+    i = 0;
     do {
-        if (gIslandFieldWork.entity_active[(s32) var_r6_11978] == 1) {
-            sub_02026830();
+        if (field->entity_active[i] == 1) {
+            PlayerHand_Draw();
         }
-        var_r6_11978 += 1;
-    } while ((s32) var_r6_11978 <= 1);
-    var_r6_11991 = 3;
+        i += 1;
+    } while (i <= 1);
+    i = 3;
     do {
-        if (gIslandFieldWork.entity_active[var_r6_11991 + 3] == 1) {
-            sub_020256D0(var_r6_11991);
+        if (field->entity_active[i + 3] == 1) {
+            Entity_DrawSprite(i);
         }
-        var_r6_11991 += 1;
-    } while (var_r6_11991 <= 0xB);
-    sub_0201E27C(0x54);
-    var_sl_12008 = 0;
-    sp0 = 0;
-    sp4 = 0;
-    var_r6_12013 = 0x1E;
-loop_14:
-    var_r8_12020 = var_r6_12013 - 1;
-    if (gIslandFieldWork.entity_active[var_r6_12013 + 54] != 1) {
-
-    } else {
-        temp_r0_12027 = var_r6_12013 * 0x30;
-        temp_r5_12029 = &gFieldObjects[var_r6_12013];
-        if ((var_sl_12008 == 0) && ((u32) gIslandBuildings[0].tile_idx > (u32) temp_r5_12029->tile_idx)) {
-            sub_0201E178(0, 0U);
-            var_sl_12008 = 1;
-        }
-        if ((sp0 == 0) && ((u32) gIslandBuildings[1].tile_idx > (u32) temp_r5_12029->tile_idx)) {
-            sub_0201E178(1, 2U);
-            sp0 = 1;
-        }
-        temp_r1_12058 = temp_r5_12029->entity_id;
-        var_r8_12020 = var_r6_12013 - 1;
-        if (temp_r1_12058 != 0) {
-            if (temp_r1_12058 != 0xFFFF) {
-                sub_02024DF8(temp_r1_12058 - 1);
-            } else {
-                var_r4_12083 = 0;
-                do {
-                    if (gIslandFieldWork.entity_active[var_r4_12083 + 21] == 1) {
-                        sub_02024DF8(var_r4_12083);
-                    }
-                    var_r4_12083 += 1;
-                } while (var_r4_12083 <= 2);
+        i += 1;
+    } while (i <= 0xB);
+    AnimatedFieldObject_Draw(0x54);
+    cabana_drawn = 0;
+    house_drawn = 0;
+    islander_drawn = 0;
+    for (i = 0x1E; i >= 0; i--) {
+        if (field->entity_active[i + 54] == 1) {
+            FieldObject *object = &gFieldObjects[i];
+            if ((cabana_drawn == 0) && ((u32) gIslandBuildings[0].tile_idx > (u32) object->tile_idx)) {
+                IslandBuilding_Draw(0, 0U);
+                cabana_drawn = 1;
             }
+            if ((house_drawn == 0) && ((u32) gIslandBuildings[1].tile_idx > (u32) object->tile_idx)) {
+                IslandBuilding_Draw(1, 2U);
+                house_drawn = 1;
+            }
+            entity_id = object->entity_id;
+            if (entity_id != 0) {
+                if (entity_id != 0xFFFF) {
+                    FallingFruit_Draw(entity_id - 1);
+                } else {
+                    entity = 0;
+                    do {
+                        if (field->entity_active[entity + 21] == 1) {
+                            FallingFruit_Draw(entity);
+                        }
+                        entity += 1;
+                    } while (entity <= 2);
+                }
+            }
+            distance_x = object->x - (islander->_00 >> 8);
+            field->entity_dist_x = distance_x;
+            islander_y = islander->_04;
+            field->entity_dist_y = object->y - (islander_y >> 8);
+            if (distance_x < 0) {
+                field->entity_dist_x = -distance_x;
+            }
+            distance_y = field->entity_dist_y;
+            if (distance_y < 0) {
+                field->entity_dist_y = -distance_y;
+            }
+            if (field->entity_dist_x <= 0x10 && field->entity_dist_y <= 0x10 &&
+                (object->tile_idx & 0xF0) < (((islander_y + 0xD00) >> 8) & 0xF0) &&
+                islander_drawn == 0) {
+                Islander_Draw();
+                islander_drawn = 1;
+            }
+            FieldObject_Draw(i);
         }
-        temp_r2_12102 = gFieldObjects[var_r6_12013].x - ((s32) gIslander._00 >> 8);
-        gIslandFieldWork.entity_dist_x = temp_r2_12102;
-        temp_r3_12104 = gIslander._04;
-        gIslandFieldWork.entity_dist_y = (s32) (temp_r5_12029->y - (temp_r3_12104 >> 8));
-        if (temp_r2_12102 < 0) {
-            gIslandFieldWork.entity_dist_x = (s32) (0 - temp_r2_12102);
-        }
-        temp_r0_12114 = gIslandFieldWork.entity_dist_y;
-        if (temp_r0_12114 < 0) {
-            gIslandFieldWork.entity_dist_y = (s32) (0 - temp_r0_12114);
-        }
-        if (((s32) gIslandFieldWork.entity_dist_x <= 0x10) && ((s32) gIslandFieldWork.entity_dist_y <= 0x10) && ((s32) (0xF0 & temp_r5_12029->tile_idx) < (s32) (((s32) (temp_r3_12104 + 0xD00) >> 8) & 0xF0)) && (sp4 == 0)) {
-            Islander_Draw();
-            sp4 = 1;
-        }
-        FieldObject_Draw(var_r6_12013);
     }
-    var_r6_12013 = var_r8_12020;
-    if (var_r6_12013 >= 0) {
-        goto loop_14;
+    if (cabana_drawn == 0) {
+        IslandBuilding_Draw(0, 0U);
     }
-    if (var_sl_12008 == 0) {
-        sub_0201E178(0, 0U);
+    if (house_drawn == 0) {
+        IslandBuilding_Draw(1, 2U);
     }
-    if (sp0 == 0) {
-        sub_0201E178(1, 2U);
-    }
-    if (sp4 == 0) {
+    if (islander_drawn == 0) {
         Islander_Draw();
     }
-    sub_0201E178(1, 1U);
-    var_r6_12174 = 0;
+    IslandBuilding_Draw(1, 1U);
+    i = 0;
     do {
-        if (gIslandFieldWork.entity_active[var_r6_12174 + 3] == 1) {
-            sub_02025618(var_r6_12174);
+        if (field->entity_active[i + 3] == 1) {
+            Entity_DrawFloatingItemShadow(i);
         }
-        var_r6_12174 += 1;
-    } while (var_r6_12174 <= 0xB);
+        i += 1;
+    } while (i <= 0xB);
 }
 
 /* Original address: 0x0201DF9C */
-void sub_0201DF9C(s32 arg0, s32 arg1, s8 arg2, u8 arg3) {
-    s32 temp_r0_12259;
-    s32 temp_r1_12253;
-    s32 var_r0_12239;
-    IslandBuilding *temp_r2_12211;
+void InitIslandBuilding(s32 index, u8 type, s32 tile, u8 acre) {
+    IslandBuilding *building = &gIslandBuildings[index];
+    Islander_AGB *islander = &gIslander;
 
-    temp_r2_12211 = &gIslandBuildings[arg0];
-    if ((arg1 << 0x18) == 0) {
-        temp_r2_12211->y = (s32) ((0xFFF0 & arg2) + 0x10);
-        gIslandBuildings[arg0].x = (s32) (((0xF & arg2) * 0x10) + 0x10);
+    if (type == 0) {
+        building->y = (tile & 0xFFF0) + 16;
+        building->x = (tile & 0xF) * 16 + 16;
     } else {
-        temp_r2_12211->y = (s32) ((0xFFF0 & arg2) + 8);
-        if (arg3 == 0) {
-            var_r0_12239 = ((0xF & arg2) * 0x10) + 8;
+        building->y = (tile & 0xFFF0) + 8;
+        if (acre == 0) {
+            building->x = (tile & 0xF) * 16 + 8;
         } else {
-            var_r0_12239 = ((0xF & arg2) * 0x10) + 0x108;
+            building->x = (tile & 0xF) * 16 + 0x108;
         }
-        gIslandBuildings[arg0].x = var_r0_12239;
-        temp_r1_12253 = gIslandBuildings[arg0].x << 8;
-        gIslander._00 = temp_r1_12253;
-        temp_r0_12259 = (temp_r2_12211->y << 8) + 0x100;
-        gIslander._04 = temp_r0_12259;
-        gIslander._08 = temp_r1_12253;
-        gIslander._0C = temp_r0_12259;
-        temp_r2_12211->interaction_x = (s32) (gIslandBuildings[arg0].x - 8);
-        temp_r2_12211->interaction_y = (s32) (temp_r2_12211->y - 4);
+        islander->_00 = building->x << 8;
+        islander->_04 = (building->y << 8) + 0x100;
+        islander->_08 = islander->_00;
+        islander->_0C = islander->_04;
+        building->interaction_x = building->x - 8;
+        building->interaction_y = building->y - 4;
     }
-    temp_r2_12211->tile_idx = arg2;
-    temp_r2_12211->state = 1;
+    building->tile_idx = tile;
+    building->state = 1;
 }
 
 void sub_0201E030(void) {
@@ -5572,642 +5717,502 @@ void sub_0201E034(void) {
 
 }
 
-void sub_0201E038(u8 arg0, u8 arg1) {
+typedef void (*IslandBuilding_PROC)(void);
+
+// Original address: 0x0202FD38
+static IslandBuilding_PROC gIslandBuildingProcs[2] = {
+    sub_0201E030,
+    sub_0201E034,
+};
+
+/* Original address: 0x0201E038 */
+void IslandBuilding_Update(u8 arg0, u8 arg1) {
+    IslandBuilding *building = &gIslandBuildings[1];
+
     if (arg1 == 2) {
-        ((void (*)(void))*(u32 *)(0x0202FD38 + ((*(u8 *)((u8 *)((void *)0x03003BC4) + (0x11))) * 4)))();
+        gIslandBuildingProcs[building->state]();
     }
 }
 
-void sub_0201E060(void *arg0, s32 arg1, u8 arg2) {
-    s32 temp_r0_12318;
-    u8 temp_r0_12364;
-    u8 temp_r2_12355;
-    u8 temp_r4_12347;
-    void *temp_r0_12320;
-    void *temp_r6_12329;
+/* Original address: 0x0201E060 */
+void IslandBuilding_DrawSprite(IslandBuildingSprite *sprite, s32 building_index, u8 sprite_index) {
+    IslandBuilding *building = &gIslandBuildings[building_index];
+    IslanderOamData *oam = &((IslanderOamData *)gUnk3002410)[gGameState.unk_860];
 
-    temp_r0_12318 = arg1 * 0x14;
-    temp_r0_12320 = temp_r0_12318 + 0x03003BB0;
-    temp_r6_12329 = (gGameState.unk_860 * 8) + gUnk3002410;
-    if ((arg2 != 5) || ((*(u8 *)((u8 *)(temp_r0_12320) + (0x11))) == 1)) {
-        temp_r4_12347 = (0x3F & (*(u8 *)((u8 *)(temp_r6_12329) + (1)))) | ((((u32) (*(u32 *)((u8 *)(arg0) + (0))) >> 0xE) & 3) << 6);
-        (*(u8 *)((u8 *)(temp_r6_12329) + (1))) = temp_r4_12347;
-        temp_r2_12355 = (0x3F & (*(u8 *)((u8 *)(temp_r6_12329) + (3)))) | (((u32) (*(u32 *)((u8 *)(arg0) + (0))) >> 0x1E) << 6);
-        (*(u8 *)((u8 *)(temp_r6_12329) + (3))) = temp_r2_12355;
-        temp_r0_12364 = (-0x11 & temp_r2_12355) | (((*(u8 *)((u8 *)(arg0) + (0xF))) & 1) * 0x10);
-        (*(u8 *)((u8 *)(temp_r6_12329) + (3))) = temp_r0_12364;
-        (*(u8 *)((u8 *)(temp_r6_12329) + (3))) = (u8) ((temp_r0_12364 & ~0x20) | (((*(u8 *)((u8 *)(arg0) + (0x10))) & 1) << 5));
-        (*(u8 *)((u8 *)(temp_r6_12329) + (5))) = (u8) ((((0xF & (*(u8 *)((u8 *)(temp_r6_12329) + (5)))) | ((*(u8 *)((u8 *)(arg0) + (0xE))) * 0x10)) & ~0xC) | 4);
-        (*(u16 *)((u8 *)(temp_r6_12329) + (2))) = (u16) ((0xFFFFFE00 & (*(u16 *)((u8 *)(temp_r6_12329) + (2)))) | (((*(s32 *)((u8 *)(arg0) + (8))) + (*(u32 *)(0x03003BB0 + temp_r0_12318) - gGameState.unk_844)) & 0x1FF));
-        (*(s8 *)((u8 *)(temp_r6_12329) + (0))) = (s8) ((*(s32 *)((u8 *)(arg0) + (4))) + ((*(s32 *)((u8 *)(temp_r0_12320) + (4))) - (*(u8 *)((u8 *)(&gGameState) + (0x846)))));
-        (*(u16 *)((u8 *)(temp_r6_12329) + (4))) = (u16) ((0xFFFFFC00 & (*(u16 *)((u8 *)(temp_r6_12329) + (4)))) | (0x3FF & (*(u16 *)((u8 *)(arg0) + (0xC)))));
-        (*(u8 *)((u8 *)(temp_r6_12329) + (1))) = (u8) (temp_r4_12347 | 0x10);
+    if (sprite_index != 5 || building->state == 1) {
+        oam->shape = (sprite->oam_attributes >> 14) & 3;
+        oam->size = sprite->oam_attributes >> 30;
+        oam->h_flip = sprite->h_flip;
+        oam->v_flip = sprite->v_flip;
+        oam->palette_num = sprite->palette_num;
+        oam->priority = 1;
+        oam->x = sprite->x_offset + (building->x - gGameState.unk_844);
+        oam->y = sprite->y_offset + (building->y - (u8)gGameState.unk_846);
+        oam->tile_num = sprite->tile_num;
+        oam->mosaic = 1;
     }
-    gGameState.unk_860 += 1;
+    gGameState.unk_860++;
 }
 
-void sub_0201E178(s32 arg0, u8 arg1) {
-    s32 var_r0_12453;
-    s32 var_r4_12478;
-    s32 var_r5_12483;
-    s32 var_r6_12454;
-    u8 temp_r1_12451;
+/* Original address: 0x0201E178 */
+void IslandBuilding_Draw(s32 building_index, u8 part) {
+    s32 first = 0;
+    s32 end = 0;
+    s32 i;
 
-    temp_r1_12451 = arg1;
-    var_r0_12453 = 0;
-    var_r6_12454 = 0;
-    switch (temp_r1_12451) {                        /* irregular */
+    switch (part) {
     case 0:
-        var_r0_12453 = 0;
-        var_r6_12454 = 3;
+        first = 0;
+        end = 3;
         break;
     case 2:
-        var_r0_12453 = 3;
-        var_r6_12454 = 5;
+        first = 3;
+        end = 5;
         break;
     case 1:
-        var_r0_12453 = 5;
-        var_r6_12454 = 6;
+        first = 5;
+        end = 6;
         break;
     }
-    var_r4_12478 = var_r0_12453;
-    if (var_r4_12478 < var_r6_12454) {
-        var_r5_12483 = var_r4_12478 * 0x14;
-        do {
-            sub_0201E060(var_r5_12483 + 0x0202FD40, arg0, (u8) var_r4_12478);
-            var_r5_12483 += 0x14;
-            var_r4_12478 += 1;
-        } while (var_r4_12478 < var_r6_12454);
+    for (i = first; i < end; i++) {
+        IslandBuilding_DrawSprite(&sIslandBuildingSprites[i], building_index, i);
     }
 }
 
-void sub_0201E1E0(s32 arg0, s32 arg1, u8 arg2) {
-    s32 temp_r1_12511;
-    void *temp_r3_12513;
+/* Original address: 0x0201E1E0 */
+void AnimatedFieldObject_Init(s32 index, s32 tile, u8 acre) {
+    AnimatedFieldObject *object = &gAnimatedFieldObjects[index];
 
-    temp_r1_12511 = arg0 * 0xC;
-    temp_r3_12513 = temp_r1_12511 + 0x03003BF0;
-    *(u32 *)(0x03003BF0 + temp_r1_12511) = 0;
-    if ((arg2 << 0x18) != 0) {
-        *(u32 *)(0x03003BF0 + temp_r1_12511) = 0x100;
+    object->x = 0;
+    if (acre != 0) {
+        object->x = 0x100;
     }
-    *(u32 *)(0x03003BF0 + temp_r1_12511) = (s32) (*(u32 *)(0x03003BF0 + temp_r1_12511) | (((0xF & arg1) * 0x10) + 0xC));
-    (*(s32 *)((u8 *)(temp_r3_12513) + (4))) = (s32) ((0xF0 & arg1) + 8);
-    (*(s8 *)((u8 *)(temp_r3_12513) + (8))) = 0;
-    (*(s8 *)((u8 *)(temp_r3_12513) + (9))) = 0;
-    (*(s8 *)((u8 *)(temp_r3_12513) + (8))) = (s8) (*(u16 *)((u8 *)(*(void **)0x0202FEB0) + (4)));
+    object->x |= (tile & 0xF) * 16 + 12;
+    object->y = (tile & 0xF0) + 8;
+    object->anim_timer = 0;
+    object->anim_frame = 0;
+    object->anim_timer = sFieldAnimationFrames[0]->duration;
 }
 
-void sub_0201E230(s32 arg0) {
-    u8 temp_r0_12555;
-    u8 temp_r2_12558;
-    void *temp_r1_12553;
+/* Original address: 0x0201E230 */
+void AnimatedFieldObject_Update(s32 index) {
+    AnimatedFieldObject *object = &gAnimatedFieldObjects[index];
 
-    temp_r1_12553 = (arg0 * 0xC) + 0x03003BF0;
-    temp_r0_12555 = (*(u8 *)((u8 *)(temp_r1_12553) + (8))) - 1;
-    (*(u8 *)((u8 *)(temp_r1_12553) + (8))) = temp_r0_12555;
-    temp_r2_12558 = temp_r0_12555;
-    if (temp_r2_12558 == 0) {
-        (*(u8 *)((u8 *)(temp_r1_12553) + (9))) = (u8) ((*(u8 *)((u8 *)(temp_r1_12553) + (9))) + 1);
-        if ((*(u8 *)((u8 *)(*(u32 *)(0x0202FEB0 + ((*(u8 *)((u8 *)(temp_r1_12553) + (9))) * 4))) + (6))) == 0xFF) {
-            (*(u8 *)((u8 *)(temp_r1_12553) + (9))) = temp_r2_12558;
+    object->anim_timer--;
+    if (object->anim_timer == 0) {
+        object->anim_frame++;
+        if ((u8)sFieldAnimationFrames[object->anim_frame]->action_flag == 0xFF) {
+            object->anim_frame = 0;
         }
-        (*(u8 *)((u8 *)(temp_r1_12553) + (8))) = (u8) (*(u16 *)((u8 *)(*(u32 *)(0x0202FEB0 + ((*(u8 *)((u8 *)(temp_r1_12553) + (9))) * 4))) + (4)));
+        object->anim_timer = sFieldAnimationFrames[object->anim_frame]->duration;
     }
 }
 
-void sub_0201E27C(s32 arg0) {
-    s32 temp_r1_12596;
-    u8 temp_r0_12722;
-    u8 temp_r1_12653;
-    u8 temp_r1_12680;
-    u8 temp_r2_12644;
-    u8 temp_r2_12671;
-    u8 temp_r4_12660;
-    void *temp_r3_12628;
-    void *temp_r6_12598;
-    void *var_r5_12604;
+/* Original address: 0x0201E27C */
+void AnimatedFieldObject_Draw(s32 index) {
+    AnimatedFieldObject *object = &gAnimatedFieldObjects[index];
+    IslanderOamData *source = sFieldAnimationFrames[object->anim_frame]->sprite_gfx_p;
 
-    temp_r1_12596 = arg0 * 0xC;
-    temp_r6_12598 = temp_r1_12596 + 0x03003BF0;
-    var_r5_12604 = **(u32 **)(0x0202FEB0 + ((*(u8 *)((u8 *)(temp_r6_12598) + (9))) * 4));
-    if ((*(u16 *)((u8 *)(var_r5_12604) + (6))) == 0xFFFF) {
-        return;
-    }
-    do {
-        temp_r3_12628 = (gGameState.unk_860 * 8) + gUnk3002410;
-        (*(s8 *)((u8 *)(temp_r3_12628) + (0))) = (s8) (((*(u8 *)((u8 *)(var_r5_12604) + (0))) + (*(s32 *)((u8 *)(temp_r6_12598) + (4)))) - (*(u8 *)((u8 *)(&gGameState) + (0x846))));
-        temp_r2_12644 = (-0xD & (*(u8 *)((u8 *)(temp_r3_12628) + (1)))) | (0xC & (*(u8 *)((u8 *)(var_r5_12604) + (1))));
-        (*(u8 *)((u8 *)(temp_r3_12628) + (1))) = temp_r2_12644;
-        temp_r1_12653 = (-0x21 & temp_r2_12644) | ((((u32) ((*(u8 *)((u8 *)(var_r5_12604) + (1))) << 0x1A) >> 0x1F) & 1) << 5);
-        (*(u8 *)((u8 *)(temp_r3_12628) + (1))) = temp_r1_12653;
-        temp_r4_12660 = (0x3F & temp_r1_12653) | (((u8) (*(u8 *)((u8 *)(var_r5_12604) + (1))) >> 6) << 6);
-        (*(u8 *)((u8 *)(temp_r3_12628) + (1))) = temp_r4_12660;
-        temp_r2_12671 = (-0x11 & (*(u8 *)((u8 *)(temp_r3_12628) + (3)))) | ((((u32) ((*(u8 *)((u8 *)(var_r5_12604) + (3))) << 0x1B) >> 0x1F) & 1) * 0x10);
-        (*(u8 *)((u8 *)(temp_r3_12628) + (3))) = temp_r2_12671;
-        temp_r1_12680 = (-0x21 & temp_r2_12671) | ((((u32) ((*(u8 *)((u8 *)(var_r5_12604) + (3))) << 0x1A) >> 0x1F) & 1) << 5);
-        (*(u8 *)((u8 *)(temp_r3_12628) + (3))) = temp_r1_12680;
-        (*(u8 *)((u8 *)(temp_r3_12628) + (3))) = (u8) ((temp_r1_12680 & 0x3F) | (((u8) (*(u8 *)((u8 *)(var_r5_12604) + (3))) >> 6) << 6));
-        (*(u16 *)((u8 *)(temp_r3_12628) + (2))) = (u16) ((0xFFFFFE00 & (*(u16 *)((u8 *)(temp_r3_12628) + (2)))) | (((((u32) ((*(u16 *)((u8 *)(var_r5_12604) + (2))) << 0x17) >> 0x17) + *(u32 *)(0x03003BF0 + temp_r1_12596)) - gGameState.unk_844) & 0x1FF));
-        (*(u16 *)((u8 *)(temp_r3_12628) + (4))) = (u16) ((0xFFFFFC00 & (*(u16 *)((u8 *)(temp_r3_12628) + (4)))) | ((u32) ((*(u16 *)((u8 *)(var_r5_12604) + (4))) << 0x16) >> 0x16));
-        (*(u8 *)((u8 *)(temp_r3_12628) + (1))) = (u8) (temp_r4_12660 | 0x10);
-        temp_r0_12722 = (-0xD & (*(u8 *)((u8 *)(temp_r3_12628) + (5)))) | 4;
-        (*(u8 *)((u8 *)(temp_r3_12628) + (5))) = temp_r0_12722;
-        (*(u8 *)((u8 *)(temp_r3_12628) + (5))) = (u8) ((temp_r0_12722 & 0xF) | (((u8) (*(u8 *)((u8 *)(var_r5_12604) + (5))) >> 4) * 0x10));
-        gGameState.unk_860 += 1;
-        var_r5_12604 += 8;
-    } while ((*(u16 *)((u8 *)(var_r5_12604) + (6))) != 0xFFFF);
-}
+    while (source->affine_param != 0xFFFF) {
+        IslanderOamData *oam = &((IslanderOamData *)gUnk3002410)[gGameState.unk_860];
 
-void sub_0201E3DC(s32 arg0, u8 arg1) {
-    u16 var_r4_12770;
-    void *temp_r0_12773;
-    void *temp_r5_12768;
-
-    temp_r5_12768 = (arg0 * 0x30) + 0x03003C00;
-    var_r4_12770 = 3;
-loop_1:
-    temp_r0_12773 = var_r4_12770 + 0x03003710;
-    if ((*(u8 *)((u8 *)(temp_r0_12773) + (0x42F))) == 0) {
-        (*(u8 *)((u8 *)(temp_r0_12773) + (0x42F))) = 1U;
-        sub_02024B08(arg0, var_r4_12770, arg1, (*(u8 *)((u8 *)(temp_r5_12768) + (0x24))));
-        (*(s16 *)((u8 *)(temp_r5_12768) + (0x1C))) = (s16) (var_r4_12770 + 1);
-        return;
-    }
-    var_r4_12770 += 1;
-    if ((s32) var_r4_12770 > 0x1D) {
-        return;
-    }
-    goto loop_1;
-}
-
-void sub_0201E430(s32 arg0, u16 arg1, u8 arg2, u8 arg3) {
-    s32 temp_r0_12816;
-    s32 temp_r1_12860;
-    s8 *temp_r0_12829;
-    s8 *temp_r0_12831;
-    u8 temp_r3_12812;
-    void *temp_r0_12833;
-    void *temp_r5_12818;
-
-    temp_r3_12812 = arg3;
-    temp_r0_12816 = arg0 * 0x30;
-    temp_r5_12818 = temp_r0_12816 + 0x03003C00;
-    (*(u16 *)((u8 *)(temp_r5_12818) + (0xC))) = arg1;
-    (*(s8 *)((u8 *)(temp_r5_12818) + (0x29))) = 0;
-    (*(s16 *)((u8 *)(temp_r5_12818) + (0x10))) = 0;
-    (*(s16 *)((u8 *)(temp_r5_12818) + (0x16))) = 0;
-    (*(s16 *)((u8 *)(temp_r5_12818) + (0x18))) = 0;
-    (*(s16 *)((u8 *)(temp_r5_12818) + (0x1A))) = 0;
-    temp_r0_12829 = (temp_r5_12818 + 0x29) - 1;
-    *temp_r0_12829 = 0;
-    temp_r0_12831 = temp_r0_12829 - 2;
-    *temp_r0_12831 = 0;
-    temp_r0_12833 = temp_r0_12831 - 1;
-    (*(s8 *)((u8 *)(temp_r0_12833) + (0))) = 0;
-    (*(s8 *)((u8 *)(temp_r0_12833) + (2))) = 0;
-    (*(u8 *)((u8 *)(temp_r5_12818) + (0x2A))) = 0U;
-    (*(s16 *)((u8 *)(temp_r5_12818) + (0x1C))) = 0;
-    (*(s8 *)((u8 *)(temp_r5_12818) + (0x2B))) = 0;
-    (*(s16 *)((u8 *)(temp_r5_12818) + (0x1E))) = 0;
-    (*(s16 *)((u8 *)(temp_r5_12818) + (0x20))) = 0;
-    (*(s16 *)((u8 *)(temp_r5_12818) + (0x22))) = 0;
-    (*(s8 *)((u8 *)((temp_r5_12818 + 0x2B)) + (1))) = 0;
-    (*(s8 *)((u8 *)(temp_r5_12818) + (0x2D))) = 0;
-    (*(s32 *)((u8 *)(temp_r5_12818) + (4))) = (s32) ((0xF0 & arg2) + 8);
-    temp_r1_12860 = (0xF & arg2) * 0x10;
-    *(u32 *)(0x03003C00 + temp_r0_12816) = (s32) (temp_r1_12860 + 8);
-    (*(s16 *)((u8 *)(temp_r5_12818) + (0xE))) = (s16) arg2;
-    if (temp_r3_12812 != 0) {
-        *(u32 *)(0x03003C00 + temp_r0_12816) = (s32) (temp_r1_12860 + 0x108);
-    }
-    (*(u8 *)((u8 *)(temp_r5_12818) + (0x2A))) = (u8) *(u32 *)(0x02030110 + (*(u16 *)((u8 *)(temp_r5_12818) + (0xC))));
-    (*(u8 *)((u8 *)(temp_r5_12818) + (0x24))) = temp_r3_12812;
-    if ((*(u16 *)((u8 *)(temp_r5_12818) + (0xC))) == 0x12) {
-        sub_0201E3DC(arg0, 0U);
-    }
-    if ((*(u16 *)((u8 *)(temp_r5_12818) + (0xC))) == 7) {
-        sub_0201E3DC(arg0, 3U);
-    }
-    if ((*(u16 *)((u8 *)(temp_r5_12818) + (0xC))) == 8) {
-        sub_0201E3DC(arg0, 7U);
-    }
-    if ((*(u16 *)((u8 *)(temp_r5_12818) + (0xC))) == 9) {
-        sub_0201E3DC(arg0, 0xBU);
-    }
-    if ((*(u16 *)((u8 *)(temp_r5_12818) + (0xC))) == 0xA) {
-        sub_0201E3DC(arg0, 0xFU);
-    }
-    if ((*(u16 *)((u8 *)(temp_r5_12818) + (0xC))) == 0xB) {
-        sub_0201E3DC(arg0, 0x13U);
-    }
-    if ((*(u16 *)((u8 *)(temp_r5_12818) + (0xC))) == 6) {
-        (*(s8 *)((u8 *)(temp_r5_12818) + (0x2D))) = 1;
+        oam->y = source->y + object->y - (u8)gGameState.unk_846;
+        oam->obj_mode = source->obj_mode;
+        oam->bpp = source->bpp;
+        oam->shape = source->shape;
+        oam->h_flip = source->h_flip;
+        oam->v_flip = source->v_flip;
+        oam->size = source->size;
+        oam->x = source->x + object->x - gGameState.unk_844;
+        oam->tile_num = source->tile_num;
+        oam->mosaic = 1;
+        oam->priority = 1;
+        oam->palette_num = source->palette_num;
+        gGameState.unk_860++;
+        source++;
     }
 }
 
-void sub_0201E538(s32 arg0) {
-    ((void (*)(void))*(u32 *)(0x0202FECC + ((*(u8 *)((u8 *)(((arg0 * 0x30) + 0x03003C00)) + (0x28))) * 4)))();
+/* Original address: 0x0201E3DC */
+void FieldObject_AttachEntity(s32 object_index, s32 type) {
+    FieldObject *object;
+    IslandFieldWork *field;
+    s32 slot;
+
+    object = gFieldObjects + object_index;
+    field = &gIslandFieldWork;
+    for (slot = 3; slot < 30; slot++) {
+        if (field->entity_active[slot + 24] == 0) {
+            field->entity_active[slot + 24] = 1;
+            FallingFruit_Init(object_index, slot, type, object->layer);
+            object->entity_id = slot + 1;
+            break;
+        }
+    }
 }
 
-void sub_0201E560(void) {
+/* Original address: 0x0201E430 */
+void FieldObject_Init(s32 object_index, u16 type, s32 tile, u8 layer) {
+    FieldObject *object;
+    s32 tile_x;
+
+    object = &gFieldObjects[object_index];
+    object->type = type;
+    object->x_flip = 0;
+    object->_10 = 0;
+    object->_16 = 0;
+    object->_18 = 0;
+    object->_1A = 0;
+    object->state = 0;
+    object->anim_counter = 0;
+    object->anim_frame = 0;
+    object->anim_timer = 0;
+    object->state_timer = 0;
+    object->entity_id = 0;
+    object->_2B = 0;
+    object->_1E = 0;
+    object->_20 = 0;
+    object->_22 = 0;
+    object->_2C = 0;
+    object->_2D = 0;
+    object->y = (0xF0 & tile) + 8;
+    tile_x = (0xF & tile) * 0x10;
+    object->x = tile_x + 8;
+    object->tile_idx = tile & 0xFF;
+    if (layer != 0) {
+        object->x = tile_x + 0x108;
+    }
+    object->state_timer = sFieldObjectInitialTimers[object->type];
+    object->layer = layer;
+    if (object->type == 0x12) {
+        FieldObject_AttachEntity(object_index, 0U);
+    }
+    if (object->type == 7) {
+        FieldObject_AttachEntity(object_index, 3U);
+    }
+    if (object->type == 8) {
+        FieldObject_AttachEntity(object_index, 7U);
+    }
+    if (object->type == 9) {
+        FieldObject_AttachEntity(object_index, 0xBU);
+    }
+    if (object->type == 0xA) {
+        FieldObject_AttachEntity(object_index, 0xFU);
+    }
+    if (object->type == 0xB) {
+        FieldObject_AttachEntity(object_index, 0x13U);
+    }
+    if (object->type == 6) {
+        object->_2D = 1;
+    }
+}
+
+typedef void (*FieldObject_PROC)(int);
+
+// Original address: 0x0202FECC
+static FieldObject_PROC gFieldObjectProcs[] = {
+    FieldObject_Idle,
+    FieldObject_HandleHit,
+    FieldObject_UpdateShake,
+    FieldObject_UpdateTopple,
+    FieldObject_Deactivate,
+};
+
+/* Original address: 0x0201E538 */
+void FieldObject_Update(s32 idx) {
+    FieldObject *object = &gFieldObjects[idx];
+    gFieldObjectProcs[object->state](idx);
+}
+
+/* Original address: 0x0201E560 */
+void FieldObject_Idle(s32 idx) {
 
 }
 
-void sub_0201E564(s32 arg0) {
-    s32 temp_r1_12974;
-    s32 temp_r1_12995;
-    s32 temp_r5_13007;
-    s32 var_r1_13013;
-    s32 var_r3_12983;
-    u16 temp_r0_12978;
-    void *temp_r0_12987;
-    void *temp_r4_12997;
-    void *temp_r6_12976;
+/* Original address: 0x0201E564 */
+void FieldObject_SpawnToppleEffect(s32 object_index) {
+    FieldObject *object = &gFieldObjects[object_index];
+    IslandFieldWork *field = &gIslandFieldWork;
+    s32 slot;
+    Entity *entity;
+    s32 offset_x;
+    s32 offset_y;
 
-    temp_r1_12974 = arg0 * 0x30;
-    temp_r6_12976 = temp_r1_12974 + 0x03003C00;
-    temp_r0_12978 = (*(u16 *)((u8 *)(temp_r6_12976) + (0xC)));
-    if ((temp_r0_12978 != 3) && (temp_r0_12978 != 0xE)) {
-        var_r3_12983 = 3;
-loop_3:
-        temp_r0_12987 = var_r3_12983 + 0x03003710;
-        if ((*(u8 *)((u8 *)(temp_r0_12987) + (0x41A))) == 0) {
-            temp_r1_12995 = 0x54 * var_r3_12983;
-            temp_r4_12997 = temp_r1_12995 + 0x03004790;
-            (*(u8 *)((u8 *)(temp_r0_12987) + (0x41A))) = 1U;
-            Unk_Struct_Size54_ResetIdx(var_r3_12983);
-            temp_r5_13007 = 0x10 - ((s32) rand_u16(&gGameState) % 33);
-            var_r1_13013 = ((s32) rand_u16(&gGameState) % 17) + 0x10;
-            if ((*(u16 *)((u8 *)(temp_r6_12976) + (0xC))) == 4) {
-                var_r1_13013 = 0x10;
+    if (object->type != 3 && object->type != 14) {
+        for (slot = 3; slot < 10; slot++) {
+            if (field->entity_active[slot + 3] == 0) {
+                entity = &g_EntityTable[slot];
+                field->entity_active[slot + 3] = 1;
+                Entity_Reset(slot);
+                offset_x = 16 - rand_u16(&gGameState) % 33;
+                offset_y = rand_u16(&gGameState) % 17 + 16;
+                if (object->type == 4) {
+                    offset_y = 16;
+                }
+                entity->x = object->x + offset_x;
+                entity->y = object->y - offset_y;
+                entity->type = 1;
+                break;
             }
-            *(u32 *)(0x03004790 + temp_r1_12995) = (s32) (*(u32 *)(0x03003C00 + temp_r1_12974) + temp_r5_13007);
-            (*(s32 *)((u8 *)(temp_r4_12997) + (4))) = (s32) ((*(s32 *)((u8 *)(temp_r6_12976) + (4))) - var_r1_13013);
-            (*(s8 *)((u8 *)(temp_r4_12997) + (0x4E))) = 1;
+        }
+    }
+}
+
+/* Original address: 0x0201E608 */
+void FieldObject_UpdateForegroundItem(s32 object_index) {
+    FieldObject *object;
+    s16 item;
+
+    object = &gFieldObjects[object_index];
+    item = 0;
+    if (object->state == 3) {
+        if (object->type == 3) {
+            item = 1;
+        }
+        if (object->type == 4) {
+            item = 2;
+        }
+        if (object->type == 5) {
+            item = 3;
+        }
+        if (object->type == 6) {
+            item = 4;
+        }
+        if (object->type == 0xE) {
+            item = 0x70;
+        }
+        if (object->type == 0xF) {
+            item = 0x71;
+        }
+        if (object->type == 0x10) {
+            item = 0x72;
+        }
+        if (object->type == 0x11) {
+            item = 0x73;
+        }
+    } else {
+        if (object->type == 0x12) {
+            item = 0x858;
+            object->type = 0x11;
+        }
+        if (object->type == 7) {
+            item = 0x809;
+            object->type = 6;
+        }
+        if (object->type == 8) {
+            item = 0x811;
+            object->type = 6;
+        }
+        if (object->type == 9) {
+            item = 0x819;
+            object->type = 6;
+        }
+        if (object->type == 0xA) {
+            item = 0x821;
+            object->type = 6;
+        }
+        if (object->type == 0xB) {
+            item = 0x829;
+            object->type = 6;
+        }
+    }
+    if (!(object->x & 0x100)) {
+        gIslandData->fgblock[0][0].items[(object->tile_idx >> 4) & 0xF][object->tile_idx & 0xF] = item;
+    } else {
+        gIslandData->fgblock[0][1].items[(object->tile_idx >> 4) & 0xF][object->tile_idx & 0xF] = item;
+    }
+}
+
+/* Original address: 0x0201E710 */
+void FieldObject_HandleHit(s32 object_index) {
+    FieldObject *object = &gFieldObjects[object_index];
+    IslandFieldWork *field = &gIslandFieldWork;
+    s32 fruit_index;
+    s32 timer;
+    u32 x;
+    u32 y;
+    u16 tile_x;
+    u16 tile_y;
+    s32 candidate;
+    u16 tile;
+    u16 fg_tile;
+    u8 acre;
+    FallingFruit *fruit;
+
+    timer = object->state_timer;
+    if (timer == 0 || (timer & 0x80)) {
+        FieldObject_SpawnToppleEffect(object_index);
+        object->anim_timer = 8;
+        object->anim_counter = 0;
+        object->_14 = 0xFFFF;
+        object->state = 3;
+        FieldObject_UpdateForegroundItem(object_index);
+        Sound_PlayEffect0(0x13);
+    } else {
+        Sound_PlayEffect0(0x18);
+        object->anim_timer = 2;
+        object->anim_counter = 0;
+        object->anim_frame = 0;
+        object->state = 2;
+    }
+    if (object->entity_id == 0) {
+        return;
+    }
+    if (object->_2B != 0) {
+        return;
+    }
+    for (fruit_index = 0; fruit_index < 3; fruit_index++) {
+        if (field->entity_active[fruit_index + 21] == 1 && object->entity_id != 0) {
+            field->entity_active[object->entity_id + 23] = 0;
+            object->entity_id = 0;
             return;
         }
-        var_r3_12983 += 1;
-        if (var_r3_12983 > 9) {
-
-        } else {
-            goto loop_3;
-        }
-    }
-}
-
-void sub_0201E608(s32 arg0) {
-    s16 var_r4_13054;
-    s32 temp_r1_13051;
-    s32 var_r1_13154;
-    s32 var_r2_13155;
-    u16 temp_r0_13060;
-    u16 temp_r0_13146;
-    u16 temp_r0_13168;
-    void *temp_r3_13053;
-
-    temp_r1_13051 = arg0 * 0x30;
-    temp_r3_13053 = temp_r1_13051 + 0x03003C00;
-    var_r4_13054 = 0;
-    if ((*(u8 *)((u8 *)(temp_r3_13053) + (0x28))) == 3) {
-        temp_r0_13060 = (*(u16 *)((u8 *)(temp_r3_13053) + (0xC)));
-        if (temp_r0_13060 == 3) {
-            var_r4_13054 = 1;
-        }
-        if (temp_r0_13060 == 4) {
-            var_r4_13054 = 2;
-        }
-        if (temp_r0_13060 == 5) {
-            var_r4_13054 = 3;
-        }
-        if (temp_r0_13060 == 6) {
-            var_r4_13054 = 4;
-        }
-        if (temp_r0_13060 == 0xE) {
-            var_r4_13054 = 0x70;
-        }
-        if (temp_r0_13060 == 0xF) {
-            var_r4_13054 = 0x71;
-        }
-        if (temp_r0_13060 == 0x10) {
-            var_r4_13054 = 0x72;
-        }
-        if (temp_r0_13060 == 0x11) {
-            var_r4_13054 = 0x73;
-        }
-    } else {
-        if ((*(u16 *)((u8 *)(temp_r3_13053) + (0xC))) == 0x12) {
-            var_r4_13054 = 0x858;
-            (*(u16 *)((u8 *)(temp_r3_13053) + (0xC))) = 0x11U;
-        }
-        if ((*(u16 *)((u8 *)(temp_r3_13053) + (0xC))) == 7) {
-            var_r4_13054 = 0x809;
-            (*(u16 *)((u8 *)(temp_r3_13053) + (0xC))) = 6U;
-        }
-        if ((*(u16 *)((u8 *)(temp_r3_13053) + (0xC))) == 8) {
-            var_r4_13054 = 0x811;
-            (*(u16 *)((u8 *)(temp_r3_13053) + (0xC))) = 6U;
-        }
-        if ((*(u16 *)((u8 *)(temp_r3_13053) + (0xC))) == 9) {
-            var_r4_13054 = 0x819;
-            (*(u16 *)((u8 *)(temp_r3_13053) + (0xC))) = 6U;
-        }
-        if ((*(u16 *)((u8 *)(temp_r3_13053) + (0xC))) == 0xA) {
-            var_r4_13054 = 0x821;
-            (*(u16 *)((u8 *)(temp_r3_13053) + (0xC))) = 6U;
-        }
-        if ((*(u16 *)((u8 *)(temp_r3_13053) + (0xC))) == 0xB) {
-            var_r4_13054 = 0x829;
-            (*(u16 *)((u8 *)(temp_r3_13053) + (0xC))) = 6U;
-        }
-    }
-    if (!(*(u32 *)(0x03003C00 + temp_r1_13051) & 0x100)) {
-        temp_r0_13146 = (*(u16 *)((u8 *)(temp_r3_13053) + (0xE)));
-        var_r1_13154 = ((0xF & temp_r0_13146) * 2) + (((temp_r0_13146 >> 4) & 0xF) << 5);
-        var_r2_13155 = *(s32 *)0x03001B40 + 0x24;
-    } else {
-        temp_r0_13168 = (*(u16 *)((u8 *)(temp_r3_13053) + (0xE)));
-        var_r1_13154 = ((0xF & temp_r0_13168) * 2) + (((temp_r0_13168 >> 4) & 0xF) << 5);
-        var_r2_13155 = *(u32 *)0x03001B40 + 0x224;
-    }
-    *(u32 *)(var_r2_13155 + var_r1_13154) = var_r4_13054;
-}
-
-void sub_0201E710(s32 arg0) {
-    s32 sp0;
-    s32 sp4;
-    s32 sp8;
-    u8 *sp10;
-    s32 sp14;
-    u8 *sp18;
-    u8 *sp1C;
-    s8 *sp20;
-    u32 sp24;
-    u8 *sp28;
-    s16 *var_r1_13667;
-    s16 *var_r1_13693;
-    s16 var_r0_13668;
-    s16 var_r0_13694;
-    s32 temp_r1_13441;
-    s32 temp_r2_13590;
-    s32 temp_r3_13349;
-    s32 temp_r3_13622;
-    s32 temp_r4_13336;
-    s32 temp_r4_13340;
-    s32 temp_r4_13384;
-    s32 temp_r4_13393;
-    s32 var_r1_13564;
-    s32 var_sl_13270;
-    s8 *temp_r0_13248;
-    u16 *temp_r1_13451;
-    u16 *var_r0_13428;
-    u16 temp_r2_13326;
-    u16 temp_r2_13386;
-    u16 temp_r3_13314;
-    u16 temp_r3_13390;
-    u16 var_r7_13353;
-    u32 temp_r1_13402;
-    u32 var_r0_13562;
-    u8 *temp_r2_13296;
-    u8 temp_r1_13208;
-    u8 var_r8_13330;
-    void *temp_r0_13250;
-    void *temp_r1_13588;
-    void *temp_r2_13305;
-    void *temp_r5_13202;
-
-    temp_r5_13202 = (arg0 * 0x30) + 0x03003C00;
-    sp0 = 0x03003710;
-    temp_r1_13208 = (*(u8 *)((u8 *)(temp_r5_13202) + (0x2A)));
-    if ((temp_r1_13208 == 0) || (0x80 & temp_r1_13208)) {
-        sub_0201E564(arg0);
-        (*(s8 *)((u8 *)(temp_r5_13202) + (0x27))) = 8;
-        (*(s8 *)((u8 *)(temp_r5_13202) + (0x26))) = 0;
-        (*(s16 *)((u8 *)(temp_r5_13202) + (0x14))) = 0xFFFF;
-        (*(s8 *)((u8 *)(temp_r5_13202) + (0x28))) = 3;
-        sub_0201E608(arg0);
-        sub_02026A38(0x13U);
-        sp1C = temp_r5_13202 + 0x28;
-    } else {
-        sub_02026A38(0x18U);
-        (*(s8 *)((u8 *)(temp_r5_13202) + (0x27))) = 2;
-        temp_r0_13248 = (temp_r5_13202 + 0x27) - 1;
-        *temp_r0_13248 = 0;
-        temp_r0_13250 = temp_r0_13248 - 1;
-        (*(s8 *)((u8 *)(temp_r0_13250) + (0))) = 0;
-        (*(s8 *)((u8 *)(temp_r0_13250) + (3))) = 2;
-        sp1C = temp_r0_13250 + 3;
-    }
-    if ((*(u16 *)((u8 *)(temp_r5_13202) + (0x1C))) == 0) {
-        return;
-    }
-    sp20 = temp_r5_13202 + 0x2B;
-    if ((*(u8 *)((u8 *)(temp_r5_13202) + (0x2B))) != 0) {
-        return;
-    }
-    var_sl_13270 = 0;
-    sp8 = sp0 + 0x417;
-    sp24 = 0;
-    sp28 = sp0 + 0x42C;
-loop_9:
-    if ((*sp28 == 1) && ((*(u16 *)((u8 *)(temp_r5_13202) + (0x1C))) != 0)) {
-        *(u32 *)(sp8 + ((*(u16 *)((u8 *)(temp_r5_13202) + (0x1C))) + 0x17)) = 0;
-        (*(u16 *)((u8 *)(temp_r5_13202) + (0x1C))) = 0U;
-        return;
-    }
-    sp4 = 0;
-    sp14 = var_sl_13270 * 4;
-    temp_r2_13296 = temp_r5_13202 + 0x24;
-    sp18 = temp_r2_13296;
-    (*(u16 *)((u8 *)(&sp0) + (0xC))) = (u16) (*(u16 *)((u8 *)(temp_r5_13202) + (0xE)));
-    sp10 = temp_r2_13296;
-loop_13:
-    temp_r2_13305 = sp14 + sp4;
-    temp_r3_13314 = ((*(u16 *)((u8 *)(&sp0) + (0xC))) + (*(u32 *)(0x02030104 + (s32) temp_r2_13305) * 0x10)) & 0xF0;
-    (*(u16 *)((u8 *)(temp_r5_13202) + (0x20))) = temp_r3_13314;
-    temp_r2_13326 = ((0xF & (*(u16 *)((u8 *)(&sp0) + (0xC)))) + *(u32 *)(0x020300F8 + (s32) temp_r2_13305)) & 0xF;
-    (*(u16 *)((u8 *)(temp_r5_13202) + (0x1E))) = temp_r2_13326;
-    var_r8_13330 = 0;
-    if (*sp10 == 0) {
-        temp_r4_13336 = *(s32 *)0x03001B40;
-        temp_r4_13340 = temp_r3_13314 * 2;
-        (*(u16 *)((u8 *)(temp_r5_13202) + (0x22))) = (u16) *(u32 *)(temp_r4_13336 + 0x24 + (((*(u16 *)((u8 *)(temp_r5_13202) + (0x1E))) * 2) + temp_r4_13340));
-        temp_r3_13349 = (temp_r2_13326 | temp_r3_13314) * 2;
-        var_r7_13353 = *(u32 *)(sp0 + 0x10 + temp_r3_13349);
-        if ((u32) temp_r2_13326 <= 1U) {
-            var_r8_13330 = 1;
-            (*(u16 *)((u8 *)(temp_r5_13202) + (0x22))) = (u16) *(u32 *)(temp_r4_13336 + 0x224 + (((*(u16 *)((u8 *)(temp_r5_13202) + (0x1E))) * 2) + temp_r4_13340));
-            var_r7_13353 = *(u32 *)(sp0 + 0x210 + temp_r3_13349);
-        }
-        if (*sp10 != 0) {
-            goto block_17;
-        }
-    } else {
-block_17:
-        var_r8_13330 = 1;
-        temp_r4_13384 = *(u32 *)0x03001B40;
-        temp_r2_13386 = (*(u16 *)((u8 *)(temp_r5_13202) + (0x1E)));
-        temp_r3_13390 = (*(u16 *)((u8 *)(temp_r5_13202) + (0x20)));
-        temp_r4_13393 = ((0xF & temp_r2_13386) * 2) + ((temp_r3_13390 >> 4) << 5);
-        (*(u16 *)((u8 *)(temp_r5_13202) + (0x22))) = (u16) *(u32 *)(temp_r4_13384 + 0x224 + temp_r4_13393);
-        temp_r1_13402 = (u32) ((temp_r3_13390 + temp_r2_13386) << 0x18) >> 0x17;
-        var_r7_13353 = *(u32 *)(sp0 + 0x210 + temp_r1_13402);
-        if ((u32) temp_r2_13386 > 0xDU) {
-            var_r8_13330 = 0;
-            (*(u16 *)((u8 *)(temp_r5_13202) + (0x22))) = (u16) *(u32 *)(temp_r4_13384 + 0x24 + temp_r4_13393);
-            var_r7_13353 = *(u32 *)(sp0 + 0x10 + temp_r1_13402);
-        }
-    }
-    if (var_r8_13330 == 0) {
-        var_r0_13428 = (u16 *)0x0600A000;
-    } else {
-        var_r0_13428 = (u16 *)0x0600A800;
-    }
-    (*(u16 **)((u8 *)(temp_r5_13202) + (8))) = var_r0_13428;
-    temp_r1_13441 = (*(u16 *)((u8 *)(temp_r5_13202) + (0x20))) + (*(u16 *)((u8 *)(temp_r5_13202) + (0x1E)));
-    temp_r1_13451 = (*(u16 **)((u8 *)(temp_r5_13202) + (8))) + ((temp_r1_13441 & 0xF0) * 8) + ((temp_r1_13441 & 0xF) * 4);
-    (*(u16 **)((u8 *)(temp_r5_13202) + (8))) = temp_r1_13451;
-    if ((((*(u16 *)((u8 *)(temp_r5_13202) + (0x22))) != 0) || (var_r7_13353 != 0xFFF) || ((u32) (u16) ((*temp_r1_13451 & 0x3FF) - 0x20) > 0x5EU)) && (sp4 != 3)) {
-        temp_r3_13622 = sp4 + 1;
-        sp4 = temp_r3_13622;
-        if (temp_r3_13622 <= 3) {
-            goto loop_13;
-        }
-    } else {
-        *sp28 = 1;
-        if ((*(u16 *)((u8 *)(temp_r5_13202) + (0xC))) == 0x12) {
-            sub_02024B08(arg0, (u16) (sp24 >> 0x10), (u8) (var_sl_13270 + 1), var_r8_13330);
-        }
-        if ((*(u16 *)((u8 *)(temp_r5_13202) + (0xC))) == 7) {
-            sub_02024B08(arg0, (u16) (sp24 >> 0x10), (u8) (var_sl_13270 + 4), var_r8_13330);
-        }
-        if ((*(u16 *)((u8 *)(temp_r5_13202) + (0xC))) == 8) {
-            sub_02024B08(arg0, (u16) (sp24 >> 0x10), (u8) (var_sl_13270 + 8), var_r8_13330);
-        }
-        if ((*(u16 *)((u8 *)(temp_r5_13202) + (0xC))) == 9) {
-            sub_02024B08(arg0, (u16) (sp24 >> 0x10), (u8) (var_sl_13270 + 0xC), var_r8_13330);
-        }
-        if ((*(u16 *)((u8 *)(temp_r5_13202) + (0xC))) == 0xA) {
-            sub_02024B08(arg0, (u16) (sp24 >> 0x10), (u8) (var_sl_13270 + 0x10), var_r8_13330);
-        }
-        if ((*(u16 *)((u8 *)(temp_r5_13202) + (0xC))) == 0xB) {
-            sub_02024B08(arg0, (u16) (sp24 >> 0x10), (u8) (var_sl_13270 + 0x14), var_r8_13330);
-        }
-        if (var_r8_13330 == 0) {
-            var_r0_13562 = (u32) (((*(u16 *)((u8 *)(temp_r5_13202) + (0x20))) + (u8) (*(u16 *)((u8 *)(temp_r5_13202) + (0x1E)))) << 0x18) >> 0x17;
-            var_r1_13564 = sp0 + 0x10;
-        } else {
-            var_r0_13562 = (u32) (((*(u16 *)((u8 *)(temp_r5_13202) + (0x20))) + (u8) (*(u16 *)((u8 *)(temp_r5_13202) + (0x1E)))) << 0x18) >> 0x17;
-            var_r1_13564 = sp0 + 0x210;
-        }
-        *(u32 *)(var_r1_13564 + var_r0_13562) = 0x7777;
-        temp_r1_13588 = (0x2C * var_sl_13270) + 0x03004260;
-        temp_r2_13590 = (*(u16 *)((u8 *)(temp_r5_13202) + (0x1E))) * 0x10;
-        (*(s32 *)((u8 *)(temp_r1_13588) + (0x10))) = temp_r2_13590;
-        if (var_r8_13330 != 0) {
-            (*(s32 *)((u8 *)(temp_r1_13588) + (0x10))) = (s32) (temp_r2_13590 | 0x100);
-        }
-        (*(s32 *)((u8 *)(temp_r1_13588) + (0xC))) = (s32) (*(u16 *)((u8 *)(temp_r5_13202) + (0x20)));
-        (*(s16 *)((u8 *)(temp_r1_13588) + (0x20))) = (s16) ((*(u16 *)((u8 *)(temp_r5_13202) + (0x1E))) + (*(u16 *)((u8 *)(temp_r5_13202) + (0x20))));
-        if (((*(u16 *)((u8 *)(temp_r5_13202) + (0x22))) == 0) && (var_r7_13353 == 0xFFF)) {
-            (*(s8 *)((u8 *)(temp_r1_13588) + (0x28))) = 1;
-        }
-    }
-    if (((*(u16 *)((u8 *)(temp_r5_13202) + (0xC))) != 0x12) || (var_sl_13270 != 1)) {
-        sp24 += 0x10000;
-        sp28 += 1;
-        var_sl_13270 += 1;
-        if (var_sl_13270 <= 2) {
-            goto loop_9;
-        }
-    }
-    sub_0201E608(arg0);
-    if (*sp1C == 3) {
-        if (*sp18 == 0) {
-            if ((*(u16 *)((u8 *)(temp_r5_13202) + (0xC))) == 0x12) {
-                var_r1_13667 = sp0 + 0x10 + ((*(u16 *)((u8 *)(temp_r5_13202) + (0xE))) * 2);
-                var_r0_13668 = 0x25;
+        for (candidate = 0; candidate < 4; candidate++) {
+            tile = object->tile_idx;
+            y = (tile + sFruitDropOffsetsY[fruit_index][candidate] * 16) & 0xF0;
+            object->_20 = y;
+            x = ((tile & 0xF) + sFruitDropOffsetsX[fruit_index][candidate]) & 0xF;
+            object->_1E = x;
+            acre = 0;
+            if (object->layer == 0) {
+                object->_22 = gIslandData->fgblock[0][0].items[y >> 4][object->_1E];
+                fg_tile = field->fg_tiles[0][x | y];
+                if (x <= 1) {
+                    acre = 1;
+                    object->_22 = gIslandData->fgblock[0][1].items[y >> 4][object->_1E];
+                    fg_tile = field->fg_tiles[1][x | y];
+                }
+            }
+            if (object->layer != 0) {
+                acre = 1;
+                tile_x = object->_1E;
+                tile_y = object->_20;
+                object->_22 = gIslandData->fgblock[0][1].items[tile_y >> 4][tile_x & 0xF];
+                fg_tile = field->fg_tiles[1][(u8)(tile_y + tile_x)];
+                if (tile_x > 13) {
+                    acre = 0;
+                    object->_22 = gIslandData->fgblock[0][0].items[tile_y >> 4][tile_x & 0xF];
+                    fg_tile = field->fg_tiles[0][(u8)(tile_y + tile_x)];
+                }
+            }
+            if (acre == 0) {
+                object->drop_tilemap = (u16 *)0x0600A000;
             } else {
-                var_r1_13667 = sp0 + 0x10 + ((*(u16 *)((u8 *)(temp_r5_13202) + (0xE))) * 2);
-                var_r0_13668 = 0x34;
+                object->drop_tilemap = (u16 *)0x0600A800;
             }
-            *var_r1_13667 = var_r0_13668;
-            if (*sp18 != 0) {
-                goto block_59;
-            }
-        } else {
-block_59:
-            if ((*(u16 *)((u8 *)(temp_r5_13202) + (0xC))) == 0x12) {
-                var_r1_13693 = sp0 + 0x210 + ((*(u16 *)((u8 *)(temp_r5_13202) + (0xE))) * 2);
-                var_r0_13694 = 0x25;
-            } else {
-                var_r1_13693 = sp0 + 0x210 + ((*(u16 *)((u8 *)(temp_r5_13202) + (0xE))) * 2);
-                var_r0_13694 = 0x34;
-            }
-            *var_r1_13693 = var_r0_13694;
-        }
-    }
-    *sp20 = 1;
-    (*(s8 *)((u8 *)((sp0 + (*(u16 *)((u8 *)(temp_r5_13202) + (0x1C))))) + (0x42E))) = 0;
-    (*(u16 *)((u8 *)(temp_r5_13202) + (0x1C))) = 0xFFFFU;
-}
-
-void sub_0201EB48(s32 arg0) {
-    s8 *sp0;
-    s32 temp_r1_13752;
-    s32 temp_r5_13817;
-    s32 var_r0_13801;
-    s32 var_r2_13805;
-    u16 temp_r0_13796;
-    u8 temp_r0_13765;
-    void *temp_r0_13809;
-    void *temp_r5_13819;
-    void *temp_r6_13754;
-
-    temp_r1_13752 = arg0 * 0x30;
-    temp_r6_13754 = temp_r1_13752 + 0x03003C00;
-    if ((*(u8 *)((u8 *)(temp_r6_13754) + (0x2C))) == 0) {
-        temp_r0_13765 = (*(u8 *)((u8 *)(temp_r6_13754) + (0x27))) - 1;
-        (*(u8 *)((u8 *)(temp_r6_13754) + (0x27))) = temp_r0_13765;
-        if ((temp_r0_13765 << 0x18) == 0) {
-            (*(u8 *)((u8 *)(temp_r6_13754) + (0x27))) = 2U;
-            (*(u8 *)((u8 *)(temp_r6_13754) + (0x26))) = (u8) ((*(u8 *)((u8 *)(temp_r6_13754) + (0x26))) + 1);
-            (*(u8 *)((u8 *)(temp_r6_13754) + (0x25))) = (u8) *(u32 *)(0x02030123 + (*(u8 *)((u8 *)(temp_r6_13754) + (0x26))));
-        }
-    }
-    sp0 = temp_r6_13754 + 0x26;
-    if (1 & (*(u8 *)((u8 *)(temp_r6_13754) + (0x26)))) {
-        temp_r0_13796 = (*(u16 *)((u8 *)(temp_r6_13754) + (0xC)));
-        if ((temp_r0_13796 != 3) && (temp_r0_13796 != 0xE)) {
-            var_r0_13801 = 0;
-            do {
-                var_r2_13805 = 3;
-loop_8:
-                temp_r0_13809 = var_r2_13805 + 0x03003710;
-                if ((*(u8 *)((u8 *)(temp_r0_13809) + (0x41A))) == 0) {
-                    temp_r5_13817 = 0x54 * var_r2_13805;
-                    temp_r5_13819 = temp_r5_13817 + 0x03004790;
-                    (*(u8 *)((u8 *)(temp_r0_13809) + (0x41A))) = 1U;
-                    Unk_Struct_Size54_ResetIdx(var_r2_13805);
-                    *(u32 *)(0x03004790 + temp_r5_13817) = (s32) ((*(u32 *)(0x03003C00 + temp_r1_13752) + 0x10) - ((s32) rand_u16(&gGameState) % 33));
-                    (*(s32 *)((u8 *)(temp_r5_13819) + (4))) = (s32) (((*(s32 *)((u8 *)(temp_r6_13754) + (4))) - 0x10) - ((s32) rand_u16(&gGameState) % 17));
-                    (*(s8 *)((u8 *)(temp_r5_13819) + (0x4E))) = 3;
+            object->drop_tilemap = object->drop_tilemap + ((object->_20 + object->_1E) & 0xF0) * 4 +
+                                   ((object->_20 + object->_1E) & 0xF) * 2;
+            if ((object->_22 == 0 && fg_tile == 0xFFF &&
+                 (u16)((*object->drop_tilemap & 0x3FF) - 0x20) <= 0x5E) || candidate == 3) {
+                field->entity_active[fruit_index + 21] = 1;
+                if (object->type == 18) {
+                    FallingFruit_Init(object_index, fruit_index, fruit_index + 1, acre);
+                }
+                if (object->type == 7) {
+                    FallingFruit_Init(object_index, fruit_index, fruit_index + 4, acre);
+                }
+                if (object->type == 8) {
+                    FallingFruit_Init(object_index, fruit_index, fruit_index + 8, acre);
+                }
+                if (object->type == 9) {
+                    FallingFruit_Init(object_index, fruit_index, fruit_index + 12, acre);
+                }
+                if (object->type == 10) {
+                    FallingFruit_Init(object_index, fruit_index, fruit_index + 16, acre);
+                }
+                if (object->type == 11) {
+                    FallingFruit_Init(object_index, fruit_index, fruit_index + 20, acre);
+                }
+                if (acre == 0) {
+                    field->fg_tiles[0][(u8)(object->_20 + (u8)object->_1E)] = 0x7777;
                 } else {
-                    var_r2_13805 += 1;
-                    if (var_r2_13805 <= 9) {
-                        goto loop_8;
+                    field->fg_tiles[1][(u8)(object->_20 + (u8)object->_1E)] = 0x7777;
+                }
+                fruit = &gFallingFruit[fruit_index];
+                fruit->landing_x = object->_1E * 16;
+                if (acre != 0) {
+                    fruit->landing_x |= 0x100;
+                }
+                fruit->landing_y = object->_20;
+                fruit->tile_idx = object->_1E + object->_20;
+                if (object->_22 == 0 && fg_tile == 0xFFF) {
+                    fruit->can_land = 1;
+                }
+                break;
+            }
+        }
+        if (object->type == 18 && fruit_index == 1) {
+            break;
+        }
+    }
+    FieldObject_UpdateForegroundItem(object_index);
+    if (object->state == 3) {
+        if (object->layer == 0) {
+            if (object->type == 18) {
+                field->fg_tiles[0][object->tile_idx] = 0x25;
+            } else {
+                field->fg_tiles[0][object->tile_idx] = 0x34;
+            }
+        }
+        if (object->layer != 0) {
+            if (object->type == 18) {
+                field->fg_tiles[1][object->tile_idx] = 0x25;
+            } else {
+                field->fg_tiles[1][object->tile_idx] = 0x34;
+            }
+        }
+    }
+    object->_2B = 1;
+    field->entity_active[object->entity_id + 23] = 0;
+    object->entity_id = 0xFFFF;
+}
+
+/* Original address: 0x0201EB48 */
+void FieldObject_UpdateShake(s32 object_index) {
+    FieldObject *object = &gFieldObjects[object_index];
+    IslandFieldWork *field = &gIslandFieldWork;
+    s32 count;
+    s32 slot;
+    Entity *entity;
+    s32 random;
+    s32 x;
+    s32 y;
+
+    if (object->_2C == 0) {
+        object->anim_timer--;
+        if (object->anim_timer == 0) {
+            object->anim_timer = 2;
+            object->anim_counter++;
+            object->anim_frame = sFieldObjectShakeFrames[object->anim_counter];
+        }
+    }
+    if (object->anim_counter & 1) {
+        if (object->type != 3 && object->type != 14) {
+            for (count = 0; count < 3; count++) {
+                for (slot = 3; slot < 10; slot++) {
+                    if (field->entity_active[slot + 3] == 0) {
+                        entity = &g_EntityTable[slot];
+                        field->entity_active[slot + 3] = 1;
+                        Entity_Reset(slot);
+                        random = rand_u16(&gGameState);
+                        x = object->x + 16;
+                        entity->x = x - random % 33;
+                        random = rand_u16(&gGameState);
+                        y = object->y - 16;
+                        entity->y = y - random % 17;
+                        entity->type = 3;
+                        break;
                     }
                 }
-                var_r0_13801 += 1;
-            } while (var_r0_13801 <= 2);
+            }
         }
     }
-    if ((u32) (*(u8 *)((u8 *)(temp_r6_13754) + (0x25))) > 2U) {
-        (*(u8 *)((u8 *)(temp_r6_13754) + (0x27))) = 0U;
-        *sp0 = 0;
-        (*(u8 *)((u8 *)(temp_r6_13754) + (0x25))) = 0U;
-        (*(u8 *)((u8 *)(temp_r6_13754) + (0x2C))) = 0U;
-        *(u32 *)((temp_r6_13754 + 0x2C) - 4) = 0;
+    if (object->anim_frame > 2) {
+        object->anim_timer = 0;
+        object->anim_counter = 0;
+        object->anim_frame = 0;
+        object->_2C = 0;
+        object->state = 0;
     }
 }
 
@@ -6717,7 +6722,7 @@ s32 CheckSurroundingCollision(u16 main_tile, u16 *tile_info) {
 }
 
 /* Original address: 0x0201F78C */
-s32 sub_0201F78C(u8 allow_reverse) {
+s32 Islander_ChooseNewMoveDirection(u8 allow_reverse) {
     Islander_AGB *islander = &gIslander;
     s32 direction;
     s32 count;
@@ -7020,8 +7025,8 @@ s32 Islander_SpawnReactionEffect(u8 effect, u8 duration) {
         if (field->entity_active[i + 3] == 0) {
             entity = &g_EntityTable[i];
             field->entity_active[i + 3] = 1;
-            Unk_Struct_Size54_ResetIdx(i);
-            entity->_40 = duration;
+            Entity_Reset(i);
+            entity->lifetime = duration;
             entity->_4B = effect;
             entity->type = 5;
             entity->x = islander->_00 >> 8;
@@ -7080,7 +7085,7 @@ s32 SpawnEntity(u8 spawn_flag, u8 spawn_mode, u16 item_type, u16 item) {
         if (field->entity_active[active_idx] == 0) {
             entity = &g_EntityTable[entity_idx];
             definition = &g_ItemDefinitions[item_type];
-            Unk_Struct_Size54_ResetIdx(entity_idx);
+            Entity_Reset(entity_idx);
             entity->x = (islander->_00 >> 8) - 8;
             entity->y = (islander->_04 >> 8) - 0x10;
             if (spawn_mode == 0) {
@@ -7092,14 +7097,14 @@ s32 SpawnEntity(u8 spawn_flag, u8 spawn_mode, u16 item_type, u16 item) {
             field->entity_active[active_idx] = 1;
             entity->item_tile_no[0] = item_type;
             entity->item[0] = item;
-            entity->_4A = spawn_flag;
+            entity->item_is_resolved = spawn_flag;
             tile_idx = islander->stand_on_tile_idx;
-            entity->_3C = tile_idx;
+            entity->landing_tile = tile_idx;
             if (islander->_00 & 0xFF0000) {
-                entity->_3C = tile_idx | 0x1000;
+                entity->landing_tile = tile_idx | 0x1000;
             }
-            entity->_3E = definition->held_item_oam_attr2 & 0x3FF;
-            entity->_50 = definition->held_item_oam_attr2 >> 12;
+            entity->sprite_tile = definition->held_item_oam_attr2 & 0x3FF;
+            entity->palette = definition->held_item_oam_attr2 >> 12;
             return entity_idx;
         }
     }
@@ -7367,7 +7372,7 @@ void Islander_MoveWithCollision(void) {
             }
             islander->_00 = islander->_08;
             islander->_04 = islander->_0C;
-            collision = sub_0201F78C(1);
+            collision = Islander_ChooseNewMoveDirection(1);
             islander->_10 = 0;
             islander->_14 = 0;
             islander->_B2[0]++;
@@ -7698,7 +7703,7 @@ void Islander_Init(void) {
     islander->mood = 3;
     Islander_OnMoodChanged();
     ChangeEmotion(islander->emotion + 1);
-    sub_02026BD8();
+    Sound_InitMusic();
     islander->anim_timer = 0xFE;
     islander->anim_id = ISLANDER_ANIM_60;
     islander->move_proc_idx = 0;
@@ -8104,7 +8109,7 @@ void Islander_UpdateMovement(void) {
 }
 
 /* Original address: 0x020215D0 */
-void sub_020215D0(void) {
+void Islander_StartHouseTransition(void) {
     gIslander.anim_timer = 0;
     gIslander.anim_frame = 0;
     gIslander._10 = 0;
@@ -8127,17 +8132,17 @@ void Islander_MoveIndoorsOrOutdoors(void) {
         if (islander->anim_timer == 0) {
             if (islander->anim_id == ISLANDER_ANIM_5F) {
                 if (islander->anim_frame == 8) {
-                    sub_02026A38(1);
+                    Sound_PlayEffect0(1);
                 }
                 if (islander->anim_frame == 0x13) {
-                    sub_02026A38(0xE);
+                    Sound_PlayEffect0(0xE);
                 }
             } else {
                 if (islander->anim_frame == 1) {
-                    sub_02026A38(1);
+                    Sound_PlayEffect0(1);
                 }
                 if (islander->anim_frame == 0xB) {
-                    sub_02026A38(0xE);
+                    Sound_PlayEffect0(0xE);
                 }
             }
         }
@@ -8201,7 +8206,7 @@ void Islander_StartWandering(void) {
 }
 
 /* Original address: 0x020217AC */
-void sub_020217AC(void) {
+void Islander_UpdateWandering(void) {
     Islander_AGB *islander = &gIslander;
     s32 direction = 0;
 
@@ -8238,7 +8243,7 @@ void sub_020217AC(void) {
         }
         if (islander->emotion != ISLANDER_EMOTION_HAPPY || islander->_14 == 0) {
             if (islander->_58 == 0) {
-                direction = sub_0201F78C(0);
+                direction = Islander_ChooseNewMoveDirection(0);
                 if (direction != 0x777) {
                     islander->_8B = direction;
                     islander->move_proc_idx = ActionOutside;
@@ -8283,7 +8288,7 @@ void IslanderMoveAction_MoveToTarget(void) {
             house->state = 0;
             islander->anim_id = ISLANDER_ANIM_5F;
             islander->move_proc_idx = ActionInside;
-            sub_020215D0();
+            Islander_StartHouseTransition();
             islander->anim_timer = 4;
             break;
         case 0x30:
@@ -8297,7 +8302,7 @@ void IslanderMoveAction_MoveToTarget(void) {
                 islander->_00 = islander->_10;
                 islander->_04 = islander->_14;
                 islander->move_proc_idx = MoveAction11;
-                sub_020223AC();
+                Islander_StartFieldObjectInteraction();
             } else {
                 islander->_10 = islander->_18;
                 islander->_14 = islander->_1C;
@@ -8317,7 +8322,7 @@ void IslanderMoveAction_MoveToTarget(void) {
                 islander->_00 = islander->_10;
                 islander->_04 = islander->_14;
                 islander->move_proc_idx = MoveAction11;
-                sub_020223AC();
+                Islander_StartFieldObjectInteraction();
             } else {
                 islander->_10 = islander->_18;
                 islander->_14 = islander->_1C;
@@ -8329,7 +8334,7 @@ void IslanderMoveAction_MoveToTarget(void) {
         case 0x50:
             islander->_00 = islander->_10;
             islander->_04 = islander->_14;
-            sub_0201F78C(1);
+            Islander_ChooseNewMoveDirection(1);
             islander->move_proc_idx = ActionOutside;
             Islander_StartWandering();
             break;
@@ -8404,9 +8409,9 @@ void Islander_StartFoodProcessing(void) {
         }
         tilemap = (0xF0 & islander->stand_on_tile_idx) * 8 + tilemap;
         tilemap = (0xF & islander->stand_on_tile_idx) * 4 + tilemap;
-        WriteItemTileToVRAM(tilemap, 0x200);
+        WriteItemTileToVRAM((u16*)tilemap, 0x200);
     }
-    sub_020262DC(islander->stand_on_tile_idx, islander->_00);
+    Field_RestoreAdjacentTreeTiles(islander->stand_on_tile_idx, islander->_00);
 
     if (islander->_A0 == 0) {
         if (islander->_B5[1] == 0) {
@@ -8433,7 +8438,7 @@ void Islander_ProcessFood(void) {
     if (islander->anim_id == ISLANDER_ANIM_56) {
         if (islander->anim_timer == 0) {
             if (islander->anim_frame == 2) {
-                sub_02026A38(0x1D);
+                Sound_PlayEffect0(0x1D);
             }
         }
     }
@@ -8460,7 +8465,7 @@ void Islander_ProcessFood(void) {
         islander->anim_id = ISLANDER_ANIM_58;
         if (islander->_A0 != 0) {
             islander->anim_id = ISLANDER_ANIM_57;
-            sub_02026A38(0x19);
+            Sound_PlayEffect0(0x19);
         }
         break;
 
@@ -8614,19 +8619,19 @@ void IslanderMoveAction_UpdateEmotion(void) {
 
     switch (islander->emotion_anim_id) {
     case ISLANDER_ANIM_59:
-        sub_02026A38(9);
+        Sound_PlayEffect0(9);
         break;
     case ISLANDER_ANIM_5A:
-        sub_02026A38(10);
+        Sound_PlayEffect0(10);
         break;
     case ISLANDER_ANIM_ANGRY:
-        sub_02026A38(11);
+        Sound_PlayEffect0(11);
         break;
     case ISLANDER_ANIM_SAD:
-        sub_02026A38(12);
+        Sound_PlayEffect0(12);
         break;
     case ISLANDER_ANIM_5D:
-        sub_02026A38(13);
+        Sound_PlayEffect0(13);
         break;
     case ISLANDER_ANIM_5E:
         break;
@@ -8637,7 +8642,8 @@ void IslanderMoveAction_UpdateEmotion(void) {
     islander->move_proc_idx = MoveAction8;
 }
 
-void sub_02022054(void) {
+/* Original address: 0x02022054 */
+void Islander_UpdateEmotionAnimation(void) {
     Islander_AGB *islander = &gIslander;
     IslandBuilding *house = &gIslandBuildings[ISLAND_BUILDING_ISLANDER_HOUSE];
     mActor_name_t *stored_item;
@@ -8691,7 +8697,7 @@ void sub_02022054(void) {
         islander->_99[0] = 0;
         islander->anim_id = ISLANDER_ANIM_5F;
         islander->move_proc_idx = ActionInside;
-        sub_020215D0();
+        Islander_StartHouseTransition();
         islander->anim_timer = 4;
         {
             u16 empty_item = 0;
@@ -8710,13 +8716,13 @@ void sub_02022054(void) {
         return;
     }
 
-    sub_0201F78C(1);
+    Islander_ChooseNewMoveDirection(1);
     islander->move_proc_idx = ActionOutside;
     Islander_StartWandering();
 }
 
 /* Original address: 0x020221C0 */
-void sub_020221C0(void) {
+void Islander_StartClickReaction(void) {
     Islander_AGB *islander = &gIslander;
     IslandFieldWork *field = &gIslandFieldWork;
     IslanderDirectionSector *sector;
@@ -8812,7 +8818,8 @@ void Islander_CheckClickedOnTimer(void) {
     }
 }
 
-void sub_020223AC(void) {
+/* Original address: 0x020223AC */
+void Islander_StartFieldObjectInteraction(void) {
     Islander_AGB *islander = &gIslander;
     FieldObject *field_object = &gFieldObjects[islander->_99[2]];
 
@@ -8872,7 +8879,7 @@ void Islander_MoveAction11_State1(void) {
             islander->sub_move_action = 2;
         } else {
             islander->move_proc_idx = MoveAction11;
-            sub_020223AC();
+            Islander_StartFieldObjectInteraction();
         }
     }
 
@@ -8920,9 +8927,9 @@ void Islander_MoveAction11_State1(void) {
                 entity = &g_EntityTable[spawn_idx];
                 entity->_10 = (entity->y + 0x20) << 8;
                 entity_tile_idx = field_object->tile_idx + 0x10;
-                entity->_3C = entity_tile_idx;
+                entity->landing_tile = entity_tile_idx;
                 if (field_object->layer != 0) {
-                    entity->_3C = entity_tile_idx | 0x1000;
+                    entity->landing_tile = entity_tile_idx | 0x1000;
                 }
                 entity->_52 = 0x35;
                 entity->y -= 0x20;
@@ -8933,7 +8940,7 @@ void Islander_MoveAction11_State1(void) {
     }
     field_object->state = 1;
     field_object->state_timer--;
-    sub_02026A38(0);
+    Sound_PlayEffect0(0);
 }
 
 void Islander_MoveAction11_State2(void) {
@@ -8967,7 +8974,8 @@ static Islander_SUB_MOVE_PROC sIslanderMoveAction11SubMoveProcs[] = {
     Islander_MoveAction11_State2,
 };
 
-void sub_0202275C(void) {
+/* Original address: 0x0202275C */
+void Islander_UpdateFieldObjectInteraction(void) {
     Islander_AGB *islander = &gIslander;
 
     sIslanderMoveAction11SubMoveProcs[islander->sub_move_action]();
@@ -9008,7 +9016,7 @@ void Islander_Fishing_State0(void) {
     }
     anim_timer = &islander->anim_timer;
     if ((*anim_timer == 1) && (islander->anim_frame == 3)) {
-        sub_02026A38(0x14);
+        Sound_PlayEffect0(0x14);
     }
 }
 
@@ -9040,7 +9048,7 @@ void Islander_Fishing_State2(void) {
         islander->anim_frame = 0;
         islander->item_work.held_item.type_idx = 0;
         islander->sub_move_action = 3;
-        sub_02026AB8(0x15);
+        Sound_PlayEffect1(0x15);
         islander->item_work.held_item.tile_no = 0x51;
     }
 }
@@ -9062,8 +9070,8 @@ void Islander_Fishing_State3(void) {
         islander->anim_frame = 0;
         islander->item_work.held_item.type_idx = Islander_GetFishingItem();
         islander->sub_move_action = 4;
-        sub_02026B38(0x15);
-        sub_02026A38(0x16);
+        Sound_StopEffect1(0x15);
+        Sound_PlayEffect0(0x16);
     }
 }
 
@@ -9074,7 +9082,7 @@ void Islander_Fishing_State4(void) {
     if (Islander_PlayAnim(1) == 0) {
         return;
     }
-    sub_02026A38(0x1C);
+    Sound_PlayEffect0(0x1C);
     if (islander->item_work.held_item.type_idx == 0) {
         if ((islander->_40 & 0xFFFF) == 0x609E) {
             if (islander->_8B == 0) {
@@ -9174,7 +9182,7 @@ void Islander_Fishing_State7(void) {
     Islander_AGB *islander = &gIslander;
 
     if (Islander_PlayAnim(1) != 0) {
-        sub_0201F78C(1);
+        Islander_ChooseNewMoveDirection(1);
         islander->_40 = 0;
         islander->move_proc_idx = ActionOutside;
         Islander_StartWandering();
@@ -9243,13 +9251,13 @@ void Islander_DespawnFlyingItem(void) {
     anim_timer = &islander->anim_timer;
     if (anim_timer_value == 0) {
         if (islander->anim_frame == 2) {
-            sub_02026A38(0x1A);
+            Sound_PlayEffect0(0x1A);
         }
         if (islander->anim_frame == 4) {
-            sub_02026A38(0x1B);
+            Sound_PlayEffect0(0x1B);
         }
         if (islander->anim_frame == 8) {
-            sub_02026A38(0x1C);
+            Sound_PlayEffect0(0x1C);
         }
     }
     anim_finished = Islander_PlayAnim(1);
@@ -9313,7 +9321,7 @@ void Islander_ProcessFishReceived(void) {
     Islander_AGB *islander = &gIslander;
 
     if (Islander_PlayAnim(1) != 0) {
-        sub_0201F78C(1);
+        Islander_ChooseNewMoveDirection(1);
         if ((islander->_40 & 0xFFFF) == 0x609E) {
             islander->mood = 0;
             islander->_40 = 0;
@@ -9354,7 +9362,7 @@ void Islander_BuryItem_State0(void) {
 
     if (islander->anim_timer == 0) {
         if (islander->anim_frame == 3) {
-            sub_02026A38(0x21);
+            Sound_PlayEffect0(0x21);
         }
     }
     if (Islander_PlayAnim(1) == 0) {
@@ -9523,7 +9531,7 @@ void Islander_BuryItem_State2(void) {
         islander->anim_timer = (*gIslanderAnimData[islander->anim_id])->duration;
         islander->anim_frame = 0;
         islander->sub_move_action = 5;
-        sub_02026A38(0x1C);
+        Sound_PlayEffect0(0x1C);
     }
 }
 
@@ -9577,34 +9585,34 @@ void Islander_BuryItem_State4(void) {
                 (u8 *)BG_SCREEN_ADDR(25) : (u8 *)BG_SCREEN_ADDR(24);
             tilemap_vram += (tile_idx & 0xF0) * 8;
             tilemap_vram += (tile_idx & 0xF) * 4;
-            WriteItemTileToVRAM(tilemap_vram, 0x200);
+            WriteItemTileToVRAM((u16*)tilemap_vram, 0x200);
         }
     }
     if (islander->anim_timer == 0) {
         if (islander->anim_frame == 1) {
-            sub_02026A38(0x1E);
+            Sound_PlayEffect0(0x1E);
         }
         if (islander->anim_frame == 0xA) {
-            sub_02026A38(0x22);
+            Sound_PlayEffect0(0x22);
         }
         if (islander->anim_frame == 0x11) {
-            sub_02026A38(0x23);
+            Sound_PlayEffect0(0x23);
         }
     }
 
     if (Islander_PlayAnim(1) != 0) {
         islander->_40 = 0;
-        islander->_B2[5] = 0;
-        islander->_B2[6] = 0;
+        islander->_B5[2] = 0;
+        islander->_B5[3] = 0;
 
         tilemap_vram = (0x8000 & islander->world_state) ?
             (u8 *)BG_SCREEN_ADDR(25) : (u8 *)BG_SCREEN_ADDR(24);
         tilemap_vram += (tile_idx & 0xF0) * 8;
         tilemap_vram += (tile_idx & 0xF) * 4;
-        WriteItemTileToVRAM(tilemap_vram, islander->_7C[0]);
+        WriteItemTileToVRAM((u16*)tilemap_vram, islander->_7C[0]);
         islander->_78 = 0x78;
         if (islander->_7C[0] != 0x1270) {
-            sub_02026A38(0x24);
+            Sound_PlayEffect0(0x24);
         }
 
         if (islander->emotion_anim_id == ISLANDER_ANIM_ANGRY) {
@@ -9697,7 +9705,7 @@ void Islander_MoveAction20_State0(void) {
     if (islander->anim_timer == 0) {
         if (islander->anim_frame == 2) {
             Islander_SpawnReactionEffect(4, 0x20);
-            sub_02026A38(0x25);
+            Sound_PlayEffect0(0x25);
         }
     }
 
@@ -11188,53 +11196,37 @@ mActor_name_t Item_TypeToIslandItem(s32 idx) {
     return EMPTY_NO;
 }
 
-void sub_02024B08(s32 arg0, u16 arg1, u8 arg2, u8 arg3) {
-    s32 temp_r0_26750;
-    s32 temp_r1_26698;
-    s32 temp_r4_26668;
-    u8 temp_r0_26705;
-    void *temp_r2_26695;
-    void *temp_r4_26670;
+/* Original address: 0x02024B08 */
+void FallingFruit_Init(s32 object_index, u16 fruit_index, u8 type, u8 acre) {
+    FallingFruit *fruit = &gFallingFruit[fruit_index];
+    FallingFruitProfile *profile;
+    FieldObject *object;
 
-    temp_r4_26668 = arg1 * 0x2C;
-    temp_r4_26670 = temp_r4_26668 + 0x03004260;
-    (*(u8 *)((u8 *)(temp_r4_26670) + (0x23))) = arg2;
-    (*(u8 *)((u8 *)(temp_r4_26670) + (0x25))) = arg3;
-    (*(s8 *)((u8 *)((temp_r4_26670 + 0x25)) + (2))) = 0;
-    (*(s32 *)((u8 *)(temp_r4_26670) + (0x10))) = 0;
-    (*(s32 *)((u8 *)(temp_r4_26670) + (0x14))) = 0;
-    (*(s32 *)((u8 *)(temp_r4_26670) + (0xC))) = 0;
-    (*(s16 *)((u8 *)(temp_r4_26670) + (0x20))) = 0;
-    (*(s8 *)((u8 *)(temp_r4_26670) + (0x28))) = 0;
-    temp_r2_26695 = ((*(u8 *)((u8 *)(temp_r4_26670) + (0x23))) * 0x18) + 0x020344F8;
-    temp_r1_26698 = arg0 * 0x30;
-    (*(s8 *)((u8 *)(temp_r4_26670) + (0x22))) = 1;
-    temp_r0_26705 = (*(u8 *)((u8 *)(temp_r4_26670) + (0x23)));
-    switch (temp_r0_26705) {
-    case 1:
-    case 2:
-    case 4:
-    case 5:
-    case 6:
-    case 8:
-    case 9:
-    case 10:
-    case 12:
-    case 13:
-    case 14:
-    case 16:
-    case 17:
-    case 18:
-    case 20:
-    case 21:
-    case 22:
-        (*(s8 *)((u8 *)(temp_r4_26670) + (0x22))) = 2;
+    fruit->type = type;
+    fruit->acre = acre;
+    fruit->sound_played = 0;
+    fruit->landing_x = 0;
+    fruit->origin_y = 0;
+    fruit->landing_y = 0;
+    fruit->tile_idx = 0;
+    fruit->can_land = 0;
+    profile = &sFallingFruitProfiles[fruit->type];
+    object = &gFieldObjects[object_index];
+    fruit->state = 1;
+    switch (fruit->type) {
+    case 1: case 2:
+    case 4: case 5: case 6:
+    case 8: case 9: case 10:
+    case 12: case 13: case 14:
+    case 16: case 17: case 18:
+    case 20: case 21: case 22:
+        fruit->state = 2;
         /* fallthrough */
-        temp_r0_26750 = (*(s32 *)((u8 *)((temp_r1_26698 + 0x03003C00)) + (4))) + (*(s32 *)((u8 *)(temp_r2_26695) + (4)));
-        (*(s32 *)((u8 *)(temp_r4_26670) + (4))) = temp_r0_26750;
-        (*(s32 *)((u8 *)(temp_r4_26670) + (0x14))) = temp_r0_26750;
-        *(u32 *)(0x03004260 + temp_r4_26668) = (s32) (*(u32 *)(0x03003C00 + temp_r1_26698) + (*(s32 *)((u8 *)(temp_r2_26695) + (8))));
-        (*(u8 *)((u8 *)(temp_r4_26670) + (0x24))) = (u8) (*(u8 *)((u8 *)(temp_r2_26695) + (0x13)));
+    case 0: case 3: case 7: case 11: case 15: case 19:
+        fruit->y = object->y + profile->y_offset;
+        fruit->origin_y = fruit->y;
+        fruit->x = object->x + profile->x_offset;
+        fruit->anim_frame = profile->h_flip;
         break;
     }
 }
@@ -11247,782 +11239,611 @@ void sub_02024C04(void) {
 
 }
 
-void sub_02024C08(s32 arg0) {
-    void *temp_r4_26783;
+/* Original address: 0x02024C08 */
+void FallingFruit_BeginFall(s32 fruit_index) {
+    FallingFruit *fruit = &gFallingFruit[fruit_index];
 
-    temp_r4_26783 = (0x2C * arg0) + 0x03004260;
     rand_u16(&gGameState);
-    (*(s32 *)((u8 *)(temp_r4_26783) + (8))) = 0;
-    (*(s32 *)((u8 *)(temp_r4_26783) + (0x18))) = 0x200;
-    (*(s32 *)((u8 *)(temp_r4_26783) + (0x1C))) = 0x20;
-    (*(s8 *)((u8 *)(temp_r4_26783) + (0x26))) = 0x10;
-    (*(s8 *)((u8 *)(temp_r4_26783) + (0x22))) = 3;
+    fruit->height = 0;
+    fruit->velocity_y = 0x200;
+    fruit->gravity = 0x20;
+    fruit->timer = 16;
+    fruit->state = 3;
 }
 
-void sub_02024C44(s32 arg0) {
-    void *sp0;
-    s8 *sp4;
-    s32 temp_r0_26839;
-    s32 temp_r1_26818;
-    s32 temp_r1_26829;
-    s32 temp_r1_26834;
-    s32 var_r0_26957;
-    s32 var_r1_26904;
-    s32 var_r1_26959;
-    s32 var_r2_26886;
-    s32 var_r6_26887;
-    s32 var_r7_26905;
-    u16 temp_r0_26943;
-    u16 temp_r0_26966;
-    void *temp_r3_26925;
-    void *temp_r4_26820;
-    void *temp_r5_26885;
+/* Original address: 0x02024C44 */
+void FallingFruit_UpdateFall(s32 fruit_index) {
+    FallingFruit *fruit = &gFallingFruit[fruit_index];
+    IslandFieldWork *field = &gIslandFieldWork;
 
-    temp_r1_26818 = 0x2C * arg0;
-    temp_r4_26820 = temp_r1_26818 + 0x03004260;
-    (*(u8 *)((u8 *)(temp_r4_26820) + (0x26))) = (u8) ((*(u8 *)((u8 *)(temp_r4_26820) + (0x26))) - 1);
-    temp_r1_26829 = *(u32 *)(0x03004260 + temp_r1_26818);
-    *(u32 *)(0x03004260 + temp_r1_26818) = (s32) (temp_r1_26829 + ((s32) ((*(s32 *)((u8 *)(temp_r4_26820) + (0x10))) - temp_r1_26829) >> 1));
-    temp_r1_26834 = (*(s32 *)((u8 *)(temp_r4_26820) + (8)));
-    (*(s32 *)((u8 *)(temp_r4_26820) + (4))) = (s32) ((*(s32 *)((u8 *)(temp_r4_26820) + (0x14))) - (temp_r1_26834 >> 8));
-    temp_r0_26839 = (*(s32 *)((u8 *)(temp_r4_26820) + (0x18)));
-    (*(s32 *)((u8 *)(temp_r4_26820) + (8))) = (s32) (temp_r1_26834 + temp_r0_26839);
-    (*(s32 *)((u8 *)(temp_r4_26820) + (0x18))) = (s32) (temp_r0_26839 - (*(s32 *)((u8 *)(temp_r4_26820) + (0x1C))));
-    if ((u16) (*(u8 *)((u8 *)(temp_r4_26820) + (0x26))) == 0xC) {
-        sub_02026A38(0x17U);
-        (*(s8 *)((u8 *)(temp_r4_26820) + (0x27))) = 1;
+    fruit->timer--;
+    fruit->x += (fruit->landing_x - fruit->x) >> 1;
+    fruit->y = fruit->origin_y - (fruit->height >> 8);
+    fruit->height += fruit->velocity_y;
+    fruit->velocity_y -= fruit->gravity;
+    if (fruit->timer == 12 && fruit->sound_played == 0) {
+        Sound_PlayEffect0(0x17);
+        fruit->sound_played = 1;
     }
-    if (!(0x80 & (*(u8 *)((u8 *)(temp_r4_26820) + (0x26))))) {
-        return;
-    }
-    if ((s32) (*(s32 *)((u8 *)(temp_r4_26820) + (0xC))) >= (s32) (*(s32 *)((u8 *)(temp_r4_26820) + (4)))) {
-        return;
-    }
-    sp4 = temp_r4_26820 + 0x22;
-    sp0 = arg0 + 0x15;
-    if ((*(u8 *)((u8 *)(temp_r4_26820) + (0x28))) == 1) {
-        temp_r5_26885 = ((*(u8 *)((u8 *)(temp_r4_26820) + (0x23))) * 0x18) + 0x020344F8;
-        var_r2_26886 = 0;
-        var_r6_26887 = 0;
-        do {
-            if ((*(u8 *)((u8 *)(temp_r4_26820) + (0x25))) == 0) {
-                var_r1_26904 = (0xFF0 & (*(u16 *)((u8 *)(temp_r4_26820) + (0x20)))) * 8;
-                var_r7_26905 = 0x0600C000;
+    if ((fruit->timer & 0x80) && fruit->landing_y < fruit->y) {
+        if (fruit->can_land == 1) {
+            FallingFruitProfile *profile = &sFallingFruitProfiles[fruit->type];
+            s32 row_offset;
+            u16 tile_offset;
+            row_offset = 0;
+            tile_offset = 0;
+            do {
+                u16 *tilemap;
+                if (fruit->acre == 0) {
+                    tilemap = (u16 *)((0xFF0 & fruit->tile_idx) * 8 + 0x0600C000 + row_offset +
+                                     (0xF & fruit->tile_idx) * 4);
+                } else {
+                    tilemap = (u16 *)((0xFF0 & fruit->tile_idx) * 8 + 0x0600C800 + row_offset +
+                                     (0xF & fruit->tile_idx) * 4);
+                }
+                tilemap[0] = tile_offset + profile->ground_tile;
+                tilemap[1] = tile_offset + profile->ground_tile + 1;
+                row_offset += 64;
+                tile_offset = 2;
+            } while (row_offset < 80);
+            if (fruit->acre == 0) {
+                gIslandData->fgblock[0][0].items[(fruit->tile_idx >> 4) & 0xF][fruit->tile_idx & 0xF] = profile->item;
+                field->fg_tiles[0][fruit->tile_idx] = profile->field_tile;
             } else {
-                var_r1_26904 = (0xFF0 & (*(u16 *)((u8 *)(temp_r4_26820) + (0x20)))) * 8;
-                var_r7_26905 = 0x0600C800;
+                gIslandData->fgblock[0][1].items[(fruit->tile_idx >> 4) & 0xF][fruit->tile_idx & 0xF] = profile->item;
+                field->fg_tiles[1][fruit->tile_idx] = profile->field_tile;
             }
-            temp_r3_26925 = var_r1_26904 + var_r7_26905 + var_r2_26886 + ((0xF & (*(u16 *)((u8 *)(temp_r4_26820) + (0x20)))) * 4);
-            (*(s16 *)((u8 *)(temp_r3_26925) + (0))) = (s16) (var_r6_26887 + (*(u16 *)((u8 *)(temp_r5_26885) + (0xE))));
-            (*(s16 *)((u8 *)(temp_r3_26925) + (2))) = (s16) (var_r6_26887 + (*(u16 *)((u8 *)(temp_r5_26885) + (0xE))) + 1);
-            var_r2_26886 += 0x40;
-            var_r6_26887 = 2;
-        } while (var_r2_26886 <= 0x4F);
-        if ((*(u8 *)((u8 *)(temp_r4_26820) + (0x25))) == 0) {
-            temp_r0_26943 = (*(u16 *)((u8 *)(temp_r4_26820) + (0x20)));
-            *(u32 *)(*(s32 *)0x03001B40 + 0x24 + (((0xF & temp_r0_26943) * 2) + (((temp_r0_26943 >> 4) & 0xF) << 5))) = (*(u16 *)((u8 *)(temp_r5_26885) + (0x10)));
-            var_r0_26957 = (*(u16 *)((u8 *)(temp_r4_26820) + (0x20))) * 2;
-            var_r1_26959 = 0x03003720;
-        } else {
-            temp_r0_26966 = (*(u16 *)((u8 *)(temp_r4_26820) + (0x20)));
-            *(u32 *)(*(s32 *)0x03001B40 + 0x224 + (((0xF & temp_r0_26966) * 2) + (((temp_r0_26966 >> 4) & 0xF) << 5))) = (*(u16 *)((u8 *)(temp_r5_26885) + (0x10)));
-            var_r0_26957 = (*(u16 *)((u8 *)(temp_r4_26820) + (0x20))) * 2;
-            var_r1_26959 = 0x03003920;
         }
-        *(u32 *)(var_r1_26959 + var_r0_26957) = (s16) (*(u8 *)((u8 *)(temp_r5_26885) + (0x14)));
+        fruit->state = 0;
+        field->entity_active[fruit_index + 21] = 0;
     }
-    *sp4 = 0;
-    *(u32 *)(0x03003B27 + (s32) sp0) = 0;
 }
 
-void sub_02024DD0(s32 arg0) {
-    ((void (*)(void))*(u32 *)(0x020344E8 + ((*(u8 *)((u8 *)(((arg0 * 0x2C) + 0x03004260)) + (0x22))) * 4)))();
+/* Original address: 0x02024DD0 */
+void FallingFruit_Update(s32 fruit_index) {
+    FallingFruit *fruit = &gFallingFruit[fruit_index];
+    sFallingFruitUpdateProcs[fruit->state](fruit_index);
 }
 
-void sub_02024DF8(s32 arg0) {
-    s32 temp_r1_27039;
-    s32 temp_r6_27048;
-    u8 temp_r0_27108;
-    u8 temp_r2_27079;
-    u8 temp_r3_27070;
-    void *temp_r1_27041;
-    void *temp_r4_27060;
-    void *temp_r6_27050;
+/* Original address: 0x02024DF8 */
+void FallingFruit_Draw(s32 fruit_index) {
+    FallingFruit *fruit = &gFallingFruit[fruit_index];
+    FallingFruitProfile *profile = &sFallingFruitProfiles[fruit->type];
+    GameState *game = &gGameState;
+    IslanderOamData *oam = &((IslanderOamData *)gUnk3002410)[game->unk_860];
 
-    temp_r1_27039 = arg0 * 0x2C;
-    temp_r1_27041 = temp_r1_27039 + 0x03004260;
-    temp_r6_27048 = (*(u8 *)((u8 *)(temp_r1_27041) + (0x23))) * 0x18;
-    temp_r6_27050 = temp_r6_27048 + 0x020344F8;
-    temp_r4_27060 = (gGameState.unk_860 * 8) + gUnk3002410;
-    temp_r3_27070 = (0x3F & (*(u8 *)((u8 *)(temp_r4_27060) + (1)))) | ((((u32) *(u32 *)(0x020344F8 + temp_r6_27048) >> 0xE) & 3) << 6);
-    (*(u8 *)((u8 *)(temp_r4_27060) + (1))) = temp_r3_27070;
-    temp_r2_27079 = (0x3F & (*(u8 *)((u8 *)(temp_r4_27060) + (3)))) | (((u32) *(u32 *)(0x020344F8 + temp_r6_27048) >> 0x1E) << 6);
-    (*(u8 *)((u8 *)(temp_r4_27060) + (3))) = temp_r2_27079;
-    (*(u16 *)((u8 *)(temp_r4_27060) + (4))) = (u16) ((0xFFFFFC00 & (*(u16 *)((u8 *)(temp_r4_27060) + (4)))) | (0x3FF & (*(u16 *)((u8 *)(temp_r6_27050) + (0xC)))));
-    (*(u8 *)((u8 *)(temp_r4_27060) + (1))) = (u8) (temp_r3_27070 | 0x10);
-    (*(u8 *)((u8 *)(temp_r4_27060) + (3))) = (u8) ((temp_r2_27079 & ~0x10) | (((*(u8 *)((u8 *)(temp_r1_27041) + (0x24))) & 1) * 0x10));
-    temp_r0_27108 = (-0xD & (*(u8 *)((u8 *)(temp_r4_27060) + (5)))) | 4;
-    (*(u8 *)((u8 *)(temp_r4_27060) + (5))) = temp_r0_27108;
-    (*(u8 *)((u8 *)(temp_r4_27060) + (5))) = (u8) ((temp_r0_27108 & 0xF) | ((*(u8 *)((u8 *)(temp_r6_27050) + (0x12))) * 0x10));
-    (*(u16 *)((u8 *)(temp_r4_27060) + (2))) = (u16) ((0xFFFFFE00 & (*(u16 *)((u8 *)(temp_r4_27060) + (2)))) | ((*(u32 *)(0x03004260 + temp_r1_27039) - gGameState.unk_844) & 0x1FF));
-    (*(s8 *)((u8 *)(temp_r4_27060) + (0))) = (s8) ((*(s32 *)((u8 *)(temp_r1_27041) + (4))) - (*(u8 *)((u8 *)(&gGameState) + (0x846))));
-    gGameState.unk_860 += 1;
+    oam->shape = (profile->oam_attributes >> 14) & 3;
+    oam->size = profile->oam_attributes >> 30;
+    oam->tile_num = profile->sprite_tile;
+    oam->mosaic = 1;
+    oam->h_flip = fruit->anim_frame;
+    oam->priority = 1;
+    oam->palette_num = profile->palette;
+    oam->x = fruit->x - game->unk_844;
+    oam->y = fruit->y - (u8)game->unk_846;
+    game->unk_860++;
 }
 
-void Unk_Struct_Size54_ResetIdx(s32 arg0) {
-    s16 *temp_r1_27201;
-    s32 temp_r1_27165;
-    s32 var_r1_27208;
-    void *temp_r0_27220;
-    void *temp_r1_27167;
-    void *temp_r1_27182;
-    void *temp_r1_27197;
-    void *var_r0_27207;
+/* Original address: 0x02024F08 */
+void Entity_Reset(s32 entity_index) {
+    Entity *entity = &g_EntityTable[entity_index];
+    s32 i;
 
-    temp_r1_27165 = arg0 * 0x54;
-    temp_r1_27167 = temp_r1_27165 + 0x03004790;
-    *(u32 *)(0x03004790 + temp_r1_27165) = 0;
-    (*(s32 *)((u8 *)(temp_r1_27167) + (4))) = 0;
-    (*(s32 *)((u8 *)(temp_r1_27167) + (8))) = 0;
-    (*(s32 *)((u8 *)(temp_r1_27167) + (0xC))) = 0;
-    (*(s32 *)((u8 *)(temp_r1_27167) + (0x10))) = 0;
-    (*(s32 *)((u8 *)(temp_r1_27167) + (0x14))) = 0;
-    (*(s32 *)((u8 *)(temp_r1_27167) + (0x18))) = 0;
-    (*(s32 *)((u8 *)(temp_r1_27167) + (0x1C))) = 0;
-    (*(s32 *)((u8 *)(temp_r1_27167) + (0x20))) = 0;
-    (*(s32 *)((u8 *)(temp_r1_27167) + (0x24))) = 0;
-    (*(s8 *)((u8 *)(temp_r1_27167) + (0x4D))) = 0;
-    temp_r1_27182 = (temp_r1_27167 + 0x4D) - 1;
-    (*(s8 *)((u8 *)(temp_r1_27182) + (0))) = 0;
-    (*(s8 *)((u8 *)(temp_r1_27182) + (2))) = 0;
-    (*(s8 *)((u8 *)((temp_r1_27182 + 2)) + (1))) = 0;
-    (*(s16 *)((u8 *)(temp_r1_27167) + (0x40))) = 0xA;
-    (*(s16 *)((u8 *)(temp_r1_27167) + (0x3E))) = 0;
-    (*(s8 *)((u8 *)(temp_r1_27167) + (0x50))) = 0;
-    temp_r1_27197 = (temp_r1_27167 + 0x50) - 5;
-    (*(s8 *)((u8 *)(temp_r1_27197) + (0))) = 0;
-    (*(s8 *)((u8 *)(temp_r1_27197) + (6))) = 0;
-    temp_r1_27201 = (temp_r1_27197 + 6) - 0xD;
-    *temp_r1_27201 = 0;
-    *(temp_r1_27201 - 2) = 0;
-    var_r0_27207 = temp_r1_27167 + 0x28;
-    var_r1_27208 = 4;
-    do {
-        (*(s16 *)((u8 *)(var_r0_27207) + (0))) = 0;
-        (*(s16 *)((u8 *)(var_r0_27207) + (0xA))) = 0;
-        var_r0_27207 += 2;
-        var_r1_27208 -= 1;
-    } while (var_r1_27208 >= 0);
-    (*(s8 *)((u8 *)(temp_r1_27167) + (0x52))) = 0;
-    temp_r0_27220 = (temp_r1_27167 + 0x52) - 0xC;
-    (*(s16 *)((u8 *)(temp_r0_27220) + (0))) = 0;
-    (*(s16 *)((u8 *)(temp_r0_27220) + (2))) = 0;
-    (*(s16 *)((u8 *)(temp_r1_27167) + (0x3C))) = 0;
+    entity->x = 0;
+    entity->y = 0;
+    entity->_08 = 0;
+    entity->_0C = 0;
+    entity->_10 = 0;
+    entity->_14 = 0;
+    entity->_18 = 0;
+    entity->_1C = 0;
+    entity->_20 = 0;
+    entity->_24 = 0;
+    entity->anim_timer = 0;
+    entity->item_tile_frame = 0;
+    entity->type = 0;
+    entity->anim_id = 0;
+    entity->lifetime = 10;
+    entity->sprite_tile = 0;
+    entity->palette = 0;
+    entity->_4B = 0;
+    entity->_51 = 0;
+    entity->_44 = 0;
+    entity->_42 = 0;
+    for (i = 0; i < 5; i++) {
+        entity->item_tile_no[i] = 0;
+        entity->item[i] = 0;
+    }
+    entity->_52 = 0;
+    entity->_46 = 0;
+    entity->_48 = 0;
+    entity->landing_tile = 0;
 }
 
-void sub_02024F8C(s32 arg0) {
-    s32 temp_r0_27251;
-    s32 temp_r1_27293;
-    s32 temp_r1_27325;
-    s32 temp_r1_27343;
-    s32 var_r1_27301;
-    s32 var_r2_27302;
-    u16 temp_r1_27269;
-    u16 var_r5_27245;
-    u32 temp_r7_27270;
-    u8 temp_r4_27271;
-    void *temp_r3_27348;
-    void *temp_r6_27242;
-    void *var_r3_27295;
+/* Original address: 0x02024F8C */
+void Entity_PlaceLandedItem(s32 entity_index) {
+    Entity *entity = &g_EntityTable[entity_index];
+    IslandFieldWork *field = &gIslandFieldWork;
+    u16 item = entity->item[0];
+    u8 tile_idx;
+    u16 *tilemap;
+    ItemGroupStruct *definition;
 
-    temp_r6_27242 = (0x54 * arg0) + 0x03004790;
-    var_r5_27245 = (*(u16 *)((u8 *)(temp_r6_27242) + (0x32)));
-    if ((*(u8 *)((u8 *)(temp_r6_27242) + (0x4A))) == 0) {
-        temp_r0_27251 = var_r5_27245 * 4;
-        if ((*(u8 *)((u8 *)((temp_r0_27251 + 0x02034CF4)) + (3))) == 0) {
-            var_r5_27245 = *(u32 *)(0x02034CF4 + temp_r0_27251);
+    if (entity->item_is_resolved == 0) {
+        ItemGeneratorDef *generator = &gItemGeneratorDefs[item];
+        if (generator->use_island_id == 0) {
+            item = generator->item;
         } else {
-            var_r5_27245 = Item_TypeToIslandItem(*(u32 *)(0x02034CF4 + temp_r0_27251));
+            item = Item_TypeToIslandItem(generator->item);
         }
     }
-    temp_r1_27269 = (*(u16 *)((u8 *)(temp_r6_27242) + (0x3C)));
-    temp_r7_27270 = temp_r1_27269 << 0x18;
-    temp_r4_27271 = (u8) temp_r1_27269;
-    if (!(0x1000 & temp_r1_27269)) {
-        *(u32 *)(0x03003720 + (temp_r4_27271 * 2)) = (s16) (0x8000 | (*(u16 *)((u8 *)(temp_r6_27242) + (0x28))));
-        temp_r1_27293 = 0xF & temp_r4_27271;
-        var_r3_27295 = ((0xF0 & temp_r4_27271) * 8) + 0x0600C000 + (temp_r1_27293 * 4);
-        var_r1_27301 = (temp_r1_27293 * 2) + ((temp_r7_27270 >> 0x1C) << 5);
-        var_r2_27302 = *(s32 *)0x03001B40 + 0x24;
+    tile_idx = entity->landing_tile;
+    if (!(entity->landing_tile & 0x1000)) {
+        field->fg_tiles[0][tile_idx] = entity->item_tile_no[0] | 0x8000;
+        tilemap = (u16 *)BG_SCREEN_ADDR(24);
+        tilemap += (tile_idx & 0xF0) * 4;
+        tilemap += (tile_idx & 0xF) * 2;
+        gIslandData->fgblock[0][0].items[tile_idx >> 4][tile_idx & 0xF] = item;
     } else {
-        *(u32 *)(0x03003920 + (temp_r4_27271 * 2)) = (s16) (0x8000 | (*(u16 *)((u8 *)(temp_r6_27242) + (0x28))));
-        temp_r1_27325 = 0xF & temp_r4_27271;
-        var_r3_27295 = ((0xF0 & temp_r4_27271) * 8) + 0x0600C800 + (temp_r1_27325 * 4);
-        var_r1_27301 = (temp_r1_27325 * 2) + ((temp_r7_27270 >> 0x1C) << 5);
-        var_r2_27302 = *(u32 *)0x03001B40 + 0x224;
+        field->fg_tiles[1][tile_idx] = entity->item_tile_no[0] | 0x8000;
+        tilemap = (u16 *)BG_SCREEN_ADDR(25);
+        tilemap += (tile_idx & 0xF0) * 4;
+        tilemap += (tile_idx & 0xF) * 2;
+        gIslandData->fgblock[0][1].items[tile_idx >> 4][tile_idx & 0xF] = item;
     }
-    *(u32 *)(var_r2_27302 + var_r1_27301) = var_r5_27245;
-    temp_r1_27343 = (*(u16 *)((u8 *)(temp_r6_27242) + (0x28))) * 0xC;
-    (*(u16 *)((u8 *)(var_r3_27295) + (0))) = (u16) *(u32 *)(0x0202F7FC + temp_r1_27343);
-    temp_r3_27348 = var_r3_27295 + 2;
-    (*(s16 *)((u8 *)(var_r3_27295) + (2))) = (s16) (*(u32 *)(0x0202F7FC + temp_r1_27343) + 1);
-    (*(s16 *)((u8 *)(temp_r3_27348) + (0x3E))) = (s16) (*(u32 *)(0x0202F7FC + temp_r1_27343) + 2);
-    (*(s16 *)((u8 *)((temp_r3_27348 + 0x3E)) + (2))) = (s16) (*(u32 *)(0x0202F7FC + temp_r1_27343) + 3);
-    (*(s8 *)((u8 *)((arg0 + 0x03003710)) + (0x41A))) = 0;
+    definition = &g_ItemDefinitions[entity->item_tile_no[0]];
+    *tilemap++ = definition->field_tile_id;
+    *tilemap = definition->field_tile_id + 1;
+    tilemap += 31;
+    tilemap[0] = definition->field_tile_id + 2;
+    tilemap[1] = definition->field_tile_id + 3;
+    field->entity_active[entity_index + 3] = 0;
 }
 
-void sub_020250B0(s32 arg0) {
-    u16 temp_r0_27388;
-    void *temp_r0_27385;
+/* Original address: 0x020250B0 */
+void Entity_UpdateLifetime(s32 entity_index) {
+    IslandFieldWork *field = &gIslandFieldWork;
+    Entity *entity = &g_EntityTable[entity_index];
 
-    temp_r0_27385 = (arg0 * 0x54) + 0x03004790;
-    temp_r0_27388 = (*(u16 *)((u8 *)(temp_r0_27385) + (0x40)));
-    if (temp_r0_27388 == 0) {
-        (*(s8 *)((u8 *)((arg0 + 0x03003710)) + (0x41A))) = (s8) temp_r0_27388;
-        return;
+    if (entity->lifetime == 0) {
+        field->entity_active[entity_index + 3] = 0;
+    } else {
+        entity->lifetime--;
     }
-    (*(u16 *)((u8 *)(temp_r0_27385) + (0x40))) = (u16) (temp_r0_27388 - 1);
 }
 
-void sub_020250EC(s32 arg0) {
-    void *temp_r1_27420;
-    void *temp_r2_27415;
+/* Original address: 0x020250EC */
+void Entity_BeginToppleEffect(s32 entity_index) {
+    Entity *entity = &g_EntityTable[entity_index];
 
-    temp_r2_27415 = (arg0 * 0x54) + 0x03004790;
-    temp_r1_27420 = temp_r2_27415 + 0x4D;
-    (*(s8 *)((u8 *)(temp_r2_27415) + (0x4D))) = (s8) (*(u16 *)((u8 *)(*(void **)0x02034C24) + (4)));
-    (*(s8 *)((u8 *)(temp_r1_27420) + (2))) = 1;
-    *(u32 *)((temp_r1_27420 + 2) - 1) = 2;
+    entity->anim_timer = sEntityToppleFrames[0]->duration;
+    entity->anim_id = 1;
+    entity->type = 2;
 }
 
-void sub_02025118(s32 arg0) {
-    s8 temp_r3_27459;
-    u8 temp_r0_27447;
-    u8 temp_r0_27456;
-    void *temp_r1_27441;
+/* Original address: 0x02025118 */
+void Entity_UpdateToppleEffect(s32 entity_index) {
+    Entity *entity = &g_EntityTable[entity_index];
+    IslandFieldWork *field = &gIslandFieldWork;
 
-    temp_r1_27441 = (0x54 * arg0) + 0x03004790;
-    temp_r0_27447 = (*(u8 *)((u8 *)(temp_r1_27441) + (0x4D))) - 1;
-    (*(u8 *)((u8 *)(temp_r1_27441) + (0x4D))) = temp_r0_27447;
-    if ((temp_r0_27447 << 0x18) == 0) {
-        temp_r0_27456 = (*(u8 *)((u8 *)(temp_r1_27441) + (0x4C))) + 1;
-        (*(u8 *)((u8 *)(temp_r1_27441) + (0x4C))) = temp_r0_27456;
-        temp_r3_27459 = 7 & temp_r0_27456;
-        if (temp_r3_27459 == 0) {
-            (*(s8 *)((u8 *)((arg0 + 0x03003710)) + (0x41A))) = temp_r3_27459;
+    entity->anim_timer--;
+    if (entity->anim_timer == 0) {
+        entity->item_tile_frame++;
+        if ((entity->item_tile_frame & 7) == 0) {
+            field->entity_active[entity_index + 3] = 0;
             return;
         }
-        (*(u8 *)((u8 *)(temp_r1_27441) + (0x4D))) = (u8) (*(u16 *)((u8 *)(*(u32 *)(0x02034C24 + ((*(u8 *)((u8 *)(temp_r1_27441) + (0x4C))) * 4))) + (4)));
+        entity->anim_timer = sEntityToppleFrames[entity->item_tile_frame]->duration;
     }
 }
 
-void sub_02025180(s32 arg0) {
-    void *temp_r1_27497;
-    void *temp_r2_27492;
+/* Original address: 0x02025180 */
+void Entity_BeginLeafEffect(s32 entity_index) {
+    Entity *entity = &g_EntityTable[entity_index];
 
-    temp_r2_27492 = (arg0 * 0x54) + 0x03004790;
-    temp_r1_27497 = temp_r2_27492 + 0x4D;
-    (*(s8 *)((u8 *)(temp_r2_27492) + (0x4D))) = (s8) (*(u16 *)((u8 *)(*(void **)0x02034C44) + (4)));
-    (*(s8 *)((u8 *)(temp_r1_27497) + (2))) = 2;
-    *(u32 *)((temp_r1_27497 + 2) - 1) = 4;
+    entity->anim_timer = sEntityLeafFrames[0]->duration;
+    entity->anim_id = 2;
+    entity->type = 4;
 }
 
-void sub_020251AC(s32 arg0) {
-    u8 temp_r0_27523;
-    u8 temp_r0_27532;
-    u8 temp_r4_27526;
-    void *temp_r1_27518;
+/* Original address: 0x020251AC */
+void Entity_UpdateLeafEffect(s32 entity_index) {
+    Entity *entity = &g_EntityTable[entity_index];
+    IslandFieldWork *field = &gIslandFieldWork;
 
-    temp_r1_27518 = (0x54 * arg0) + 0x03004790;
-    temp_r0_27523 = (*(u8 *)((u8 *)(temp_r1_27518) + (0x4D))) - 1;
-    (*(u8 *)((u8 *)(temp_r1_27518) + (0x4D))) = temp_r0_27523;
-    temp_r4_27526 = temp_r0_27523;
-    if (temp_r4_27526 == 0) {
-        temp_r0_27532 = (*(u8 *)((u8 *)(temp_r1_27518) + (0x4C))) + 1;
-        (*(u8 *)((u8 *)(temp_r1_27518) + (0x4C))) = temp_r0_27532;
-        if ((u32) temp_r0_27532 > 0x13U) {
-            (*(u8 *)((u8 *)((arg0 + 0x03003710)) + (0x41A))) = temp_r4_27526;
+    entity->anim_timer--;
+    if (entity->anim_timer == 0) {
+        entity->item_tile_frame++;
+        if (entity->item_tile_frame > 19) {
+            field->entity_active[entity_index + 3] = 0;
             return;
         }
-        (*(u8 *)((u8 *)(temp_r1_27518) + (0x4D))) = (u8) (*(u16 *)((u8 *)(*(u32 *)(0x02034C44 + ((*(u8 *)((u8 *)(temp_r1_27518) + (0x4C))) * 4))) + (4)));
+        entity->anim_timer = sEntityLeafFrames[entity->item_tile_frame]->duration;
     }
 }
 
-void sub_02025210(s32 arg0) {
-    u8 temp_r1_27572;
-    void *temp_r4_27568;
-    void *temp_r5_27576;
+/* Original address: 0x02025210 */
+void Entity_BeginReactionEffect(s32 entity_index) {
+    Entity *entity = &g_EntityTable[entity_index];
+    AnimFrameData *frame = sEntityReactionAnimations[entity->_4B][0];
 
-    temp_r4_27568 = (arg0 * 0x54) + 0x03004790;
-    temp_r1_27572 = (*(u8 *)((u8 *)(temp_r4_27568) + (0x4B)));
-    temp_r5_27576 = **(u32 **)(0x02034CE0 + (temp_r1_27572 * 4));
-    switch (temp_r1_27572) {
-    case 4:
-        break;
+    switch (entity->_4B) {
     case 0:
-        sub_02026A38(5U);
+        Sound_PlayEffect0(5);
         break;
     case 1:
-        sub_02026A38(6U);
+        Sound_PlayEffect0(6);
         break;
     case 2:
-        sub_02026A38(7U);
+        Sound_PlayEffect0(7);
         break;
     case 3:
-        sub_02026A38(8U);
+        Sound_PlayEffect0(8);
+        break;
+    case 4:
         break;
     }
-    (*(s8 *)((u8 *)(temp_r4_27568) + (0x4D))) = (s8) (*(u16 *)((u8 *)(temp_r5_27576) + (4)));
-    (*(s8 *)((u8 *)(temp_r4_27568) + (0x4C))) = 0;
-    (*(s8 *)((u8 *)(temp_r4_27568) + (0x4F))) = 3;
-    *(u32 *)((temp_r4_27568 + 0x4F) - 1) = 6;
+    entity->anim_timer = frame->duration;
+    entity->item_tile_frame = 0;
+    entity->anim_id = 3;
+    entity->type = 6;
 }
 
-void sub_0202529C(s32 arg0) {
-    u8 temp_r0_27643;
-    u8 temp_r4_27647;
-    void *temp_r1_27665;
-    void *temp_r3_27637;
+/* Original address: 0x0202529C */
+void Entity_UpdateReactionEffect(s32 entity_index) {
+    Entity *entity = &g_EntityTable[entity_index];
+    IslandFieldWork *field = &gIslandFieldWork;
+    AnimFrameData *frame;
 
-    temp_r3_27637 = (0x54 * arg0) + 0x03004790;
-    temp_r0_27643 = (*(u8 *)((u8 *)(temp_r3_27637) + (0x4D))) - 1;
-    (*(u8 *)((u8 *)(temp_r3_27637) + (0x4D))) = temp_r0_27643;
-    temp_r4_27647 = temp_r0_27643;
-    if (temp_r4_27647 == 0) {
-        (*(u8 *)((u8 *)(temp_r3_27637) + (0x4C))) = (u8) ((*(u8 *)((u8 *)(temp_r3_27637) + (0x4C))) + 1);
-        temp_r1_27665 = *(u32 *)(((*(u8 *)((u8 *)(temp_r3_27637) + (0x4C))) * 4) + *(u32 *)(0x02034CE0 + ((*(u8 *)((u8 *)(temp_r3_27637) + (0x4B))) * 4)));
-        if ((*(u8 *)((u8 *)(temp_r1_27665) + (6))) == 0xFF) {
-            (*(u8 *)((u8 *)((arg0 + 0x03003710)) + (0x41A))) = temp_r4_27647;
+    entity->anim_timer--;
+    if (entity->anim_timer == 0) {
+        entity->item_tile_frame++;
+        frame = sEntityReactionAnimations[entity->_4B][entity->item_tile_frame];
+        if ((u8)frame->action_flag == 0xFF) {
+            field->entity_active[entity_index + 3] = 0;
             return;
         }
-        (*(u8 *)((u8 *)(temp_r3_27637) + (0x4D))) = (u8) (*(u16 *)((u8 *)(temp_r1_27665) + (4)));
+        entity->anim_timer = frame->duration;
     }
 }
 
-void sub_02025310(s32 arg0) {
-    s32 temp_r4_27693;
-    void *temp_r4_27695;
+/* Original address: 0x02025310 */
+void Entity_BeginItemDrop(s32 entity_index) {
+    Entity *entity = &g_EntityTable[entity_index];
 
-    temp_r4_27693 = 0x54 * arg0;
-    temp_r4_27695 = temp_r4_27693 + 0x03004790;
-    (*(s32 *)((u8 *)(temp_r4_27695) + (0xC))) = (s32) (*(u32 *)(0x03004790 + temp_r4_27693) << 8);
-    (*(s32 *)((u8 *)(temp_r4_27695) + (0x10))) = (s32) ((*(s32 *)((u8 *)(temp_r4_27695) + (4))) << 8);
-    (*(s32 *)((u8 *)(temp_r4_27695) + (8))) = 0;
-    (*(s32 *)((u8 *)(temp_r4_27695) + (0x14))) = 0x200;
-    (*(s32 *)((u8 *)(temp_r4_27695) + (0x20))) = 0x20;
-    sub_02026A38(0x1EU);
-    (*(s8 *)((u8 *)(temp_r4_27695) + (0x4F))) = 0;
-    (*(s8 *)((u8 *)(temp_r4_27695) + (0x4E))) = 8;
+    entity->_0C = entity->x << 8;
+    entity->_10 = entity->y << 8;
+    entity->_08 = 0;
+    entity->_14 = 0x200;
+    entity->_20 = 0x20;
+    Sound_PlayEffect0(30);
+    entity->anim_id = 0;
+    entity->type = 8;
 }
 
-void sub_02025354(s32 arg0) {
-    s32 temp_r0_27741;
-    s32 temp_r1_27729;
-    s32 temp_r2_27737;
-    s32 temp_r3_27739;
-    s32 temp_r4_27736;
-    u8 temp_r0_27748;
-    void *temp_r1_27731;
+/* Original address: 0x02025354 */
+void Entity_UpdateItemDrop(s32 entity_index) {
+    Entity *entity = &g_EntityTable[entity_index];
+    s32 landing_y;
 
-    temp_r1_27729 = 0x54 * arg0;
-    temp_r1_27731 = temp_r1_27729 + 0x03004790;
-    *(u32 *)(0x03004790 + temp_r1_27729) = (s32) ((s32) (*(s32 *)((u8 *)(temp_r1_27731) + (0xC))) >> 8);
-    temp_r4_27736 = (s32) (*(s32 *)((u8 *)(temp_r1_27731) + (0x10))) >> 8;
-    temp_r2_27737 = (*(s32 *)((u8 *)(temp_r1_27731) + (8)));
-    temp_r3_27739 = temp_r4_27736 - (temp_r2_27737 >> 8);
-    (*(s32 *)((u8 *)(temp_r1_27731) + (4))) = temp_r3_27739;
-    temp_r0_27741 = (*(s32 *)((u8 *)(temp_r1_27731) + (0x14)));
-    (*(s32 *)((u8 *)(temp_r1_27731) + (8))) = (s32) (temp_r2_27737 + temp_r0_27741);
-    (*(s32 *)((u8 *)(temp_r1_27731) + (0x14))) = (s32) (temp_r0_27741 - (*(s32 *)((u8 *)(temp_r1_27731) + (0x20))));
-    temp_r0_27748 = (*(u8 *)((u8 *)(temp_r1_27731) + (0x52)));
-    if (temp_r0_27748 == 0) {
-        if (temp_r3_27739 > (s32) (temp_r4_27736 + 8)) {
-            sub_02024F8C(arg0);
+    entity->x = entity->_0C >> 8;
+    landing_y = entity->_10 >> 8;
+    entity->y = landing_y - (entity->_08 >> 8);
+    entity->_08 += entity->_14;
+    entity->_14 -= entity->_20;
+    if (entity->_52 == 0) {
+        if (entity->y > landing_y + 8) {
+            Entity_PlaceLandedItem(entity_index);
         }
     } else {
-        (*(u8 *)((u8 *)(temp_r1_27731) + (0x52))) = (u8) (temp_r0_27748 - 1);
+        entity->_52--;
     }
 }
 
-void sub_020253A8(s32 arg0) {
-    s32 temp_r1_27772;
-    void *temp_r0_27801;
-    void *temp_r1_27774;
+/* Original address: 0x020253A8 */
+void Entity_BeginFloatingItem(s32 entity_index) {
+    Entity *entity = &g_EntityTable[entity_index];
 
-    temp_r1_27772 = arg0 * 0x54;
-    temp_r1_27774 = temp_r1_27772 + 0x03004790;
-    (*(s32 *)((u8 *)(temp_r1_27774) + (0xC))) = (s32) (*(u32 *)(0x03004790 + temp_r1_27772) << 8);
-    (*(s32 *)((u8 *)(temp_r1_27774) + (0x10))) = (s32) ((*(s32 *)((u8 *)(temp_r1_27774) + (4))) << 8);
-    (*(s32 *)((u8 *)(temp_r1_27774) + (8))) = 0;
-    (*(s32 *)((u8 *)(temp_r1_27774) + (0x20))) = 0x20;
-    (*(s32 *)((u8 *)(temp_r1_27774) + (0x24))) = 0;
-    (*(s8 *)((u8 *)(temp_r1_27774) + (0x4D))) = 0x10;
-    (*(s8 *)((u8 *)(temp_r1_27774) + (0x4C))) = 0;
-    *(u32 *)((temp_r1_27774 + 0x4D) - 9) = 0x300;
-    temp_r0_27801 = temp_r1_27774 + 0x46;
-    (*(s16 *)((u8 *)(temp_r1_27774) + (0x46))) = 0;
-    (*(s16 *)((u8 *)(temp_r0_27801) + (2))) = 0;
-    (*(s8 *)((u8 *)((temp_r0_27801 + 2)) + (7))) = 0;
-    (*(s8 *)((u8 *)(temp_r1_27774) + (0x4E))) = 0xA;
+    entity->_0C = entity->x << 8;
+    entity->_10 = entity->y << 8;
+    entity->_08 = 0;
+    entity->_20 = 0x20;
+    entity->_24 = 0;
+    entity->anim_timer = 16;
+    entity->item_tile_frame = 0;
+    entity->_44 = 0x300;
+    entity->_46 = 0;
+    entity->_48 = 0;
+    entity->anim_id = 0;
+    entity->type = 10;
 }
 
 /* Original address: 0x02025400 */
-void sub_02025400(s32 arg0) {
-    s16 temp_r0_28034;
-    s32 temp_r0_27941;
-    s32 temp_r2_27833;
-    s32 temp_r2_27989;
-    s32 temp_r2_28035;
-    s32 temp_r5_27893;
-    u16 temp_r0_27959;
-    u16 temp_r4_27891;
-    u16 var_r4_27830;
-    u8 temp_r0_27980;
-    u8 temp_r0_28047;
-    ItemGroupStruct *temp_r1_28012;
-    Entity *temp_r3_27826;
-    void *temp_r4_27995;
+void Entity_UpdateFloatingItem(s32 entity_index) {
+    Entity *entity = &g_EntityTable[entity_index];
+    Islander_AGB *islander = &gIslander;
+    IslandFieldWork *field = &gIslandFieldWork;
+    u16 offscreen = 0;
+    ItemGroupStruct *definition;
+    s32 wave;
 
-    temp_r3_27826 = &g_EntityTable[arg0];
-    var_r4_27830 = 0;
-    temp_r2_27833 = temp_r3_27826->_0C + temp_r3_27826->_18;
-    temp_r3_27826->_0C = temp_r2_27833;
-    g_EntityTable[arg0].x = (s32) (temp_r2_27833 >> 8);
-    temp_r3_27826->y = (s32) ((((s32) temp_r3_27826->_10 >> 8) - temp_r3_27826->_24) + ((s32) temp_r3_27826->_08 >> 8));
-    gIslander._38 = temp_r2_27833;
-    gIslander._3C = (s32) temp_r3_27826->_10;
-    temp_r3_27826->_08 = (s32) (temp_r3_27826->_08 + temp_r3_27826->_20);
-    if ((s32) temp_r3_27826->_18 >= 0) {
-        if ((s32) g_EntityTable[arg0].x > (s32) temp_r3_27826->_14) {
-            goto block_4;
+    entity->_0C += entity->_18;
+    entity->x = entity->_0C >> 8;
+    entity->y = (entity->_10 >> 8) - entity->_24 + (entity->_08 >> 8);
+    islander->_38 = entity->_0C;
+    islander->_3C = entity->_10;
+    entity->_08 += entity->_20;
+    if (entity->_18 >= 0) {
+        if (entity->x > entity->_14) {
+            offscreen = 1;
         }
-    } else if ((s32) g_EntityTable[arg0].x < (s32) temp_r3_27826->_14) {
-block_4:
-        var_r4_27830 = 1;
+    } else if (entity->x < entity->_14) {
+        offscreen = 1;
     }
-    if ((gIslander.stored_item_tile_ids[4] != 0) || (var_r4_27830 != 0)) {
-        temp_r3_27826->_42 = (u16) (temp_r3_27826->_42 + 0xFFFFF900);
-        temp_r4_27891 = temp_r3_27826->_44 + 0x10;
-        temp_r3_27826->_44 = temp_r4_27891;
-        temp_r5_27893 = temp_r3_27826->_24;
-        if ((temp_r5_27893 > 0) && !(temp_r4_27891 & 0x10)) {
-            temp_r3_27826->_24 = (s32) (temp_r5_27893 - 1);
+    if (islander->stored_item_tile_ids[4] != 0 || offscreen != 0) {
+        entity->_42 -= 0x700;
+        entity->_44 += 0x10;
+        if (entity->_24 > 0 && !(entity->_44 & 0x10)) {
+            entity->_24--;
         }
-        if ((u32) temp_r3_27826->_44 <= 0x300U) {
+        if (entity->_44 <= 0x300) {
             return;
         }
-        temp_r3_27826->_44 = 0x300U;
-        temp_r3_27826->_42 = 0U;
-        gIslander.flying_item_spawn_timer = 0x2A30U;
-        gIslander.flying_item_spawn_timer = (u16) ((0x64 * ((s32) rand_u16(&gGameState) % 109)) + gIslander.flying_item_spawn_timer);
-        gIslander._38 = 0;
-        gIslander._3C = 0;
-        gIslandFieldWork.entity_active[arg0 + 3] = 0;
+        entity->_44 = 0x300;
+        entity->_42 = 0;
+        islander->flying_item_spawn_timer = 10800;
+        islander->flying_item_spawn_timer += (rand_u16(&gGameState) % 109) * 100;
+        islander->_38 = 0;
+        islander->_3C = 0;
+        field->entity_active[entity_index + 3] = 0;
         return;
     }
-    temp_r0_27941 = temp_r3_27826->_24;
-    if (temp_r0_27941 <= 0x17) {
-        temp_r3_27826->_24 = (s32) (temp_r0_27941 + 1);
+    if (entity->_24 < 24) {
+        entity->_24++;
     }
-    temp_r3_27826->_42 = (u16) (temp_r3_27826->_42 + 0x700);
-    temp_r0_27959 = temp_r3_27826->_44 - 0x10;
-    temp_r3_27826->_44 = temp_r0_27959;
-    if ((u32) temp_r0_27959 <= 0xFFU) {
-        temp_r3_27826->_44 = 0x100U;
-        temp_r3_27826->_42 = var_r4_27830;
-        if (temp_r3_27826->_4D == 0) {
-            temp_r3_27826->_4D = 0x10U;
-            temp_r0_27980 = temp_r3_27826->item_tile_frame + 1;
-            temp_r3_27826->item_tile_frame = temp_r0_27980;
-            if ((u32) temp_r0_27980 > 4U) {
-                temp_r3_27826->item_tile_frame = 0U;
+    entity->_42 += 0x700;
+    entity->_44 -= 0x10;
+    if (entity->_44 < 0x100) {
+        entity->_44 = 0x100;
+        entity->_42 = 0;
+        if (entity->anim_timer == 0) {
+            entity->anim_timer = 16;
+            entity->item_tile_frame++;
+            if (entity->item_tile_frame > 4) {
+                entity->item_tile_frame = 0;
             }
-            temp_r2_27989 = temp_r3_27826->item_tile_frame * 2;
-            temp_r4_27995 = (u8 *)temp_r3_27826 + 0x28;
-            if ((*(u32 *)((u8 *)temp_r3_27826 + 0x32 + temp_r2_27989) == 0) && (*(u32 *)(temp_r4_27995 + temp_r2_27989) == 0)) {
-                temp_r3_27826->item_tile_frame = 0U;
+            if (entity->item[entity->item_tile_frame] == 0 &&
+                entity->item_tile_no[entity->item_tile_frame] == 0) {
+                entity->item_tile_frame = 0;
             }
-            temp_r1_28012 = &g_ItemDefinitions[g_EntityTable[arg0].item_tile_no[g_EntityTable[arg0].item_tile_frame]];
-            temp_r3_27826->_3E = (s16) (0x3FF & temp_r1_28012->held_item_oam_attr2);
-            temp_r3_27826->_50 = (s8) ((u16) temp_r1_28012->held_item_oam_attr2 >> 0xC);
+            definition = &g_ItemDefinitions[entity->item_tile_no[entity->item_tile_frame]];
+            entity->sprite_tile = definition->held_item_oam_attr2 & 0x3FF;
+            entity->palette = definition->held_item_oam_attr2 >> 12;
         }
-        temp_r3_27826->_4D = (u8) (temp_r3_27826->_4D - 1);
+        entity->anim_timer--;
     }
-    temp_r0_28034 = *(u32 *)(0x0202AD34 + (temp_r3_27826->_46 * 2));
-    temp_r2_28035 = temp_r0_28034 >> 2;
-    temp_r3_27826->_20 = temp_r2_28035;
-    if (temp_r0_28034 & 0x8000) {
-        temp_r3_27826->_20 = (s32) (temp_r2_28035 | 0xFFFF0000);
+    wave = sSineTable[entity->_46];
+    entity->_20 = wave >> 2;
+    if (wave & 0x8000) {
+        entity->_20 |= 0xFFFF0000;
     }
-    temp_r0_28047 = temp_r3_27826->_46 + 4;
-    temp_r3_27826->_46 = (u16) temp_r0_28047;
-    if (temp_r0_28047 == 0) {
-        temp_r3_27826->_20 = (s32) temp_r0_28047;
+    entity->_46 = (entity->_46 + 4) & 0xFF;
+    if (entity->_46 == 0) {
+        entity->_20 = 0;
     }
 }
 
-void sub_020255F0(s32 arg0) {
-    ((void (*)(void))*(u32 *)(0x020347E0 + ((*(u8 *)((u8 *)(((arg0 * 0x54) + 0x03004790)) + (0x4E))) * 4)))();
+/* Original address: 0x020255F0 */
+void Entity_Update(s32 entity_index) {
+    Entity *entity = &g_EntityTable[entity_index];
+
+    sEntityUpdateProcs[entity->type](entity_index);
 }
 
-void sub_02025618(s32 arg0) {
-    s32 temp_r1_28091;
-    void *temp_r2_28106;
-    void *temp_r5_28093;
+/* Original address: 0x02025618 */
+void Entity_DrawFloatingItemShadow(s32 entity_index) {
+    Entity *entity = &g_EntityTable[entity_index];
 
-    temp_r1_28091 = arg0 * 0x54;
-    temp_r5_28093 = temp_r1_28091 + 0x03004790;
-    if ((*(u8 *)((u8 *)(temp_r5_28093) + (0x4E))) == 0xA) {
-        temp_r2_28106 = (gGameState.unk_860 * 8) + gUnk3002410;
-        (*(s8 *)((u8 *)(temp_r2_28106) + (0))) = (s8) ((((s32) (*(s32 *)((u8 *)(temp_r5_28093) + (0x10))) >> 8) + ((s32) (*(s32 *)((u8 *)(temp_r5_28093) + (8))) >> 8)) - (*(u8 *)((u8 *)(&gGameState) + (0x846))));
-        (*(u16 *)((u8 *)(temp_r2_28106) + (2))) = (u16) ((0xFFFFFE00 & (*(u16 *)((u8 *)(temp_r2_28106) + (2)))) | ((*(u32 *)(0x03004790 + temp_r1_28091) - (gGameState.unk_844 - 8)) & 0x1FF));
-        (*(u8 *)((u8 *)(temp_r2_28106) + (1))) = (u8) (0x3F & (*(u8 *)((u8 *)(temp_r2_28106) + (1))));
-        (*(u8 *)((u8 *)(temp_r2_28106) + (3))) = (u8) (0x3F & (*(u8 *)((u8 *)(temp_r2_28106) + (3))));
-        (*(u16 *)((u8 *)(temp_r2_28106) + (4))) = (u16) ((0xFFFFFC00 & (*(u16 *)((u8 *)(temp_r2_28106) + (4)))) | 0x200);
-        (*(u8 *)((u8 *)(temp_r2_28106) + (5))) = (u8) ((((0xF & (*(u8 *)((u8 *)(temp_r2_28106) + (5)))) | 0x10) & ~0xC) | 4);
-        gGameState.unk_860 += 1;
+    if (entity->type == 10) {
+        GameState *game = &gGameState;
+        IslanderOamData *oam = &((IslanderOamData *)gUnk3002410)[game->unk_860];
+        s32 camera_x;
+
+        oam->y = (entity->_10 >> 8) + (entity->_08 >> 8) - (u8)game->unk_846;
+        camera_x = game->unk_844 - 8;
+        oam->x = entity->x - camera_x;
+        oam->shape = 0;
+        oam->size = 0;
+        oam->tile_num = 0x200;
+        oam->palette_num = 1;
+        oam->priority = 1;
+        game->unk_860++;
     }
 }
 
-void sub_020256D0(s32 arg0) {
-    s32 sp0;
-    s32 sp4;
-    s32 sp8;
-    s32 temp_r1_28184;
-    s32 temp_r1_28505;
-    s32 var_r1_28206;
-    s32 var_r8_28246;
-    u8 temp_r0_28191;
-    u8 temp_r1_28293;
-    u8 temp_r1_28339;
-    u8 temp_r1_28360;
-    u8 temp_r2_28283;
-    u8 temp_r2_28329;
-    u8 temp_r2_28443;
-    u8 var_r0_28209;
-    void **var_r1_28188;
-    void *temp_r1_28186;
-    void *temp_r5_28267;
-    void *temp_r5_28418;
-    void *var_r3_28244;
+/* Original address: 0x020256D0 */
+void Entity_DrawSprite(s32 entity_index) {
+    /* The BIOS reads the affine source as words. */
+    struct ObjAffineSrcData transform __attribute__((aligned(4)));
+    struct { s16 pa, pb, pc, pd; } matrix;
+    Entity *entity = &g_EntityTable[entity_index];
+    AnimFrameData *frame = NULL;
+    IslanderOamData *sprite;
+    IslanderOamData *oam;
+    s32 i;
 
-    temp_r1_28184 = arg0 * 0x54;
-    temp_r1_28186 = temp_r1_28184 + 0x03004790;
-    var_r1_28188 = NULL;
-    temp_r0_28191 = (*(u8 *)((u8 *)(temp_r1_28186) + (0x4F)));
-    switch (temp_r0_28191) {                        /* irregular */
+    switch (entity->anim_id) {
     case 1:
-        var_r1_28206 = 0x02034C24;
-        var_r0_28209 = (*(u8 *)((u8 *)(temp_r1_28186) + (0x4C)));
-block_9:
-        var_r1_28188 = *(u32 *)((var_r0_28209 * 4) + var_r1_28206);
+        frame = sEntityToppleFrames[entity->item_tile_frame];
         break;
     case 2:
-        var_r1_28206 = 0x02034C44;
-        var_r0_28209 = (*(u8 *)((u8 *)(temp_r1_28186) + (0x4C)));
-        goto block_9;
+        frame = sEntityLeafFrames[entity->item_tile_frame];
+        break;
     case 3:
-        var_r0_28209 = (*(u8 *)((u8 *)(temp_r1_28186) + (0x4C)));
-        var_r1_28206 = *(u32 *)(0x02034CE0 + ((*(u8 *)((u8 *)(temp_r1_28186) + (0x4B))) * 4));
-        goto block_9;
+        frame = sEntityReactionAnimations[entity->_4B][entity->item_tile_frame];
+        break;
     }
-    if ((*(u8 *)((u8 *)(temp_r1_28186) + (0x4F))) == 0) {
-        temp_r5_28418 = (gGameState.unk_860 * 8) + gUnk3002410;
-        (*(s8 *)((u8 *)(temp_r5_28418) + (0))) = (s8) ((*(s32 *)((u8 *)(temp_r1_28186) + (4))) - (*(u8 *)((u8 *)(&gGameState) + (0x846))));
-        (*(u16 *)((u8 *)(temp_r5_28418) + (2))) = (u16) ((0xFFFFFE00 & (*(u16 *)((u8 *)(temp_r5_28418) + (2)))) | ((*(u32 *)(0x03004790 + temp_r1_28184) - gGameState.unk_844) & 0x1FF));
-        temp_r2_28443 = 0x3F & (*(u8 *)((u8 *)(temp_r5_28418) + (1)));
-        (*(u8 *)((u8 *)(temp_r5_28418) + (1))) = temp_r2_28443;
-        (*(u8 *)((u8 *)(temp_r5_28418) + (3))) = (u8) ((0x3F & (*(u8 *)((u8 *)(temp_r5_28418) + (3)))) | 0x40);
-        (*(u16 *)((u8 *)(temp_r5_28418) + (4))) = (u16) ((0xFFFFFC00 & (*(u16 *)((u8 *)(temp_r5_28418) + (4)))) | (0x3FF & (*(u16 *)((u8 *)(temp_r1_28186) + (0x3E)))));
-        (*(u8 *)((u8 *)(temp_r5_28418) + (1))) = (u8) (temp_r2_28443 | 0x10);
-        (*(u8 *)((u8 *)(temp_r5_28418) + (5))) = (u8) ((((0xF & (*(u8 *)((u8 *)(temp_r5_28418) + (5)))) | ((*(u8 *)((u8 *)(temp_r1_28186) + (0x50))) * 0x10)) & ~0xC) | 4);
-        gGameState.unk_860 += 1;
-        if ((*(u8 *)((u8 *)(temp_r1_28186) + (0x4E))) == 0xA) {
-            (*(u8 *)((u8 *)(temp_r5_28418) + (3))) = (u8) ((-0xF & (*(u8 *)((u8 *)(temp_r5_28418) + (3)))) | 2);
-            (*(u8 *)((u8 *)(temp_r5_28418) + (1))) = (u8) (((-4 & (*(u8 *)((u8 *)(temp_r5_28418) + (1)))) | 1) & ~0xC);
-            temp_r1_28505 = (sp0 & 0xFFFF0000) | (*(u16 *)((u8 *)(temp_r1_28186) + (0x44)));
-            sp0 = temp_r1_28505;
-            sp0 = (0xFFFF & temp_r1_28505) | ((*(u16 *)((u8 *)(temp_r1_28186) + (0x44))) << 0x10);
-            sp4 = (sp4 & 0xFFFF0000) | (*(u16 *)((u8 *)(temp_r1_28186) + (0x42)));
-            ObjAffineSet((struct ObjAffineSrcData *) &sp0, &sp8, 1, 2);
-            (*(u16 *)((u8 *)(gUnk3002410) + (0x26))) = (u16) (*(u16 *)((u8 *)(&sp8) + (0)));
-            (*(u16 *)((u8 *)(gUnk3002410) + (0x2E))) = (u16) (*(u16 *)((u8 *)(&sp8) + (2)));
-            (*(u16 *)((u8 *)(gUnk3002410) + (0x36))) = (u16) (*(u16 *)((u8 *)(&sp8) + (4)));
-            (*(u16 *)((u8 *)(gUnk3002410) + (0x3E))) = (u16) (*(u16 *)((u8 *)(&sp8) + (6)));
+    if (entity->anim_id != 0) {
+        sprite = frame->sprite_gfx_p;
+        for (i = 0; i < 12 && sprite->affine_param != 0xFFFF; i++, sprite++) {
+            oam = &((IslanderOamData *)gUnk3002410)[gGameState.unk_860];
+            oam->y = sprite->y + entity->y - (u8)gGameState.unk_846;
+            oam->obj_mode = sprite->obj_mode;
+            oam->bpp = sprite->bpp;
+            oam->shape = sprite->shape;
+            oam->x = sprite->x + entity->x - gGameState.unk_844;
+            oam->h_flip = entity->_51;
+            oam->v_flip = sprite->v_flip;
+            oam->size = sprite->size;
+            oam->tile_num = sprite->tile_num;
+            oam->priority = 1;
+            if (entity->type == 6) {
+                oam->priority = 0;
+            }
+            oam->palette_num = sprite->palette_num;
+            oam->mosaic = 1;
+            gGameState.unk_860++;
         }
-        return;
-    }
-    var_r3_28244 = *var_r1_28188;
-    var_r8_28246 = 0;
-    if ((*(u16 *)((u8 *)(var_r3_28244) + (6))) == 0xFFFF) {
-        return;
-    }
-loop_15:
-    temp_r5_28267 = (gGameState.unk_860 * 8) + gUnk3002410;
-    (*(s8 *)((u8 *)(temp_r5_28267) + (0))) = (s8) (((*(u8 *)((u8 *)(var_r3_28244) + (0))) + (*(s32 *)((u8 *)(temp_r1_28186) + (4)))) - (*(u8 *)((u8 *)(&gGameState) + (0x846))));
-    temp_r2_28283 = (-0xD & (*(u8 *)((u8 *)(temp_r5_28267) + (1)))) | (0xC & (*(u8 *)((u8 *)(var_r3_28244) + (1))));
-    (*(u8 *)((u8 *)(temp_r5_28267) + (1))) = temp_r2_28283;
-    temp_r1_28293 = (-0x21 & temp_r2_28283) | ((((u32) ((*(u8 *)((u8 *)(var_r3_28244) + (1))) << 0x1A) >> 0x1F) & 1) << 5);
-    (*(u8 *)((u8 *)(temp_r5_28267) + (1))) = temp_r1_28293;
-    (*(u8 *)((u8 *)(temp_r5_28267) + (1))) = (u8) ((temp_r1_28293 & 0x3F) | (((u8) (*(u8 *)((u8 *)(var_r3_28244) + (1))) >> 6) << 6));
-    (*(u16 *)((u8 *)(temp_r5_28267) + (2))) = (u16) ((0xFFFFFE00 & (*(u16 *)((u8 *)(temp_r5_28267) + (2)))) | (((((u32) ((*(u16 *)((u8 *)(var_r3_28244) + (2))) << 0x17) >> 0x17) + *(u32 *)(0x03004790 + temp_r1_28184)) - gGameState.unk_844) & 0x1FF));
-    temp_r2_28329 = (-0x11 & (*(u8 *)((u8 *)(temp_r5_28267) + (3)))) | (((*(u8 *)((u8 *)(temp_r1_28186) + (0x51))) & 1) * 0x10);
-    (*(u8 *)((u8 *)(temp_r5_28267) + (3))) = temp_r2_28329;
-    temp_r1_28339 = (-0x21 & temp_r2_28329) | ((((u32) ((*(u8 *)((u8 *)(var_r3_28244) + (3))) << 0x1A) >> 0x1F) & 1) << 5);
-    (*(u8 *)((u8 *)(temp_r5_28267) + (3))) = temp_r1_28339;
-    (*(u8 *)((u8 *)(temp_r5_28267) + (3))) = (u8) ((temp_r1_28339 & 0x3F) | (((u8) (*(u8 *)((u8 *)(var_r3_28244) + (3))) >> 6) << 6));
-    (*(u16 *)((u8 *)(temp_r5_28267) + (4))) = (u16) ((0xFFFFFC00 & (*(u16 *)((u8 *)(temp_r5_28267) + (4)))) | ((u32) ((*(u16 *)((u8 *)(var_r3_28244) + (4))) << 0x16) >> 0x16));
-    temp_r1_28360 = (-0xD & (*(u8 *)((u8 *)(temp_r5_28267) + (5)))) | 4;
-    (*(u8 *)((u8 *)(temp_r5_28267) + (5))) = temp_r1_28360;
-    if ((*(u8 *)((u8 *)(temp_r1_28186) + (0x4E))) == 6) {
-        (*(u8 *)((u8 *)(temp_r5_28267) + (5))) = (u8) (temp_r1_28360 & ~0xC);
-    }
-    (*(u8 *)((u8 *)(temp_r5_28267) + (5))) = (u8) ((0xF & (*(u8 *)((u8 *)(temp_r5_28267) + (5)))) | (((u8) (*(u8 *)((u8 *)(var_r3_28244) + (5))) >> 4) * 0x10));
-    (*(u8 *)((u8 *)(temp_r5_28267) + (1))) = (u8) ((*(u8 *)((u8 *)(temp_r5_28267) + (1))) | 0x10);
-    gGameState.unk_860 += 1;
-    var_r8_28246 += 1;
-    var_r3_28244 += 8;
-    if (var_r8_28246 > 0xB) {
-        return;
-    }
-    if ((*(u16 *)((u8 *)(var_r3_28244) + (6))) != 0xFFFF) {
-        goto loop_15;
+    } else {
+        oam = &((IslanderOamData *)gUnk3002410)[gGameState.unk_860];
+        oam->y = entity->y - (u8)gGameState.unk_846;
+        oam->x = entity->x - gGameState.unk_844;
+        oam->shape = 0;
+        oam->size = 1;
+        oam->tile_num = entity->sprite_tile;
+        oam->palette_num = entity->palette;
+        oam->mosaic = 1;
+        oam->priority = 1;
+        gGameState.unk_860++;
+        if (entity->type == 10) {
+            oam->affine_mode = 1;
+            oam->matrix_num = 1;
+            oam->obj_mode = 0;
+            transform.xScale = entity->_44;
+            transform.yScale = entity->_44;
+            transform.rotation = entity->_42;
+            ObjAffineSet(&transform, &matrix, 1, 2);
+            ((IslanderOamData *)gUnk3002410)[4].affine_param = matrix.pa;
+            ((IslanderOamData *)gUnk3002410)[5].affine_param = matrix.pb;
+            ((IslanderOamData *)gUnk3002410)[6].affine_param = matrix.pc;
+            ((IslanderOamData *)gUnk3002410)[7].affine_param = matrix.pd;
+        }
     }
 }
 
 /* Original address: 0x020259C8 */
-s32 sub_020259C8(void) {
-    s32 temp_r0_28606;
-    s32 temp_r0_28665;
-    s32 temp_r0_28747;
-    s32 temp_r2_28567;
-    s32 temp_r2_28769;
-    s32 temp_r3_28735;
-    s32 var_r6_28628;
-    u16 *var_r6_28561;
-    u16 temp_r0_28707;
-    u16 temp_r1_28644;
-    u16 temp_r3_28583;
-    u16 var_r7_28562;
-    u32 temp_r2_28709;
-    u8 temp_r2_28578;
-    u8 temp_r2_28638;
+s32 PlayerHand_IsItemPlacementBlocked(void) {
+    Player *player = &gPlayer;
+    Islander_AGB *islander = &gIslander;
+    IslandFieldWork *field = &gIslandFieldWork;
+    u16 *tilemap = NULL;
+    u16 item = 0;
+    u16 terrain;
 
-    var_r6_28561 = NULL;
-    var_r7_28562 = 0;
-    temp_r2_28567 = gPlayer._10;
-    gPlayer.tile_idx = (u8) ((gPlayer._14 & ~0xF) | ((s32) (0xF0 & temp_r2_28567) >> 4));
-    if (!(temp_r2_28567 & 0xFF00)) {
-        temp_r2_28578 = gPlayer.tile_idx;
-        temp_r3_28583 = gIslandFieldWork.fg_tiles[0][temp_r2_28578];
-        if ((temp_r3_28583 != 0xFFF) && (temp_r3_28583 != 0x7777)) {
-            goto block_37;
+    player->tile_idx = (player->_14 & ~0xF) | ((player->_10 & 0xF0) >> 4);
+    if (!(player->_10 & 0xFF00)) {
+        if (field->fg_tiles[0][player->tile_idx] != 0xFFF &&
+            field->fg_tiles[0][player->tile_idx] != 0x7777) {
+            return 1;
         }
-        if ((gIslander._B5[2] == 0) && (gPlayer.tile_idx == gIslander._B5[3])) {
-            goto block_37;
+        if (islander->_B5[2] == 0 && player->tile_idx == islander->_B5[3]) {
+            return 1;
         }
-        temp_r0_28606 = temp_r2_28578 * 2;
-        if ((gIslandFieldWork.fg_tiles[0][(temp_r0_28606) / 2] == 0xFFF) || ((gPlayer.held_item_layer == 0) && (temp_r2_28578 == gPlayer.held_item_tile_idx))) {
-            gIslandFieldWork.fg_tiles[0][(temp_r0_28606) / 2] = 0xFFFU;
-            var_r7_28562 = gIslandFieldWork.fg_tiles[0][gPlayer.tile_idx];
-            var_r6_28628 = BG_SCREEN_ADDR(20);
-            goto block_20;
+        if (field->fg_tiles[0][player->tile_idx] == 0xFFF ||
+            (player->held_item_layer == 0 && player->tile_idx == player->held_item_tile_idx)) {
+            field->fg_tiles[0][player->tile_idx] = 0xFFF;
+            item = field->fg_tiles[0][player->tile_idx];
+            tilemap = (u16 *)BG_SCREEN_ADDR(20);
+            tilemap += (player->tile_idx & 0xF0) * 4;
+            tilemap += (player->tile_idx & 0xF) * 2;
         }
-        goto block_21;
+    } else {
+        if (field->fg_tiles[1][player->tile_idx] != 0xFFF &&
+            field->fg_tiles[1][player->tile_idx] != 0x7777) {
+            return 1;
+        }
+        if (islander->_B5[2] != 0 && player->tile_idx == islander->_B5[3]) {
+            return 1;
+        }
+        if (field->fg_tiles[1][player->tile_idx] == 0xFFF ||
+            (player->held_item_layer != 0 && player->tile_idx == player->held_item_tile_idx)) {
+            field->fg_tiles[1][player->tile_idx] = 0xFFF;
+            item = field->fg_tiles[1][player->tile_idx];
+            tilemap = (u16 *)BG_SCREEN_ADDR(21);
+            tilemap += (player->tile_idx & 0xF0) * 4;
+            tilemap += (player->tile_idx & 0xF) * 2;
+        }
     }
-    temp_r2_28638 = gPlayer.tile_idx;
-    temp_r1_28644 = gIslandFieldWork.fg_tiles[1][temp_r2_28638];
-    if ((temp_r1_28644 != 0xFFF) && (temp_r1_28644 != 0x7777)) {
-        goto block_37;
-    }
-    if ((gIslander._B5[2] == 0) || (gPlayer.tile_idx != gIslander._B5[3])) {
-        temp_r0_28665 = temp_r2_28638 * 2;
-        if ((gIslandFieldWork.fg_tiles[1][(temp_r0_28665) / 2] == 0xFFF) || ((gPlayer.held_item_layer != 0) && (temp_r2_28638 == gPlayer.held_item_tile_idx))) {
-            gIslandFieldWork.fg_tiles[1][(temp_r0_28665) / 2] = 0xFFFU;
-            var_r7_28562 = gIslandFieldWork.fg_tiles[1][gPlayer.tile_idx];
-            var_r6_28628 = BG_SCREEN_ADDR(21);
-block_20:
-            var_r6_28561 = ((0xF0 & gPlayer.tile_idx) * 8) + var_r6_28628 + ((gPlayer.tile_idx & 0xF) * 4);
-        }
-block_21:
-        if (CheckSurroundingCollision(var_r7_28562, var_r6_28561) == 0) {
-            temp_r0_28707 = *var_r6_28561;
-            temp_r2_28709 = 0x3FF & temp_r0_28707;
-            if (((temp_r2_28709 > 5U) && ((u32) (u16) (temp_r2_28709 - 0x10) > 5U) && (temp_r2_28709 != 0x82) && (temp_r2_28709 <= 0xAFU)) || ((0x3FF & temp_r0_28707) == 0x13)) {
-                temp_r3_28735 = gIslandBuildings[1].interaction_x - (((s32) gPlayer.x >> 8) - 8);
-                gPlayer._10 = temp_r3_28735;
-                gPlayer._14 = (s32) (gIslandBuildings[1].interaction_y - ((s32) gPlayer.y >> 8));
-                if (temp_r3_28735 < 0) {
-                    gPlayer._10 = (s32) (0 - temp_r3_28735);
-                }
-                temp_r0_28747 = gPlayer._14;
-                if (temp_r0_28747 < 0) {
-                    gPlayer._14 = (s32) (0 - temp_r0_28747);
-                }
-                if ((s32) gPlayer._10 <= 0x20) {
-                    if ((s32) gPlayer._14 > 0x20) {
-                        goto block_36;
-                    }
-                    goto block_37;
-                }
-                goto block_36;
+    if (CheckSurroundingCollision(item, tilemap) == 0) {
+        terrain = Islander_GetTerrainTile(tilemap);
+        if ((terrain > 5 && (u16)(terrain - 0x10) > 5 && terrain != 0x82 && terrain <= 0xAF) ||
+            (*tilemap & 0x3FF) == 0x13) {
+            IslandBuilding *building = &gIslandBuildings[1];
+            s32 cursor_x = (player->x >> 8) - 8;
+            player->_10 = building->interaction_x - cursor_x;
+            player->_14 = building->interaction_y - (player->y >> 8);
+            if (player->_10 < 0) {
+                player->_10 = -player->_10;
             }
-            goto block_37;
+            if (player->_14 < 0) {
+                player->_14 = -player->_14;
+            }
+            if (player->_10 > 0x20 || player->_14 > 0x20) {
+                return 0;
+            }
         }
-        temp_r2_28769 = 0x3FF & *var_r6_28561;
-        if (((u32) (u16) (temp_r2_28769 - 0xBC) <= 3U) || ((u32) (u16) (temp_r2_28769 - 0xC6) <= 5U)) {
-block_36:
+    } else {
+        terrain = Islander_GetTerrainTile(tilemap);
+        if ((u16)(terrain - 0xBC) <= 3 || (u16)(terrain - 0xC6) <= 5) {
             return 0;
         }
-        goto block_37;
     }
-block_37:
     return 1;
 }
 
 /* Original address: 0x02025B94 */
-s32 sub_02025B94(s32 arg0, s32 arg1, u16 arg2) {
-    s32 temp_r1_28802;
-    s32 var_r0_28814;
-    s32 var_r3_28804;
-    s32 var_r3_28812;
-    u16 temp_r2_28799;
+s32 PlayerHand_IsNearInteractionTarget(s32 x, s32 y, u16 range) {
+    Player *player = &gPlayer;
+    Islander_AGB *islander = &gIslander;
+    s32 dx = player->x - islander->_00;
+    s32 dy;
 
-    temp_r2_28799 = arg2;
-    temp_r1_28802 = gPlayer.x;
-    var_r3_28804 = temp_r1_28802 - gIslander._00;
-    if (var_r3_28804 < 0) {
-        var_r3_28804 = 0 - var_r3_28804;
+    if (dx < 0) {
+        dx = -dx;
     }
-    if (var_r3_28804 <= 0x2FFF) {
-        var_r3_28812 = temp_r1_28802 - arg0;
-        var_r0_28814 = gPlayer.y - arg1;
-        if (var_r3_28812 < 0) {
-            var_r3_28812 = 0 - var_r3_28812;
+    if (dx <= 0x2FFF) {
+        dx = player->x - x;
+        dy = player->y - y;
+        if (dx < 0) {
+            dx = -dx;
         }
-        if (var_r0_28814 < 0) {
-            var_r0_28814 = 0 - var_r0_28814;
+        if (dy < 0) {
+            dy = -dy;
         }
-        if (((s32) (var_r3_28812 >> 8) <= (s32) temp_r2_28799) && ((s32) (var_r0_28814 >> 8) <= (s32) temp_r2_28799)) {
+        dx >>= 8;
+        dy >>= 8;
+        if (dx <= range && dy <= range) {
             return 1;
         }
-        goto block_10;
     }
-block_10:
     return 0;
 }
 
 /* Original address: 0x02025BEC */
-s32 sub_02025BEC(void) {
-    gPlayer._26 = 0;
-    if (sub_02025B94(gIslandBuildings[1].interaction_x << 8, gIslandBuildings[1].interaction_y << 8, 0x10U) != 0) {
-        gPlayer._26 = 1;
+s32 PlayerHand_CheckHouseDoorInteraction(void) {
+    Player *player = &gPlayer;
+    Islander_AGB *islander = &gIslander;
+    IslandBuilding *building = &gIslandBuildings[1];
+
+    player->_26 = 0;
+    if (PlayerHand_IsNearInteractionTarget(building->interaction_x << 8, building->interaction_y << 8, 0x10U) != 0) {
+        player->_26 = 1;
     }
-    if (gIslander.move_proc_idx == 1) {
-        if ((gPlayer._26 != 0) && (gIslander.anim_timer == 0xFE)) {
-            gIslander.anim_timer = 4;
-            gIslandBuildings[1].state = 0;
-            gPlayer._26 = 0;
+    if (islander->move_proc_idx == 1) {
+        if ((player->_26 != 0) && (islander->anim_timer == 0xFE)) {
+            islander->anim_timer = 4;
+            building->state = 0;
+            player->_26 = 0;
         }
         return 1;
     }
@@ -12030,56 +11851,45 @@ s32 sub_02025BEC(void) {
 }
 
 /* Original address: 0x02025C4C */
-s8 sub_02025C4C(void) {
-    u8 *var_r8_28909;
-    u8 temp_r1_28939;
+s32 PlayerHand_TryInteractWithIslander(void) {
+    Player *player = &gPlayer;
+    Islander_AGB *islander = &gIslander;
 
-    if (gIslander._99[1] == 0) {
-        var_r8_28909 = &gIslander.move_proc_idx;
-        if (gIslander.move_proc_idx == 3) {
-            gIslander._10 = (s32) gPlayer.x;
-            gIslander._14 = (s32) gPlayer.y;
-            goto block_3;
-        }
-        goto block_8;
+    if (islander->_99[1] == 0 && islander->move_proc_idx == 3) {
+        islander->_10 = player->x;
+        islander->_14 = player->y;
     }
-block_3:
-    var_r8_28909 = &gIslander.move_proc_idx;
-    if (gIslander.move_proc_idx == 3) {
-        if (sub_02025B94(gIslander._00, gIslander._04, 8U) != 0) {
-            gIslander.emotion_anim_id = 1;
-            Islander_SpawnReactionEffect(2U, 0x30U);
-            temp_r1_28939 = gIslander.state;
-            if (temp_r1_28939 != 0) {
-                gIslander.state = (u8) (0x40 | temp_r1_28939);
-                gIslander.emotion_anim_id = 0;
+    if (islander->move_proc_idx == 3) {
+        if (PlayerHand_IsNearInteractionTarget(islander->_00, islander->_04, 8)) {
+            islander->emotion_anim_id = 1;
+            Islander_SpawnReactionEffect(2, 0x30);
+            if (islander->state != 0) {
+                islander->state |= 0x40;
+                islander->emotion_anim_id = 0;
             }
-            gPlayer._26 = 0;
-            gIslander.move_proc_idx = 0xAU;
-            gIslander.click_cooldown_timer = 0x30;
-            gPlayer.state = 0;
-            sub_02025F60();
+            player->_26 = 0;
+            islander->move_proc_idx = 10;
+            islander->click_cooldown_timer = 0x30;
+            player->state = 0;
+            PlayerHand_ResetToIdle();
             return 1;
         }
-        goto block_12;
-    }
-block_8:
-    if ((*var_r8_28909 == 0x14) && (gIslander.sub_move_action == 0) && (sub_02025B94(gIslander._00, gIslander._04, 0x10U) != 0)) {
-        sub_02026A38(3U);
-        gIslander._84 = 2;
-        gPlayer.state = 2;
-        sub_020263A0();
+    } else if (islander->move_proc_idx == 20 && islander->sub_move_action == 0 &&
+               PlayerHand_IsNearInteractionTarget(islander->_00, islander->_04, 16)) {
+        Sound_PlayEffect0(3);
+        islander->_84 = 2;
+        player->state = 2;
+        PlayerHand_BeginCarrying();
         return 1;
     }
-block_12:
     return 0;
 }
 
 /* Original address: 0x02025D1C */
-s8 sub_02025D1C(void) {
+s32 PlayerHand_TrySelectIslanderTarget(void) {
     u8 temp_r0_29010;
 
-    if ((gIslander.move_proc_idx == 3) && ((temp_r0_29010 = gIslander.state, (temp_r0_29010 == 1)) || (temp_r0_29010 == 5)) && (sub_02025B94(gIslander._38, gIslander._3C, 0x10U) != 0)) {
+    if ((gIslander.move_proc_idx == 3) && ((temp_r0_29010 = gIslander.state, (temp_r0_29010 == 1)) || (temp_r0_29010 == 5)) && (PlayerHand_IsNearInteractionTarget(gIslander._38, gIslander._3C, 0x10U) != 0)) {
         gIslander.move_proc_idx = 9;
         gIslander._10 = (s32) gIslander._38;
         gIslander._14 = (s32) gIslander._3C;
@@ -12090,2329 +11900,2191 @@ s8 sub_02025D1C(void) {
     return 0;
 }
 
-void sub_02025D70(void) {
-    void *temp_r0_29058;
-    void *temp_r0_29063;
-    void *temp_r0_29065;
-    void *temp_r0_29071;
-    void *temp_r0_29073;
-    void *temp_r0_29075;
-    void *temp_r0_29077;
+/* Original address: 0x02025D70 */
+void PlayerHand_Init(void) {
+    Player *player = &gPlayer;
 
-    (*(s32 *)((u8 *)((void *)0x03004B80) + (0))) = 0xF800;
-    (*(s32 *)((u8 *)((void *)0x03004B80) + (4))) = 0x8800;
-    (*(s32 *)((u8 *)((void *)0x03004B80) + (8))) = 0xF800;
-    (*(s32 *)((u8 *)((void *)0x03004B80) + (0xC))) = 0x8800;
-    temp_r0_29058 = (void *)0x03004B80 + 0x21;
-    (*(s8 *)((u8 *)((void *)0x03004B80) + (0x21))) = 0;
-    (*(s8 *)((u8 *)(temp_r0_29058) + (1))) = 0;
-    temp_r0_29063 = (temp_r0_29058 + 1) - 2;
-    (*(s8 *)((u8 *)(temp_r0_29063) + (0))) = 0;
-    temp_r0_29065 = temp_r0_29063 + 3;
-    (*(s8 *)((u8 *)(temp_r0_29063) + (3))) = 0;
-    (*(s16 *)((u8 *)((void *)0x03004B80) + (0x18))) = 0;
-    (*(s8 *)((u8 *)((void *)0x03004B80) + (0x1E))) = 0;
-    (*(s16 *)((u8 *)((void *)0x03004B80) + (0x1A))) = 0;
-    temp_r0_29071 = temp_r0_29065 + 1;
-    (*(s8 *)((u8 *)(temp_r0_29065) + (1))) = 0;
-    temp_r0_29073 = temp_r0_29071 + 1;
-    (*(s8 *)((u8 *)(temp_r0_29071) + (1))) = 0;
-    temp_r0_29075 = temp_r0_29073 + 1;
-    (*(s8 *)((u8 *)(temp_r0_29073) + (1))) = 0;
-    temp_r0_29077 = temp_r0_29075 + 1;
-    (*(s8 *)((u8 *)(temp_r0_29075) + (1))) = 0;
-    (*(s32 *)((u8 *)((void *)0x03004B80) + (0x14))) = 0;
-    (*(s32 *)((u8 *)((void *)0x03004B80) + (0x10))) = 0;
-    (*(s8 *)((u8 *)(temp_r0_29077) + (1))) = 0;
-    (*(s8 *)((u8 *)((temp_r0_29077 + 1)) + (1))) = 0;
-    (*(s8 *)((u8 *)((void *)0x03004B80) + (0x1C))) = 0;
-    (*(s8 *)((u8 *)((void *)0x03004B80) + (0x1D))) = 0;
-    (*(s8 *)((u8 *)((void *)0x03004B80) + (0x1F))) = 0;
+    player->x = 0xF800;
+    player->y = 0x8800;
+    player->_08 = 0xF800;
+    player->_0C = 0x8800;
+    player->anim_frame = 0;
+    player->anim_timer = 0;
+    player->anim_id = 0;
+    player->_23 = 0;
+    player->held_item_oam_attr2 = 0;
+    player->tile_idx = 0;
+    player->held_item = 0;
+    player->held_item_type_idx = 0;
+    player->action_timer = 0;
+    player->_26 = 0;
+    player->_27 = 0;
+    player->_14 = 0;
+    player->_10 = 0;
+    player->held_item_layer = 0;
+    player->held_item_tile_idx = 0;
+    player->left_tile_idx = 0;
+    player->right_tile_idx = 0;
+    player->state = 0;
+}
+
+static inline void PlayerHand_UpdateCamera(Player *player) {
+    GameState *camera = &gGameState;
+    s32 camera_y;
+    camera->unk_840 = ((s32) player->x >> 8) - 0x80;
+    camera_y = ((s32) player->y >> 8) - 0x50;
+    camera->unk_842 = camera_y;
+    if (camera_y & 0x800) {
+        camera->unk_842 = 0;
+    }
+    if ((u32) camera->unk_842 > 0x60U) {
+        camera->unk_842 = 0x60;
+    }
+    if (0x800 & camera->unk_840) {
+        camera->unk_840 = 0;
+    }
+    if ((u32) camera->unk_840 > 0x100U) {
+        camera->unk_840 = 0x100;
+    }
+    camera->unk_844 = camera->unk_840;
+    camera->unk_846 = camera->unk_842;
 }
 
 /* Original address: 0x02025DC8 */
-void sub_02025DC8(void) {
-    s32 temp_r2_29106;
-    s32 temp_r2_29140;
-    s32 temp_r2_29183;
-    s32 temp_r2_29215;
-    s32 var_r0_29162;
-    u16 temp_r0_29249;
+void PlayerHand_UpdateMovement(void) {
+    Player *player = &gPlayer;
+    Islander_AGB *islander = &gIslander;
+    GameState *game = &gGameState;
 
-    if (0x400040 & (*(s32 *)((u8 *)(&gGameState) + (0x818)))) {
-        temp_r2_29106 = gPlayer.y;
-        gPlayer.y = (s32) (temp_r2_29106 + 0xFFFFFE80);
-        if (0x100 & gGameState.keys_held) {
-            gPlayer.y = (s32) (temp_r2_29106 + 0xFFFFFD00);
+    s32 previous_y;
+    s32 previous_y_down;
+    s32 previous_x;
+    s32 previous_x_right;
+
+    if (0x400040 & game->keys.combined) {
+        previous_y = player->y;
+        player->y = previous_y - 0x180;
+        if (0x100 & game->keys.buttons.held) {
+            player->y = previous_y - 0x300;
         }
-        if ((s32) gPlayer.y <= 0xE00) {
-            gPlayer.y = 0xE00;
+        if (player->y <= 0xE00) {
+            player->y = 0xE00;
         }
-    } else if ((*(s32 *)((u8 *)(&gGameState) + (0x818))) & 0x800080) {
-        temp_r2_29140 = gPlayer.y;
-        gPlayer.y = (s32) (temp_r2_29140 + 0x180);
-        if (0x100 & gGameState.keys_held) {
-            gPlayer.y = (s32) (temp_r2_29140 + 0x300);
+    } else if (game->keys.combined & 0x800080) {
+        previous_y_down = player->y;
+        player->y = previous_y_down + 0x180;
+        if (0x100 & game->keys.buttons.held) {
+            player->y = previous_y_down + 0x300;
         }
-        if (gIslander._84 == 0) {
-            var_r0_29162 = 0xF7FF;
+        if (islander->_84 == 0) {
+            if (player->y > 0xF7FF) {
+                player->y = 0xF800;
+            }
         } else {
-            var_r0_29162 = 0xE7FF;
-        }
-        if (gPlayer.y > var_r0_29162) {
-            gPlayer.y = (s32) (var_r0_29162 + 1);
-        }
-    }
-    if (0x200020 & (*(s32 *)((u8 *)(&gGameState) + (0x818)))) {
-        temp_r2_29183 = gPlayer.x;
-        gPlayer.x = (s32) (temp_r2_29183 + 0xFFFFFE80);
-        if (0x100 & gGameState.keys_held) {
-            gPlayer.x = (s32) (temp_r2_29183 + 0xFFFFFD00);
-        }
-        if ((s32) gPlayer.x <= 0x600) {
-            gPlayer.x = 0x600;
-        }
-    } else if ((*(s32 *)((u8 *)(&gGameState) + (0x818))) & 0x100010) {
-        temp_r2_29215 = gPlayer.x;
-        gPlayer.x = (s32) (temp_r2_29215 + 0x180);
-        if (0x100 & gGameState.keys_held) {
-            gPlayer.x = (s32) (temp_r2_29215 + 0x300);
-        }
-        if ((s32) gPlayer.x > 0x1DFFF) {
-            gPlayer.x = 0x1E000;
+            if (player->y > 0xE7FF) {
+                player->y = 0xE800;
+            }
         }
     }
-    gGameState.unk_840 = ((s32) gPlayer.x >> 8) - 0x80;
-    temp_r0_29249 = ((s32) gPlayer.y >> 8) - 0x50;
-    gGameState.unk_842 = temp_r0_29249;
-    if (temp_r0_29249 & 0x800) {
-        gGameState.unk_842 = 0;
+    if (0x200020 & gGameState.keys.combined) {
+        previous_x = player->x;
+        player->x = previous_x - 0x180;
+        if (0x100 & gGameState.keys.buttons.held) {
+            player->x = previous_x - 0x300;
+        }
+        if (player->x <= 0x600) {
+            player->x = 0x600;
+        }
+    } else if (gGameState.keys.combined & 0x100010) {
+        previous_x_right = player->x;
+        player->x = previous_x_right + 0x180;
+        if (0x100 & gGameState.keys.buttons.held) {
+            player->x = previous_x_right + 0x300;
+        }
+        if (player->x > 0x1DFFF) {
+            player->x = 0x1E000;
+        }
     }
-    if ((u32) gGameState.unk_842 > 0x60U) {
-        gGameState.unk_842 = 0x60;
-    }
-    if (0x800 & gGameState.unk_840) {
-        gGameState.unk_840 = 0;
-    }
-    if ((u32) gGameState.unk_840 > 0x100U) {
-        gGameState.unk_840 = 0x100;
-    }
-    gGameState.unk_844 = gGameState.unk_840;
-    gGameState.unk_846 = gGameState.unk_842;
+    PlayerHand_UpdateCamera(player);
 }
 
-void sub_02025F60(void) {
-    *(s8 *)0x03004BA0 = 0;
-    *(s8 *)0x03004BA3 = 0;
-    *(s8 *)0x03004BA1 = 0;
-    *(s8 *)0x03004BA2 = (s8) (*(u16 *)((u8 *)(**(void ***)0x02034ED4) + (4)));
-    (*(s8 *)((u8 *)((void *)0x03004B80) + (0x1F))) = 1;
+/* Original address: 0x02025F60 */
+void PlayerHand_ResetToIdle(void) {
+    Player *player = &gPlayer;
+    AnimFrameData *frame;
+
+    player->anim_id = 0;
+    frame = sPlayerHandAnimations[0][0];
+    player->_23 = 0;
+    player->anim_frame = 0;
+    player->anim_timer = frame->duration;
+    player->state = 1;
 }
 
-void sub_02025F90(void) {
-    s32 temp_r1_29362;
-    s32 temp_r2_29358;
-    s32 temp_r3_29360;
-    s32 var_r1_29376;
-    s32 var_r2_29378;
-    s8 temp_r0_29629;
-    s8 temp_r0_29633;
-    s8 temp_r7_29474;
-    u16 *temp_r2_29506;
-    u16 *temp_r2_29538;
-    u16 temp_r4_29487;
-    u16 temp_r7_29393;
-    u16 var_r6_29507;
-    u8 temp_r0_29334;
-    u8 temp_r0_29337;
-    u8 temp_r0_29587;
-    u8 temp_r1_29498;
-    u8 temp_r1_29528;
-    u8 temp_r2_29431;
-    u8 temp_r2_29457;
-    void *temp_r1_29478;
-    void *temp_r1_29609;
-
-    temp_r0_29334 = *(u8 *)0x03004BA7;
-    if (temp_r0_29334 != 0) {
-        temp_r0_29337 = temp_r0_29334 - 1;
-        *(u8 *)0x03004BA7 = temp_r0_29337;
-        if ((temp_r0_29337 << 0x18) != 0) {
-            goto block_25;
+static inline s32 PlayerHand_IsTileBuried(Player *player) {
+    if (!(player->_10 & 0xFF00)) {
+        if ((gIslandData->deposit[0][player->tile_idx >> 4] >> (player->tile_idx & 0xF)) & 1) {
+            return 1;
         }
-    }
-    if (!(1 & gGameState.keys_pressed)) {
-        goto block_25;
-    }
-    temp_r2_29358 = ((s32) (*(s32 *)((u8 *)((void *)0x03004B80) + (4))) >> 8) & 0xFF0;
-    (*(s32 *)((u8 *)((void *)0x03004B80) + (0x14))) = temp_r2_29358;
-    temp_r3_29360 = (*(s32 *)((u8 *)((void *)0x03004B80) + (0)));
-    temp_r1_29362 = (temp_r3_29360 >> 8) & 0xFF0;
-    (*(s32 *)((u8 *)((void *)0x03004B80) + (0x10))) = temp_r1_29362;
-    (*(u8 *)((u8 *)((void *)0x03004B80) + (0x1E))) = (u8) (temp_r2_29358 | ((s32) (0xF0 & temp_r1_29362) >> 4));
-    if (!(temp_r1_29362 & 0xFF00)) {
-        var_r1_29376 = (*(u8 *)((u8 *)((void *)0x03004B80) + (0x1E))) * 2;
-        var_r2_29378 = 0x03003720;
     } else {
-        var_r1_29376 = (*(u8 *)((u8 *)((void *)0x03004B80) + (0x1E))) * 2;
-        var_r2_29378 = 0x03003920;
+        if ((gIslandData->deposit[1][player->tile_idx >> 4] >> (player->tile_idx & 0xF)) & 1) {
+            return 1;
+        }
     }
-    temp_r7_29393 = *(u32 *)(var_r1_29376 + var_r2_29378);
-    switch (temp_r7_29393) {                        /* irregular */
-    case 0xFFF:
-block_27:
-        (*(u8 *)((u8 *)((void *)0x03004B80) + (0x23))) = 1U;
-block_25:
-        if ((*(u8 *)((u8 *)((void *)0x03004B80) + (0x23))) == 0) {
-            sub_02025DC8();
-            return;
-        }
-        temp_r0_29587 = (*(u8 *)((u8 *)((void *)0x03004B80) + (0x22)));
-        if (temp_r0_29587 == 0) {
-            (*(u8 *)((u8 *)((void *)0x03004B80) + (0x22))) = (u8) (temp_r0_29587 - 1);
-            return;
-        }
-        (*(u8 *)((u8 *)((void *)0x03004B80) + (0x21))) = (u8) ((*(u8 *)((u8 *)((void *)0x03004B80) + (0x21))) + 1);
-        temp_r1_29609 = *(u32 *)(((*(u8 *)((u8 *)((void *)0x03004B80) + (0x21))) * 4) + *(u32 *)(0x02034ED4 + ((*(u8 *)((u8 *)((void *)0x03004B80) + (0x20))) * 4)));
-        if ((*(u8 *)((u8 *)(temp_r1_29609) + (6))) != 0xFF) {
-            (*(u8 *)((u8 *)((void *)0x03004B80) + (0x22))) = (u8) (*(u16 *)((u8 *)(temp_r1_29609) + (4)));
-            return;
-        }
-        if (sub_02025BEC() != 0) {
-            sub_02026A38(2U);
-            (*(s8 *)((u8 *)((void *)0x03004B80) + (0x1F))) = 0;
-            sub_02025F60();
-            return;
-        }
-        temp_r0_29629 = sub_02025C4C();
-        if (temp_r0_29629 == 0) {
-            temp_r0_29633 = sub_02025D1C();
-            if (temp_r0_29633 != 0) {
-                (*(s8 *)((u8 *)((void *)0x03004B80) + (0x1F))) = temp_r0_29629;
-                sub_02025F60();
-                return;
-            }
-            sub_02026A38(2U);
-            (*(s8 *)((u8 *)((void *)0x03004B80) + (0x1F))) = temp_r0_29633;
-            sub_02025F60();
+    return 0;
+}
+
+/* Original address: 0x02025F90 */
+void PlayerHand_UpdateIdle(void) {
+    Player *player = &gPlayer;
+    IslandFieldWork *field = &gIslandFieldWork;
+    u16 item_type;
+    ItemGroupStruct *definition;
+    ItemGroupStruct *definitions;
+    Island_agb_c *island;
+    s32 column, row;
+    mActor_name_t item;
+    mActor_name_t *tile;
+    AnimFrameData *frame;
+
+    if ((player->_27 == 0 || --player->_27 == 0) && (gGameState.keys.buttons.pressed & 1)) {
+        player->_14 = (player->y >> 8) & 0xFF0;
+        player->_10 = (player->x >> 8) & 0xFF0;
+        player->tile_idx = player->_14 | ((player->_10 & 0xF0) >> 4);
+        if (!(player->_10 & 0xFF00)) {
+            item_type = field->fg_tiles[0][player->tile_idx];
         } else {
-            return;
+            item_type = field->fg_tiles[1][player->tile_idx];
         }
-        break;
-    case 0x7777:
-        goto block_27;
-    case 0x3333:
-        goto block_27;
-    default:
-        if ((*(u16 *)((u8 *)(((temp_r7_29393 * 0xC) + 0x0202F7FC)) + (8))) == 0xFFF) {
-            goto block_27;
-        }
-        if (!((*(s32 *)((u8 *)((void *)0x03004B80) + (0x10))) & 0xFF00)) {
-            temp_r2_29431 = (*(u8 *)((u8 *)((void *)0x03004B80) + (0x1E)));
-            if (((s32) *(u32 *)(*(s32 *)0x03001B40 + 0x18F8 + ((temp_r2_29431 >> 4) * 2)) >> (0xF & temp_r2_29431)) & 1) {
-                goto block_28;
-            }
-            goto block_20;
-        }
-        temp_r2_29457 = (*(u8 *)((u8 *)((void *)0x03004B80) + (0x1E)));
-        if (!(((s32) *(u32 *)(*(u32 *)0x03001B40 + 0x1918 + ((temp_r2_29457 >> 4) * 2)) >> (0xF & temp_r2_29457)) & 1)) {
-block_20:
-            temp_r7_29474 = temp_r7_29393 & 0xFFF;
-            temp_r1_29478 = (temp_r7_29474 * 0xC) + 0x0202F7FC;
-            if ((*(u16 *)((u8 *)(temp_r1_29478) + (4))) != 0xFFF) {
-                temp_r4_29487 = (temp_r3_29360 >> 8) & 0xFF00;
-                if (temp_r4_29487 == 0) {
-                    *(u32 *)(0x03003720 + ((*(u8 *)((u8 *)((void *)0x03004B80) + (0x1E))) * 2)) = 0x7777;
-                    temp_r1_29498 = (*(u8 *)((u8 *)((void *)0x03004B80) + (0x1E)));
-                    temp_r2_29506 = *(s32 *)0x03001B40 + 0x24 + (((0xF & temp_r1_29498) * 2) + ((temp_r1_29498 >> 4) << 5));
-                    var_r6_29507 = *temp_r2_29506;
-                    *temp_r2_29506 = temp_r4_29487;
-                    (*(s8 *)((u8 *)((void *)0x03004B80) + (0x28))) = 0;
-                } else {
-                    *(u32 *)(0x03003920 + ((*(u8 *)((u8 *)((void *)0x03004B80) + (0x1E))) * 2)) = 0x7777;
-                    temp_r1_29528 = (*(u8 *)((u8 *)((void *)0x03004B80) + (0x1E)));
-                    temp_r2_29538 = *(s32 *)0x03001B40 + 0x224 + (((0xF & temp_r1_29528) * 2) + ((temp_r1_29528 >> 4) << 5));
-                    var_r6_29507 = *temp_r2_29538;
-                    *temp_r2_29538 = 0;
-                    (*(s8 *)((u8 *)((void *)0x03004B80) + (0x28))) = 1;
+        definitions = g_ItemDefinitions;
+        definition = &definitions[item_type];
+        if (item_type == 0xFFF || item_type == 0x7777 || item_type == 0x3333 ||
+            definition->interaction_type == 0xFFF) {
+            player->_23 = 1;
+        } else {
+            if (PlayerHand_IsTileBuried(player)) {
+                player->_23 = 1;
+            } else {
+                item_type &= 0xFFF;
+                definition = &definitions[item_type];
+                if (definition->held_item_oam_attr2 != 0xFFF) {
+                    if (!((player->x >> 8) & 0xFF00)) {
+                        field->fg_tiles[0][player->tile_idx] = 0x7777;
+                        island = gIslandData;
+                        column = player->tile_idx & 0xF;
+                        row = player->tile_idx >> 4;
+                        tile = &island->fgblock[0][0].items[row][column];
+                        item = *tile;
+                        *tile = 0;
+                        player->held_item_layer = 0;
+                    } else {
+                        field->fg_tiles[1][player->tile_idx] = 0x7777;
+                        island = gIslandData;
+                        column = player->tile_idx & 0xF;
+                        row = player->tile_idx >> 4;
+                        tile = &island->fgblock[0][1].items[row][column];
+                        item = *tile;
+                        *tile = 0;
+                        player->held_item_layer = 1;
+                    }
+                    player->held_item_tile_idx = player->tile_idx;
+                    player->held_item_type_idx = item_type;
+                    player->held_item_oam_attr2 = definition->held_item_oam_attr2;
+                    player->held_item = item;
+                    Sound_PlayEffect0(3);
+                    player->state = 2;
+                    PlayerHand_BeginCarrying();
+                    return;
                 }
-                (*(u8 *)((u8 *)((void *)0x03004B80) + (0x29))) = (u8) (*(u8 *)((u8 *)((void *)0x03004B80) + (0x1E)));
-                (*(s8 *)((u8 *)((void *)0x03004B80) + (0x24))) = temp_r7_29474;
-                (*(u16 *)((u8 *)((void *)0x03004B80) + (0x18))) = (u16) (*(u16 *)((u8 *)(temp_r1_29478) + (4)));
-                (*(u16 *)((u8 *)((void *)0x03004B80) + (0x1A))) = var_r6_29507;
-                sub_02026A38(3U);
-                (*(s8 *)((u8 *)((void *)0x03004B80) + (0x1F))) = 2;
-                sub_020263A0();
-                return;
+                player->_23 = 1;
             }
-            goto block_27;
         }
-block_28:
-        (*(u8 *)((u8 *)((void *)0x03004B80) + (0x23))) = 1U;
-        goto block_25;
     }
-}
-
-void sub_0202622C(u16 arg0, s32 arg1, u8 arg2, s32 arg3, s32 arg4) {
-    s16 *var_r3_29698;
-    s16 *var_r3_29733;
-    s16 var_r0_29735;
-    s16 var_r4_29707;
-    s32 var_r0_29670;
-    s32 var_r1_29671;
-    s32 var_r3_29686;
-    u16 temp_r1_29682;
-    u16 temp_r4_29661;
-    u8 temp_r0_29663;
-    u8 temp_r2_29666;
-
-    temp_r4_29661 = arg0;
-    temp_r0_29663 = arg2;
-    temp_r2_29666 = (u8) arg4;
-    if ((arg3 << 0x18) == 0) {
-        var_r0_29670 = temp_r0_29663 * 2;
-        var_r1_29671 = 0x03003720;
+    if (player->_23 == 0) {
+        PlayerHand_UpdateMovement();
+    } else if (player->anim_timer == 0) {
+        player->anim_timer--;
     } else {
-        var_r0_29670 = temp_r0_29663 * 2;
-        var_r1_29671 = 0x03003920;
-    }
-    temp_r1_29682 = *(u32 *)(var_r0_29670 + var_r1_29671);
-    var_r3_29686 = 0x0600C800;
-    if (!(0xFF0000 & arg1)) {
-        var_r3_29686 = 0x0600C000;
-    }
-    var_r3_29698 = var_r3_29686 + ((0xF0 & temp_r4_29661) * 8) + ((0xF & temp_r4_29661) * 4);
-    if ((temp_r1_29682 == 0x24) || (temp_r1_29682 == 0x2E)) {
-        if (temp_r2_29666 == 0) {
-            var_r3_29698 += 0x40;
-            var_r4_29707 = 0x328F;
-        } else {
-            var_r3_29698 += 0x42;
-            var_r4_29707 = 0x328C;
+        player->anim_frame++;
+        frame = sPlayerHandAnimations[player->anim_id][player->anim_frame];
+        if ((u8)frame->action_flag != 0xFF) {
+            player->anim_timer = frame->duration;
+        } else if (PlayerHand_CheckHouseDoorInteraction() != 0) {
+            Sound_PlayEffect0(2);
+            player->state = 0;
+            PlayerHand_ResetToIdle();
+        } else if (PlayerHand_TryInteractWithIslander() == 0) {
+            if (PlayerHand_TrySelectIslanderTarget() != 0) {
+                player->state = 0;
+                PlayerHand_ResetToIdle();
+            } else {
+                Sound_PlayEffect0(2);
+                player->state = 0;
+                PlayerHand_ResetToIdle();
+            }
         }
-        *var_r3_29698 = var_r4_29707;
-    }
-    if ((temp_r1_29682 == 0x25) || ((u32) (u16) (temp_r1_29682 - 0x27) <= 4U) || (temp_r1_29682 == 0x2F)) {
-        if (temp_r2_29666 == 0) {
-            var_r3_29733 = var_r3_29698 + 0x40;
-            var_r0_29735 = 0x3297;
-        } else {
-            var_r3_29733 = var_r3_29698 + 0x42;
-            var_r0_29735 = 0x3294;
-        }
-        *var_r3_29733 = var_r0_29735;
     }
 }
 
-void sub_020262DC(u16 arg0, s32 arg1) {
-    s32 temp_r0_29777;
-    s32 temp_r1_29767;
-    s32 var_r0_29812;
-    u16 temp_r4_29762;
-    u8 var_r2_29811;
+/* Original address: 0x0202622C */
+void Field_RestoreNeighborTreeTile(u16 tile_idx, s32 x, u8 neighbor_tile, u8 acre, u8 right_side) {
+    IslandFieldWork *field = &gIslandFieldWork;
+    u16 item_type;
+    u16 *tilemap;
 
-    temp_r4_29762 = arg0;
-    temp_r1_29767 = temp_r4_29762 & 0xF;
-    temp_r0_29777 = temp_r4_29762 & 0xF0;
-    (*(u8 *)((u8 *)((void *)0x03004B80) + (0x1C))) = (u8) (((temp_r1_29767 - 1) & 0xF) | temp_r0_29777);
-    (*(u8 *)((u8 *)((void *)0x03004B80) + (0x1D))) = (u8) (((temp_r1_29767 + 1) & 0xF) | temp_r0_29777);
-    if (!((*(s32 *)((u8 *)((void *)0x03004B80) + (0))) & 0xFF0000)) {
-        sub_0202622C(temp_r4_29762, arg1, (*(u8 *)((u8 *)((void *)0x03004B80) + (0x1C))), 0, 0);
-        if (!(0xF & (*(u8 *)((u8 *)((void *)0x03004B80) + (0x1D))))) {
-            sub_0202622C(temp_r4_29762, arg1, (*(u8 *)((u8 *)((void *)0x03004B80) + (0x1D))), 1, 1);
-            return;
+    if (acre == 0) {
+        item_type = field->fg_tiles[0][neighbor_tile];
+    } else {
+        item_type = field->fg_tiles[1][neighbor_tile];
+    }
+    if (!(x & 0xFF0000)) {
+        tilemap = (u16*)BG_SCREEN_ADDR(24);
+    } else {
+        tilemap = (u16*)BG_SCREEN_ADDR(25);
+    }
+    tilemap += (tile_idx & 0xF0) * 4;
+    tilemap += (tile_idx & 0xF) * 2;
+    if (item_type == ITEM_TYPE_LARGE_TREE || item_type == ITEM_TYPE_LARGE_STUMP) {
+        if (right_side == 0) {
+            tilemap += 0x20;
+            *tilemap = 0x328F;
+        } else {
+            tilemap += 0x21;
+            *tilemap = 0x328C;
         }
-        var_r2_29811 = (*(u8 *)((u8 *)((void *)0x03004B80) + (0x1D)));
-        var_r0_29812 = 1;
-        goto block_6;
     }
-    sub_0202622C(temp_r4_29762, arg1, (*(u8 *)((u8 *)((void *)0x03004B80) + (0x1D))), 1, 1);
-    if ((0xF & (*(u8 *)((u8 *)((void *)0x03004B80) + (0x1C)))) == 0xF) {
-        var_r2_29811 = (*(u8 *)((u8 *)((void *)0x03004B80) + (0x1C)));
-        var_r0_29812 = 0;
-block_6:
-        sub_0202622C(temp_r4_29762, arg1, var_r2_29811, 0, var_r0_29812);
-        return;
+    if (item_type == ITEM_TYPE_FULLY_GROWN_TREE ||
+        (u16)(item_type - ITEM_TYPE_FRUIT_APPLE_TREE) <= ITEM_TYPE_FRUIT_CHERRY_TREE - ITEM_TYPE_FRUIT_APPLE_TREE ||
+        item_type == ITEM_TYPE_FULLY_GROWN_STUMP) {
+        if (right_side == 0) {
+            tilemap += 0x20;
+            *tilemap = 0x3297;
+        } else {
+            tilemap += 0x21;
+            *tilemap = 0x3294;
+        }
     }
-    sub_0202622C(temp_r4_29762, arg1, (*(u8 *)((u8 *)((void *)0x03004B80) + (0x1C))), 1, 0);
+}
+
+/* Original address: 0x020262DC */
+void Field_RestoreAdjacentTreeTiles(u16 tile_idx, s32 x) {
+    Player *player = &gPlayer;
+    u8 left = (tile_idx & 0xF) - 1;
+    u8 right = (tile_idx & 0xF) + 1;
+    u8 row = tile_idx & 0xF0;
+    left &= 0xF;
+    right &= 0xF;
+    player->left_tile_idx = left | row;
+    player->right_tile_idx = right | row;
+    if (!(player->x & 0xFF0000)) {
+        Field_RestoreNeighborTreeTile(tile_idx, x, player->left_tile_idx, 0, 0);
+        if (!(player->right_tile_idx & 0xF)) {
+            Field_RestoreNeighborTreeTile(tile_idx, x, player->right_tile_idx, 1, 1);
+        } else {
+            Field_RestoreNeighborTreeTile(tile_idx, x, player->right_tile_idx, 0, 1);
+        }
+    } else {
+        Field_RestoreNeighborTreeTile(tile_idx, x, player->right_tile_idx, 1, 1);
+        if ((player->left_tile_idx & 0xF) == 0xF) {
+            Field_RestoreNeighborTreeTile(tile_idx, x, player->left_tile_idx, 0, 0);
+        } else {
+            Field_RestoreNeighborTreeTile(tile_idx, x, player->left_tile_idx, 1, 0);
+        }
+    }
 }
 
 /* Original address: 0x020263A0 */
-void sub_020263A0(void) {
-    s32 temp_r0_29892;
-    u16 temp_r2_29900;
+void PlayerHand_BeginCarrying(void) {
+    Player *player = &gPlayer;
+    Entity *entity = &g_EntityTable[2];
+    IslandFieldWork *field = &gIslandFieldWork;
+    Islander_AGB *islander = &gIslander;
+    AnimFrameData *frame;
 
-    gPlayer.anim_id = 1;
-    gPlayer._23 = 0;
-    gPlayer.anim_frame = 0;
-    gPlayer.anim_timer = (s8) (*(u16 *)((u8 *)(*(*(void ***)((u8 *)((void *)0x02034ED4) + (4)))) + (4)));
-    if (gIslander._84 == 0) {
-        gIslandFieldWork.entity_active[2] = 1;
-        Unk_Struct_Size54_ResetIdx(2);
-        g_EntityTable[2]._40 = 0x30;
-        temp_r0_29892 = gPlayer.x;
-        g_EntityTable[2].x = (s32) ((temp_r0_29892 >> 8) - 8);
-        g_EntityTable[2].y = (s32) (((s32) gPlayer.y >> 8) - 2);
-        temp_r2_29900 = gPlayer.held_item_oam_attr2;
-        g_EntityTable[2]._3E = (s16) (0x3FF & temp_r2_29900);
-        g_EntityTable[2]._50 = (s8) ((u32) (temp_r2_29900 << 0x10) >> 0x1C);
-        g_EntityTable[2]._4F = 0;
-        WriteItemToTile(temp_r0_29892, gPlayer.tile_idx, 0U, 0x200U);
-        sub_020262DC(gPlayer.tile_idx, gPlayer.x);
+    player->anim_id = 1;
+    frame = sPlayerHandAnimations[1][0];
+    player->_23 = 0;
+    player->anim_frame = 0;
+    player->anim_timer = frame->duration;
+    if (islander->_84 == 0) {
+        field->entity_active[2] = 1;
+        Entity_Reset(2);
+        entity->lifetime = 0x30;
+        entity->x = (player->x >> 8) - 8;
+        entity->y = (player->y >> 8) - 2;
+        entity->sprite_tile = player->held_item_oam_attr2 & 0x3FF;
+        entity->palette = player->held_item_oam_attr2 >> 12;
+        entity->anim_id = 0;
+        WriteItemToTile(player->x, player->tile_idx, 0, 0x200);
+        Field_RestoreAdjacentTreeTiles(player->tile_idx, player->x);
     } else {
-        gIslander._00 = (s32) gPlayer.x;
-        gIslander._04 = (s32) (gPlayer.y + 0x1200);
+        islander->_00 = player->x;
+        islander->_04 = player->y + 0x1200;
     }
-    gPlayer.action_timer = 0x20;
-    gPlayer.state = 3;
+    player->action_timer = 0x20;
+    player->state = 3;
 }
 
 /* Original address: 0x02026464 */
-void sub_02026464(void) {
-    s32 var_r0_30005;
-    u16 var_r0_30102;
-    u8 temp_r0_29971;
-    u8 temp_r0_29974;
-    u8 temp_r0_30074;
-    u8 temp_r4_30088;
-    void *temp_r1_30029;
-    void *temp_r1_30092;
+void PlayerHand_UpdateCarrying(void) {
+    Player *player = &gPlayer;
+    Islander_AGB *islander = &gIslander;
+    Entity *entity = &g_EntityTable[2];
+    AnimFrameData *frame;
+    AnimFrameData *blocked_frame;
 
-    if (gIslander._84 == 0) {
-        if (gPlayer.held_item_layer == 0 && gPlayer.held_item_tile_idx == 0) {
-            gPlayer.state = 0;
-            sub_02025F60();
+    if (islander->_84 == 0) {
+        if (player->held_item_layer == 0 && player->held_item_tile_idx == 0) {
+            player->state = 0;
+            PlayerHand_ResetToIdle();
             return;
         }
     }
-    temp_r0_29971 = gPlayer.action_timer;
-    if (((temp_r0_29971 == 0) || (temp_r0_29974 = temp_r0_29971 - 1, gPlayer.action_timer = temp_r0_29974, ((temp_r0_29974 << 0x18) == 0))) && (1 & gGameState.keys_pressed)) {
-        if (gIslander._84 != 0) {
-            gPlayer._10 = (s32) ((((s32) gPlayer.x >> 8) - 8) & 0xFF0);
-            var_r0_30005 = (((s32) gPlayer.y >> 8) + 0x18) & 0xFF0;
+    if ((player->action_timer == 0 || --player->action_timer == 0) &&
+        (gGameState.keys.buttons.pressed & 1)) {
+        if (islander->_84 != 0) {
+            player->_10 = ((player->x >> 8) - 8) & 0xFF0;
+            player->_14 = ((player->y >> 8) + 0x18) & 0xFF0;
         } else {
-            gPlayer._10 = (s32) (g_EntityTable[2].x + 8);
-            var_r0_30005 = g_EntityTable[2].y + 8;
+            player->_10 = entity->x + 8;
+            player->_14 = entity->y + 8;
         }
-        gPlayer._14 = var_r0_30005;
-        if (sub_020259C8() == 0) {
-            sub_02026A38(4U);
-            gPlayer.state = 4;
-            sub_020265A8();
+        if (PlayerHand_IsItemPlacementBlocked() == 0) {
+            Sound_PlayEffect0(4);
+            player->state = 4;
+            PlayerHand_BeginPlacing();
             return;
         }
-        temp_r1_30029 = &gPlayer.anim_id;
-        gPlayer.anim_id = 3U;
-        (*(s8 *)((u8 *)(temp_r1_30029) + (1))) = 0;
-        (*(s8 *)((u8 *)((temp_r1_30029 + 1)) + (1))) = (s8) (*(u16 *)((u8 *)(*(*(void ***)((u8 *)((void *)0x02034ED4) + (0xC)))) + (4)));
-        sub_02026A38(0x12U);
-        goto block_12;
+        player->anim_id = 3;
+        blocked_frame = sPlayerHandAnimations[3][0];
+        player->anim_frame = 0;
+        player->anim_timer = blocked_frame->duration;
+        Sound_PlayEffect0(0x12);
     }
-block_12:
-    sub_02025DC8();
-    if (gIslander._84 == 0) {
-        g_EntityTable[2]._40 = 0x30;
-        g_EntityTable[2].x = (s32) (((s32) gPlayer.x >> 8) - 8);
-        g_EntityTable[2].y = (s32) (((s32) gPlayer.y >> 8) - 2);
+    PlayerHand_UpdateMovement();
+    if (islander->_84 == 0) {
+        entity->lifetime = 0x30;
+        entity->x = (player->x >> 8) - 8;
+        entity->y = (player->y >> 8) - 2;
     } else {
-        gIslander._00 = (s32) gPlayer.x;
-        gIslander._04 = (s32) (gPlayer.y + 0x1200);
+        islander->_00 = player->x;
+        islander->_04 = player->y + 0x1200;
     }
-    temp_r0_30074 = gPlayer.anim_timer;
-    if (temp_r0_30074 == 0) {
-        gPlayer.anim_frame = (u8) (gPlayer.anim_frame + 1);
-        temp_r4_30088 = gPlayer.anim_frame;
-        temp_r1_30092 = *(u32 *)((temp_r4_30088 * 4) + *(u32 *)(0x02034ED4 + (gPlayer.anim_id * 4)));
-        if ((*(u8 *)((u8 *)(temp_r1_30092) + (6))) == 0xFF) {
-            gPlayer.anim_frame = (u8) (temp_r4_30088 - 1);
+    if (player->anim_timer == 0) {
+        player->anim_frame++;
+        frame = sPlayerHandAnimations[player->anim_id][player->anim_frame];
+        if ((u8)frame->action_flag == 0xFF) {
+            player->anim_frame--;
             return;
         }
-        var_r0_30102 = (*(u16 *)((u8 *)(temp_r1_30092) + (4)));
-        goto block_20;
+        player->anim_timer = frame->duration;
+    } else {
+        player->anim_timer--;
     }
-    var_r0_30102 = temp_r0_30074 - 1;
-block_20:
-    gPlayer.anim_timer = (u8) var_r0_30102;
 }
 
-void sub_020265A8(void) {
-    (*(s8 *)((u8 *)((void *)0x03004BA0) + (0))) = 2;
-    (*(s8 *)((u8 *)((void *)0x03004BA0) + (1))) = 0;
-    (*(s8 *)((u8 *)(((void *)0x03004BA0 + 1)) + (1))) = (s8) (*(u16 *)((u8 *)(*(*(void ***)((u8 *)((void *)0x02034ED4) + (8)))) + (4)));
-    (*(s8 *)((u8 *)((void *)0x03004B80) + (0x1F))) = 5;
+/* Original address: 0x020265A8 */
+void PlayerHand_BeginPlacing(void) {
+    Player *player = &gPlayer;
+    AnimFrameData *frame;
+    player->anim_id = 2;
+    frame = sPlayerHandAnimations[2][0];
+    player->anim_frame = 0;
+    player->anim_timer = frame->duration;
+    player->state = 5;
 }
 
 /* Original address: 0x020265D4 */
-void sub_020265D4(void) {
-    s32 temp_r3_30338;
-    s32 var_r0_30247;
-    s32 var_r0_30272;
-    u16 *var_r1_30249;
-    u16 *var_r1_30274;
-    s32 var_r1_30347;
-    s32 var_r2_30340;
-    s32 var_sb_30147;
-    s8 *var_r2_30245;
-    u16 temp_r0_30313;
-    u8 temp_r0_30167;
-    u8 temp_r0_30304;
-    u8 temp_r2_30363;
-    void *temp_r1_30205;
-    ItemGroupStruct *temp_r8_30230;
+void PlayerHand_UpdatePlacing(void) {
+    Player *player = &gPlayer;
+    IslandFieldWork *field = &gIslandFieldWork;
+    Islander_AGB *islander = &gIslander;
+    s32 attract_islander = 0;
+    AnimFrameData *frame;
+    ItemGroupStruct *definition;
+    s32 dx, dy;
 
-    var_sb_30147 = 0;
-    if ((gIslander._84 == 0) && (gPlayer.held_item_layer == 0 && gPlayer.held_item_tile_idx == 0)) {
-        gPlayer.state = 0;
-        sub_02025F60();
+    if (islander->_84 == 0 && player->held_item_layer == 0 && player->held_item_tile_idx == 0) {
+        player->state = 0;
+        PlayerHand_ResetToIdle();
         return;
     }
-    temp_r0_30167 = gPlayer.anim_timer;
-    if (temp_r0_30167 != 0) {
-        gPlayer.anim_timer = (u8) (temp_r0_30167 - 1);
-        if (gPlayer.anim_frame != 3 || gPlayer.anim_timer != 0) {
-            return;
+    if (player->anim_timer != 0) {
+        player->anim_timer--;
+        if (player->anim_frame == 3 && player->anim_timer == 0) {
+            field->entity_active[2] = 0;
         }
-        gIslandFieldWork.entity_active[2] = 0;
         return;
     }
-    gPlayer.anim_frame = (u8) (gPlayer.anim_frame + 1);
-    temp_r1_30205 = *(u32 *)((gPlayer.anim_frame * 4) + *(u32 *)(0x02034ED4 + ((u8) gPlayer.anim_id * 4)));
-    if ((*(u8 *)((u8 *)(temp_r1_30205) + (6))) != 0xFF) {
-        gPlayer.anim_timer = (u8) (*(u16 *)((u8 *)(temp_r1_30205) + (4)));
+    player->anim_frame++;
+    frame = sPlayerHandAnimations[player->anim_id][player->anim_frame];
+    if ((u8)frame->action_flag != 0xFF) {
+        player->anim_timer = frame->duration;
         return;
     }
-    if (gIslander._84 != 0) {
-        gIslander._84 = 1U;
-    } else {
-        temp_r8_30230 = &g_ItemDefinitions[gPlayer.held_item_type_idx];
-        WriteItemToTile(gPlayer.x, gPlayer.tile_idx, gPlayer.held_item, temp_r8_30230->field_tile_id);
-        if ((u8) gPlayer.held_item_layer == 0) {
-            var_r2_30245 = &gPlayer.held_item_tile_idx;
-            var_r0_30247 = gPlayer.held_item_tile_idx * 2;
-            var_r1_30249 = gIslandFieldWork.fg_tiles[0];
+    if (islander->_84 == 0) {
+        definition = &g_ItemDefinitions[player->held_item_type_idx];
+        WriteItemToTile(player->x, player->tile_idx, player->held_item, definition->field_tile_id);
+        if (player->held_item_layer == 0) {
+            field->fg_tiles[0][player->held_item_tile_idx] = 0xFFF;
         } else {
-            var_r2_30245 = &gPlayer.held_item_tile_idx;
-            var_r0_30247 = gPlayer.held_item_tile_idx * 2;
-            var_r1_30249 = gIslandFieldWork.fg_tiles[1];
+            field->fg_tiles[1][player->held_item_tile_idx] = 0xFFF;
         }
-        var_r1_30249[var_r0_30247 / 2] = 0xFFF;
-        if (!(gPlayer.x & 0xFF0000)) {
-            var_r0_30272 = gPlayer.tile_idx * 2;
-            var_r1_30274 = gIslandFieldWork.fg_tiles[0];
+        if (!(player->x & 0xFF0000)) {
+            field->fg_tiles[0][player->tile_idx] = player->held_item_type_idx;
         } else {
-            var_r0_30272 = gPlayer.tile_idx * 2;
-            var_r1_30274 = gIslandFieldWork.fg_tiles[1];
+            field->fg_tiles[1][player->tile_idx] = player->held_item_type_idx;
         }
-        var_r1_30274[var_r0_30272 / 2] = (s16) gPlayer.held_item_type_idx;
-        gPlayer.held_item_layer = 0;
-        gPlayer.held_item_tile_idx = 0;
-        *var_r2_30245 = 0;
-        if (gIslander.move_proc_idx == 3) {
-            if (gIslander.stored_item_tile_ids[4] == 0) {
-                temp_r0_30304 = gIslander.state;
-                switch (temp_r0_30304) {            /* switch 1; irregular */
-                case 3:                             /* switch 1 */
-                case 7:                             /* switch 1 */
-                    temp_r0_30313 = temp_r8_30230->interaction_type;
-                    switch ((u32) temp_r0_30313) {  /* switch 2; irregular */
-                    case 6:                         /* switch 2 */
-                        goto block_28;
+        player->held_item_layer = 0;
+        player->held_item_tile_idx = 0;
+        if (islander->move_proc_idx == 3) {
+            if (islander->stored_item_tile_ids[4] == 0) {
+                if (islander->state == 0) {
+                    attract_islander = 1;
+                } else if (islander->state == 3 || islander->state == 7) {
+                    if (definition->interaction_type <= 3 || definition->interaction_type == 5 ||
+                        definition->interaction_type == 6) {
+                        attract_islander = 1;
                     }
-                    break;
                 }
-            } else if ((gIslander.state == 0) && ((u32) (u16) (temp_r8_30230->interaction_type - 5) <= 9U)) {
-block_28:
-                var_sb_30147 = 1;
+            } else if (islander->state == 0 && (u16)(definition->interaction_type - 5) <= 9) {
+                attract_islander = 1;
             }
         }
-        temp_r3_30338 = gPlayer.x;
-        var_r2_30340 = temp_r3_30338 - gIslander._00;
-        if (var_r2_30340 < 0) {
-            var_r2_30340 = 0 - var_r2_30340;
+        dx = player->x - islander->_00;
+        if (dx < 0) dx = -dx;
+        dy = player->y - islander->_04;
+        if (dy < 0) dy = -dy;
+        if (dx <= 0x2FFF && dy <= 0x2FFF && attract_islander == 1) {
+            islander->_10 = (player->x & 0xFF0000) | (((player->tile_idx & 0xF) << 12) + 0x800);
+            islander->_14 = ((player->tile_idx & 0xF0) << 8) + 0x800;
+            islander->move_proc_idx = 9;
         }
-        var_r1_30347 = gPlayer.y - gIslander._04;
-        if (var_r1_30347 < 0) {
-            var_r1_30347 = 0 - var_r1_30347;
-        }
-        if ((var_r2_30340 <= 0x2FFF) && (var_r1_30347 <= 0x2FFF) && (var_sb_30147 == 1)) {
-            temp_r2_30363 = gPlayer.tile_idx;
-            gIslander._10 = (s32) ((temp_r3_30338 & 0xFF0000) | (((0xF & temp_r2_30363) << 0xC) + 0x800));
-            gIslander._14 = (s32) (((0xF0 & temp_r2_30363) << 8) + 0x800);
-            gIslander.move_proc_idx = 9;
-        }
+    } else {
+        islander->_84 = 1;
     }
-    gPlayer._27 = 0x20;
-    gIslander._9D = (u8) gPlayer.tile_idx;
-    gPlayer.state = 0;
-    sub_02025F60();
+    player->_27 = 0x20;
+    islander->_9D = player->tile_idx;
+    player->state = 0;
+    PlayerHand_ResetToIdle();
 }
 
 /* Original address: 0x020267D0 */
-void sub_020267D0(void) {
-    gIslandFieldWork.entity_active[0] = 1;
-    gIslandFieldWork.entity_active[1] = 1;
-    if ((gIslander.move_proc_idx != 0x14) || (gIslander.sub_move_action == 0) || (gIslander._84 == 2)) {
-        ((void (*)(void))*(u32 *)(0x02034E0C + (gPlayer.state * 4)))();
+void PlayerHand_Update(void) {
+    Player *player = &gPlayer;
+    Islander_AGB *islander = &gIslander;
+    IslandFieldWork *field = &gIslandFieldWork;
+    field->entity_active[0] = 1;
+    field->entity_active[1] = 1;
+    if (islander->move_proc_idx != 0x14 || islander->sub_move_action == 0 || islander->_84 == 2) {
+        sPlayerHandUpdateProcs[player->state]();
     }
 }
 
-void sub_02026830(void) {
-    u8 temp_r1_30526;
-    u8 temp_r1_30554;
-    u8 temp_r2_30516;
-    u8 temp_r2_30544;
-    u8 temp_r2_30604;
-    u8 temp_r4_30533;
-    void *temp_r3_30508;
-    void *var_r5_30480;
-    void *var_r8_30489;
+/* Original address: 0x02026830 */
+void PlayerHand_Draw(void) {
+    Player *player = &gPlayer;
+    IslanderOamData *sprite;
+    IslanderOamData *oam;
+    u32 i;
 
-    (*(s32 *)((u8 *)((void *)0x03004B80) + (0x14))) = (s32) ((s32) (*(s32 *)((u8 *)((void *)0x03004B80) + (4))) >> 8);
-    (*(s32 *)((u8 *)((void *)0x03004B80) + (0x10))) = (s32) ((s32) (*(s32 *)((u8 *)((void *)0x03004B80) + (0))) >> 8);
-    var_r5_30480 = **(u32 **)(((*(u8 *)((u8 *)(((void *)0x03004B80 + 0x20)) + (1))) * 4) + *(u32 *)(0x02034ED4 + ((*(u8 *)((u8 *)((void *)0x03004B80) + (0x20))) * 4)));
-    *(s8 *)0x03003B27 = 0;
-    *(s8 *)0x03003B28 = 0;
-    var_r8_30489 = NULL;
-    if ((*(u16 *)((u8 *)(var_r5_30480) + (6))) == 0xFFFF) {
+    player->_14 = player->y >> 8;
+    player->_10 = player->x >> 8;
+    sprite = sPlayerHandAnimations[player->anim_id][player->anim_frame]->sprite_gfx_p;
+    gIslandFieldWork.entity_active[0] = 0;
+    gIslandFieldWork.entity_active[1] = 0;
+    i = 0;
+    if (sprite->affine_param == 0xFFFF) {
         return;
     }
     do {
-        temp_r3_30508 = (gGameState.unk_860 * 8) + gUnk3002410;
-        temp_r2_30516 = (-0xD & (*(u8 *)((u8 *)(temp_r3_30508) + (1)))) | (0xC & (*(u8 *)((u8 *)(var_r5_30480) + (1))));
-        (*(u8 *)((u8 *)(temp_r3_30508) + (1))) = temp_r2_30516;
-        temp_r1_30526 = (-0x21 & temp_r2_30516) | ((((u32) ((*(u8 *)((u8 *)(var_r5_30480) + (1))) << 0x1A) >> 0x1F) & 1) << 5);
-        (*(u8 *)((u8 *)(temp_r3_30508) + (1))) = temp_r1_30526;
-        temp_r4_30533 = (0x3F & temp_r1_30526) | (((u8) (*(u8 *)((u8 *)(var_r5_30480) + (1))) >> 6) << 6);
-        (*(u8 *)((u8 *)(temp_r3_30508) + (1))) = temp_r4_30533;
-        temp_r2_30544 = (-0x11 & (*(u8 *)((u8 *)(temp_r3_30508) + (3)))) | ((((u32) ((*(u8 *)((u8 *)(var_r5_30480) + (3))) << 0x1B) >> 0x1F) & 1) * 0x10);
-        (*(u8 *)((u8 *)(temp_r3_30508) + (3))) = temp_r2_30544;
-        temp_r1_30554 = (-0x21 & temp_r2_30544) | ((((u32) ((*(u8 *)((u8 *)(var_r5_30480) + (3))) << 0x1A) >> 0x1F) & 1) << 5);
-        (*(u8 *)((u8 *)(temp_r3_30508) + (3))) = temp_r1_30554;
-        (*(u8 *)((u8 *)(temp_r3_30508) + (3))) = (u8) ((temp_r1_30554 & 0x3F) | (((u8) (*(u8 *)((u8 *)(var_r5_30480) + (3))) >> 6) << 6));
-        (*(s8 *)((u8 *)(temp_r3_30508) + (0))) = (s8) (((*(u8 *)((u8 *)(var_r5_30480) + (0))) + (*(s32 *)((u8 *)((void *)0x03004B80) + (0x14)))) - (*(u8 *)((u8 *)(&gGameState) + (0x846))));
-        (*(u16 *)((u8 *)(temp_r3_30508) + (2))) = (u16) ((0xFFFFFE00 & (*(u16 *)((u8 *)(temp_r3_30508) + (2)))) | (((((u32) ((*(u16 *)((u8 *)(var_r5_30480) + (2))) << 0x17) >> 0x17) + (*(s32 *)((u8 *)((void *)0x03004B80) + (0x10)))) - gGameState.unk_844) & 0x1FF));
-        (*(u16 *)((u8 *)(temp_r3_30508) + (4))) = (u16) ((0xFFFFFC00 & (*(u16 *)((u8 *)(temp_r3_30508) + (4)))) | ((u32) ((*(u16 *)((u8 *)(var_r5_30480) + (4))) << 0x16) >> 0x16));
-        (*(u8 *)((u8 *)(temp_r3_30508) + (1))) = (u8) (temp_r4_30533 | 0x10);
-        temp_r2_30604 = -0xD & (*(u8 *)((u8 *)(temp_r3_30508) + (5)));
-        (*(u8 *)((u8 *)(temp_r3_30508) + (5))) = temp_r2_30604;
-        (*(u8 *)((u8 *)(temp_r3_30508) + (5))) = (u8) ((0xF & temp_r2_30604) | (((u8) (*(u8 *)((u8 *)(var_r5_30480) + (5))) >> 4) * 0x10));
-        *(u32 *)(0x03003B27 + (s32) var_r8_30489) = 1;
-        gGameState.unk_860 += 1;
-        var_r8_30489 += 1;
-        var_r5_30480 += 8;
-    } while ((*(u16 *)((u8 *)(var_r5_30480) + (6))) != 0xFFFF);
+        oam = &((IslanderOamData *)gUnk3002410)[gGameState.unk_860];
+        oam->obj_mode = sprite->obj_mode;
+        oam->bpp = sprite->bpp;
+        oam->shape = sprite->shape;
+        oam->h_flip = sprite->h_flip;
+        oam->v_flip = sprite->v_flip;
+        oam->size = sprite->size;
+        oam->y = sprite->y + player->_14 - (u8)gGameState.unk_846;
+        oam->x = sprite->x + player->_10 - gGameState.unk_844;
+        oam->tile_num = sprite->tile_num;
+        oam->mosaic = 1;
+        oam->priority = 0;
+        oam->palette_num = sprite->palette_num;
+        gIslandFieldWork.entity_active[i] = 1;
+        gGameState.unk_860++;
+        i++;
+        sprite++;
+    } while (sprite->affine_param != 0xFFFF);
 }
 
-void sub_020269C8(void) {
-    sub_02026E4C(0x02035BF4);
-    sub_02026BD8();
-    sub_020269F0();
+/* Original address: 0x020269C8 */
+void Audio_Init(void) {
+    SoundDriver_Init((const void *)0x02035BF4);
+    Sound_InitMusic();
+    Sound_InitEffects();
 }
 
-void sub_020269E0(void) {
+/* Original address: 0x020269E0 */
+void Audio_Update(void) {
     sub_02026A34();
-    sub_02028B44();
+    Sound_CommitCommands();
 }
 
-void sub_020269F0(void) {
-    s16 sp0;
-    s32 var_r1_30680;
-    void *var_r0_30679;
+/* sizeof(SoundEffectState) == 0x08. */
+typedef struct SoundEffectState {
+    /* 0x00 */ s32 sound_id;
+    /* 0x04 */ u8 active;
+    /* 0x05 */ u8 unk_05[3];
+} SoundEffectState;
 
-    var_r0_30679 = (void *)0x03000038;
-    var_r1_30680 = 2;
-    do {
-        (*(s32 *)((u8 *)(var_r0_30679) + (0))) = -1;
-        (*(s8 *)((u8 *)(var_r0_30679) + (4))) = 0;
-        var_r0_30679 += 8;
-        var_r1_30680 -= 1;
-    } while (var_r1_30680 >= 0);
-    sp0 = 0xFFFF;
-    CpuSet(&sp0, (void *)0x03000028, 0x01000005U);
+/* sizeof(SoundPlayer) == 0x44; eight players at 0x03001918. */
+struct SoundPlayer {
+    /* 0x00 */ const u16 *bank;
+    /* 0x04 */ const u8 *sequence;
+    /* 0x08 */ SoundTrack *tracks[10];
+    /* 0x30 */ union {
+        struct { u8 tempo[2]; u8 tempo_adjust[2]; } bytes;
+        struct { u16 tempo; s16 tempo_adjust; } values;
+    } timing;
+    /* 0x34 */ u16 volume;
+    /* 0x36 */ s16 volume_step;
+    /* 0x38 */ u16 target_volume;
+    /* 0x3A */ u16 fade_timer;
+    /* 0x3C */ union {
+        s8 flags;
+        struct { u8 paused : 1; u8 reserved : 7; } __attribute__((packed)) bits;
+    } __attribute__((packed)) control;
+    /* 0x3D */ u8 unk_3D[3];
+    /* 0x40 */ u8 master_volume;
+    /* 0x41 */ u8 status;
+    /* 0x42 */ u8 is_sound_effect;
+    /* 0x43 */ u8 tempo_mode;
+};
+
+/* Original address: 0x03000028 */
+extern s16 sCurrentSoundEffects[5];
+/* Original address: 0x03000038 */
+extern SoundEffectState sSoundEffectStates[3];
+/* Original address: 0x03000050 */
+extern u16 sCurrentMusic;
+/* Original address: 0x03000052 */
+extern u8 sMusicEmotion;
+/* Original address: 0x03001918 */
+extern SoundPlayer gSoundPlayers[8];
+/* Original address: 0x02035C10 */
+extern const u32 sSoundEffectTable[43];
+/* Original address: 0x02035CBC */
+extern const u8 sMusicTable[2][2];
+
+/* Original address: 0x020269F0 */
+void Sound_InitEffects(void) {
+    s16 *current = sCurrentSoundEffects;
+    s32 i;
+
+    for (i = 0; i < 3; i++) {
+        sSoundEffectStates[i].sound_id = -1;
+        sSoundEffectStates[i].active = 0;
+    }
+    CpuFill16(0xFFFF, current, sizeof(sCurrentSoundEffects));
 }
 
 void sub_02026A34(void) {
 
 }
 
-void sub_02026A38(u16 value) {
-    s32 var_r2_30738;
-    u16 temp_r6_30714;
-    u32 temp_r1_30729;
-    u32 temp_r4_30719;
+/* Original address: 0x02026A38 */
+void Sound_PlayEffect0(u16 value) {
+    u16 player = 0;
+    u32 sound = sSoundEffectTable[value];
 
-    temp_r6_30714 = value;
-    temp_r4_30719 = *(u32 *)(0x02035C10 + (temp_r6_30714 * 4));
-    if (sub_0202846C(0) != 0) {
-        temp_r1_30729 = *(u32 *)(0x02035C10 + (*(s16 *)0x03000028 * 4));
-        if (!(0x04000000 & temp_r4_30719)) {
-            var_r2_30738 = 1 & ~(temp_r4_30719 >> 0x19);
-        } else {
-            var_r2_30738 = 2;
+    if (Sound_GetPlayerStatus(player) != 0) {
+        u32 current = sSoundEffectTable[sCurrentSoundEffects[player]];
+        s32 priority;
+        if (!(sound & 0x04000000))
+            priority = !(sound & 0x02000000);
+        else
+            priority = 2;
+        if (!(current & 0x04000000)) {
+            if (priority < (s32)(!(current & 0x02000000)))
+                return;
+        } else if (priority <= 1) {
+            return;
         }
-        if (!(0x04000000 & temp_r1_30729)) {
-            if (var_r2_30738 >= (s32) (1 & ~(temp_r1_30729 >> 0x19))) {
-                goto block_8;
-            }
-        } else if (var_r2_30738 > 1) {
-            goto block_8;
-        }
-    } else {
-block_8:
-        sub_02028B90(0, 0U, (u16) temp_r4_30719);
-        *(u32 *)0x03000028 = (s16) temp_r6_30714;
     }
+    Sound_QueueStartEffect(player, 0, (u16)sound);
+    sCurrentSoundEffects[player] = value;
 }
 
-void sub_02026AB8(u16 arg0) {
-    s32 var_r2_30805;
-    u16 temp_r7_30781;
-    u32 temp_r1_30796;
-    u32 temp_r4_30786;
+/* Original address: 0x02026AB8 */
+void Sound_PlayEffect1(u16 value) {
+    u16 player = 1;
+    u32 sound = sSoundEffectTable[value];
 
-    temp_r7_30781 = arg0;
-    temp_r4_30786 = *(u32 *)(0x02035C10 + (temp_r7_30781 * 4));
-    if (sub_0202846C(1) != 0) {
-        temp_r1_30796 = *(u32 *)(0x02035C10 + (*(s16 *)0x0300002A * 4));
-        if (!(0x04000000 & temp_r4_30786)) {
-            var_r2_30805 = 1 & ~(temp_r4_30786 >> 0x19);
-        } else {
-            var_r2_30805 = 2;
+    if (Sound_GetPlayerStatus(player) != 0) {
+        u32 current = sSoundEffectTable[sCurrentSoundEffects[player]];
+        s32 priority;
+        if (!(sound & 0x04000000))
+            priority = !(sound & 0x02000000);
+        else
+            priority = 2;
+        if (!(current & 0x04000000)) {
+            if (priority < (s32)(!(current & 0x02000000)))
+                return;
+        } else if (priority <= 1) {
+            return;
         }
-        if (!(0x04000000 & temp_r1_30796)) {
-            if (var_r2_30805 >= (s32) (1 & ~(temp_r1_30796 >> 0x19))) {
-                goto block_8;
-            }
-        } else if (var_r2_30805 > 1) {
-            goto block_8;
-        }
-    } else {
-block_8:
-        sub_02028B90(1, 0U, (u16) temp_r4_30786);
-        *(u32 *)0x0300002A = (s16) temp_r7_30781;
     }
+    Sound_QueueStartEffect(player, 0, (u16)sound);
+    sCurrentSoundEffects[player] = value;
 }
 
-void sub_02026B38(u8 arg0) {
-    sub_02028BCC(1U, 0U);
+/* Original address: 0x02026B38 */
+void Sound_StopEffect1(u8 arg0) {
+    Sound_QueueFadeOutPlayer(1U, 0U);
 }
 
-void sub_02026B48(u16 value) {
-    s32 var_r2_30882;
-    u16 temp_r6_30858;
-    u32 temp_r1_30873;
-    u32 temp_r4_30863;
+/* Original address: 0x02026B48 */
+void Sound_PlayEffect2(u16 value) {
+    u16 player = 2;
+    u32 sound = sSoundEffectTable[value];
 
-    temp_r6_30858 = value;
-    temp_r4_30863 = *(u32 *)(0x02035C10 + (temp_r6_30858 * 4));
-    if (sub_0202846C(2) != 0) {
-        temp_r1_30873 = *(u32 *)(0x02035C10 + (*(s16 *)0x0300002C * 4));
-        if (!(0x04000000 & temp_r4_30863)) {
-            var_r2_30882 = 1 & ~(temp_r4_30863 >> 0x19);
-        } else {
-            var_r2_30882 = 2;
+    if (Sound_GetPlayerStatus(player) != 0) {
+        u32 current = sSoundEffectTable[sCurrentSoundEffects[player]];
+        s32 priority;
+        if (!(sound & 0x04000000))
+            priority = !(sound & 0x02000000);
+        else
+            priority = 2;
+        if (!(current & 0x04000000)) {
+            if (priority < (s32)(!(current & 0x02000000)))
+                return;
+        } else if (priority <= 1) {
+            return;
         }
-        if (!(0x04000000 & temp_r1_30873)) {
-            if (var_r2_30882 >= (s32) (1 & ~(temp_r1_30873 >> 0x19))) {
-                goto block_8;
-            }
-        } else if (var_r2_30882 > 1) {
-            goto block_8;
-        }
-    } else {
-block_8:
-        sub_02028B90(2, 0U, (u16) temp_r4_30863);
-        *(u32 *)0x0300002C = (s16) temp_r6_30858;
     }
+    Sound_QueueStartEffect(player, 0, (u16)sound);
+    sCurrentSoundEffects[player] = value;
 }
 
-void sub_02026BC8(u16 value) {
-    sub_02028BCC(2U, 0U);
+/* Original address: 0x02026BC8 */
+void Sound_StopEffect2(u16 value) {
+    Sound_QueueFadeOutPlayer(2U, 0U);
 }
 
-void sub_02026BD8(void) {
-    sub_02028E10(sub_02026D74);
-    sub_02028DE8(sub_02026DFC);
-    *(s16 *)0x03000050 = 0xFFFF;
-    *(s8 *)0x03000052 = 0;
+/* Original address: 0x02026BD8 */
+void Sound_InitMusic(void) {
+    Sound_QueueSetNoteCallback(Sound_PlayEmotionNote);
+    Sound_QueueSetControlCallback(Sound_ApplyEmotionTrackDelay);
+    sCurrentMusic = 0xFFFF;
+    sMusicEmotion = 0;
 }
 
 void sub_02026C0C(void) {
 
 }
 
-void sub_02026C10(u16 value) {
-    u16 temp_r4_30963;
-
-    temp_r4_30963 = value;
-    if ((sub_0202846C(4) == 0) || (*(u16 *)0x03000050 != temp_r4_30963)) {
-        sub_02028B58(4U, *(u32 *)(0x02035CBC + (temp_r4_30963 * 2)));
-        if (temp_r4_30963 == 1) {
-            ChangeEmotion(*(u8 *)0x03000052);
+/* Original address: 0x02026C10 */
+void Sound_PlayMusic(u16 value) {
+    if (Sound_GetPlayerStatus(4) == 0 || sCurrentMusic != value) {
+        Sound_QueueStartMusic(4, sMusicTable[value][0]);
+        if (value == 1) {
+            ChangeEmotion(sMusicEmotion);
         } else {
-            sub_02028CE4(4, 0, 0U);
+            Sound_QueueSetTracksMuted(4, 0, 0);
         }
-        *(u32 *)0x03000050 = temp_r4_30963;
+        sCurrentMusic = value;
     }
 }
 
-void sub_02026C68(u16 value) {
-    sub_02028BCC(4U, value);
+/* Original address: 0x02026C68 */
+void Sound_StopMusic(u16 value) {
+    Sound_QueueFadeOutPlayer(4U, value);
 }
 
-void ChangeEmotion(u8 arg0) {
-    u16 var_r5_31036;
-    u8 temp_r4_31020;
-    u8 var_r7_31035;
+/* Original address: 0x02026C7C */
+void ChangeEmotion(u8 emotion) {
+    u8 tempo_mode;
+    u16 tempo_adjust;
 
-    temp_r4_31020 = arg0;
-    if ((temp_r4_31020 != *(u8 *)0x03000052) && (*(u8 *)0x03000052 = temp_r4_31020, (sub_0202846C(4) != 0)) && (*(u16 *)0x03000050 == 1)) {
-        var_r7_31035 = 0;
-        var_r5_31036 = 0;
-        switch (temp_r4_31020) {                    /* irregular */
-        case 1:
-            sub_02028CE4(4, 0xFFFF, 0U);
-            sub_02028CE4(4, 0, 1U);
-block_14:
-            sub_02028CAC(4U, var_r7_31035);
-            sub_02028C3C(4U, (s16) var_r5_31036);
-            break;
-        case 2:
-            sub_02028CE4(4, 0xFFFF, 0U);
-            sub_02028CE4(4, 0x94, 1U);
-            var_r5_31036 = 0x1E;
-            var_r7_31035 = 1;
-            goto block_14;
-        case 3:
-            sub_02028CE4(4, 0xFFFF, 0U);
-            sub_02028CE4(4, 0x210, 1U);
-            var_r5_31036 = 0xFFF0;
-            var_r7_31035 = 1;
-            goto block_14;
-        case 4:
-            sub_02028CE4(4, 0xFFFF, 0U);
-            sub_02028CE4(4, 0, 1U);
-            var_r5_31036 = (u16) ((s32) (((*(u8 *)0x03001A59 << 8) | *(u8 *)0x03001A58) << 0x10) >> 0x11);
-            goto block_14;
+    if (emotion == sMusicEmotion)
+        return;
+    sMusicEmotion = emotion;
+    if (Sound_GetPlayerStatus(4) == 0 || sCurrentMusic != 1)
+        return;
+
+    tempo_mode = 0;
+    tempo_adjust = 0;
+    switch (emotion) {
+    case 1:
+        Sound_QueueSetTracksMuted(4, 0xFFFF, 0);
+        Sound_QueueSetTracksMuted(4, 0, 1);
+        break;
+    case 2:
+        Sound_QueueSetTracksMuted(4, 0xFFFF, 0);
+        Sound_QueueSetTracksMuted(4, 0x94, 1);
+        tempo_adjust = 30;
+        tempo_mode = 1;
+        break;
+    case 3:
+        Sound_QueueSetTracksMuted(4, 0xFFFF, 0);
+        Sound_QueueSetTracksMuted(4, 0x210, 1);
+        tempo_adjust = -16;
+        tempo_mode = 1;
+        break;
+    case 4:
+        Sound_QueueSetTracksMuted(4, 0xFFFF, 0);
+        Sound_QueueSetTracksMuted(4, 0, 1);
+        {
+            u8 tempo_low = gSoundPlayers[4].timing.bytes.tempo[0];
+            u8 tempo_high = gSoundPlayers[4].timing.bytes.tempo[1];
+            tempo_adjust = (s16)((tempo_high << 8) | tempo_low) >> 1;
         }
+        break;
+    default:
+        return;
     }
+    Sound_QueueSetPlayerTempoMode(4, tempo_mode);
+    Sound_QueueSetPlayerTempoAdjust(4, (s16)tempo_adjust);
 }
 
-void sub_02026D74(void **arg0, u8 arg1, u8 arg2, u16 arg3) {
-    u8 temp_r0_31156;
-    u8 temp_r0_31183;
-    u8 var_r0_31173;
-    u8 var_r4_31139;
+typedef struct SoundEnvelopePoint {
+    s16 duration;
+    s16 volume;
+} SoundEnvelopePoint;
 
-    var_r4_31139 = arg1;
-    if (arg0 != (*(s32 *)((u8 *)((*(void **)((u8 *)(arg0) + (8)))) + (0x2C)))) {
-        if (*(u8 *)0x03000052 == 2) {
-            temp_r0_31156 = (u8) (var_r4_31139 % 12U);
-            switch (temp_r0_31156) {                /* irregular */
-            case 0:
-                var_r0_31173 = var_r4_31139 + 2;
-                goto block_17;
+/* sizeof(SoundEnvelope) == 0x14. */
+typedef struct SoundEnvelope {
+    s32 volume;
+    s32 target_volume;
+    u16 timer;
+    s16 step;
+    const SoundEnvelopePoint *points;
+    s8 index;
+    u8 unk_11[3];
+} SoundEnvelope;
+
+typedef struct SoundVibratoParams {
+    u16 delay;
+    u16 unk_02;
+    s32 speed;
+    s32 depth;
+} SoundVibratoParams;
+
+typedef struct SoundVibrato {
+    u32 phase;
+    s32 delay;
+    SoundVibratoParams *params;
+} SoundVibrato;
+
+typedef struct SoundPitchSlide {
+    s32 delay;
+    s32 timer;
+    s32 offset;
+    s32 target;
+    s32 step;
+    struct SoundPitchSlideParams *params;
+} SoundPitchSlide;
+
+/* sizeof(SoundPitchSlideParams) == 8. */
+typedef struct SoundPitchSlideParams {
+    u8 enabled;
+    u8 flags;
+    u8 key;
+    u8 unk_03;
+    u16 delay;
+    u16 duration;
+} SoundPitchSlideParams;
+
+/* sizeof(SoundTrack) == 0x54. Unrecovered fields retain their offsets. */
+struct SoundTrack {
+    const u8 *sequence;
+    const u32 *sample_offsets;
+    SoundPlayer *player;
+    SoundChannel *channel;
+    SoundVibratoParams vibrato;
+    SoundPitchSlideParams slide;
+    /* 0x24 */ const u8 *return_stack[3];
+    /* 0x30 */ const u8 **stack_pointer;
+    /* 0x34 */ s32 tick_accumulator;
+    u8 unk_38[8];
+    /* 0x40 */ u16 bank;
+    /* 0x42 */ u16 program;
+    /* 0x44 */ u16 note_duration;
+    /* 0x46 */ u16 rest_duration;
+    /* 0x48 */ u8 velocity;
+    /* 0x49 */ u8 tie;
+    /* 0x4A */ u8 muted;
+    u8 pan;
+    u8 unk_4C;
+    u8 volume;
+    u8 expression;
+    s8 pitch_bend;
+    u8 pitch_bend_range;
+    u8 transpose;
+    u8 priority;
+    u8 unk_53;
+};
+
+/* Original address: 0x03000B24 */
+extern SoundTrack gSoundTracks[16];
+
+typedef struct SoundInstrument {
+    u8 type;
+    u8 flags;
+    u16 sample;
+    u16 envelope;
+    u8 release;
+    u8 root_key;
+} SoundInstrument;
+
+typedef struct SoundInstrumentMap {
+    u8 type;
+    u8 flags;
+    u16 table;
+    u8 first_key;
+    u8 unk_05;
+} SoundInstrumentMap;
+
+/* The square-wave instrument extends the common eight-byte header. */
+typedef struct SoundSquareInstrument {
+    SoundInstrument instrument;
+    u8 sweep;
+} SoundSquareInstrument;
+
+typedef struct SoundKeyInstrument {
+    u16 instrument;
+    u8 pan;
+    u8 unk_03;
+} SoundKeyInstrument;
+
+typedef struct SoundInstrumentSplit {
+    u8 last_key;
+    u8 unk_01;
+    u16 instrument;
+} SoundInstrumentSplit;
+
+/* sizeof(SoundBank) == 0x1C; table offsets are relative to each table. */
+typedef struct SoundBank {
+    /* 0x00 */ const u32 *sample_offsets;
+    /* 0x04 */ const u32 *instrument_offsets;
+    /* 0x08 */ const u32 *music_sequence_offsets;
+    /* 0x0C */ const u32 *effect_sequence_offsets;
+    /* 0x10 */ const u16 *sample_indices;
+    /* 0x14 */ const u32 *music_bank_offsets;
+    /* 0x18 */ const u32 *effect_bank_offsets;
+} SoundBank;
+
+/* Original address: 0x03000268 */
+extern SoundInstrument sSoundKeySampleInstrument;
+/* Original address: 0x02035CD4 */
+extern const SoundEnvelopePoint sSoundKeySampleEnvelope[3];
+
+typedef struct SoundSample {
+    u32 length;
+    u32 frequency;
+    u32 loop_start;
+    u32 loop_end;
+} SoundSample;
+
+typedef struct SoundDutySequence {
+    u16 length;
+    u8 values[1];
+} SoundDutySequence;
+
+/* sizeof(SoundInstrumentResult) == 0x14; filled by Sound_ResolveInstrument. */
+struct SoundInstrumentResult {
+    SoundInstrument *instrument;
+    const SoundEnvelopePoint *envelope;
+    SoundDutySequence *duty_sequence;
+    const u16 *wave;
+    u8 pan;
+    u8 fixed_pan;
+    u8 fixed_pitch;
+};
+
+/* Original address: 0x02035CCC */
+extern const u8 sSoundInstrumentChannelTypes[5];
+
+/* sizeof(SoundChannel) == 0x7C, confirmed by both channel pool strides. */
+struct SoundChannel {
+    /* 0x00 */ u8 type;
+    /* 0x01 */ u8 state;
+    /* 0x02 */ u8 unk_02[2];
+    /* 0x04 */ SoundTrack *track;
+    /* 0x08 */ u8 priority;
+    /* 0x09 */ u8 velocity;
+    /* 0x0A */ u8 unk_0A[2];
+    /* 0x0C */ u32 base_pitch;
+    /* 0x10 */ u32 pitch;
+    /* 0x14 */ u32 volume;
+    /* 0x18 */ u16 gate_timer;
+    /* 0x1A */ u8 unk_1A;
+    /* 0x1B */ u8 fixed_pan;
+    /* 0x1C */ u8 pan;
+    /* 0x1D */ u8 unk_1D[3];
+    /* 0x20 */ SoundVibrato vibrato;
+    /* 0x2C */ SoundPitchSlide slide;
+    /* 0x44 */ SoundEnvelope envelope;
+    /* 0x58 */ SoundInstrument *instrument;
+    /* 0x5C */ u8 release;
+    /* 0x5D */ u8 unk_5D[3];
+    /* 0x60 */ SoundSample *sample;
+    /* 0x64 */ u32 age;
+    /* 0x68 */ union {
+        SoundDutySequence *sequence;
+        const u16 *wave;
+        u8 duty;
+    } psg;
+    /* 0x6C */ SoundChannel *prev;
+    /* 0x70 */ SoundChannel *next;
+    /* 0x74 */ SoundChannel *track_prev;
+    /* 0x78 */ SoundChannel *track_next;
+};
+
+/* sizeof(SoundChannelLists) == 0x1F4; sentinel offsets 0x04/0x80/0xFC/0x178. */
+typedef struct SoundChannelLists {
+    void *wave;
+    SoundChannel active_head;
+    SoundChannel active_tail;
+    SoundChannel free_head;
+    SoundChannel free_tail;
+} SoundChannelLists;
+
+/* Original address: 0x03000058 */
+extern s8 *gPcmOutputBuffers[2];
+/* Original address: 0x03000060 */
+extern s8 *gPcmRightOutputBuffers[2];
+/* Original address: 0x03000068 */
+extern u16 gSoundTimerReload;
+/* Original address: 0x0300006A */
+extern u8 gPcmOutputBufferIndex;
+/* Original address: 0x0300006B */
+extern u8 gSoundDmaEnabled;
+/* Original address: 0x03000070 */
+extern SoundChannelLists gSoundChannelLists;
+/* Original address: 0x03000594 */
+extern const SoundBank *gSoundBank;
+/* Original address: 0x03000598 */
+extern void (*gPcmOutputMixer)(s32 *, s8 *, s32 *);
+typedef u32 (*PcmChannelMixer)(const s8 *, s16 *, s16 *, s16 *, u32, u32, u32, u32);
+/* Original address: 0x0300059C */
+extern PcmChannelMixer gPcmChannelMixer;
+/* Original address: 0x030005A0 */
+extern void (*gPcmResampleMixer)(void);
+/* Original address: 0x030005A4 */
+extern s8 gSoundPcmBuffers[2][2][176];
+/* Original address: 0x03001064 */
+extern u32 gSoundMixerCode[0xD8];
+/* Original address: 0x030013C4 */
+extern SoundChannel gPcmChannels[7];
+/* Original address: 0x03001728 */
+extern SoundChannel gPsgChannels[4];
+
+/* Disabling DMA requires a readback before the channel is reprogrammed. */
+#define SOUND_DMA_DISABLE(n) do { \
+    vu16 *regs = (vu16 *)REG_ADDR_DMA##n; \
+    regs[5] = ((u32)regs[5] << 17) >> 17; \
+    regs[5]; \
+} while (0)
+
+/* Channel links are also accessed by the byte-oriented sound data code. */
+#define SOUND_WRITE_LINK(field, value) do { \
+    ((u8 *)&(field))[0] = (u32)(value); \
+    ((u8 *)&(field))[1] = ((u32)(value) >> 8) & 0xFF; \
+    ((u8 *)&(field))[2] = ((u32)(value) >> 16) & 0xFF; \
+    ((u8 *)&(field))[3] = (u32)(value) >> 24; \
+} while (0)
+
+/* Original address: 0x02026D74 */
+void Sound_PlayEmotionNote(SoundTrack *arg0, u8 note, u8 velocity, u16 duration) {
+    SoundTrack *track = (SoundTrack *)arg0;
+    if (track != track->player->tracks[9]) {
+        if (sMusicEmotion == 2) {
+            switch ((u8)(note % 12U)) {
+            case 0: note += 2; break;
             case 1:
             case 3:
-            case 5:
-                var_r0_31173 = var_r4_31139 + 1;
-                goto block_17;
+            case 5: note++; break;
             }
         } else {
-            temp_r0_31183 = (u8) (var_r4_31139 % 12U);
-            if (temp_r0_31183 != 5) {
-                if ((s32) temp_r0_31183 <= 5) {
-                    if (temp_r0_31183 != 0) {
-
-                    } else {
-                        goto block_16;
-                    }
-                } else if (temp_r0_31183 == 7) {
-                    goto block_16;
-                }
-            } else {
-block_16:
-                var_r0_31173 = var_r4_31139 - 1;
-block_17:
-                var_r4_31139 = var_r0_31173;
+            switch ((u8)(note % 12U)) {
+            case 0:
+            case 5:
+            case 7: note--; break;
             }
         }
     }
-    sub_020279BC(arg0, var_r4_31139, arg2, arg3);
+    Sound_PlayNote((SoundTrack *)arg0, note, velocity, duration);
 }
 
-void sub_02026DFC(void *arg0, u8 arg1) {
-    s32 var_r3_31234;
-    u8 temp_r0_31216;
-    void **var_r2_31233;
-    void *temp_r1_31236;
-
-    temp_r0_31216 = *(u8 *)0x03000052;
-    if (((temp_r0_31216 == 4) && (arg1 != 0)) || ((temp_r0_31216 == 2) && ((u32) (0xF & *(u8 *)0x04000100) <= 4U))) {
-        var_r2_31233 = (*(s32 *)((u8 *)(arg0) + (8))) + 8;
-        var_r3_31234 = 9;
-        do {
-            temp_r1_31236 = *var_r2_31233;
-            if (temp_r1_31236 != NULL) {
-                (*(s32 *)((u8 *)(temp_r1_31236) + (0x34))) = (s32) ((*(s32 *)((u8 *)(temp_r1_31236) + (0x34))) + 0x708);
-            }
-            var_r2_31233 += 4;
-            var_r3_31234 -= 1;
-        } while (var_r3_31234 >= 0);
+/* Original address: 0x02026DFC */
+void Sound_ApplyEmotionTrackDelay(SoundTrack *arg0, u8 event) {
+    SoundPlayer *player = ((SoundTrack *)arg0)->player;
+    if ((sMusicEmotion == 4 && event != 0) ||
+        (sMusicEmotion == 2 && (*(vu8 *)REG_ADDR_TM0CNT_L & 15U) <= 4)) {
+        int i;
+        for (i = 0; i < 10; i++) {
+            SoundTrack *track = player->tracks[i];
+            if (track != NULL)
+                track->tick_accumulator += 1800;
+        }
     }
 }
 
-void sub_02026E4C(s32 arg0) {
-    *(s32 *)0x03000594 = arg0;
-    *(s8 *)0x04000084 = 0;
-    *(s8 *)0x04000084 = 0x80;
-    (*(s16 *)((u8 *)((void *)0x04000080) + (0))) = 0xFF77;
-    (*(s8 *)((u8 *)((void *)0x04000080) + (2))) = 0xD;
-    *(u16 *)0x04000088 = (0x3FFF & *(u16 *)0x04000088) | 0x4000;
-    (*(s16 *)((u8 *)((void *)0x04000060) + (0))) = 8;
-    (*(s16 *)((u8 *)((void *)0x04000060) + (2))) = 0xF000;
-    CpuFastSet(sub_02029004, (void *)0x03001064, 0xD8U);
-    *(s32 *)0x03000598 = 0x03001064;
-    *(s32 *)0x0300059C = (sub_020290C4 - sub_02029004) + 0x03001064;
-    *(s32 *)0x030005A0 = (sub_020291E4 - sub_02029004) + 0x03001064;
-    sub_02026F3C(0x030005A4);
-    sub_02028ACC();
-    sub_02028098();
-    sub_02027074();
-    sub_02028480();
-    sub_02028190();
+/* Original address: 0x02026E4C */
+void SoundDriver_Init(const void *bank) {
+    gSoundBank = bank;
+    *(vu8 *)REG_ADDR_SOUNDCNT_X = 0;
+    *(vu8 *)REG_ADDR_SOUNDCNT_X = 0x80;
+    REG_SOUNDCNT_L = 0xFF77;
+    *(vu8 *)REG_ADDR_SOUNDCNT_H = 0x0D;
+    REG_SOUNDBIAS = (REG_SOUNDBIAS & 0x3FFF) | 0x4000;
+    REG_SOUND1CNT_L = 8;
+    REG_SOUND1CNT_H = 0xF000;
+    CpuFastCopy(sub_02029004, gSoundMixerCode, sizeof(gSoundMixerCode));
+    gPcmOutputMixer = (void (*)(s32 *, s8 *, s32 *))gSoundMixerCode;
+    gPcmChannelMixer = (PcmChannelMixer)((u8 *)gSoundMixerCode + (sub_020290C4 - sub_02029004));
+    gPcmResampleMixer = (void (*)(void))((u8 *)gSoundMixerCode + (sub_020291E4 - sub_02029004));
+    SoundDriver_InitPcmBuffers(&gSoundPcmBuffers[0][0][0]);
+    Sound_InitCommandQueue();
+    Sound_InitKeySampleInstrument();
+    SoundDriver_InitChannelLists();
+    Sound_InitTracks();
+    Sound_InitPlayers();
 }
 
-void sub_02026F0C(void) {
-    sub_02026FAC();
+/* Original address: 0x02026F0C */
+void SoundDriver_VBlank(void) {
+    SoundDriver_SwapPcmBuffers();
 }
 
-void sub_02026F18(void) {
-    sub_02028E38();
-    sub_020281FC();
-    sub_02027728();
+/* Original address: 0x02026F18 */
+void SoundDriver_Update(void) {
+    Sound_ProcessCommands();
+    Sound_UpdatePlayers();
+    Sound_UpdatePsgChannels();
     if (*(u8 *)0x0300006B != 0) {
-        sub_02027610();
+        Sound_UpdatePcmChannels();
     }
 }
 
-void sub_02026F3C(s32 arg0) {
-    *(s8 *)0x0300006B = 1;
-    (*(s32 *)((u8 *)((void *)0x03000058) + (0))) = arg0;
-    (*(s32 *)((u8 *)((void *)0x03000060) + (0))) = (s32) (arg0 + 0xB0);
-    (*(s32 *)((u8 *)((void *)0x03000058) + (4))) = (s32) (arg0 + 0x160);
-    (*(s32 *)((u8 *)((void *)0x03000060) + (4))) = (s32) (arg0 + 0x210);
-    *(s16 *)0x03000068 = 0xF9C4;
-    *(s8 *)0x0300006A = 0;
-    *(s8 *)0x04000083 = 0x9A;
-    (*(s32 *)((u8 *)((void *)0x040000A0) + (0))) = 0;
-    (*(s32 *)((u8 *)((void *)0x040000A0) + (4))) = 0;
+/* Original address: 0x02026F3C */
+void SoundDriver_InitPcmBuffers(s8 *buffers) {
+    gSoundDmaEnabled = 1;
+    gPcmOutputBuffers[0] = buffers;
+    gPcmRightOutputBuffers[0] = buffers + 176;
+    gPcmOutputBuffers[1] = buffers + 352;
+    gPcmRightOutputBuffers[1] = buffers + 528;
+    gSoundTimerReload = 0xF9C4;
+    gPcmOutputBufferIndex = 0;
+    *(vu8 *)(REG_ADDR_SOUNDCNT_H + 1) = 0x9A;
+    REG_FIFO_A = 0;
+    REG_FIFO_B = 0;
 }
 
-void sub_02026FAC(void) {
-    *(s32 *)0x04000100 = *(u16 *)0x03000068 | 0x800000;
-    if (*(u8 *)0x0300006B != 0) {
-        (*(u16 *)((u8 *)((void *)0x040000BC) + (0xA))) = (u16) ((u32) ((*(u16 *)((u8 *)((void *)0x040000BC) + (0xA))) << 0x11) >> 0x11);
-        (*(u16 *)((u8 *)((void *)0x040000C8) + (0xA))) = (u16) ((u32) ((*(u16 *)((u8 *)((void *)0x040000C8) + (0xA))) << 0x11) >> 0x11);
-        (*(s32 *)((u8 *)((void *)0x040000BC) + (0))) = (s32) *(u32 *)(0x03000058 + (*(u8 *)0x0300006A * 4));
-        (*(s32 *)((u8 *)((void *)0x040000BC) + (4))) = 0x040000A0;
-        (*(s32 *)((u8 *)((void *)0x040000BC) + (8))) = 0xB6400004;
-        (*(s32 *)((u8 *)((void *)0x040000C8) + (0))) = (s32) *(u32 *)(0x03000060 + (*(u8 *)0x0300006A * 4));
-        (*(s32 *)((u8 *)((void *)0x040000C8) + (4))) = 0x040000A4;
-        (*(s32 *)((u8 *)((void *)0x040000C8) + (8))) = 0xB6400004;
-        *(u8 *)0x0300006A = 1 - *(u8 *)0x0300006A;
+/* Original address: 0x02026FAC */
+void SoundDriver_SwapPcmBuffers(void) {
+    REG_TM0CNT = gSoundTimerReload | 0x800000;
+    if (gSoundDmaEnabled) {
+        SOUND_DMA_DISABLE(1);
+        SOUND_DMA_DISABLE(2);
+        DmaSet(1, gPcmOutputBuffers[gPcmOutputBufferIndex], REG_ADDR_FIFO_A, 0xB6400004);
+        DmaSet(2, gPcmRightOutputBuffers[gPcmOutputBufferIndex], REG_ADDR_FIFO_B, 0xB6400004);
+        gPcmOutputBufferIndex = 1 - gPcmOutputBufferIndex;
     }
 }
 
-void sub_02027040(void) {
-    void *temp_r1_31488;
-
-    *(s8 *)0x0300006B = 0;
-    (*(u16 *)((u8 *)((void *)0x040000BC) + (0xA))) = (u16) ((u32) ((*(u16 *)((u8 *)((void *)0x040000BC) + (0xA))) << 0x11) >> 0x11);
-    temp_r1_31488 = (void *)0x040000BC + 0xC;
-    (*(u16 *)((u8 *)(temp_r1_31488) + (0xA))) = (u16) ((u32) ((*(u16 *)((u8 *)(temp_r1_31488) + (0xA))) << 0x11) >> 0x11);
+/* Original address: 0x02027040 */
+void SoundDriver_DisablePcm(void) {
+    gSoundDmaEnabled = 0;
+    SOUND_DMA_DISABLE(1);
+    SOUND_DMA_DISABLE(2);
 }
 
-void sub_02027068(void) {
+/* Original address: 0x02027068 */
+void SoundDriver_EnablePcm(void) {
     *(s8 *)0x0300006B = 1;
 }
 
-void sub_02027074(void) {
-    s32 var_r4_31524;
-    s32 var_r4_31549;
-    s32 var_r4_31597;
-    s32 var_r6_31596;
-    s8 *var_r0_31526;
-    u8 temp_r1_31601;
-    u8 var_r3_31595;
-    void *temp_r1_31579;
-    void *temp_r2_31583;
-    void *temp_r7_31522;
-    void *var_r0_31548;
-    void *var_r2_31594;
-
-    (*(s32 *)((u8 *)((void *)0x03000070) + (0))) = 0;
-    temp_r7_31522 = (void *)0x03000070 + 0x178;
-    var_r4_31524 = 3;
-    var_r0_31526 = (s8 *)0x0300189D;
-    do {
-        *var_r0_31526 = 0;
-        var_r0_31526 -= 0x7C;
-        var_r4_31524 -= 1;
-    } while (var_r4_31524 >= 0);
-    (*(s8 *)((u8 *)((void *)0x03001728) + (0))) = 1;
-    (*(s8 *)((u8 *)((void *)0x03001728) + (0x7C))) = 2;
-    (*(s8 *)((u8 *)(((void *)0x03001728 + 0x7C)) + (0x7C))) = 3;
-    (*(s8 *)((u8 *)((void *)0x03001728) + (0x174))) = 4;
-    var_r0_31548 = (void *)0x030013C4;
-    var_r4_31549 = 6;
-    do {
-        (*(s8 *)((u8 *)(var_r0_31548) + (1))) = 0;
-        (*(s8 *)((u8 *)(var_r0_31548) + (0))) = 0;
-        var_r0_31548 += 0x7C;
-        var_r4_31549 -= 1;
-    } while (var_r4_31549 >= 0);
-    (*(s32 *)((u8 *)((void *)0x03000070) + (0x16C))) = 0x030013C4;
-    *(s8 *)0x03001434 = 0x03001440;
-    (*(s8 *)((u8 *)((void *)0x03001435) + (0))) = (s8) (0x03001440U >> 8);
-    (*(s8 *)((u8 *)((void *)0x03001435) + (1))) = (s8) (0x03001440U >> 0x10);
-    *(s8 *)0x03001437 = (s8) (0x03001440U >> 0x18);
-    temp_r1_31579 = (void *)0x03000070 + 0xFC;
-    *(s8 *)0x03001430 = (s8) temp_r1_31579;
-    temp_r2_31583 = ((void *)0x03001435 + 1) - 5;
-    (*(s8 *)((u8 *)(temp_r2_31583) + (0))) = (s8) ((u32) temp_r1_31579 >> 8);
-    (*(s8 *)((u8 *)(temp_r2_31583) + (1))) = (s8) ((u32) temp_r1_31579 >> 0x10);
-    *(s8 *)0x03001433 = (s8) ((u32) temp_r1_31579 >> 0x18);
-    var_r2_31594 = temp_r2_31583 + 1 + 0x7A;
-    var_r3_31595 = 0x030013C4;
-    var_r6_31596 = 0x7C;
-    var_r4_31597 = 4;
-    do {
-        temp_r1_31601 = var_r6_31596 + 0x03001440;
-        (*(u8 *)((u8 *)(var_r2_31594) + (4))) = temp_r1_31601;
-        (*(u8 *)((u8 *)(var_r2_31594) + (5))) = (u8) (temp_r1_31601 >> 8);
-        (*(u8 *)((u8 *)(var_r2_31594) + (6))) = (u8) (temp_r1_31601 >> 0x10);
-        (*(s8 *)((u8 *)(var_r2_31594) + (7))) = (s8) (temp_r1_31601 >> 0x18);
-        (*(u8 *)((u8 *)(var_r2_31594) + (0))) = var_r3_31595;
-        (*(u8 *)((u8 *)(var_r2_31594) + (1))) = (u8) (var_r3_31595 >> 8);
-        (*(u8 *)((u8 *)(var_r2_31594) + (2))) = (u8) (var_r3_31595 >> 0x10);
-        (*(s8 *)((u8 *)(var_r2_31594) + (3))) = (s8) (var_r3_31595 >> 0x18);
-        var_r2_31594 += 0x7C;
-        var_r3_31595 += 0x7C;
-        var_r6_31596 += 0x7C;
-        var_r4_31597 -= 1;
-    } while (var_r4_31597 >= 0);
-    *(s8 *)0x0300171C = (s8) temp_r7_31522;
-    *(s8 *)0x0300171D = (s8) ((u32) temp_r7_31522 >> 8);
-    *(s8 *)0x0300171E = (s8) ((u32) temp_r7_31522 >> 0x10);
-    *(s8 *)0x0300171F = (s8) ((u32) temp_r7_31522 >> 0x18);
-    *(s8 *)0x03001718 = 0x03001630;
-    *(s8 *)0x03001719 = (s8) (0x03001630U >> 8);
-    *(s8 *)0x0300171A = (s8) (0x03001630U >> 0x10);
-    *(s8 *)0x0300171B = (s8) (0x03001630U >> 0x18);
-    (*(s32 *)((u8 *)(temp_r7_31522) + (0x6C))) = 0x030016AC;
-    (*(s32 *)((u8 *)((temp_r7_31522 + 0xFFFFFE88)) + (0x74))) = (s32) (temp_r7_31522 - 0xF8);
-    *(u32 *)(temp_r7_31522 - 0x8C) = temp_r7_31522 + 0xFFFFFE8C;
+/* Original address: 0x02027074 */
+void SoundDriver_InitChannelLists(void) {
+    SoundChannel *tail;
+    int i;
+    gSoundChannelLists.wave = NULL;
+    tail = &gSoundChannelLists.free_tail;
+    for (i = 3; i >= 0; i--)
+        gPsgChannels[i].state = 0;
+    gPsgChannels[0].type = 1;
+    gPsgChannels[1].type = 2;
+    gPsgChannels[2].type = 3;
+    gPsgChannels[3].type = 4;
+    for (i = 0; i < 7; i++) {
+        gPcmChannels[i].state = 0;
+        gPcmChannels[i].type = 0;
+    }
+    gSoundChannelLists.free_head.next = gPcmChannels;
+    SOUND_WRITE_LINK(gPcmChannels[0].next, &gPcmChannels[1]);
+    SOUND_WRITE_LINK(gPcmChannels[0].prev, &gSoundChannelLists.free_head);
+    for (i = 1; i < 6; i++) {
+        SOUND_WRITE_LINK(gPcmChannels[i].next, &gPcmChannels[i + 1]);
+        SOUND_WRITE_LINK(gPcmChannels[i].prev, &gPcmChannels[i - 1]);
+    }
+    SOUND_WRITE_LINK(gPcmChannels[6].next, tail);
+    SOUND_WRITE_LINK(gPcmChannels[6].prev, &gPcmChannels[5]);
+    tail->prev = &gPcmChannels[6];
+    gSoundChannelLists.active_head.next = &gSoundChannelLists.active_tail;
+    gSoundChannelLists.active_tail.prev = &gSoundChannelLists.active_head;
 }
 
-void sub_020271FC(u8 *arg0) {
+/* Original address: 0x020271FC */
+void Sound_UnlinkChannel(u8 *arg0) {
     (*(void **)((u8 *)((*(void **)((u8 *)(arg0) + (0x6C)))) + (0x70))) = (void *) (*(void **)((u8 *)(arg0) + (0x70)));
     (*(void **)((u8 *)((*(void **)((u8 *)(arg0) + (0x70)))) + (0x6C))) = (void *) (*(void **)((u8 *)(arg0) + (0x6C)));
 }
 
-void sub_0202720C(u8 *arg0) {
-    u8 temp_r0_31754;
-    u8 temp_r2_31715;
-    void *temp_r2_31748;
-    void *var_r1_31714;
 
-    var_r1_31714 = (*(void **)((u8 *)((void *)0x03000070) + (0x74)));
-    temp_r2_31715 = (*(u8 *)((u8 *)(arg0) + (1)));
-    if (temp_r2_31715 == 1) {
-        if ((var_r1_31714 != ((void *)0x03000070 + 0x80)) && (((*(u8 *)((u8 *)(var_r1_31714) + (1))) != 1) || ((u32) (*(u8 *)((u8 *)(arg0) + (8))) >= (u32) (*(u8 *)((u8 *)(var_r1_31714) + (8)))))) {
-loop_4:
-            var_r1_31714 = (*(void **)((u8 *)(var_r1_31714) + (0x70)));
-            if (var_r1_31714 != (void *)0x030000F0) {
-                if (((*(u8 *)((u8 *)(var_r1_31714) + (1))) == 1) && ((u32) (*(u8 *)((u8 *)(arg0) + (8))) < (u32) (*(u8 *)((u8 *)(var_r1_31714) + (8))))) {
 
-                } else {
-                    goto loop_4;
-                }
-            }
+/* The channel mixer accumulates halfwords; the output mixer packs them as words. */
+typedef union PcmMixBuffer {
+    s16 samples[352];
+    s32 words[176];
+} PcmMixBuffer;
+
+/* Original address: 0x03000864 */
+extern PcmMixBuffer gPcmMixBuffer;
+/* Original address: 0x02035CC4 */
+extern const u8 sPsgWaveVolume[5];
+/* Original address: 0x02035CE0 */
+extern const u16 sPsgPitchTable[];
+/* Original address: 0x02035DD0 */
+extern const u8 sNoisePitchTable[120];
+/* Original address: 0x02035E48 */
+extern const u32 sPcmPitchTable[];
+/* Original address: 0x02036028 */
+extern const u8 sSoundVibratoWave[256];
+
+/* Original address: 0x0202720C */
+void Sound_InsertPcmChannelByPriority(SoundChannel *channel) {
+    SoundChannel *next = gSoundChannelLists.active_head.next;
+
+    if (channel->state == 1) {
+        while (next != &gSoundChannelLists.active_tail) {
+            if (next->state == 1 && channel->priority < next->priority)
+                break;
+            next = next->next;
         }
-        goto block_16;
+    } else if (channel->state == 2) {
+        while (next != &gSoundChannelLists.active_tail && next->state != 1 &&
+               channel->priority >= next->priority)
+            next = next->next;
+    } else {
+        return;
     }
-    if (temp_r2_31715 == 2) {
-        temp_r2_31748 = (void *)0x03000070 + 0x80;
-        if ((var_r1_31714 != temp_r2_31748) && ((*(u8 *)((u8 *)(var_r1_31714) + (1))) != 1)) {
-            temp_r0_31754 = (*(u8 *)((u8 *)(arg0) + (8)));
-            if ((u32) temp_r0_31754 >= (u32) (*(u8 *)((u8 *)(var_r1_31714) + (8)))) {
-loop_13:
-                var_r1_31714 = (*(void **)((u8 *)(var_r1_31714) + (0x70)));
-                if ((var_r1_31714 != temp_r2_31748) && ((*(u8 *)((u8 *)(var_r1_31714) + (1))) != 1)) {
-                    if ((u32) temp_r0_31754 >= (u32) (*(u8 *)((u8 *)(var_r1_31714) + (8)))) {
-                        goto loop_13;
-                    }
-                }
-            }
-        }
-block_16:
-        (*(void **)((u8 *)(arg0) + (0x70))) = var_r1_31714;
-        (*(u8 **)((u8 *)(arg0) + (0x6C))) = (u8 *) (*(u8 **)((u8 *)(var_r1_31714) + (0x6C)));
-        (*(u8 **)((u8 *)((*(u8 **)((u8 *)(var_r1_31714) + (0x6C)))) + (0x70))) = arg0;
-        (*(u8 **)((u8 *)(var_r1_31714) + (0x6C))) = arg0;
-    }
+    channel->next = next;
+    channel->prev = next->prev;
+    next->prev->next = channel;
+    next->prev = channel;
 }
 
-s32 sub_02027294(u8 *arg0, u8 arg1, u8 arg2) {
-    s16 temp_r1_31793;
-    u16 temp_r1_31790;
-    u16 var_r2_31792;
-    u8 temp_r0_31803;
-
-    temp_r1_31790 = (arg1 + 0x30) - arg2;
-    var_r2_31792 = temp_r1_31790;
-    temp_r1_31793 = (s16) temp_r1_31790;
-    if ((s32) temp_r1_31793 < 0) {
-        var_r2_31792 = 0;
-    } else if ((s32) temp_r1_31793 > 0x77) {
-        var_r2_31792 = 0x78;
-    }
-    temp_r0_31803 = *arg0;
-    switch (temp_r0_31803) {                        /* irregular */
-    case 0:
-        return *(u32 *)(0x02035E48 + ((s32) (var_r2_31792 << 0x10) >> 0xE));
-    case 4:
-        return (s32) (s16) var_r2_31792;
-    default:
-        return (s32) *(u32 *)(0x02035CE0 + ((s32) (var_r2_31792 << 0x10) >> 0xF));
-    }
+/* Original address: 0x02027294 */
+s32 Sound_NoteToPitch(SoundChannel *channel, u8 key, u8 root_key) {
+    s16 note = key + 48 - root_key;
+    if (note < 0)
+        note = 0;
+    else if (note > 119)
+        note = 120;
+    if (channel->type == 0)
+        return sPcmPitchTable[note];
+    else if (channel->type == 4)
+        return note;
+    else
+        return sPsgPitchTable[note];
 }
 
-u8 sub_020272E8(u16 arg0) {
-    u16 var_r1_31835;
-
-    var_r1_31835 = arg0;
-    if ((u32) var_r1_31835 > 0x77U) {
-        var_r1_31835 = 0x77;
-    }
-    return *(u32 *)(0x02035DD0 + var_r1_31835);
+/* Original address: 0x020272E8 */
+u8 Sound_NoteToNoiseControl(u16 note) {
+    if (note > 119)
+        note = 119;
+    return sNoisePitchTable[note];
 }
 
-s32 sub_02027300(u8 *arg0) {
-    s16 temp_r1_31877;
-    s32 temp_r2_31863;
-    u8 temp_r1_31858;
-    void *temp_r4_31852;
-
-    temp_r4_31852 = arg0 + 0x44;
-    if ((*(u16 *)((u8 *)(temp_r4_31852) + (8))) == 0) {
-        (*(s32 *)((u8 *)(arg0) + (0x44))) = (s32) (*(s32 *)((u8 *)(temp_r4_31852) + (4)));
-        temp_r1_31858 = (*(u8 *)((u8 *)(temp_r4_31852) + (0x10)));
-        (*(u8 *)((u8 *)(temp_r4_31852) + (0x10))) = (u8) (temp_r1_31858 + 1);
-        temp_r2_31863 = (*(s32 *)((u8 *)(temp_r4_31852) + (0xC)));
-        if ((s32) *(u32 *)(((s8) (*(u8 *)((u8 *)(temp_r4_31852) + (0x10))) * 4) + temp_r2_31863) < 0) {
-            (*(u8 *)((u8 *)(temp_r4_31852) + (0x10))) = temp_r1_31858;
-        }
-        temp_r1_31877 = (*(s16 *)((u8 *)((((s8) (*(u8 *)((u8 *)(temp_r4_31852) + (0x10))) * 4) + temp_r2_31863)) + (2)));
-        (*(s32 *)((u8 *)(temp_r4_31852) + (4))) = (s32) temp_r1_31877;
-        (*(u16 *)((u8 *)(temp_r4_31852) + (8))) = (u16) *(u32 *)(((s8) (*(u8 *)((u8 *)(temp_r4_31852) + (0x10))) * 4) + temp_r2_31863);
-        (*(s16 *)((u8 *)(temp_r4_31852) + (0xA))) = temp_r1_31877;
-        (*(s16 *)((u8 *)(temp_r4_31852) + (0xA))) = (s16) (temp_r1_31877 - (*(s32 *)((u8 *)(arg0) + (0x44))));
-        (*(s16 *)((u8 *)(temp_r4_31852) + (0xA))) = (s16) ((s16) (*(s16 *)((u8 *)(temp_r4_31852) + (0xA))) / (s32) (*(u16 *)((u8 *)(temp_r4_31852) + (8))));
+/* Original address: 0x02027300 */
+s32 Sound_UpdateChannelEnvelope(SoundChannel *channel) {
+    SoundEnvelope *envelope = &channel->envelope;
+    if (envelope->timer == 0) {
+        channel->envelope.volume = envelope->target_volume;
+        envelope->index++;
+        if (envelope->points[envelope->index].duration < 0)
+            envelope->index--;
+        envelope->target_volume = envelope->points[envelope->index].volume;
+        envelope->timer = envelope->points[envelope->index].duration;
+        envelope->step = envelope->target_volume;
+        envelope->step -= channel->envelope.volume;
+        envelope->step /= envelope->timer;
     }
-    (*(s32 *)((u8 *)(arg0) + (0x44))) = (s32) ((*(s32 *)((u8 *)(arg0) + (0x44))) + (*(s16 *)((u8 *)(temp_r4_31852) + (0xA))));
-    (*(u16 *)((u8 *)(temp_r4_31852) + (8))) = (u16) ((*(u16 *)((u8 *)(temp_r4_31852) + (8))) - 1);
-    return (*(s32 *)((u8 *)(arg0) + (0x44)));
+    envelope->volume += envelope->step;
+    envelope->timer--;
+    return envelope->volume;
 }
 
 void sub_02027370(u8 arg0) {
-
 }
 
-u32 sub_02027374(u8 *arg0) {
-    u32 temp_r0_31952;
-    u32 temp_r4_31938;
-    u32 var_r4_31942;
-    void *temp_r0_31922;
-    void *temp_r2_31921;
-
-    if ((*(u8 *)((u8 *)(arg0) + (1))) == 1) {
-        temp_r2_31921 = (*(void **)((u8 *)(arg0) + (4)));
-        temp_r0_31922 = (*(void **)((u8 *)(temp_r2_31921) + (8)));
-        temp_r4_31938 = (u32) ((*(u8 *)((u8 *)(temp_r2_31921) + (0x4E))) * ((u32) ((*(u8 *)((u8 *)(temp_r2_31921) + (0x4D))) * ((u32) ((*(u8 *)((u8 *)(temp_r0_31922) + (0x40))) * ((u32) ((*(u16 *)((u8 *)(temp_r0_31922) + (0x34))) * ((*(u8 *)((u8 *)(arg0) + (9))) << 8)) >> 7)) >> 7)) >> 0xF)) >> 7;
-        var_r4_31942 = (u32) ((s32) sub_02027300(arg0) * temp_r4_31938) >> 0xF;
-        (*(u32 *)((u8 *)(arg0) + (0x14))) = var_r4_31942;
+/* Original address: 0x02027374 */
+u32 Sound_UpdatePcmChannelVolume(SoundChannel *channel) {
+    u32 volume;
+    if (channel->state == 1) {
+        SoundTrack *track;
+        SoundPlayer *player;
+        volume = channel->velocity;
+        volume <<= 8;
+        track = channel->track;
+        player = track->player;
+        volume *= player->volume;
+        volume >>= 7;
+        volume *= player->master_volume;
+        volume >>= 7;
+        volume *= track->volume;
+        volume >>= 15;
+        volume *= track->expression;
+        volume >>= 7;
+        volume *= Sound_UpdateChannelEnvelope(channel);
+        volume >>= 15;
+        channel->volume = volume;
     } else {
-        temp_r0_31952 = (u32) ((*(u32 *)((u8 *)(arg0) + (0x14))) * ((*(u8 *)((u8 *)(arg0) + (0x5C))) + 0xE6)) >> 9;
-        (*(u32 *)((u8 *)(arg0) + (0x14))) = temp_r0_31952;
-        var_r4_31942 = temp_r0_31952;
+        channel->volume = (channel->volume * (channel->release + 230)) >> 9;
+        volume = channel->volume;
     }
-    return var_r4_31942 >> 8;
+    volume >>= 8;
+    return volume;
 }
 
-u8 sub_020273D0(u8 *arg0, u8 arg1) {
-    s32 var_r1_32060;
-    s32 var_r6_31970;
-    u16 var_r2_32068;
-    u32 temp_r0_32043;
-    u32 temp_r4_32010;
-    u32 temp_r4_32014;
-    u32 temp_r4_32027;
-    u32 temp_r5_32051;
-    u32 var_r4_32018;
-    u32 var_r4_32031;
-    u8 var_r4_31971;
-    u8 var_r6_32076;
-    void *temp_r1_31992;
-    void *temp_r1_32003;
+/* Original address: 0x020273D0 */
+u8 Sound_GetPsgEnvelopeControl(SoundChannel *channel, u8 boost) {
+    u8 control = 0;
+    u32 volume = channel->velocity;
+    u32 target;
+    u16 period;
+    s32 difference;
+    SoundTrack *track;
+    SoundPlayer *player;
 
-    var_r6_31970 = 0;
-    var_r4_31971 = (*(u8 *)((u8 *)(arg0) + (9)));
-    if ((*(u16 *)((u8 *)(arg0) + (0x4C))) == 0) {
-        var_r6_31970 = 1;
+    if (channel->envelope.timer == 0)
+        control = 1;
+    Sound_UpdateChannelEnvelope(channel);
+    if (control == 0)
+        return 8;
+    if (boost)
+        volume *= 2;
+    volume <<= 15;
+    track = channel->track;
+    volume *= track->volume;
+    volume >>= 14;
+    volume *= track->expression;
+    volume >>= 7;
+    player = track->player;
+    volume *= player->master_volume;
+    volume >>= 8;
+    volume *= player->volume;
+    if (channel->type == 3) {
+        volume >>= 22;
+        channel->volume = volume;
+        volume *= 5;
+        volume >>= 7;
+        if (volume > 4)
+            volume = 4;
+        return volume;
     }
-    sub_02027300(arg0);
-    if (var_r6_31970 == 0) {
-        return 8U;
-    }
-    if (arg1 != 0) {
-        var_r4_31971 *= 2;
-    }
-    temp_r1_31992 = (*(void **)((u8 *)(arg0) + (4)));
-    temp_r1_32003 = (*(void **)((u8 *)(temp_r1_31992) + (8)));
-    temp_r4_32010 = (*(u16 *)((u8 *)(temp_r1_32003) + (0x34))) * ((u32) ((*(u8 *)((u8 *)(temp_r1_32003) + (0x40))) * ((u32) ((*(u8 *)((u8 *)(temp_r1_31992) + (0x4E))) * ((u32) ((*(u8 *)((u8 *)(temp_r1_31992) + (0x4D))) * (var_r4_31971 << 0xF)) >> 0xE)) >> 7)) >> 8);
-    if ((*(u8 *)((u8 *)(arg0) + (0))) == 3) {
-        temp_r4_32014 = temp_r4_32010 >> 0x16;
-        (*(u32 *)((u8 *)(arg0) + (0x14))) = temp_r4_32014;
-        var_r4_32018 = (u32) (temp_r4_32014 * 5) >> 7;
-        if (var_r4_32018 > 4U) {
-            var_r4_32018 = 4;
-        }
-        return (u8) var_r4_32018;
-    }
-    temp_r4_32027 = temp_r4_32010 >> 0xF;
-    (*(u32 *)((u8 *)(arg0) + (0x14))) = temp_r4_32027;
-    var_r4_32031 = (u32) ((*(s32 *)((u8 *)(arg0) + (0x44))) * temp_r4_32027) >> 0x19;
-    if (var_r4_32031 & ~0xF) {
-        var_r4_32031 = 0xF;
-    }
-    temp_r0_32043 = (u32) ((*(u32 *)((u8 *)(arg0) + (0x14))) * (*(s32 *)((u8 *)(arg0) + (0x48)))) >> 0x19;
-    (*(u32 *)((u8 *)(arg0) + (0x14))) = temp_r0_32043;
-    if (temp_r0_32043 & ~0xF) {
-        (*(u32 *)((u8 *)(arg0) + (0x14))) = 0xFU;
-    }
-    temp_r5_32051 = (*(u32 *)((u8 *)(arg0) + (0x14)));
-    if (temp_r5_32051 != var_r4_32031) {
-        var_r1_32060 = temp_r5_32051 - var_r4_32031;
-        if (var_r1_32060 < 0) {
-            var_r1_32060 = 0 - var_r1_32060;
-        }
-        var_r2_32068 = (u16) ((s32) (u16) ((*(u16 *)((u8 *)(arg0) + (0x4C))) + 0xF) / var_r1_32060);
-        if (var_r2_32068 == 0) {
-            goto block_18;
-        }
-        if (0xFFF8 & var_r2_32068) {
-            var_r2_32068 = 7;
-        }
-        var_r6_32076 = (var_r4_32031 * 0x10) | var_r2_32068;
-        if (var_r4_32031 < temp_r5_32051) {
-            var_r6_32076 |= 8;
-        }
+    volume >>= 15;
+    channel->volume = volume;
+    volume *= channel->envelope.volume;
+    volume >>= 25;
+    if (volume & ~15)
+        volume = 15;
+    channel->volume = (channel->volume * channel->envelope.target_volume) >> 25;
+    if (channel->volume & ~15)
+        channel->volume = 15;
+    target = channel->volume;
+    if (target == volume) {
+        control = (volume << 4) | 8;
+        return control;
     } else {
-block_18:
-        var_r6_32076 = (var_r4_32031 * 0x10) | 8;
-    }
-    return var_r6_32076;
-}
-
-u32 sub_020274D0(u8 *arg0) {
-    s32 temp_r0_32112;
-    s32 temp_r0_32126;
-    s32 temp_r0_32183;
-    s32 temp_r1_32157;
-    s32 temp_r2_32180;
-    s32 temp_r4_32119;
-    s8 temp_r0_32195;
-    s8 temp_r1_32221;
-    u32 temp_r1_32253;
-    u32 var_r0_32232;
-    u32 var_r3_32134;
-    u8 temp_r1_32190;
-    void *temp_r2_32111;
-    void *temp_r4_32178;
-    void *temp_r6_32109;
-
-    temp_r6_32109 = (*(void **)((u8 *)(arg0) + (4)));
-    temp_r2_32111 = arg0 + 0x2C;
-    temp_r0_32112 = (*(s32 *)((u8 *)(arg0) + (0x2C)));
-    if (temp_r0_32112 != 0) {
-        (*(s32 *)((u8 *)(arg0) + (0x2C))) = (s32) (temp_r0_32112 - 1);
-    } else {
-        temp_r4_32119 = (*(s32 *)((u8 *)(temp_r2_32111) + (4)));
-        if (temp_r4_32119 != 0) {
-            (*(s32 *)((u8 *)(temp_r2_32111) + (8))) = (s32) ((*(s32 *)((u8 *)(temp_r2_32111) + (8))) + (*(s32 *)((u8 *)(temp_r2_32111) + (0x10))));
-            temp_r0_32126 = temp_r4_32119 - 1;
-            (*(s32 *)((u8 *)(temp_r2_32111) + (4))) = temp_r0_32126;
-            if (temp_r0_32126 == 0) {
-                (*(s32 *)((u8 *)(temp_r2_32111) + (8))) = (s32) (*(s32 *)((u8 *)(temp_r2_32111) + (0xC)));
-            }
-        }
-    }
-    var_r3_32134 = (*(s32 *)((u8 *)(arg0) + (0xC))) + (*(s32 *)((u8 *)(temp_r2_32111) + (8)));
-    if ((*(s8 *)((u8 *)(temp_r6_32109) + (0x4F))) != 0) {
-        temp_r1_32157 = (s32) (((*(s8 *)((u8 *)(temp_r6_32109) + (0x4F))) * (*(u32 *)(0x02035E48 + (((*(u8 *)((u8 *)(temp_r6_32109) + (0x50))) + 0x30) * 4)) + 0xFFFF8000)) + 0x400000) >> 0xE;
-        if ((*(u8 *)((u8 *)(arg0) + (0))) == 0) {
-            var_r3_32134 = (u32) (temp_r1_32157 * var_r3_32134) >> 8;
+        period = channel->envelope.timer;
+        period += 15;
+        difference = target - volume;
+        if (difference < 0)
+            difference = -difference;
+        period /= difference;
+        if (period == 0) {
+            control = (u8)((volume << 4) | 8);
         } else {
-            var_r3_32134 = 0x800 - ((u32) ((0x800 - var_r3_32134) << 8) / (u32) temp_r1_32157);
+            if (period & 0xFFF8)
+                period = 7;
+            control = (u8)((volume << 4) | period);
+            if (volume < target)
+                control |= 8;
         }
     }
-    temp_r4_32178 = arg0 + 0x20;
-    temp_r2_32180 = (*(s32 *)((u8 *)((*(void **)((u8 *)(temp_r4_32178) + (8)))) + (8)));
-    if (temp_r2_32180 != 0) {
-        temp_r0_32183 = (*(s32 *)((u8 *)(temp_r4_32178) + (4)));
-        if (temp_r0_32183 == 0) {
-            temp_r1_32190 = *(u32 *)(0x02036028 + ((u32) (*(u32 *)((u8 *)(arg0) + (0x20))) >> 1));
-            if ((*(u8 *)((u8 *)(arg0) + (0))) == 0) {
-                temp_r0_32195 = (s8) temp_r1_32190;
-                if ((s32) temp_r0_32195 >= 0) {
-                    var_r3_32134 += (u32) (temp_r2_32180 * (var_r3_32134 * temp_r0_32195)) >> 0x13;
-                } else {
-                    var_r3_32134 = ((u32) (var_r3_32134 << 0xC) / (u32) (((u32) (temp_r2_32180 * (0 - temp_r0_32195)) >> 3) + 0x10000)) * 0x10;
+    return control;
+}
+
+/* Original address: 0x020274D0 */
+u32 Sound_UpdateChannelPitch(SoundChannel *channel) {
+    u32 pitch = channel->base_pitch;
+    SoundTrack *track = channel->track;
+    SoundPitchSlide *slide = &channel->slide;
+    SoundVibrato *vibrato;
+    s32 depth;
+    if (slide->delay != 0) {
+        slide->delay--;
+    } else if (slide->timer != 0) {
+        slide->offset += slide->step;
+        if (--slide->timer == 0)
+            slide->offset = slide->target;
+    }
+    pitch += slide->offset;
+    if (track->pitch_bend != 0) {
+        s32 bend = sPcmPitchTable[track->pitch_bend_range + 48];
+        bend -= 0x8000;
+        bend *= track->pitch_bend;
+        bend += 0x400000;
+        bend >>= 14;
+        if (channel->type == 0) {
+            pitch *= bend;
+            pitch >>= 8;
+        } else {
+            pitch = 0x800 - pitch;
+            pitch <<= 8;
+            pitch /= (u32)bend;
+            pitch = 0x800 - pitch;
+        }
+    }
+    vibrato = &channel->vibrato;
+    depth = vibrato->params->depth;
+    if (depth != 0) {
+        if (vibrato->delay == 0) {
+            u8 wave = sSoundVibratoWave[vibrato->phase >> 1];
+            if (channel->type == 0) {
+                if ((s8)wave >= 0)
+                    pitch += (depth * (pitch * (s8)wave)) >> 19;
+                else {
+                    pitch <<= 12;
+                    pitch /= ((u32)(-(s8)wave * depth) >> 3) + 0x10000;
+                    pitch <<= 4;
                 }
             } else {
-                temp_r1_32221 = (s8) temp_r1_32190;
-                if ((s32) temp_r1_32221 >= 0) {
-                    var_r0_32232 = (u32) ((0x800 - var_r3_32134) << 0x13) / (u32) ((temp_r2_32180 * temp_r1_32221) + 0x80000);
-                } else {
-                    var_r0_32232 = (u32) (((temp_r2_32180 * (0 - temp_r1_32221)) + 0x80000) * (0x800 - var_r3_32134)) >> 0x13;
+                u32 period;
+                if ((s8)wave >= 0)
+                    period = ((0x800 - pitch) << 19) / (u32)(depth * (s8)wave + 0x80000);
+                else {
+                    period = 0x800 - pitch;
+                    period *= (-(s8)wave * depth + 0x80000);
+                    period >>= 19;
                 }
-                var_r3_32134 = 0x800 - var_r0_32232;
+                pitch = 0x800 - period;
             }
-            temp_r1_32253 = (*(u32 *)((u8 *)(arg0) + (0x20))) + (*(s32 *)((u8 *)((*(void **)((u8 *)(temp_r4_32178) + (8)))) + (4)));
-            (*(u32 *)((u8 *)(arg0) + (0x20))) = temp_r1_32253;
-            if ((u32) (temp_r1_32253 >> 1) > 0xFFU) {
-                (*(u32 *)((u8 *)(arg0) + (0x20))) = (u32) (temp_r1_32253 + 0xFFFFFE00);
-            }
+            vibrato->phase += vibrato->params->speed;
+            if ((vibrato->phase >> 1) > 255)
+                vibrato->phase -= 512;
         } else {
-            (*(s32 *)((u8 *)(temp_r4_32178) + (4))) = (s32) (temp_r0_32183 - 1);
+            vibrato->delay--;
         }
     }
-    return var_r3_32134;
+    return pitch;
 }
 
-void sub_02027610(void) {
-    s32 sp0;
-    s32 var_r4_32367;
-    s32 var_r5_32366;
-    u32 temp_r7_32291;
-    u32 var_r2_32316;
-    u8 *temp_r1_32370;
-    u8 *var_r5_32278;
-    u8 var_r3_32302;
-    u8 var_r6_32313;
-    void *temp_r4_32298;
-
-    var_r5_32278 = (*(u8 **)((u8 *)((void *)0x03000070) + (0x74)));
-    sp0 = 0;
-    CpuFastSet(&sp0, (void *)0x03000864, 0x010000B0U);
-    if (var_r5_32278 != ((void *)0x03000070 + 0x80)) {
-        do {
-            temp_r7_32291 = sub_02027374(var_r5_32278);
-            if ((*(u8 *)((u8 *)(var_r5_32278) + (1))) == 1) {
-                (*(u16 *)((u8 *)(var_r5_32278) + (0x18))) = (u16) ((*(u16 *)((u8 *)(var_r5_32278) + (0x18))) - 1);
-                temp_r4_32298 = (*(void **)((u8 *)(var_r5_32278) + (4)));
-                if ((*(u8 *)((u8 *)(var_r5_32278) + (0x1B))) != 0) {
-                    var_r3_32302 = (*(u8 *)((u8 *)(var_r5_32278) + (0x1C)));
-                } else {
-                    var_r3_32302 = (*(u8 *)((u8 *)(temp_r4_32298) + (0x4B)));
-                }
-                var_r6_32313 = var_r3_32302;
-                var_r2_32316 = sub_020274D0(var_r5_32278);
-                (*(u32 *)((u8 *)(var_r5_32278) + (0x10))) = var_r2_32316;
-                (*(u8 *)((u8 *)(var_r5_32278) + (0x1A))) = (u8) (*(u8 *)((u8 *)(temp_r4_32298) + (0x4C)));
-                goto block_8;
+/* Original address: 0x02027610 */
+void Sound_UpdatePcmChannels(void) {
+    SoundChannel *channel = gSoundChannelLists.active_head.next;
+    s32 zero = 0;
+    s32 i;
+    SoundChannel *expired;
+    CpuFastSet(&zero, &gPcmMixBuffer, 0x010000B0);
+    while (channel != &gSoundChannelLists.active_tail) {
+        u32 volume = Sound_UpdatePcmChannelVolume(channel);
+        u32 pitch;
+        u8 pan;
+        if (channel->state == 1) {
+            SoundTrack *track;
+            channel->gate_timer--;
+            track = channel->track;
+            pan = channel->fixed_pan ? channel->pan : track->pan;
+            pitch = Sound_UpdateChannelPitch(channel);
+            channel->pitch = pitch;
+            channel->unk_1A = track->unk_4C;
+        } else {
+            if (volume == 0) {
+                channel = channel->next;
+                Sound_StopChannel(channel->prev);
+                continue;
             }
-            if (temp_r7_32291 != 0) {
-                var_r6_32313 = (*(u8 *)((u8 *)(var_r5_32278) + (0x1C)));
-                var_r2_32316 = (*(u32 *)((u8 *)(var_r5_32278) + (0x10)));
-block_8:
-                if (sub_02027F0C(var_r5_32278, temp_r7_32291, (u32) ((u32) (0xB0 * ((u32) ((*(s32 *)((u8 *)((*(void **)((u8 *)(var_r5_32278) + (0x60)))) + (4))) * (var_r2_32316 >> 2)) / 10512U)) / 176U) >> 5, var_r6_32313) == 1) {
-                    goto block_9;
-                }
-                var_r5_32278 = (*(u8 **)((u8 *)(var_r5_32278) + (0x70)));
-            } else {
-block_9:
-                var_r5_32278 = (*(u8 **)((u8 *)(var_r5_32278) + (0x70)));
-                sub_02027C78((*(u8 **)((u8 *)(var_r5_32278) + (0x6C))));
-            }
-        } while (var_r5_32278 != (u8 *)0x030000F0);
-    }
-    var_r5_32366 = 0;
-    var_r4_32367 = 6;
-    do {
-        temp_r1_32370 = var_r5_32366 + 0x030013C4;
-        if (((*(u8 *)((u8 *)(temp_r1_32370) + (1))) == 1) && ((*(u16 *)((u8 *)(temp_r1_32370) + (0x18))) == 0)) {
-            sub_02027B94(temp_r1_32370);
+            pan = channel->pan;
+            pitch = channel->pitch;
         }
-        var_r5_32366 += 0x7C;
-        var_r4_32367 -= 1;
-    } while (var_r4_32367 >= 0);
-    ((s32 (*)(s32, s32, s32))*(u32 *)0x03000598)(0x03000864, *(u32 *)(0x03000058 + (*(u8 *)0x0300006A * 4)), 0x03000B24);
+        pitch >>= 2;
+        pitch *= channel->sample->frequency;
+        pitch /= 10512;
+        pitch *= 176;
+        pitch /= 176;
+        pitch >>= 5;
+        if (Sound_MixPcmChannel(channel, volume, pitch, pan) == 1) {
+            channel = channel->next;
+            Sound_StopChannel(channel->prev);
+        } else {
+            channel = channel->next;
+        }
+    }
+    for (i = 0; i < 7; i++) {
+        expired = &gPcmChannels[i];
+        if (expired->state == 1 && expired->gate_timer == 0)
+            Sound_ReleaseChannel(expired);
+    }
+    gPcmOutputMixer(gPcmMixBuffer.words, gPcmOutputBuffers[gPcmOutputBufferIndex], gPcmMixBuffer.words + 176);
 }
 
-void sub_02027728(void) {
-    s32 temp_r0_32422;
-    s32 temp_r0_32466;
-    s32 var_sl_32417;
-    u16 *temp_r0_32593;
-    u16 temp_r3_32594;
-    u32 temp_r0_32526;
-    u32 temp_r0_32554;
-    u32 temp_r1_32595;
-    u32 var_r1_32556;
-    u32 var_r1_32564;
-    u32 var_r6_32443;
-    u8 *temp_r4_32424;
-    u8 *var_r2_32644;
-    u8 temp_r0_32434;
-    u8 temp_r0_32608;
-    u8 temp_r2_32485;
-    u8 temp_r3_32479;
-    u8 temp_r5_32482;
-    u8 temp_r5_32523;
-    u8 temp_r7_32473;
-    u8 var_r0_32448;
-    u8 var_r1_32718;
-    u8 var_r5_32599;
-    u8 var_r8_32457;
-    void *temp_r2_32587;
+/* Original address: 0x02027728 */
+void Sound_UpdatePsgChannels(void) {
+    s32 i;
+    for (i = 0; i < 4; i++) {
+        SoundChannel *channel = &gPsgChannels[i];
+        u32 pitch;
+        u8 pan;
+        u8 envelope;
+        u8 sound_index;
+        u32 stereo_mask;
+        u8 clear_mask;
+        u8 duty;
+        SoundInstrument *instrument;
+        vu8 *routing;
+        vu8 *duty_register;
+        if (channel->state == 1 && channel->gate_timer == 0)
+            Sound_ReleaseChannel(channel);
+        if (channel->state == 0)
+            continue;
+        if (channel->state == 1) {
+            pitch = Sound_UpdateChannelPitch(channel);
+            channel->pitch = pitch;
+            pan = channel->fixed_pan ? channel->pan : channel->track->pan;
+        } else {
+            pitch = channel->pitch;
+            pan = channel->pan;
+        }
+        envelope = Sound_GetPsgEnvelopeControl(channel, pan != 64);
+        routing = (vu8 *)REG_ADDR_NR51;
+        sound_index = channel->type - 1;
+        stereo_mask = 0x11 << sound_index;
+        clear_mask = ~stereo_mask;
+        if (pan == 64)
+            *routing = (clear_mask & *routing) | stereo_mask;
+        else if (pan < 64)
+            *routing = (clear_mask & *routing) | (0x10 << sound_index);
+        else
+            *routing = (clear_mask & *routing) | (1 << sound_index);
 
-    var_sl_32417 = 0;
-loop_1:
-    temp_r0_32422 = var_sl_32417 * 0x7C;
-    temp_r4_32424 = temp_r0_32422 + 0x03001728;
-    if (((*(u8 *)((u8 *)(temp_r4_32424) + (1))) == 1) && ((*(u16 *)((u8 *)(temp_r4_32424) + (0x18))) == 0)) {
-        sub_02027B94(temp_r4_32424);
-    }
-    temp_r0_32434 = (*(u8 *)((u8 *)(temp_r4_32424) + (1)));
-    if (temp_r0_32434 == 0) {
-
-    } else {
-        if (temp_r0_32434 == 1) {
-            var_r6_32443 = sub_020274D0(temp_r4_32424);
-            (*(u32 *)((u8 *)(temp_r4_32424) + (0x10))) = var_r6_32443;
-            if ((*(u8 *)((u8 *)(temp_r4_32424) + (0x1B))) != 0) {
-                var_r0_32448 = (*(u8 *)((u8 *)(temp_r4_32424) + (0x1C)));
+        if (channel->state == 1) {
+            if (channel->age == 0) {
+                Sound_StartPsgChannel(channel, envelope);
+                channel->age = 1;
+                channel->gate_timer--;
+                continue;
+            }
+            channel->age++;
+            channel->gate_timer--;
+        } else if (channel->type == 3) {
+            u32 volume;
+            u8 wave_volume;
+            channel->volume = (channel->volume * (channel->release + 230)) >> 9;
+            volume = channel->volume;
+            if (pan != 64)
+                volume *= 2;
+            volume *= 5;
+            volume >>= 7;
+            if (volume != 0) {
+                if (volume > 4)
+                    volume = 4;
+                wave_volume = volume;
+                REG_NR32 = sPsgWaveVolume[wave_volume];
             } else {
-                var_r0_32448 = (*(u8 *)((u8 *)((*(void **)((u8 *)(temp_r4_32424) + (4)))) + (0x4B)));
+                Sound_StopChannel(channel);
             }
-            var_r8_32457 = var_r0_32448;
-        } else {
-            var_r6_32443 = (*(u32 *)((u8 *)(temp_r4_32424) + (0x10)));
-            var_r8_32457 = (*(u8 *)((u8 *)(temp_r4_32424) + (0x1C)));
+            continue;
         }
-        temp_r0_32466 = 0x40 ^ var_r8_32457;
-        temp_r7_32473 = sub_020273D0(temp_r4_32424, (u8) ((u32) ((0 - temp_r0_32466) | temp_r0_32466) >> 0x1F));
-        temp_r3_32479 = *(u32 *)(0x03001728 + temp_r0_32422) - 1;
-        temp_r5_32482 = 0x11 << temp_r3_32479;
-        temp_r2_32485 = ~temp_r5_32482;
-        if (var_r8_32457 == 0x40) {
-            *(u8 *)0x04000081 = (temp_r2_32485 & *(u8 *)0x04000081) | temp_r5_32482;
-        } else if ((u32) var_r8_32457 <= 0x3FU) {
-            *(u8 *)0x04000081 = (temp_r2_32485 & *(u8 *)0x04000081) | (0x10 << temp_r3_32479);
-        } else {
-            *(u8 *)0x04000081 = (temp_r2_32485 & *(u8 *)0x04000081) | (1 << temp_r3_32479);
-        }
-        temp_r5_32523 = (*(u8 *)((u8 *)(temp_r4_32424) + (1)));
-        if (temp_r5_32523 == 1) {
-            temp_r0_32526 = (*(u32 *)((u8 *)(temp_r4_32424) + (0x64)));
-            if (temp_r0_32526 == 0) {
-                sub_02027D14(temp_r4_32424, temp_r7_32473);
-                (*(u32 *)((u8 *)(temp_r4_32424) + (0x64))) = (u32) temp_r5_32523;
-                (*(u16 *)((u8 *)(temp_r4_32424) + (0x18))) = (u16) ((*(u16 *)((u8 *)(temp_r4_32424) + (0x18))) - 1);
-            } else {
-                (*(u32 *)((u8 *)(temp_r4_32424) + (0x64))) = (u32) (temp_r0_32526 + 1);
-                (*(u16 *)((u8 *)(temp_r4_32424) + (0x18))) = (u16) ((*(u16 *)((u8 *)(temp_r4_32424) + (0x18))) - 1);
-                goto block_29;
-            }
-        } else if (*(u32 *)(0x03001728 + temp_r0_32422) == 3) {
-            temp_r0_32554 = (u32) ((*(u32 *)((u8 *)(temp_r4_32424) + (0x14))) * ((*(u8 *)((u8 *)(temp_r4_32424) + (0x5C))) + 0xE6)) >> 9;
-            (*(u32 *)((u8 *)(temp_r4_32424) + (0x14))) = temp_r0_32554;
-            var_r1_32556 = temp_r0_32554;
-            if (var_r8_32457 != 0x40) {
-                var_r1_32556 *= 2;
-            }
-            var_r1_32564 = (u32) (var_r1_32556 * 5) >> 7;
-            if (var_r1_32564 != 0) {
-                if (var_r1_32564 > 4U) {
-                    var_r1_32564 = 4;
-                }
-                *(u8 *)0x04000073 = *(u32 *)(0x02035CC4 + (u8) var_r1_32564);
-            } else {
-                sub_02027C78(temp_r4_32424);
-            }
-        } else {
-block_29:
-            temp_r2_32587 = (*(void **)((u8 *)(temp_r4_32424) + (0x58)));
-            if (1 & (*(u8 *)((u8 *)(temp_r2_32587) + (1)))) {
-                temp_r0_32593 = (*(u16 **)((u8 *)(temp_r4_32424) + (0x68)));
-                temp_r3_32594 = *temp_r0_32593;
-                temp_r1_32595 = (*(u32 *)((u8 *)(temp_r4_32424) + (0x64)));
-                if (temp_r1_32595 < (u32) temp_r3_32594) {
-                    var_r5_32599 = (*(u8 *)((u8 *)((temp_r0_32593 + temp_r1_32595)) + (2)));
-                } else {
-                    var_r5_32599 = (*(u8 *)((u8 *)((temp_r3_32594 + temp_r0_32593)) + (1)));
-                }
-            } else {
-                var_r5_32599 = 0xFF;
-            }
-            temp_r0_32608 = *(u32 *)(0x03001728 + temp_r0_32422);
-            switch (temp_r0_32608) {                /* irregular */
-            case 1:
-                if (temp_r7_32473 != 8) {
-                    *(u8 *)0x04000063 = temp_r7_32473;
-                    *(s16 *)0x04000064 = var_r6_32443 | 0x8000;
-                } else if ((*(u8 *)((u8 *)(temp_r2_32587) + (8))) == 8) {
-                    *(u32 *)0x04000064 = (s16) var_r6_32443;
-                }
-                var_r2_32644 = (u8 *)0x04000062;
-block_50:
-                *var_r2_32644 &= 0xC0;
-                if (var_r5_32599 != 0xFF) {
-                    *var_r2_32644 = var_r5_32599 << 6;
-                }
-                break;
-            case 2:
-                if (temp_r7_32473 != 8) {
-                    *(u8 *)0x04000069 = temp_r7_32473;
-                    *(s16 *)0x0400006C = var_r6_32443 | 0x8000;
-                } else {
-                    *(u32 *)0x0400006C = (s16) var_r6_32443;
-                }
-                var_r2_32644 = (u8 *)0x04000068;
-                goto block_50;
-            case 3:
-                *(u16 *)0x04000074 = (*(u16 *)0x04000074 & 0x4000) | var_r6_32443;
-                if (temp_r7_32473 != 8) {
-                    *(u32 *)0x04000073 = (u8) *(u32 *)(0x02035CC4 + temp_r7_32473);
-                }
-                break;
-            case 4:
-                if (temp_r7_32473 != 8) {
-                    *(u8 *)0x04000079 = temp_r7_32473;
-                    *(s8 *)0x0400007D = 0x80;
-                }
-                if (var_r5_32599 != 0xFF) {
-                    var_r1_32718 = sub_020272E8((u16) var_r6_32443);
-                    if (var_r5_32599 != 0) {
-                        var_r1_32718 |= 8;
-                    }
-                    *(u8 *)0x0400007C = var_r1_32718;
-                } else {
-                    *(u32 *)0x0400007C = (u8) ((8 & *(u32 *)0x0400007C) | sub_020272E8((u16) var_r6_32443));
-                }
-                break;
-            }
-        }
-    }
-    var_sl_32417 += 1;
-    if (var_sl_32417 <= 3) {
-        goto loop_1;
-    }
-}
 
-void sub_020279BC(void **arg0, u8 arg1, u8 arg2, u16 arg3) {
-    void *sp0;
-    s32 sp4;
-    s32 sp8;
-    s32 spC;
-    s32 temp_r0_32934;
-    s32 temp_r1_32965;
-    s32 temp_r2_32910;
-    s32 var_r0_32980;
-    u16 temp_r0_32810;
-    u16 temp_r3_32772;
-    u32 var_r0_32799;
-    u8 *temp_r0_32817;
-    u8 *var_r4_32820;
-    u8 temp_r0_32866;
-    u8 temp_r0_32903;
-    u8 temp_r0_32943;
-    u8 temp_r0_32961;
-    u8 var_r7_32786;
-    void *temp_r4_32774;
-
-    temp_r3_32772 = arg3;
-    temp_r4_32774 = (*(void **)((u8 *)(arg0) + (8)));
-    if ((*(u8 *)((u8 *)(arg0) + (0x4A))) != 0) {
-        return;
-    }
-    var_r7_32786 = arg1 + (*(u8 *)((u8 *)(arg0) + (0x51)));
-    sub_020280B4(arg0, var_r7_32786, &sp0);
-    if (0x10 & (*(u8 *)((u8 *)(sp0) + (1)))) {
-        var_r0_32799 = temp_r3_32772 / (u16) (*(u16 *)((u8 *)(temp_r4_32774) + (0x30)));
-    } else {
-        var_r0_32799 = (u32) ((s32) temp_r3_32772 / (s32) ((*(s16 *)((u8 *)(temp_r4_32774) + (0x32))) + (*(u16 *)((u8 *)(temp_r4_32774) + (0x30)))));
-    }
-    temp_r0_32810 = (u16) var_r0_32799;
-    if ((*(u8 *)((u8 *)(arg0) + (0x49))) != 0) {
-        temp_r0_32817 = (*(u8 **)((u8 *)(arg0) + (0xC)));
-        if (temp_r0_32817 != NULL) {
-            var_r4_32820 = temp_r0_32817;
-            goto block_11;
-        }
-    }
-    var_r4_32820 = sub_02027E74(*(u32 *)(0x02035CCC + (*(u8 *)((u8 *)(sp0) + (0)))), arg0, (*(u8 *)((u8 *)(arg0) + (0x52))));
-    if (var_r4_32820 == NULL) {
-        return;
-    }
-    sub_02028A34(arg0, var_r4_32820);
-    (*(s32 *)((u8 *)(var_r4_32820) + (0x64))) = 0;
-    (*(void ***)((u8 *)(var_r4_32820) + (0x28))) = (void **) (arg0 + 0x10);
-    (*(s32 *)((u8 *)(var_r4_32820) + (0x20))) = 0;
-    (*(s32 *)((u8 *)(var_r4_32820) + (0x24))) = (s32) (*(u16 *)((u8 *)(arg0) + (0x10)));
-    (*(s32 *)((u8 *)(var_r4_32820) + (0x50))) = sp4;
-    (*(s32 *)((u8 *)(var_r4_32820) + (0x44))) = 0;
-    (*(s32 *)((u8 *)(var_r4_32820) + (0x48))) = 0;
-    (*(s16 *)((u8 *)(var_r4_32820) + (0x4C))) = 0;
-    (*(s8 *)((u8 *)(var_r4_32820) + (0x54))) = 0xFF;
-    (*(u8 *)((u8 *)(var_r4_32820) + (0x5C))) = (u8) (*(u8 *)((u8 *)(sp0) + (6)));
-    (*(void **)((u8 *)(var_r4_32820) + (0x58))) = sp0;
-block_11:
-    temp_r0_32866 = (*(u8 *)((u8 *)(&sp0) + (0x11)));
-    (*(u8 *)((u8 *)(var_r4_32820) + (0x1B))) = temp_r0_32866;
-    if ((temp_r0_32866 << 0x18) != 0) {
-        var_r7_32786 = 0x30;
-        (*(u8 *)((u8 *)(var_r4_32820) + (0x1C))) = (u8) (*(u8 *)((u8 *)(&sp0) + (0x10)));
-    } else if ((*(u8 *)((u8 *)(&sp0) + (0x12))) != 0) {
-        var_r7_32786 = 0x30;
-    }
-    (*(u8 *)((u8 *)(var_r4_32820) + (9))) = arg2;
-    (*(s32 *)((u8 *)(var_r4_32820) + (0x14))) = 0;
-    (*(u16 *)((u8 *)(var_r4_32820) + (0x18))) = temp_r0_32810;
-    (*(u8 *)((u8 *)(var_r4_32820) + (0x1A))) = (u8) (*(u8 *)((u8 *)(arg0) + (0x4C)));
-    (*(s32 *)((u8 *)(var_r4_32820) + (0xC))) = sub_02027294(var_r4_32820, var_r7_32786, (*(u8 *)((u8 *)(sp0) + (7))));
-    (*(void ***)((u8 *)(var_r4_32820) + (0x40))) = (void **) (arg0 + 0x1C);
-    temp_r0_32903 = (*(u8 *)((u8 *)(arg0) + (0x1C)));
-    if (temp_r0_32903 != 0) {
-        temp_r2_32910 = sub_02027294(var_r4_32820, (*(u8 *)((u8 *)(arg0) + (0x1E))), (*(u8 *)((u8 *)(sp0) + (7))));
-        (*(s32 *)((u8 *)(var_r4_32820) + (0x2C))) = (s32) (*(u16 *)((u8 *)(arg0) + (0x20)));
-        (*(u32 *)((u8 *)(var_r4_32820) + (0x30))) = (u32) ((u32) ((*(u16 *)((u8 *)(arg0) + (0x22))) * temp_r0_32810) >> 8);
-        if (2 & (*(u8 *)((u8 *)(arg0) + (0x1D)))) {
-            (*(s32 *)((u8 *)(var_r4_32820) + (0x38))) = (s32) (temp_r2_32910 - (*(s32 *)((u8 *)(var_r4_32820) + (0xC))));
+        instrument = channel->instrument;
+        if (instrument->flags & 1) {
+            SoundDutySequence *sequence = channel->psg.sequence;
+            u16 length = sequence->length;
+            u32 age = channel->age;
+            if (age < length)
+                duty = sequence->values[age];
+            else
+                duty = sequence->values[length - 1];
         } else {
-            (*(s32 *)((u8 *)(var_r4_32820) + (0x38))) = (s32) ((*(s32 *)((u8 *)(var_r4_32820) + (0xC))) - temp_r2_32910);
-            (*(s32 *)((u8 *)(var_r4_32820) + (0xC))) = temp_r2_32910;
+            duty = 0xFF;
         }
-        temp_r0_32934 = (*(s32 *)((u8 *)(var_r4_32820) + (0x38)));
-        (*(s32 *)((u8 *)(var_r4_32820) + (0x3C))) = temp_r0_32934;
-        (*(s32 *)((u8 *)(var_r4_32820) + (0x3C))) = (s32) (temp_r0_32934 / (s32) (*(u32 *)((u8 *)(var_r4_32820) + (0x30))));
-        temp_r0_32943 = 4 & (*(u8 *)((u8 *)(arg0) + (0x1D)));
-        if (temp_r0_32943 != 0) {
-            (*(u8 *)((u8 *)(arg0) + (0x1E))) = var_r7_32786;
-        } else {
-            (*(u8 *)((u8 *)(arg0) + (0x1C))) = temp_r0_32943;
-        }
-        (*(s32 *)((u8 *)(var_r4_32820) + (0x34))) = 0;
-    } else {
-        (*(s32 *)((u8 *)(var_r4_32820) + (0x2C))) = (s32) temp_r0_32903;
-        (*(u32 *)((u8 *)(var_r4_32820) + (0x30))) = (u32) temp_r0_32903;
-        (*(s32 *)((u8 *)(var_r4_32820) + (0x34))) = (s32) temp_r0_32903;
-        (*(s32 *)((u8 *)(var_r4_32820) + (0x38))) = (s32) temp_r0_32903;
-        (*(s32 *)((u8 *)(var_r4_32820) + (0x3C))) = (s32) temp_r0_32903;
-    }
-    temp_r0_32961 = (*(u8 *)((u8 *)(var_r4_32820) + (0)));
-    if (temp_r0_32961 == 0) {
-        temp_r1_32965 = (*(s32 *)((u8 *)(arg0) + (4)));
-        (*(s32 *)((u8 *)(var_r4_32820) + (0x60))) = (s32) (temp_r1_32965 + *(u32 *)(((*(u16 *)((u8 *)(sp0) + (2))) * 4) + temp_r1_32965));
-    } else if (temp_r0_32961 != 3) {
-        if (1 & (*(u8 *)((u8 *)(sp0) + (1)))) {
-            var_r0_32980 = sp8;
-            goto block_31;
-        }
-        (*(s8 *)((u8 *)(var_r4_32820) + (0x68))) = (s8) (*(u16 *)((u8 *)(sp0) + (2)));
-    } else {
-        var_r0_32980 = spC;
-block_31:
-        (*(s8 *)((u8 *)(var_r4_32820) + (0x68))) = var_r0_32980;
-    }
-    if (temp_r0_32810 == 0) {
-        sub_02027B94(var_r4_32820);
-    }
-}
-
-void sub_02027B94(u8 *arg0) {
-    u16 temp_r2_33030;
-    u32 temp_r1_33039;
-    u8 *var_r2_33072;
-    u8 temp_r0_33051;
-    u8 temp_r3_33019;
-    u8 var_r0_33036;
-    u8 var_r1_33042;
-    void *temp_r1_33110;
-
-    if (((*(u8 *)((u8 *)(arg0) + (1))) == 1) && ((*(u8 *)((u8 *)((*(void **)((u8 *)(arg0) + (4)))) + (0x49))) == 0)) {
-        temp_r3_33019 = (*(u8 *)((u8 *)(arg0) + (0)));
-        if (temp_r3_33019 == 0) {
-            sub_020271FC(arg0);
-            (*(u8 *)((u8 *)(arg0) + (1))) = 2U;
-            sub_0202720C(arg0);
-        } else {
-            temp_r2_33030 = (*(u16 *)((u8 *)(arg0) + (0x10)));
-            if (temp_r3_33019 == 3) {
-                var_r0_33036 = 2;
-            } else {
-                temp_r1_33039 = (u8) (*(u8 *)((u8 *)(arg0) + (0x5C))) >> 5;
-                if (temp_r1_33039 == 0) {
-                    var_r1_33042 = 0;
-                } else {
-                    var_r1_33042 = temp_r1_33039 | ((*(s32 *)((u8 *)(arg0) + (0x14))) * 0x10);
-                }
-                temp_r0_33051 = (*(u8 *)((u8 *)(arg0) + (0)));
-                switch (temp_r0_33051) {            /* irregular */
-                case 1:
-                    *(u8 *)0x04000063 = var_r1_33042;
-                    *(s16 *)0x04000064 = temp_r2_33030 | 0x8000;
-                    var_r2_33072 = (u8 *)0x04000062;
-block_17:
-                    *var_r2_33072 &= 0xC0;
-                    break;
-                case 2:
-                    *(u8 *)0x04000069 = var_r1_33042;
-                    *(s16 *)0x0400006C = temp_r2_33030 | 0x8000;
-                    var_r2_33072 = (u8 *)0x04000068;
-                    goto block_17;
-                case 4:
-                    *(u8 *)0x04000079 = var_r1_33042;
-                    *(s8 *)0x0400007D = 0x80;
-                    break;
-                }
-                var_r0_33036 = 0;
-            }
-            (*(u8 *)((u8 *)(arg0) + (1))) = var_r0_33036;
-        }
-        temp_r1_33110 = (*(void **)((u8 *)(arg0) + (4)));
-        if ((*(u8 *)((u8 *)(arg0) + (0x1B))) == 0) {
-            (*(u8 *)((u8 *)(arg0) + (0x1C))) = (u8) (*(u8 *)((u8 *)(temp_r1_33110) + (0x4B)));
-        }
-        sub_02028A4C(temp_r1_33110, arg0);
-    }
-}
-
-void sub_02027C78(u8 *arg0) {
-    s8 *var_r1_33172;
-    s8 *var_r1_33177;
-    s8 var_r0_33183;
-    u8 *temp_r1_33159;
-    u8 temp_r0_33136;
-
-    if ((*(u8 *)((u8 *)(arg0) + (1))) != 0) {
-        temp_r0_33136 = (*(u8 *)((u8 *)(arg0) + (0)));
-        switch (temp_r0_33136) {
-        case 0:
-            sub_020271FC(arg0);
-            temp_r1_33159 = *(u8 **)0x030001DC;
-            (*(u8 **)((u8 *)(arg0) + (0x70))) = temp_r1_33159;
-            (*(s32 *)((u8 *)(arg0) + (0x6C))) = 0x0300016C;
-            (*(u8 **)((u8 *)(temp_r1_33159) + (0x6C))) = arg0;
-            *(u8 **)0x030001DC = arg0;
-            break;
+        switch (channel->type) {
         case 1:
-            *(s8 *)0x04000063 = 8;
-            var_r1_33172 = (s8 *)0x04000063 + 2;
-block_9:
-            var_r0_33183 = 0xC0;
-block_10:
-            *var_r1_33172 = var_r0_33183;
+            if (envelope != 8) {
+                REG_NR12 = envelope;
+                REG_SOUND1CNT_X = pitch | 0x8000;
+            } else if (((SoundSquareInstrument *)instrument)->sweep == 8) {
+                REG_SOUND1CNT_X = pitch;
+            }
+            duty_register = (vu8 *)REG_ADDR_NR11;
+            *duty_register &= 0xC0;
+            if (duty != 0xFF)
+                *duty_register = duty << 6;
             break;
         case 2:
-            var_r1_33177 = (s8 *)0x04000069;
-block_8:
-            *var_r1_33177 = 8;
-            var_r1_33172 = var_r1_33177 + 4;
-            goto block_9;
-        case 3:
-            var_r1_33172 = (s8 *)0x04000070;
-            var_r0_33183 = 0;
-            goto block_10;
-        case 4:
-            var_r1_33177 = (s8 *)0x04000079;
-            goto block_8;
-        }
-        sub_02028A4C((*(void **)((u8 *)(arg0) + (4))), arg0);
-        (*(u8 *)((u8 *)(arg0) + (1))) = 0U;
-    }
-}
-
-void sub_02027D14(u8 *arg0, u8 arg1) {
-    s8 *var_r1_33287;
-    s8 var_r0_33291;
-    u8 temp_r3_33216;
-    u8 temp_r5_33215;
-    u8 var_r0_33251;
-    u8 var_r0_33350;
-    u8 var_r1_33348;
-
-    temp_r5_33215 = arg1;
-    temp_r3_33216 = (*(u8 *)((u8 *)(arg0) + (0)));
-    switch (temp_r3_33216) {                        /* irregular */
-    case 1:
-        *(u8 *)0x04000060 = (*(u8 *)((u8 *)((*(void **)((u8 *)(arg0) + (0x58)))) + (8)));
-        *(s16 *)0x04000064 = (*(s32 *)((u8 *)(arg0) + (0xC))) | 0x8000;
-        *(u8 *)0x04000063 = temp_r5_33215;
-        if (temp_r3_33216 & (*(u8 *)((u8 *)((*(void **)((u8 *)(arg0) + (0x58)))) + (1)))) {
-            var_r0_33251 = (*(u8 *)((u8 *)((*(void **)((u8 *)(arg0) + (0x68)))) + (2)));
-        } else {
-            var_r0_33251 = (u8) (*(void **)((u8 *)(arg0) + (0x68)));
-        }
-        *(s8 *)0x04000062 = var_r0_33251 << 6;
-        *(u32 *)0x04000064 = (s16) ((*(s32 *)((u8 *)(arg0) + (0xC))) | 0x8000);
-        return;
-    case 2:
-        *(u8 *)0x04000069 = temp_r5_33215;
-        *(s16 *)0x0400006C = (*(s32 *)((u8 *)(arg0) + (0xC))) | 0x8000;
-        var_r1_33287 = (s8 *)0x04000068;
-        var_r0_33291 = (u8) (*(void **)((u8 *)(arg0) + (0x68))) << 6;
-block_22:
-        *var_r1_33287 = var_r0_33291;
-        return;
-    case 3:
-        if ((*(void **)((u8 *)(arg0) + (0x68))) != *(void **)0x03000070) {
-            *(s8 *)0x04000070 = 0;
-            CpuSet((*(void **)((u8 *)(arg0) + (0x68))), (s8 *)0x04000070 + 0x20, 8U);
-            *(void **)0x03000070 = (*(void **)((u8 *)(arg0) + (0x68)));
-        }
-        *(u32 *)0x04000070 = 0xC0;
-        *(s16 *)0x04000074 = (*(s32 *)((u8 *)(arg0) + (0xC))) | 0x8000;
-        *(u8 *)0x04000073 = *(u32 *)(0x02035CC4 + temp_r5_33215);
-        var_r1_33287 = (s8 *)0x04000072;
-block_21:
-        var_r0_33291 = 0;
-        goto block_22;
-    case 4:
-        *(u8 *)0x04000079 = temp_r5_33215;
-        if (1 & (*(u8 *)((u8 *)((*(void **)((u8 *)(arg0) + (0x58)))) + (1)))) {
-            var_r1_33348 = sub_020272E8((u16) (*(s32 *)((u8 *)(arg0) + (0xC))));
-            var_r0_33350 = (*(u8 *)((u8 *)((*(void **)((u8 *)(arg0) + (0x68)))) + (2)));
-        } else {
-            var_r1_33348 = sub_020272E8((u16) (*(s32 *)((u8 *)(arg0) + (0xC))));
-            var_r0_33350 = (u8) (*(void **)((u8 *)(arg0) + (0x68)));
-        }
-        if (var_r0_33350 != 0) {
-            var_r1_33348 |= 8;
-        }
-        *(u8 *)0x0400007C = var_r1_33348;
-        *(s8 *)0x0400007D = 0x80;
-        var_r1_33287 = (s8 *)0x04000078;
-        goto block_21;
-    }
-}
-
-u8 *sub_02027E74(u8 arg0, u8 arg1, u8 arg2) {
-    u8 *temp_r2_33399;
-    u8 *temp_r2_33410;
-    u8 *var_r4_33405;
-    u8 temp_r1_33390;
-    u8 temp_r5_33392;
-
-    temp_r1_33390 = arg0;
-    temp_r5_33392 = arg2;
-    if (temp_r1_33390 == 0) {
-        temp_r2_33399 = *(u8 **)0x030001DC;
-        if (temp_r2_33399 != (u8 *)0x030001E8) {
-            var_r4_33405 = temp_r2_33399;
-            goto block_7;
-        }
-        temp_r2_33410 = (*(u8 **)((u8 *)((void *)0x03000070) + (0x74)));
-        if ((temp_r2_33410 != ((void *)0x03000070 + 0x80)) && (((*(u8 *)((u8 *)(temp_r2_33410) + (1))) != 1) || ((u32) temp_r5_33392 >= (u32) (*(u8 *)((u8 *)(temp_r2_33410) + (8)))))) {
-            var_r4_33405 = temp_r2_33410;
-            sub_02027C78(var_r4_33405);
-block_7:
-            sub_020271FC(var_r4_33405);
-            (*(s8 *)((u8 *)(var_r4_33405) + (1))) = 1;
-            (*(u8 *)((u8 *)(var_r4_33405) + (8))) = temp_r5_33392;
-            sub_0202720C(var_r4_33405);
-            goto block_14;
-        }
-        goto block_10;
-    }
-    var_r4_33405 = (temp_r1_33390 * 0x7C) + 0x030016AC;
-    if (((*(u8 *)((u8 *)(var_r4_33405) + (1))) == 1) && ((u32) temp_r5_33392 < (u32) (*(u8 *)((u8 *)(var_r4_33405) + (8))))) {
-block_10:
-        return NULL;
-    }
-    if ((*(u8 *)((u8 *)(var_r4_33405) + (1))) != 0) {
-        sub_02027C78(var_r4_33405);
-    }
-    (*(u8 *)((u8 *)(var_r4_33405) + (1))) = 1U;
-    (*(u8 *)((u8 *)(var_r4_33405) + (8))) = temp_r5_33392;
-block_14:
-    return var_r4_33405;
-}
-
-u8 sub_02027F0C(u8 *arg0, u16 arg1, u32 arg2, u8 arg3) {
-    u8 *sp10;
-    s32 sp14;
-    s32 sp18;
-    u32 sp1C;
-    s32 sp20;
-    s32 sp24;
-    s32 temp_r1_33543;
-    s32 temp_r1_33574;
-    s32 temp_r1_33596;
-    s32 temp_r2_33656;
-    s32 temp_r4_33481;
-    s32 var_r4_33563;
-    s32 var_r5_33524;
-    s32 var_r8_33486;
-    s32 var_r8_33616;
-    s32 var_sl_33597;
-    u16 temp_r1_33483;
-    u32 temp_r0_33511;
-    u32 var_r7_33513;
-    u8 temp_r3_33480;
-    void *temp_r0_33542;
-    void *temp_r1_33490;
-
-    sp10 = arg0;
-    temp_r3_33480 = arg3;
-    temp_r4_33481 = (*(s32 *)((u8 *)(arg0) + (0x64)));
-    temp_r1_33483 = arg1;
-    var_r8_33486 = 0;
-    temp_r1_33490 = (*(void **)((u8 *)(sp10) + (0x60)));
-    sp20 = temp_r1_33490 + 0x10;
-    sp14 = 0x03000864;
-    sp18 = 0x030009C4;
-    sp1C = (u32) (((0x7F - temp_r3_33480) * temp_r1_33483) << 0x10) >> 0x17;
-    temp_r0_33511 = (u32) ((temp_r3_33480 * temp_r1_33483) << 0x10) >> 0x17;
-    var_r7_33513 = (*(u32 *)((u8 *)(temp_r1_33490) + (0xC)));
-    if (var_r7_33513 == 0) {
-        var_r7_33513 = (*(u32 *)((u8 *)(temp_r1_33490) + (0)));
-    }
-    if ((u32) ((u32) (temp_r4_33481 + (arg2 * 0xB0)) >> 8) < var_r7_33513) {
-        var_r5_33524 = sp18;
-    } else {
-        var_r5_33524 = (((u32) ((((var_r7_33513 << 8) - temp_r4_33481) - 1) + arg2) / arg2) * 2) + sp14;
-        var_r8_33486 = 1;
-    }
-    temp_r0_33542 = (*(void **)((u8 *)(sp10) + (0x60)));
-    temp_r1_33543 = (*(s32 *)((u8 *)(temp_r0_33542) + (0xC)));
-    if ((temp_r1_33543 == 0) || (var_r8_33486 == 0)) {
-        var_r4_33563 = ((s32 (*)(s32, s32, s32, s32, s32, u32, u32, u32))*(u32 *)0x0300059C)(sp20, sp14, sp18, var_r5_33524, temp_r4_33481, arg2, sp1C, temp_r0_33511);
-        if (var_r8_33486 != 0) {
-            return 1U;
-        }
-        goto block_16;
-    }
-    temp_r1_33574 = (temp_r1_33543 - (*(s32 *)((u8 *)(temp_r0_33542) + (8)))) << 8;
-    sp24 = temp_r1_33574;
-    var_r4_33563 = ((s32 (*)(s32, s32, s32, s32, s32, u32, u32, u32))*(u32 *)0x0300059C)(sp20, sp14, sp18, var_r5_33524, temp_r4_33481, arg2, sp1C, temp_r0_33511) - temp_r1_33574;
-    temp_r1_33596 = 0xB0 - ((s32) (var_r5_33524 - sp14) >> 1);
-    var_sl_33597 = temp_r1_33596;
-    if (temp_r1_33596 != 0) {
-        do {
-            sp14 = var_r5_33524;
-            sp18 = var_r5_33524 + 0x160;
-            if ((u32) ((u32) (var_r4_33563 + (arg2 * var_sl_33597)) >> 8) < var_r7_33513) {
-                var_r5_33524 += var_sl_33597 * 2;
-                var_r8_33616 = 0;
+            if (envelope != 8) {
+                REG_NR22 = envelope;
+                REG_SOUND2CNT_H = pitch | 0x8000;
             } else {
-                var_r5_33524 += ((u32) ((((var_r7_33513 << 8) - var_r4_33563) - 1) + arg2) / arg2) * 2;
-                var_r8_33616 = 1;
+                REG_SOUND2CNT_H = pitch;
             }
-            var_r4_33563 = ((s32 (*)(s32, s32, s32, s32, s32, u32, u32, u32))*(u32 *)0x0300059C)(sp20, sp14, sp18, var_r5_33524, var_r4_33563, arg2, sp1C, temp_r0_33511);
-            if (var_r8_33616 != 0) {
-                var_r4_33563 -= sp24;
-            }
-            temp_r2_33656 = var_sl_33597 - ((s32) (var_r5_33524 - sp14) >> 1);
-            var_sl_33597 = temp_r2_33656;
-        } while (temp_r2_33656 != 0);
-    }
-block_16:
-    (*(s32 *)((u8 *)(sp10) + (0x64))) = var_r4_33563;
-    return 0U;
-}
-
-void sub_02028098(void) {
-    (*(s8 *)((u8 *)((void *)0x03000268) + (0))) = 0;
-    (*(s8 *)((u8 *)((void *)0x03000268) + (1))) = 0;
-    (*(s16 *)((u8 *)((void *)0x03000268) + (2))) = 0;
-    (*(s16 *)((u8 *)((void *)0x03000268) + (4))) = 0;
-    (*(s8 *)((u8 *)((void *)0x03000268) + (6))) = 0;
-    (*(s8 *)((u8 *)((void *)0x03000268) + (7))) = 0x30;
-}
-
-void sub_020280B4(void **arg0, u8 arg1, void **arg2) {
-    s32 temp_r2_33708;
-    s32 temp_r3_33712;
-    u16 var_r0_33744;
-    u8 temp_r1_33722;
-    u8 temp_r6_33697;
-    void *temp_r0_33738;
-    void *temp_r0_33742;
-    void *temp_r0_33780;
-    void *temp_r2_33791;
-    void *temp_r5_33718;
-    void *var_r0_33771;
-
-    temp_r6_33697 = arg1;
-    temp_r2_33708 = (*(s32 *)((u8 *)(*(void **)0x03000594) + (4)));
-    temp_r3_33712 = temp_r2_33708 + *(u32 *)((*(u32 *)(((*(u16 *)((u8 *)(arg0) + (0x40))) * 2) + *(*(s32 **)((u8 *)(arg0) + (8)))) * 4) + temp_r2_33708);
-    temp_r5_33718 = temp_r3_33712 + *(u32 *)(temp_r3_33712 + ((*(u16 *)((u8 *)(arg0) + (0x42))) * 2));
-    (*(s8 *)((u8 *)(arg2) + (0x11))) = 0;
-    (*(s8 *)((u8 *)(arg2) + (0x12))) = 0;
-    temp_r1_33722 = (*(u8 *)((u8 *)(temp_r5_33718) + (0)));
-    if (0xF0 & temp_r1_33722) {
-        switch (temp_r1_33722) {                    /* irregular */
-        case 16:
-            (*(s8 *)((u8 *)(arg2) + (0x11))) = 1;
-            temp_r0_33738 = ((u32) ((temp_r6_33697 - (*(u8 *)((u8 *)(temp_r5_33718) + (4)))) << 0x18) >> 0x16) + (temp_r3_33712 + (*(u16 *)((u8 *)(temp_r5_33718) + (2))));
-            (*(u8 *)((u8 *)(arg2) + (0x10))) = (u8) (*(u8 *)((u8 *)(temp_r0_33738) + (2)));
-            temp_r0_33742 = temp_r3_33712 + (*(u16 *)((u8 *)(temp_r0_33738) + (0)));
-            (*(void **)((u8 *)(arg2) + (0))) = temp_r0_33742;
-            var_r0_33744 = (*(u16 *)((u8 *)(temp_r0_33742) + (4)));
-            goto block_11;
-        case 17:
-            (*(u16 *)((u8 *)((void *)0x03000268) + (2))) = (u16) *(u32 *)((temp_r6_33697 * 2) + (temp_r3_33712 + (*(u16 *)((u8 *)(temp_r5_33718) + (2)))));
-            (*(void **)((u8 *)(arg2) + (0))) = (void *)0x03000268;
-            (*(s32 *)((u8 *)(arg2) + (4))) = 0x02035CD4;
-            (*(s8 *)((u8 *)(arg2) + (0x12))) = 1;
+            duty_register = (vu8 *)REG_ADDR_NR21;
+            *duty_register &= 0xC0;
+            if (duty != 0xFF)
+                *duty_register = duty << 6;
             break;
-        case 18:
-            var_r0_33771 = temp_r3_33712 + (*(u16 *)((u8 *)(temp_r5_33718) + (2)));
-loop_8:
-            if ((u32) temp_r6_33697 > (u32) (*(u8 *)((u8 *)(var_r0_33771) + (0)))) {
-                var_r0_33771 += 4;
-                goto loop_8;
+        case 3:
+            REG_SOUND3CNT_X = (REG_SOUND3CNT_X & 0x4000) | pitch;
+            if (envelope != 8)
+                REG_NR32 = sPsgWaveVolume[envelope];
+            break;
+        case 4:
+            if (envelope != 8) {
+                REG_NR42 = envelope;
+                REG_NR44 = 0x80;
             }
-            temp_r0_33780 = temp_r3_33712 + (*(u16 *)((u8 *)(var_r0_33771) + (2)));
-            (*(void **)((u8 *)(arg2) + (0))) = temp_r0_33780;
-            var_r0_33744 = (*(u16 *)((u8 *)(temp_r0_33780) + (4)));
-            goto block_11;
+            if (duty != 0xFF) {
+                vu8 *noise_register = (vu8 *)REG_ADDR_NR43;
+                u8 noise = Sound_NoteToNoiseControl(pitch);
+                if (duty != 0)
+                    noise |= 8;
+                *noise_register = noise;
+            } else {
+                REG_NR43 = Sound_NoteToNoiseControl(pitch) | (REG_NR43 & 8);
+            }
+            break;
+        }
+    }
+}
+
+/* Original address: 0x020279BC */
+void Sound_PlayNote(SoundTrack *track, u8 key, u8 velocity, u16 duration) {
+    SoundInstrumentResult result;
+    SoundPlayer *player = track->player;
+    SoundInstrument *instrument;
+    SoundChannel *channel;
+    if (track->muted)
+        return;
+    key += track->transpose;
+    Sound_ResolveInstrument(track, key, &result);
+    instrument = result.instrument;
+    if (instrument->flags & 0x10)
+        duration = (u32)duration / player->timing.values.tempo;
+    else
+        duration = duration / (player->timing.values.tempo_adjust + player->timing.values.tempo);
+    if (track->tie && track->channel != NULL) {
+        channel = track->channel;
+    } else {
+        channel = Sound_AllocateChannel(sSoundInstrumentChannelTypes[instrument->type], track, track->priority);
+        if (channel == NULL)
+            return;
+        Sound_AttachChannelToTrack(track, channel);
+        channel->age = 0;
+        channel->vibrato.params = &track->vibrato;
+        channel->vibrato.phase = 0;
+        channel->vibrato.delay = track->vibrato.delay;
+        channel->envelope.points = result.envelope;
+        channel->envelope.volume = 0;
+        channel->envelope.target_volume = 0;
+        channel->envelope.timer = 0;
+        channel->envelope.index = -1;
+        channel->release = instrument->release;
+        channel->instrument = instrument;
+    }
+    channel->fixed_pan = result.fixed_pan;
+    if (channel->fixed_pan) {
+        key = 48;
+        channel->pan = result.pan;
+    } else if (result.fixed_pitch) {
+        key = 48;
+    }
+    channel->velocity = velocity;
+    channel->volume = 0;
+    channel->gate_timer = duration;
+    channel->unk_1A = track->unk_4C;
+    channel->base_pitch = Sound_NoteToPitch(channel, key, instrument->root_key);
+    channel->slide.params = &track->slide;
+    if (track->slide.enabled) {
+        s32 pitch = Sound_NoteToPitch(channel, track->slide.key, instrument->root_key);
+        channel->slide.delay = track->slide.delay;
+        channel->slide.timer = ((u32)track->slide.duration * duration) >> 8;
+        if (track->slide.flags & 2) {
+            channel->slide.target = pitch - channel->base_pitch;
+        } else {
+            channel->slide.target = channel->base_pitch - pitch;
+            channel->base_pitch = pitch;
+        }
+        channel->slide.step = channel->slide.target;
+        channel->slide.step /= channel->slide.timer;
+        if ((u8)(track->slide.flags & 4))
+            track->slide.key = key;
+        else
+            track->slide.enabled = 0;
+        channel->slide.offset = 0;
+    } else {
+        channel->slide.delay = 0;
+        channel->slide.timer = 0;
+        channel->slide.offset = 0;
+        channel->slide.target = 0;
+        channel->slide.step = 0;
+    }
+    if (channel->type == 0) {
+        channel->sample = (SoundSample *)((u8 *)track->sample_offsets + track->sample_offsets[instrument->sample]);
+    } else if (channel->type != 3) {
+        if (instrument->flags & 1)
+            channel->psg.sequence = result.duty_sequence;
+        else
+            channel->psg.duty = instrument->sample;
+    } else {
+        channel->psg.wave = result.wave;
+    }
+    if (duration == 0)
+        Sound_ReleaseChannel(channel);
+}
+
+/* Original address: 0x02027B94 */
+void Sound_ReleaseChannel(SoundChannel *channel) {
+    if (channel->state == 1 && channel->track->tie == 0) {
+        if (channel->type == 0) {
+            Sound_UnlinkChannel((u8 *)channel);
+            channel->state = 2;
+            Sound_InsertPcmChannelByPriority(channel);
+        } else {
+            u16 pitch = channel->pitch;
+            u32 release = channel->release;
+            if (channel->type == 3) {
+                channel->state = 2;
+            } else {
+                u8 envelope;
+                release >>= 5;
+                if (release == 0)
+                    envelope = 0;
+                else
+                    envelope = release | (channel->volume << 4);
+                switch (channel->type) {
+                case 1:
+                    REG_NR12 = envelope;
+                    REG_SOUND1CNT_X = pitch | 0x8000;
+                    REG_NR11 &= 0xC0;
+                    break;
+                case 2:
+                    REG_NR22 = envelope;
+                    REG_SOUND2CNT_H = pitch | 0x8000;
+                    REG_NR21 &= 0xC0;
+                    break;
+                case 4:
+                    REG_NR42 = envelope;
+                    REG_NR44 = 0x80;
+                    break;
+                }
+                channel->state = 0;
+            }
+        }
+        if (channel->fixed_pan == 0)
+            channel->pan = channel->track->pan;
+        Sound_DetachChannelFromTrack(channel->track, channel);
+    }
+}
+
+/* Original address: 0x02027C78 */
+void Sound_StopChannel(SoundChannel *channel) {
+    if (channel->state != 0) {
+        switch (channel->type) {
+        case 0:
+            Sound_UnlinkChannel((u8 *)channel);
+            channel->next = gSoundChannelLists.free_head.next;
+            channel->prev = &gSoundChannelLists.free_head;
+            gSoundChannelLists.free_head.next->prev = channel;
+            gSoundChannelLists.free_head.next = channel;
+            break;
+        case 1:
+            REG_NR12 = 8;
+            REG_NR14 = 0xC0;
+            break;
+        case 2:
+            REG_NR22 = 8;
+            REG_NR24 = 0xC0;
+            break;
+        case 3:
+            REG_NR30 = 0;
+            break;
+        case 4:
+            REG_NR42 = 8;
+            REG_NR44 = 0xC0;
+            break;
+        }
+        Sound_DetachChannelFromTrack(channel->track, channel);
+        channel->state = 0;
+    }
+}
+
+/* Original address: 0x02027D14 */
+void Sound_StartPsgChannel(SoundChannel *channel, u8 envelope) {
+    u8 duty;
+    u8 noise;
+    switch (channel->type) {
+    case 1:
+        REG_NR10 = ((SoundSquareInstrument *)channel->instrument)->sweep;
+        REG_SOUND1CNT_X = channel->base_pitch | 0x8000;
+        REG_NR12 = envelope;
+        if (channel->instrument->flags & 1)
+            REG_NR11 = channel->psg.sequence->values[0] << 6;
+        else
+            REG_NR11 = channel->psg.duty << 6;
+        REG_SOUND1CNT_X = channel->base_pitch | 0x8000;
+        break;
+    case 2:
+        REG_NR22 = envelope;
+        REG_SOUND2CNT_H = channel->base_pitch | 0x8000;
+        REG_NR21 = channel->psg.duty << 6;
+        break;
+    case 3:
+        if (channel->psg.wave != gSoundChannelLists.wave) {
+            REG_NR30 = 0;
+            CpuSet(channel->psg.wave, (void *)REG_ADDR_WAVE_RAM0, 8);
+            gSoundChannelLists.wave = (void *)channel->psg.wave;
+        }
+        REG_NR30 = 0xC0;
+        REG_SOUND3CNT_X = channel->base_pitch | 0x8000;
+        REG_NR32 = sPsgWaveVolume[envelope];
+        REG_NR31 = 0;
+        break;
+    case 4:
+        REG_NR42 = envelope;
+        if (channel->instrument->flags & 1) {
+            noise = Sound_NoteToNoiseControl(channel->base_pitch);
+            duty = channel->psg.sequence->values[0];
+        } else {
+            noise = Sound_NoteToNoiseControl(channel->base_pitch);
+            duty = channel->psg.duty;
+        }
+        if (duty != 0)
+            noise |= 8;
+        REG_NR43 = noise;
+        REG_NR44 = 0x80;
+        REG_NR41 = 0;
+        break;
+    }
+}
+
+/* Original address: 0x02027E74 */
+SoundChannel *Sound_AllocateChannel(u8 type, SoundTrack *track, u8 priority) {
+    SoundChannel *channel;
+    if (type == 0) {
+        SoundChannel *next = gSoundChannelLists.free_head.next;
+        if (next != &gSoundChannelLists.free_tail) {
+            channel = next;
+        } else {
+            SoundChannel *active = gSoundChannelLists.active_head.next;
+            if (active == &gSoundChannelLists.active_tail ||
+                (active->state == 1 && priority < active->priority))
+                return NULL;
+            channel = active;
+            Sound_StopChannel(channel);
+        }
+        Sound_UnlinkChannel((u8 *)channel);
+        channel->state = 1;
+        channel->priority = priority;
+        Sound_InsertPcmChannelByPriority(channel);
+    } else {
+        channel = &gPsgChannels[type - 1];
+        if (channel->state == 1 && priority < channel->priority)
+            return NULL;
+        if (channel->state != 0)
+            Sound_StopChannel(channel);
+        channel->state = 1;
+        channel->priority = priority;
+    }
+    return channel;
+}
+
+/* Original address: 0x02027F0C */
+u8 Sound_MixPcmChannel(SoundChannel *channel, u32 volume, u32 pitch, u8 pan) {
+    s32 position = channel->age;
+    u32 gain = (u16)volume;
+    s32 reached_end = 0;
+    s32 remaining = 176;
+    s16 *left;
+    s16 *right;
+    u32 left_gain;
+    const s8 *samples = (const s8 *)(channel->sample + 1);
+    u32 end;
+    s16 *stop;
+
+    left = gPcmMixBuffer.samples;
+    right = left + 176;
+    left_gain = (u16)((127 - pan) * gain) >> 7;
+    gain = (u16)(pan * gain) >> 7;
+    end = channel->sample->loop_end;
+    if (end == 0)
+        end = channel->sample->length;
+    if ((position + pitch * remaining) >> 8 < end) {
+        stop = right;
+    } else {
+        u32 count = ((end << 8) - position - 1 + pitch) / pitch;
+        stop = left + count;
+        reached_end = 1;
+    }
+
+    if (channel->sample->loop_end == 0 || reached_end == 0) {
+        position = gPcmChannelMixer(samples, left, right, stop, position, pitch, left_gain, gain);
+        if (reached_end)
+            return 1;
+    } else {
+        s32 loop_length = channel->sample->loop_end - channel->sample->loop_start;
+        loop_length <<= 8;
+        position = gPcmChannelMixer(samples, left, right, stop, position, pitch, left_gain, gain);
+        position -= loop_length;
+        remaining -= stop - left;
+        while (remaining != 0) {
+            left = stop;
+            right = left + 176;
+            if ((position + pitch * remaining) >> 8 < end) {
+                stop += remaining;
+                reached_end = 0;
+            } else {
+                u32 count = ((end << 8) - position - 1 + pitch) / pitch;
+                stop += count;
+                reached_end = 1;
+            }
+            position = gPcmChannelMixer(samples, left, right, stop, position, pitch, left_gain, gain);
+            if (reached_end)
+                position -= loop_length;
+            remaining -= stop - left;
+        }
+    }
+    channel->age = position;
+    return 0;
+}
+
+/* Original address: 0x02028098 */
+void Sound_InitKeySampleInstrument(void) {
+    sSoundKeySampleInstrument.type = 0;
+    sSoundKeySampleInstrument.flags = 0;
+    sSoundKeySampleInstrument.sample = 0;
+    sSoundKeySampleInstrument.envelope = 0;
+    sSoundKeySampleInstrument.release = 0;
+    sSoundKeySampleInstrument.root_key = 48;
+}
+
+/* Original address: 0x020280B4 */
+void Sound_ResolveInstrument(SoundTrack *track, u8 key, SoundInstrumentResult *result) {
+    const SoundBank *sound_bank = gSoundBank;
+    u32 bank_index = track->player->bank[track->bank];
+    const u32 *offsets = sound_bank->instrument_offsets;
+    const u8 *bank = (const u8 *)offsets + offsets[bank_index];
+    SoundInstrument *instrument = (SoundInstrument *)(bank + ((const u16 *)bank)[track->program]);
+    SoundInstrument *resolved;
+
+    result->fixed_pan = 0;
+    result->fixed_pitch = 0;
+    if (instrument->type & 0xF0) {
+        u32 type = instrument->type;
+        if (type == 0x10) {
+            const SoundKeyInstrument *keys = (const SoundKeyInstrument *)(bank + instrument->sample);
+            u8 index = key - ((SoundInstrumentMap *)instrument)->first_key;
+            result->fixed_pan = 1;
+            result->pan = keys[index].pan;
+            result->instrument = (SoundInstrument *)(bank + keys[index].instrument);
+            result->envelope = (const SoundEnvelopePoint *)(bank + result->instrument->envelope);
+        } else if (type == 0x11) {
+            const u16 *samples = (const u16 *)(bank + instrument->sample);
+            sSoundKeySampleInstrument.sample = samples[key];
+            result->instrument = &sSoundKeySampleInstrument;
+            result->envelope = sSoundKeySampleEnvelope;
+            result->fixed_pitch = 1;
+        } else if (type == 0x12) {
+            const SoundInstrumentSplit *split = (const SoundInstrumentSplit *)(bank + instrument->sample);
+            while (key > split->last_key)
+                split++;
+            result->instrument = (SoundInstrument *)(bank + split->instrument);
+            result->envelope = (const SoundEnvelopePoint *)(bank + result->instrument->envelope);
         }
     } else {
-        (*(void **)((u8 *)(arg2) + (0))) = temp_r5_33718;
-        var_r0_33744 = (u16) (*(u8 *)((u8 *)(temp_r5_33718) + (4)));
-block_11:
-        (*(s32 *)((u8 *)(arg2) + (4))) = (s32) (temp_r3_33712 + var_r0_33744);
+        result->instrument = instrument;
+        result->envelope = (const SoundEnvelopePoint *)(bank + instrument->envelope);
     }
-    temp_r2_33791 = (*(void **)((u8 *)(arg2) + (0)));
-    if ((*(u8 *)((u8 *)(temp_r2_33791) + (0))) == 3) {
-        (*(s32 *)((u8 *)(arg2) + (0xC))) = (s32) (temp_r3_33712 + (*(u16 *)((u8 *)(temp_r5_33718) + (2))));
-    }
-    if (1 & (*(u8 *)((u8 *)(temp_r2_33791) + (1)))) {
-        (*(s32 *)((u8 *)(arg2) + (8))) = (s32) (temp_r3_33712 + (*(u16 *)((u8 *)(temp_r2_33791) + (2))));
-    }
+    resolved = result->instrument;
+    if (resolved->type == 3)
+        result->wave = (const u16 *)(bank + instrument->sample);
+    if (resolved->flags & 1)
+        result->duty_sequence = (SoundDutySequence *)(bank + resolved->sample);
 }
 
-void sub_02028190(void) {
-    s32 *var_r0_33828;
-    s32 var_r1_33827;
-    s32 var_r2_33815;
-    void *temp_r0_33822;
-
-    var_r2_33815 = 0;
-    do {
-        temp_r0_33822 = (var_r2_33815 * 0x44) + 0x03001918;
-        (*(s8 *)((u8 *)(temp_r0_33822) + (0x41))) = 0;
-        var_r2_33815 += 1;
-        var_r1_33827 = 9;
-        var_r0_33828 = temp_r0_33822 + 0x2C;
-loop_2:
-        *var_r0_33828 = 0;
-        var_r0_33828 -= 4;
-        var_r1_33827 -= 1;
-        if (var_r1_33827 >= 0) {
-            goto loop_2;
+/* Original address: 0x02028190 */
+void Sound_InitPlayers(void) {
+    s32 i;
+    s32 j;
+    for (i = 0; i < 8; i++) {
+        SoundPlayer *player = &gSoundPlayers[i];
+        player->status = 0;
+        for (j = 0; j < 10; j++) {
+            player->tracks[j] = NULL;
         }
-    } while (var_r2_33815 <= 7);
+    }
 }
 
-void sub_020281C4(void *arg0) {
-    (*(u8 *)((u8 *)(arg0) + (0x3C))) = (u8) (-2 & (*(u8 *)((u8 *)(arg0) + (0x3C))));
-    (*(s16 *)((u8 *)(arg0) + (0x30))) = 0x96;
-    (*(s16 *)((u8 *)(arg0) + (0x32))) = 0;
-    (*(s8 *)((u8 *)(arg0) + (0x40))) = 0x80;
-    (*(s16 *)((u8 *)(arg0) + (0x34))) = 0x8000;
-    (*(s16 *)((u8 *)(arg0) + (0x36))) = 0;
-    (*(s16 *)((u8 *)(arg0) + (0x3A))) = 0;
-    (*(s16 *)((u8 *)(arg0) + (0x38))) = 0;
-    (*(s8 *)((u8 *)(arg0) + (0x43))) = 0;
+/* Original address: 0x020281C4 */
+void Sound_ResetPlayerParameters(SoundPlayer *player) {
+    player->control.flags &= ~1;
+    player->timing.values.tempo = 150;
+    player->timing.values.tempo_adjust = 0;
+    player->master_volume = 128;
+    player->volume = 0x8000;
+    player->volume_step = 0;
+    player->fade_timer = 0;
+    player->target_volume = 0;
+    player->tempo_mode = 0;
 }
 
-void sub_020281FC(void) {
-    s32 sp0;
-    s32 *var_r4_33917;
-    s32 var_r2_33914;
-    s32 var_r5_33918;
-    s32 var_r6_33878;
-    s32 var_r7_33888;
-    u16 temp_r0_33906;
-    u16 temp_r2_33891;
-    u8 temp_r0_33887;
-    void *temp_r1_33884;
+/* Original address: 0x020281FC */
+void Sound_UpdatePlayers(void) {
+    s32 i;
 
-    var_r6_33878 = 0;
-    do {
-        temp_r1_33884 = (var_r6_33878 * 0x44) + 0x03001918;
-        temp_r0_33887 = (*(u8 *)((u8 *)(temp_r1_33884) + (0x41)));
-        var_r7_33888 = var_r6_33878 + 1;
-        if (temp_r0_33887 != 0) {
-            temp_r2_33891 = (*(u16 *)((u8 *)(temp_r1_33884) + (0x3A)));
-            if (temp_r2_33891 == 0) {
-                if (temp_r0_33887 == 2) {
-                    sub_020283D4(var_r6_33878);
-                } else {
-                    goto block_7;
-                }
+    for (i = 0; i < 8; i++) {
+        SoundPlayer *player = &gSoundPlayers[i];
+
+        if (player->status != 0) {
+            if (player->fade_timer == 0 && player->status == 2) {
+                Sound_StopPlayer(i);
             } else {
-                (*(u16 *)((u8 *)(temp_r1_33884) + (0x34))) = (u16) ((*(u16 *)((u8 *)(temp_r1_33884) + (0x36))) + (*(u16 *)((u8 *)(temp_r1_33884) + (0x34))));
-                temp_r0_33906 = temp_r2_33891 - 1;
-                (*(u16 *)((u8 *)(temp_r1_33884) + (0x3A))) = temp_r0_33906;
-                if ((temp_r0_33906 << 0x10) == 0) {
-                    (*(u16 *)((u8 *)(temp_r1_33884) + (0x34))) = (u16) (*(u16 *)((u8 *)(temp_r1_33884) + (0x38)));
+                s32 active;
+                SoundTrack **track;
+                s32 j;
+
+                if (player->fade_timer != 0) {
+                    player->volume += player->volume_step;
+                    if (--player->fade_timer == 0)
+                        player->volume = player->target_volume;
                 }
-block_7:
-                var_r2_33914 = 0;
-                var_r7_33888 = var_r6_33878 + 1;
-                var_r4_33917 = temp_r1_33884 + 8;
-                var_r5_33918 = 9;
-                do {
-                    if (*var_r4_33917 != 0) {
-                        sp0 = var_r2_33914;
-                        if ((sub_020285C8((void **)*var_r4_33917) << 0x18) == 0) {
-                            var_r2_33914 = 1;
+                active = 0;
+                track = player->tracks;
+                for (j = 0; j < 10; j++) {
+                    if (player->tracks[j] != NULL) {
+                        if ((u8)Sound_UpdateTrack(player->tracks[j]) == 0) {
+                            active = 1;
                         } else {
-                            *var_r4_33917 = 0;
+                            player->tracks[j] = NULL;
                         }
                     }
-                    var_r4_33917 += 4;
-                    var_r5_33918 -= 1;
-                } while (var_r5_33918 >= 0);
-                if (var_r2_33914 == 0) {
-                    sub_020283D4(var_r6_33878);
+                }
+
+                if (!active) {
+                    Sound_StopPlayer(i);
                 }
             }
         }
-        var_r6_33878 = var_r7_33888;
-    } while (var_r6_33878 <= 7);
-}
-
-void sub_0202828C(s32 arg0, u32 arg1) {
-    s32 temp_r1_33958;
-    s32 temp_r2_33962;
-    s32 temp_r3_33957;
-    void *temp_r4_33956;
-
-    temp_r4_33956 = *(void **)0x03000594;
-    temp_r3_33957 = (*(s32 *)((u8 *)(temp_r4_33956) + (8)));
-    temp_r1_33958 = arg1 * 4;
-    temp_r2_33962 = (*(s32 *)((u8 *)(temp_r4_33956) + (0x14)));
-    sub_020282E0(arg0, temp_r3_33957 + *(u32 *)(temp_r1_33958 + temp_r3_33957), temp_r2_33962 + *(u32 *)(temp_r1_33958 + temp_r2_33962));
-}
-
-void sub_020282B4(s32 arg0, u16 arg1, u32 arg2) {
-    s32 temp_r1_33981;
-    s32 temp_r2_33985;
-    s32 temp_r4_33980;
-    void *temp_r5_33979;
-
-    temp_r5_33979 = *(void **)0x03000594;
-    temp_r4_33980 = (*(s32 *)((u8 *)(temp_r5_33979) + (0xC)));
-    temp_r1_33981 = arg1 * 4;
-    temp_r2_33985 = (*(s32 *)((u8 *)(temp_r5_33979) + (0x18)));
-    sub_02028368(arg0, temp_r4_33980 + *(u32 *)(temp_r1_33981 + temp_r4_33980), temp_r2_33985 + *(u32 *)(temp_r1_33981 + temp_r2_33985), arg2);
-}
-
-void sub_020282E0(s32 arg0, s8 *arg1, s32 arg2) {
-    s32 temp_r0_34007;
-    s32 var_r6_34030;
-    s8 *temp_r0_34026;
-    s8 temp_r7_34028;
-    u16 *var_r4_34034;
-    void **temp_r0_34039;
-    void *temp_r5_34009;
-
-    temp_r0_34007 = arg0 * 0x44;
-    temp_r5_34009 = temp_r0_34007 + 0x03001918;
-    if ((*(u8 *)((u8 *)(temp_r5_34009) + (0x41))) != 0) {
-        sub_020283D4(arg0);
     }
-    (*(s8 **)((u8 *)(temp_r5_34009) + (4))) = arg1;
-    *(u32 *)(0x03001918 + temp_r0_34007) = arg2;
-    (*(s8 *)((u8 *)(temp_r5_34009) + (0x42))) = 0;
-    sub_020281C4(temp_r5_34009);
-    temp_r0_34026 = (*(s8 **)((u8 *)(temp_r5_34009) + (4)));
-    temp_r7_34028 = *temp_r0_34026;
-    var_r6_34030 = 0;
-    if ((s32) temp_r7_34028 > 0) {
-        var_r4_34034 = temp_r0_34026 + 2;
+}
+/* Original address: 0x0202828C */
+void Sound_StartMusic(s32 player, u32 music) {
+    const SoundBank *bank = gSoundBank;
+    const u32 *sequences = bank->music_sequence_offsets;
+    const u8 *sequence = (const u8 *)sequences + sequences[music];
+    const u32 *banks = bank->music_bank_offsets;
+
+    Sound_StartMusicSequence(player, sequence, (const u16 *)((const u8 *)banks + banks[music]));
+}
+/* Original address: 0x020282B4 */
+void Sound_StartEffect(s32 player, u32 group, u32 effect) {
+    const SoundBank *bank = gSoundBank;
+    const u32 *sequences = bank->effect_sequence_offsets;
+    const u8 *sequence = (const u8 *)sequences + sequences[group];
+    const u32 *banks = bank->effect_bank_offsets;
+
+    Sound_StartEffectSequence(player, sequence, (const u16 *)((const u8 *)banks + banks[group]), effect);
+}
+
+/* Music sequences begin with a signed track count and a halfword offset table. */
+typedef struct SoundMusicSequence {
+    /* 0x00 */ s8 track_count;
+    /* 0x01 */ u8 reserved;
+    /* 0x02 */ u16 track_offsets[1];
+} SoundMusicSequence;
+
+/* Original address: 0x020282E0 */
+void Sound_StartMusicSequence(s32 index, const u8 *sequence, const u16 *bank) {
+    SoundPlayer *player = &gSoundPlayers[index];
+    const SoundMusicSequence *header;
+    const u16 *offsets;
+    const u16 *offset;
+    s32 count;
+    s32 i;
+
+    if (player->status != 0)
+        Sound_StopPlayer(index);
+    player->sequence = sequence;
+    player->bank = bank;
+    player->is_sound_effect = 0;
+    Sound_ResetPlayerParameters(player);
+    header = (const SoundMusicSequence *)player->sequence;
+    count = header->track_count;
+    offsets = header->track_offsets;
+    i = 0;
+    if (i < count) {
+        offset = offsets;
         do {
-            if (*var_r4_34034 != 0) {
-                temp_r0_34039 = sub_020284A0();
-                *(u32 *)(temp_r5_34009 + 8 + (var_r6_34030 * 4)) = temp_r0_34039;
-                sub_020284C4(temp_r0_34039, temp_r5_34009, (*(s8 **)((u8 *)(temp_r5_34009) + (4))) + *var_r4_34034);
+            if (*offset != 0) {
+                SoundTrack *track = Sound_FindFreeTrack();
+                player->tracks[i] = track;
+                Sound_StartTrack(track, player, (void *)(player->sequence + *offset));
             }
-            var_r4_34034 += 2;
-            var_r6_34030 += 1;
-        } while (var_r6_34030 < (s32) temp_r7_34028);
+            offset++;
+            i++;
+        } while (i < count);
     }
-    (*(u8 *)((u8 *)(temp_r5_34009) + (0x41))) = 1U;
+    player->status = 1;
 }
 
-void sub_02028368(s32 arg0, s32 arg1, s32 arg2, u32 arg3) {
-    s32 temp_r0_34079;
-    s32 temp_r2_34101;
-    void **temp_r0_34099;
-    void *temp_r5_34081;
+/* Original address: 0x02028368 */
+void Sound_StartEffectSequence(s32 index, const u8 *sequence, const u16 *bank, u32 effect) {
+    SoundPlayer *player = &gSoundPlayers[index];
+    SoundTrack *track;
 
-    temp_r0_34079 = arg0 * 0x44;
-    temp_r5_34081 = temp_r0_34079 + 0x03001918;
-    if ((*(u8 *)((u8 *)(temp_r5_34081) + (0x41))) != 0) {
-        sub_020283D4(arg0);
-    }
-    (*(s32 *)((u8 *)(temp_r5_34081) + (4))) = arg1;
-    *(u32 *)(0x03001918 + temp_r0_34079) = arg2;
-    (*(s8 *)((u8 *)(temp_r5_34081) + (0x42))) = 1;
-    sub_020281C4(temp_r5_34081);
-    temp_r0_34099 = sub_020284A0();
-    (*(void ***)((u8 *)(temp_r5_34081) + (8))) = temp_r0_34099;
-    temp_r2_34101 = (*(s32 *)((u8 *)(temp_r5_34081) + (4)));
-    sub_020284C4(temp_r0_34099, temp_r5_34081, temp_r2_34101 + *(u32 *)((arg3 * 2) + temp_r2_34101));
-    (*(u8 *)((u8 *)(temp_r5_34081) + (0x41))) = 1U;
+    if (player->status != 0)
+        Sound_StopPlayer(index);
+    player->sequence = sequence;
+    player->bank = bank;
+    player->is_sound_effect = 1;
+    Sound_ResetPlayerParameters(player);
+    track = Sound_FindFreeTrack();
+    player->tracks[0] = track;
+    Sound_StartTrack(track, player, (void *)(player->sequence + ((const u16 *)player->sequence)[effect]));
+    player->status = 1;
 }
 
-void sub_020283D4(s32 arg0) {
-    s32 var_r5_34137;
-    void ***var_r4_34136;
-    void *temp_r1_34127;
+/* Original address: 0x020283D4 */
+void Sound_StopPlayer(s32 index) {
+    SoundPlayer *player = &gSoundPlayers[index];
+    s32 i;
 
-    temp_r1_34127 = (arg0 * 0x44) + 0x03001918;
-    if ((*(u8 *)((u8 *)(temp_r1_34127) + (0x41))) != 0) {
-        var_r4_34136 = temp_r1_34127 + 8;
-        var_r5_34137 = 9;
-        do {
-            sub_020285B0(*var_r4_34136);
-            *var_r4_34136 = NULL;
-            var_r4_34136 += 4;
-            var_r5_34137 -= 1;
-        } while (var_r5_34137 >= 0);
-        (*(u8 *)((u8 *)(temp_r1_34127) + (0x41))) = 0U;
+    if (player->status != 0) {
+        for (i = 0; i < 10; i++) {
+            Sound_StopTrack((void **)player->tracks[i]);
+            player->tracks[i] = NULL;
+        }
+        player->status = 0;
     }
 }
 
-void sub_02028410(s32 arg0, s16 arg1) {
-    void *temp_r4_34162;
+/* Original address: 0x02028410 */
+void Sound_FadeOutPlayer(s32 index, s32 frames) {
+    SoundPlayer *player = &gSoundPlayers[index];
 
-    temp_r4_34162 = (arg0 * 0x44) + 0x03001918;
-    if ((*(u8 *)((u8 *)(temp_r4_34162) + (0x41))) != 0) {
-        (*(u8 *)((u8 *)(temp_r4_34162) + (0x41))) = 2U;
-        (*(s16 *)((u8 *)(temp_r4_34162) + (0x38))) = 0;
-        (*(s16 *)((u8 *)(temp_r4_34162) + (0x3A))) = arg1;
-        (*(s16 *)((u8 *)(temp_r4_34162) + (0x36))) = (s16) ((s32) (0 - (*(u16 *)((u8 *)(temp_r4_34162) + (0x34)))) / arg1);
+    if (player->status != 0) {
+        player->status = 2;
+        player->target_volume = 0;
+        player->fade_timer = frames;
+        player->volume_step = -player->volume / frames;
     }
 }
 
-void sub_02028448(s32 arg0, u8 arg1) {
-    void *temp_r2_34193;
+/* Original address: 0x02028448 */
+void Sound_SetPlayerPaused(s32 index, u8 paused) {
+    SoundPlayer *players = gSoundPlayers;
 
-    temp_r2_34193 = (arg0 * 0x44) + 0x03001918;
-    (*(u8 *)((u8 *)(temp_r2_34193) + (0x3C))) = (u8) ((-2 & (*(u8 *)((u8 *)(temp_r2_34193) + (0x3C)))) | (arg1 & 1));
+    players[index].control.bits.paused = paused;
 }
 
-u8 sub_0202846C(s32 arg0) {
-    return *(u32 *)(0x03001959 + (arg0 * 0x44));
+/* Original address: 0x0202846C */
+u32 Sound_GetPlayerStatus(s32 arg0) {
+    SoundPlayer *player = gSoundPlayers;
+
+    u32 status = (arg0 + player)->status;
+    return status;
 }
 
-void sub_02028480(void) {
-    s32 var_r2_34224;
-    void *var_r0_34223;
+static inline void Sound_ClearTrackOwners(SoundTrack *tracks) {
+    u8 *owner = (u8 *)&tracks->player;
+    s32 i;
 
-    var_r0_34223 = (void *)0x03000B2C;
-    var_r2_34224 = 0xF;
+    for (i = 15; i >= 0; i--) {
+        owner[0] = 0;
+        owner[1] = 0;
+        owner[2] = 0;
+        owner[3] = 0;
+        owner += sizeof(SoundTrack);
+    }
+}
+
+/* Original address: 0x02028480 */
+void Sound_InitTracks(void) {
+    Sound_ClearTrackOwners(gSoundTracks);
+}
+
+static inline SoundTrack *Sound_FindFreeTrackInPool(SoundTrack *track, SoundTrack *last) {
     do {
-        (*(s8 *)((u8 *)(var_r0_34223) + (0))) = 0;
-        (*(s8 *)((u8 *)(var_r0_34223) + (1))) = 0;
-        (*(s8 *)((u8 *)(var_r0_34223) + (2))) = 0;
-        (*(s8 *)((u8 *)(var_r0_34223) + (3))) = 0;
-        var_r0_34223 += 0x54;
-        var_r2_34224 -= 1;
-    } while (var_r2_34224 >= 0);
+        if (track->player == NULL)
+            return track;
+        track++;
+    } while ((s32)track <= (s32)last);
+    return NULL;
 }
 
-void **sub_020284A0(void) {
-    void **var_r1_34240;
-
-    var_r1_34240 = (void **)0x03000B24;
-loop_1:
-    if ((*(s32 *)((u8 *)(var_r1_34240) + (8))) == 0) {
-        return var_r1_34240;
-    }
-    var_r1_34240 += 0x54;
-    if ((s32) var_r1_34240 > 0x03001010) {
-        return NULL;
-    }
-    goto loop_1;
+/* Original address: 0x020284A0 */
+SoundTrack *Sound_FindFreeTrack(void) {
+    return Sound_FindFreeTrackInPool(gSoundTracks, &gSoundTracks[15]);
 }
 
-void sub_020284C4(void **arg0, void *arg1, void *arg2) {
-    s16 *temp_r0_34351;
-    u8 temp_r3_34318;
-    void *temp_r1_34289;
-    void *temp_r1_34302;
-    void *temp_r1_34305;
-    void *temp_r1_34310;
-
-    if (arg0 != NULL) {
-        if ((*(void **)((u8 *)(arg0) + (8))) != NULL) {
-            sub_020285B0(arg0);
-        }
-        (*(s32 *)((u8 *)(arg0) + (0x34))) = 0;
-        (*(s8 *)((u8 *)(arg0) + (0x49))) = 0;
-        (*(s8 *)((u8 *)((arg0 + 0x49)) + (1))) = 0;
-        (*(void **)((u8 *)(arg0) + (0))) = arg2;
-        (*(void **)((u8 *)(arg0) + (8))) = arg1;
-        (*(s32 *)((u8 *)(arg0) + (0xC))) = 0;
-        sub_02028A98(arg0, 0U);
-        temp_r1_34289 = arg0 + 0x4B;
-        (*(s8 *)((u8 *)(arg0) + (0x4B))) = 0x40;
-        (*(s16 *)((u8 *)(arg0) + (0x10))) = 0;
-        (*(s32 *)((u8 *)(arg0) + (0x14))) = 0x22;
-        (*(s32 *)((u8 *)(arg0) + (0x18))) = 0;
-        (*(s8 *)((u8 *)(arg0) + (0x1C))) = 0;
-        (*(s8 *)((u8 *)(arg0) + (0x1D))) = 0;
-        (*(s8 *)((u8 *)(arg0) + (0x1E))) = 0;
-        (*(s16 *)((u8 *)(arg0) + (0x20))) = 0;
-        (*(s16 *)((u8 *)(arg0) + (0x22))) = 0;
-        temp_r1_34302 = temp_r1_34289 + 2;
-        (*(s8 *)((u8 *)(temp_r1_34289) + (2))) = 0x80;
-        temp_r1_34305 = temp_r1_34302 + 1;
-        (*(s8 *)((u8 *)(temp_r1_34302) + (1))) = 0x80;
-        (*(s8 *)((u8 *)(arg0) + (0x4F))) = 0;
-        temp_r1_34310 = temp_r1_34305 + 2;
-        (*(s8 *)((u8 *)(temp_r1_34305) + (2))) = 2;
-        (*(s8 *)((u8 *)(arg0) + (0x51))) = 0;
-        temp_r3_34318 = (*(u8 *)((u8 *)(arg1) + (0x42)));
-        if (temp_r3_34318 == 1) {
-            (*(s8 *)((u8 *)(temp_r1_34310) + (2))) = 0xC;
-            *(u32 *)((temp_r1_34310 + 2) - 6) = 0x7F;
-            (*(u8 *)((u8 *)(arg0) + (0x53))) = temp_r3_34318;
+/* Original address: 0x020284C4 */
+void Sound_StartTrack(SoundTrack *track, SoundPlayer *player, const u8 *sequence) {
+    if (track != NULL) {
+        if (track->player != NULL)
+            Sound_StopTrack((void **)track);
+        track->tick_accumulator = 0;
+        track->tie = 0;
+        track->muted = 0;
+        track->sequence = sequence;
+        track->player = player;
+        track->channel = NULL;
+        Sound_SetTrackBank(track, 0);
+        track->pan = 64;
+        track->vibrato.delay = 0;
+        track->vibrato.speed = 34;
+        track->vibrato.depth = 0;
+        track->slide.enabled = 0;
+        track->slide.flags = 0;
+        track->slide.key = 0;
+        track->slide.delay = 0;
+        track->slide.duration = 0;
+        track->volume = 128;
+        track->expression = 128;
+        track->pitch_bend = 0;
+        track->pitch_bend_range = 2;
+        track->transpose = 0;
+        if (player->is_sound_effect == 1) {
+            track->priority = 12;
+            track->unk_4C = 127;
+            track->unk_53 = 1;
         } else {
-            (*(s8 *)((u8 *)(arg0) + (0x52))) = 3;
-            (*(s8 *)((u8 *)(arg0) + (0x4C))) = 0;
-            (*(s8 *)((u8 *)((arg0 + 0x4C)) + (7))) = 0;
+            track->priority = 3;
+            track->unk_4C = 0;
+            track->unk_53 = 0;
         }
-        (*(s16 *)((u8 *)(arg0) + (0x44))) = 0x7F;
-        (*(s8 *)((u8 *)(arg0) + (0x48))) = 0x7F;
-        temp_r0_34351 = (arg0 + 0x48) - 2;
-        *temp_r0_34351 = 0;
-        (*(s32 *)((u8 *)(arg0) + (0x30))) = (s32) (temp_r0_34351 - 0x22);
+        track->note_duration = 127;
+        track->velocity = 127;
+        track->rest_duration = 0;
+        track->stack_pointer = track->return_stack;
     }
 }
 
-void sub_02028580(void **arg0) {
+/* Original address: 0x02028580 */
+void Sound_ReleaseTrackChannels(void **arg0) {
     u8 temp_r6_34368;
     void *temp_r4_34376;
     void *var_r0_34371;
@@ -14424,7 +14096,7 @@ void sub_02028580(void **arg0) {
         if (var_r0_34371 != NULL) {
             do {
                 temp_r4_34376 = (*(void **)((u8 *)(var_r0_34371) + (0x78)));
-                sub_02027B94(var_r0_34371);
+                Sound_ReleaseChannel((SoundChannel *)var_r0_34371);
                 var_r0_34371 = temp_r4_34376;
             } while (var_r0_34371 != NULL);
         }
@@ -14432,743 +14104,588 @@ void sub_02028580(void **arg0) {
     }
 }
 
-void sub_020285B0(void **arg0) {
+/* Original address: 0x020285B0 */
+void Sound_StopTrack(void **arg0) {
     if (arg0 != NULL) {
-        sub_02028580(arg0);
+        Sound_ReleaseTrackChannels(arg0);
         (*(s32 *)((u8 *)(arg0) + (8))) = 0;
     }
 }
 
-s32 sub_020285C8(void **arg0) {
-    s32 sp0;
-    s32 (*temp_r2_34788)(void **, u8);
-    s32 (*temp_r7_34476)(void **, u8, u8, u16);
-    s16 temp_r1_34555;
-    s32 temp_r0_34934;
-    s32 temp_r1_34927;
-    s32 var_r1_34675;
-    s8 temp_r0_34540;
-    u16 var_r4_34449;
-    u16 var_r4_34474;
-    u16 var_r4_34514;
-    u32 temp_r0_34571;
-    u8 *var_r0_34772;
-    u8 var_r1_34766;
-    u8 var_r2_34451;
-    u8 var_r6_34440;
-    void ***temp_r6_34848;
-    void **temp_r0_34654;
-    void **temp_r0_34688;
-    void **temp_r0_34849;
-    void **temp_r1_34649;
-    void **var_r4_34853;
-    void *temp_r0_34461;
-    void *temp_r0_34665;
-    void *temp_r0_34668;
-    void *temp_r0_34707;
-    void *temp_r0_34791;
-    void *temp_r1_34413;
-    void *temp_r1_34679;
-    void *temp_r1_34682;
-    void *temp_r1_34686;
-    void *temp_r1_34831;
-    void *temp_r1_34833;
-    void *temp_r1_34896;
-    void *temp_r1_34901;
-    void *temp_r2_34439;
-    void *temp_r2_34441;
-    void *temp_r2_34552;
-    void *temp_r2_34838;
-    void *temp_r3_34548;
 
-    if ((arg0 == NULL) || (temp_r1_34413 = (*(void **)((u8 *)(arg0) + (8))), (temp_r1_34413 == NULL))) {
+/* Original address: 0x03000270 */
+extern SoundNoteCallback gSoundNoteCallback;
+/* Original address: 0x03000274 */
+extern SoundControlCallback gSoundControlCallback;
+
+/* Original address: 0x020285C8 */
+s32 Sound_UpdateTrack(SoundTrack *track) {
+    SoundPlayer *player;
+    u8 command;
+    u32 duration;
+    u8 velocity;
+    u16 offset;
+
+    if (track == NULL || track->player == NULL)
         return 1;
-    }
-    if (!(1 & (*(u8 *)((u8 *)(temp_r1_34413) + (0x3C))))) {
-    m2c_case_0x9:
-    m2c_case_0xA:
-    m2c_case_0xB:
-    m2c_case_0xC:
-    m2c_case_0xD:
-    m2c_case_0xE:
-    m2c_case_0xF:
-    m2c_case_0x10:
-    m2c_case_0x11:
-    m2c_case_0x12:
-    m2c_case_0x13:
-    m2c_case_0x14:
-    m2c_case_0x15:
-    m2c_case_0x16:
-    m2c_case_0x17:
-    m2c_case_0x18:
-    m2c_case_0x19:
-    m2c_case_0x1A:
-    m2c_case_0x1B:
-    m2c_case_0x1C:
-    m2c_case_0x1D:
-    m2c_case_0x28:
-    m2c_case_0x29:
-    m2c_case_0x2A:
-    m2c_case_0x2B:
-    m2c_case_0x2C:
-    m2c_case_0x2D:
-    m2c_case_0x2F:
-    m2c_case_0x30:
-    m2c_case_0x31:
-    m2c_case_0x33:
-    m2c_case_0x34:
-    m2c_case_0x35:
-    m2c_case_0x37:
-    m2c_case_0x38:
-    m2c_case_0x39:
-    m2c_case_0x3A:
-    m2c_case_0x3B:
-    m2c_case_0x3C:
-loop_67:
-        temp_r1_34927 = (*(s32 *)((u8 *)(arg0) + (0x34)));
-        if (temp_r1_34927 <= 0) {
-            temp_r2_34439 = (*(void **)((u8 *)(arg0) + (0)));
-            var_r6_34440 = (*(u8 *)((u8 *)(temp_r2_34439) + (0)));
-            temp_r2_34441 = temp_r2_34439 + 1;
-            (*(void **)((u8 *)(arg0) + (0))) = temp_r2_34441;
-            if ((u32) var_r6_34440 <= 0xBFU) {
-                if ((u32) var_r6_34440 <= 0x5FU) {
-                    var_r4_34449 = (*(u16 *)((u8 *)(arg0) + (0x44)));
-                    var_r2_34451 = (*(u8 *)((u8 *)((arg0 + 0x44)) + (4)));
-                } else {
-                    var_r4_34449 = sub_02028A74(arg0);
-                    (*(u16 *)((u8 *)(arg0) + (0x44))) = var_r4_34449;
-                    temp_r0_34461 = (*(void **)((u8 *)(arg0) + (0)));
-                    var_r2_34451 = (*(u8 *)((u8 *)(temp_r0_34461) + (0)));
-                    (*(void **)((u8 *)(arg0) + (0))) = temp_r0_34461 + 1;
-                    (*(u8 *)((u8 *)(arg0) + (0x48))) = var_r2_34451;
-                    var_r6_34440 -= 0x60;
-                }
-                var_r4_34474 = 0x96 * var_r4_34449;
-                temp_r7_34476 = *(s32 (**)(void **, u8, u8, u16))0x03000270;
-                if ((temp_r7_34476 != NULL) && (1 & (*(u8 *)((u8 *)(temp_r1_34413) + (0x43))))) {
-                    temp_r7_34476(arg0, var_r6_34440, var_r2_34451, var_r4_34474);
-                } else {
-                    sub_020279BC(arg0, var_r6_34440, var_r2_34451, var_r4_34474);
-                }
-                if ((*(u8 *)((u8 *)(arg0) + (0x53))) != 1) {
-
-                } else {
-                    goto block_23;
-                }
-                goto loop_67;
-            }
-            if (var_r6_34440 == 0xC0) {
-                var_r4_34514 = (*(u16 *)((u8 *)(arg0) + (0x46)));
-                goto block_22;
-            }
-            if (var_r6_34440 == 0xC1) {
-                var_r4_34514 = sub_02028A74(arg0);
-                (*(u16 *)((u8 *)(arg0) + (0x46))) = var_r4_34514;
-block_22:
-                var_r4_34474 = 0x96 * var_r4_34514;
-block_23:
-                (*(s32 *)((u8 *)(arg0) + (0x34))) = (s32) ((*(s32 *)((u8 *)(arg0) + (0x34))) + var_r4_34474);
-                goto loop_67;
-            }
-            if ((0xF0 & var_r6_34440) == 0xD0) {
-                temp_r0_34540 = 0xF & var_r6_34440;
-                (*(s8 *)((u8 *)(arg0) + (0x1D))) = temp_r0_34540;
-                (*(s8 *)((u8 *)(arg0) + (0x1E))) = (s8) ((*(u8 *)((u8 *)(arg0) + (0x51))) + (*(u8 *)((u8 *)(temp_r2_34439) + (1))));
-                temp_r3_34548 = temp_r2_34441 + 1;
-                (*(void **)((u8 *)(arg0) + (0))) = temp_r3_34548;
-                (*(s16 *)((u8 *)(arg0) + (0x22))) = (s16) (*(u8 *)((u8 *)(temp_r2_34441) + (1)));
-                temp_r2_34552 = temp_r3_34548 + 1;
-                (*(void **)((u8 *)(arg0) + (0))) = temp_r2_34552;
-                temp_r1_34555 = 1 & temp_r0_34540;
-                if (temp_r1_34555 != 0) {
-                    (*(s16 *)((u8 *)(arg0) + (0x20))) = (s16) (*(u8 *)((u8 *)(temp_r3_34548) + (1)));
-                    (*(void **)((u8 *)(arg0) + (0))) = temp_r2_34552 + 1;
-                } else {
-                    (*(s16 *)((u8 *)(arg0) + (0x20))) = temp_r1_34555;
-                }
-                (*(s8 *)((u8 *)(arg0) + (0x1C))) = 1;
-                goto loop_67;
-            }
-            temp_r0_34571 = var_r6_34440 - 0xC2;
-            switch (temp_r0_34571) {                /* irregular */
-            case 0x3D:
-                temp_r1_34649 = (*(void ***)((u8 *)(arg0) + (0x30)));
-                if (temp_r1_34649 == (arg0 + 0x24)) {
-                    sub_020285B0(arg0);
-                    return 2;
-                }
-                temp_r0_34654 = temp_r1_34649 - 4;
-                (*(void ***)((u8 *)(arg0) + (0x30))) = temp_r0_34654;
-                (*(void **)((u8 *)(arg0) + (0))) = *temp_r0_34654;
-                goto loop_67;
-            case 0x26:
-                (*(s8 *)((u8 *)(arg0) + (0x1C))) = 0;
-                goto loop_67;
-            case 0x2E:
-                temp_r0_34665 = (*(void **)((u8 *)(arg0) + (0)));
-                (*(u8 *)((u8 *)(&sp0) + (0))) = (u8) (*(u8 *)((u8 *)(temp_r0_34665) + (0)));
-                temp_r0_34668 = temp_r0_34665 + 1;
-                (*(void **)((u8 *)(arg0) + (0))) = temp_r0_34668;
-                (*(u8 *)((u8 *)(&sp0) + (1))) = (u8) (*(u8 *)((u8 *)(temp_r0_34665) + (1)));
-                (*(void **)((u8 *)(arg0) + (0))) = temp_r0_34668 + 1;
-                var_r1_34675 = (*(s32 *)((u8 *)(temp_r1_34413) + (4)));
-block_38:
-                (*(void **)((u8 *)(arg0) + (0))) = var_r1_34675 + (u16) (*(u8 *)((u8 *)(&sp0) + (0)));
-                goto loop_67;
-            case 0x32:
-                temp_r1_34679 = (*(void **)((u8 *)(arg0) + (0)));
-                (*(u8 *)((u8 *)(&sp0) + (0))) = (u8) (*(u8 *)((u8 *)(temp_r1_34679) + (0)));
-                temp_r1_34682 = temp_r1_34679 + 1;
-                (*(void **)((u8 *)(arg0) + (0))) = temp_r1_34682;
-                (*(u8 *)((u8 *)(&sp0) + (1))) = (u8) (*(u8 *)((u8 *)(temp_r1_34679) + (1)));
-                temp_r1_34686 = temp_r1_34682 + 1;
-                (*(void **)((u8 *)(arg0) + (0))) = temp_r1_34686;
-                temp_r0_34688 = (*(void ***)((u8 *)(arg0) + (0x30)));
-                *temp_r0_34688 = temp_r1_34686;
-                (*(void ***)((u8 *)(arg0) + (0x30))) = (void **) (temp_r0_34688 + 4);
-                var_r1_34675 = (*(s32 *)((u8 *)(temp_r1_34413) + (4)));
-                goto block_38;
-            case 0x0:
-                (*(u16 *)((u8 *)(arg0) + (0x42))) = (u16) (*(u8 *)((u8 *)((*(void **)((u8 *)(arg0) + (0)))) + (0)));
-block_56:
-                (*(void **)((u8 *)(arg0) + (0))) += 1;
-                goto loop_67;
-            case 0x5:
-                temp_r0_34707 = (*(void **)((u8 *)(arg0) + (0)));
-                (*(void **)((u8 *)(arg0) + (0))) = temp_r0_34707 + 1;
-                sub_02028A98(arg0, (*(u8 *)((u8 *)(temp_r0_34707) + (0))));
-                goto loop_67;
-            case 0x1:
-                (*(u8 *)((u8 *)(arg0) + (0x4B))) = (u8) (*(u8 *)((u8 *)((*(void **)((u8 *)(arg0) + (0)))) + (0)));
-                goto block_56;
-            case 0x2:
-                (*(u8 *)((u8 *)(arg0) + (0x52))) = (u8) (*(u8 *)((u8 *)((*(void **)((u8 *)(arg0) + (0)))) + (0)));
-                goto block_56;
-            case 0x1E:
-                (*(u8 *)((u8 *)(arg0) + (0x4D))) = (u8) (*(u8 *)((u8 *)((*(void **)((u8 *)(arg0) + (0)))) + (0)));
-                goto block_56;
-            case 0x1F:
-                (*(u8 *)((u8 *)(arg0) + (0x4F))) = (u8) (*(u8 *)((u8 *)((*(void **)((u8 *)(arg0) + (0)))) + (0)));
-                goto block_56;
-            case 0x20:
-                (*(u8 *)((u8 *)(arg0) + (0x50))) = (u8) (*(u8 *)((u8 *)((*(void **)((u8 *)(arg0) + (0)))) + (0)));
-                goto block_56;
-            case 0x27:
-                (*(u8 *)((u8 *)(arg0) + (0x51))) = (u8) (*(u8 *)((u8 *)((*(void **)((u8 *)(arg0) + (0)))) + (0)));
-                goto block_56;
-            case 0x21:
-                (*(u8 *)((u8 *)(arg0) + (0x4C))) = (u8) (*(u8 *)((u8 *)((*(void **)((u8 *)(arg0) + (0)))) + (0)));
-                goto block_56;
-            case 0x3:
-            case 0x4:
-                sub_02028580(arg0);
-                var_r1_34766 = 0;
-                if (var_r6_34440 == 0xC5) {
-                    var_r1_34766 = 1;
-                }
-                var_r0_34772 = arg0 + 0x49;
-block_66:
-                *var_r0_34772 = var_r1_34766;
-                goto loop_67;
-            case 0x6:
-                (*(u8 *)((u8 *)(arg0) + (0x53))) = 1U;
-                goto loop_67;
-            case 0x7:
-                (*(u8 *)((u8 *)(arg0) + (0x53))) = 0U;
-                goto loop_67;
-            case 0x8:
-                temp_r2_34788 = *(s32 (**)(void **, u8))0x03000274;
-                if (temp_r2_34788 != NULL) {
-                    temp_r0_34791 = (*(void **)((u8 *)(arg0) + (0)));
-                    (*(void **)((u8 *)(arg0) + (0))) = temp_r0_34791 + 1;
-                    temp_r2_34788(arg0, (*(u8 *)((u8 *)(temp_r0_34791) + (0))));
-                } else {
-                    goto block_56;
-                }
-                goto loop_67;
-            case 0x22:
-                (*(u16 *)((u8 *)(temp_r1_34413) + (0x30))) = (u16) (*(u8 *)((u8 *)((*(void **)((u8 *)(arg0) + (0)))) + (0)));
-block_61:
-                (*(void **)((u8 *)(arg0) + (0))) += 1;
-                goto loop_67;
-            case 0x23:
-                (*(s16 *)((u8 *)(arg0) + (0x10))) = (s16) (*(u8 *)((u8 *)((*(void **)((u8 *)(arg0) + (0)))) + (0)));
-                goto block_61;
-            case 0x25:
-                (*(s32 *)((u8 *)(arg0) + (0x18))) = (s32) (*(u8 *)((u8 *)((*(void **)((u8 *)(arg0) + (0)))) + (0)));
-                goto block_61;
-            case 0x24:
-                (*(s32 *)((u8 *)(arg0) + (0x14))) = (s32) (*(u8 *)((u8 *)((*(void **)((u8 *)(arg0) + (0)))) + (0)));
-                goto block_61;
-            case 0x36:
-                temp_r1_34831 = (*(void **)((u8 *)(arg0) + (0)));
-                temp_r1_34833 = temp_r1_34831 + 1;
-                (*(void **)((u8 *)(arg0) + (0))) = temp_r1_34833;
-                (*(u8 *)((u8 *)(&sp0) + (0))) = (u8) (*(u8 *)((u8 *)(temp_r1_34831) + (1)));
-                temp_r2_34838 = temp_r1_34833 + 1;
-                (*(void **)((u8 *)(arg0) + (0))) = temp_r2_34838;
-                (*(u8 *)((u8 *)(&sp0) + (1))) = (u8) (*(u8 *)((u8 *)(temp_r1_34833) + (1)));
-                (*(void **)((u8 *)(arg0) + (0))) = temp_r2_34838 + 1;
-                temp_r6_34848 = temp_r1_34413 + 8 + ((*(u8 *)((u8 *)(temp_r1_34831) + (0))) * 4);
-                temp_r0_34849 = *temp_r6_34848;
-                if (temp_r0_34849 == NULL) {
-                    var_r4_34853 = sub_020284A0();
-                    *temp_r6_34848 = var_r4_34853;
-                } else {
-                    var_r4_34853 = temp_r0_34849;
-                    sub_020285B0(var_r4_34853);
-                }
-                sub_020284C4(var_r4_34853, temp_r1_34413, (*(s32 *)((u8 *)(temp_r1_34413) + (4))) + (u16) (*(u8 *)((u8 *)(&sp0) + (0))));
-                (*(s32 *)((u8 *)(var_r4_34853) + (4))) = (s32) (*(s32 *)((u8 *)(arg0) + (4)));
-                (*(u16 *)((u8 *)(var_r4_34853) + (0x40))) = (u16) (*(u16 *)((u8 *)(arg0) + (0x40)));
-                (*(u16 *)((u8 *)(var_r4_34853) + (0x42))) = (u16) (*(u16 *)((u8 *)(arg0) + (0x42)));
-                (*(u8 *)((u8 *)((var_r4_34853 + 0x42)) + (9))) = (u8) (*(u8 *)((u8 *)(arg0) + (0x4B)));
-                (*(u8 *)((u8 *)(var_r4_34853) + (0x4C))) = (u8) (*(u8 *)((u8 *)(arg0) + (0x4C)));
-                temp_r1_34896 = var_r4_34853 + 0x4D;
-                (*(u8 *)((u8 *)(var_r4_34853) + (0x4D))) = (u8) (*(u8 *)((u8 *)(arg0) + (0x4D)));
-                temp_r1_34901 = temp_r1_34896 + 1;
-                (*(u8 *)((u8 *)(temp_r1_34896) + (1))) = (u8) (*(u8 *)((u8 *)(arg0) + (0x4E)));
-                (*(u8 *)((u8 *)(temp_r1_34901) + (4))) = (u8) (*(u8 *)((u8 *)(arg0) + (0x52)));
-                *(u32 *)((temp_r1_34901 + 4) - 3) = (*(u8 *)((u8 *)(arg0) + (0x4F)));
-                (*(u8 *)((u8 *)(var_r4_34853) + (0x50))) = (u8) (*(u8 *)((u8 *)(arg0) + (0x50)));
-                var_r1_34766 = (*(u8 *)((u8 *)(arg0) + (0x51)));
-                var_r0_34772 = var_r4_34853 + 0x51;
-                goto block_66;
-            }
-        } else {
-            temp_r0_34934 = temp_r1_34927 - (*(u16 *)((u8 *)(temp_r1_34413) + (0x30)));
-            (*(s32 *)((u8 *)(arg0) + (0x34))) = temp_r0_34934;
-            (*(s32 *)((u8 *)(arg0) + (0x34))) = (s32) (temp_r0_34934 - (*(s16 *)((u8 *)(temp_r1_34413) + (0x32))));
-            goto block_70;
-        }
+    player = track->player;
+    if (player->control.flags & 1) {
+        Sound_ReleaseTrackChannels((void **)track);
     } else {
-        sub_02028580(arg0);
-block_70:
-        return 0;
-    }
-}
+        while (track->tick_accumulator <= 0) {
+            command = *track->sequence++;
+            if (command <= 0xBF) {
+                if (command <= 0x5F) {
+                    duration = track->note_duration;
+                    velocity = track->velocity;
+                } else {
+                    duration = Sound_ReadSequenceDuration(track);
+                    track->note_duration = duration;
+                    velocity = *track->sequence++;
+                    track->velocity = velocity;
+                    command -= 0x60;
+                }
+                duration *= 150;
+                if (gSoundNoteCallback != NULL && (player->tempo_mode & 1))
+                    gSoundNoteCallback(track, command, velocity, duration);
+                else
+                    Sound_PlayNote(track, command, velocity, duration);
+                if (track->unk_53 == 1)
+                    track->tick_accumulator += duration;
+            } else if (command == 0xC0) {
+                duration = track->rest_duration;
+                duration *= 150;
+                track->tick_accumulator += duration;
+            } else if (command == 0xC1) {
+                duration = Sound_ReadSequenceDuration(track);
+                track->rest_duration = duration;
+                duration *= 150;
+                track->tick_accumulator += duration;
+            } else if ((command & 0xF0) == 0xD0) {
+                track->slide.flags = command & 0x0F;
+                track->slide.key = *track->sequence + track->transpose;
+                track->sequence++;
+                track->slide.duration = *track->sequence++;
+                if (track->slide.flags & 1) {
+                    track->slide.delay = *track->sequence++;
+                } else {
+                    track->slide.delay = 0;
+                }
+                track->slide.enabled = 1;
+            } else {
+                switch (command) {
+                case 0xFF: /* Return from a pattern, or end the track. */
+                    if (track->stack_pointer == track->return_stack) {
+                        Sound_StopTrack((void **)track);
+                        return 2;
+                    }
+                    track->sequence = *--track->stack_pointer;
+                    break;
+                case 0xE8:
+                    track->slide.enabled = 0;
+                    break;
+                case 0xF0: /* Jump to an offset in the player's sequence. */
+                    ((u8 *)&offset)[0] = *track->sequence++;
+                    ((u8 *)&offset)[1] = *track->sequence++;
+                    track->sequence = player->sequence;
+                    track->sequence += offset;
+                    break;
+                case 0xF4: /* Call a pattern. */
+                    ((u8 *)&offset)[0] = *track->sequence++;
+                    ((u8 *)&offset)[1] = *track->sequence++;
+                    *track->stack_pointer++ = track->sequence;
+                    track->sequence = player->sequence;
+                    track->sequence += offset;
+                    break;
+                case 0xC2:
+                    track->program = *track->sequence++;
+                    break;
+                case 0xC7:
+                    Sound_SetTrackBank(track, *track->sequence++);
+                    break;
+                case 0xC3:
+                    track->pan = *track->sequence++;
+                    break;
+                case 0xC4:
+                    track->priority = *track->sequence++;
+                    break;
+                case 0xE0:
+                    track->volume = *track->sequence++;
+                    break;
+                case 0xE1:
+                    track->pitch_bend = *track->sequence++;
+                    break;
+                case 0xE2:
+                    track->pitch_bend_range = *track->sequence++;
+                    break;
+                case 0xE9:
+                    track->transpose = *track->sequence++;
+                    break;
+                case 0xE3:
+                    track->unk_4C = *track->sequence++;
+                    break;
+                case 0xC5:
+                case 0xC6:
+                    Sound_ReleaseTrackChannels((void **)track);
+                    track->tie = command == 0xC5;
+                    break;
+                case 0xC8:
+                    track->unk_53 = 1;
+                    break;
+                case 0xC9:
+                    track->unk_53 = 0;
+                    break;
+                case 0xCA:
+                    if (gSoundControlCallback != NULL)
+                        gSoundControlCallback(track, *track->sequence++);
+                    else
+                        track->sequence++;
+                    break;
+                case 0xE4:
+                    player->timing.values.tempo = *track->sequence++;
+                    break;
+                case 0xE5:
+                    track->vibrato.delay = *track->sequence++;
+                    break;
+                case 0xE7:
+                    track->vibrato.depth = *track->sequence++;
+                    break;
+                case 0xE6:
+                    track->vibrato.speed = *track->sequence++;
+                    break;
+                case 0xF8: { /* Start another track with the current instrument settings. */
+                    u8 index = *track->sequence++;
+                    SoundTrack *child;
 
-void sub_02028A34(void **arg0, u8 *arg1) {
-    u8 *temp_r2_34958;
-    void **temp_r2_34953;
-
-    temp_r2_34953 = (*(void ***)((u8 *)(arg1) + (4)));
-    if (temp_r2_34953 == NULL) {
-        (*(void ***)((u8 *)(arg1) + (4))) = arg0;
-        (*(void ***)((u8 *)(arg1) + (0x74))) = temp_r2_34953;
-        temp_r2_34958 = (*(u8 **)((u8 *)(arg0) + (0xC)));
-        (*(u8 **)((u8 *)(arg1) + (0x78))) = temp_r2_34958;
-        (*(u8 **)((u8 *)(arg0) + (0xC))) = arg1;
-        if (temp_r2_34958 != NULL) {
-            (*(u8 **)((u8 *)(temp_r2_34958) + (0x74))) = arg1;
+                    ((u8 *)&offset)[0] = *track->sequence++;
+                    ((u8 *)&offset)[1] = *track->sequence++;
+                    if (player->tracks[index] == NULL) {
+                        child = Sound_FindFreeTrack();
+                        player->tracks[index] = child;
+                    } else {
+                        child = player->tracks[index];
+                        Sound_StopTrack((void **)child);
+                    }
+                    Sound_StartTrack(child, player, player->sequence + offset);
+                    child->sample_offsets = track->sample_offsets;
+                    child->bank = track->bank;
+                    child->program = track->program;
+                    child->pan = track->pan;
+                    child->unk_4C = track->unk_4C;
+                    child->volume = track->volume;
+                    child->expression = track->expression;
+                    child->priority = track->priority;
+                    child->pitch_bend = track->pitch_bend;
+                    child->pitch_bend_range = track->pitch_bend_range;
+                    child->transpose = track->transpose;
+                    break;
+                }
+                }
+            }
         }
+        track->tick_accumulator -= player->timing.values.tempo;
+        track->tick_accumulator -= player->timing.values.tempo_adjust;
+    }
+    return 0;
+}
+
+/* Original address: 0x02028A34 */
+void Sound_AttachChannelToTrack(SoundTrack *track, SoundChannel *channel) {
+    if (channel->track == NULL) {
+        SoundChannel *next;
+
+        channel->track = track;
+        channel->track_prev = NULL;
+        next = track->channel;
+        channel->track_next = next;
+        track->channel = channel;
+        if (next != NULL)
+            next->track_prev = channel;
     }
 }
 
-void sub_02028A4C(void *arg0, u8 *arg1) {
-    void *temp_r2_34975;
-    void *temp_r2_34981;
-
-    if ((*(s32 *)((u8 *)(arg1) + (4))) != 0) {
-        (*(s32 *)((u8 *)(arg1) + (4))) = 0;
-        temp_r2_34975 = (*(void **)((u8 *)(arg1) + (0x78)));
-        if (temp_r2_34975 != NULL) {
-            (*(void **)((u8 *)(temp_r2_34975) + (0x74))) = (void *) (*(void **)((u8 *)(arg1) + (0x74)));
-        }
-        temp_r2_34981 = (*(void **)((u8 *)(arg1) + (0x74)));
-        if (temp_r2_34981 != NULL) {
-            (*(void **)((u8 *)(temp_r2_34981) + (0x78))) = (void *) (*(void **)((u8 *)(arg1) + (0x78)));
-            return;
-        }
-        (*(void **)((u8 *)(arg0) + (0xC))) = (void *) (*(void **)((u8 *)(arg1) + (0x78)));
+/* Original address: 0x02028A4C */
+void Sound_DetachChannelFromTrack(SoundTrack *track, SoundChannel *channel) {
+    if (channel->track != NULL) {
+        channel->track = NULL;
+        if (channel->track_next != NULL)
+            channel->track_next->track_prev = channel->track_prev;
+        if (channel->track_prev != NULL)
+            channel->track_prev->track_next = channel->track_next;
+        else
+            track->channel = channel->track_next;
     }
 }
 
-u16 sub_02028A74(void **arg0) {
-    u8 var_r1_34997;
-    void *temp_r2_34996;
-    void *temp_r2_34998;
+/* Original address: 0x02028A74 */
+u16 Sound_ReadSequenceDuration(SoundTrack *track) {
+    u32 duration = *track->sequence++;
 
-    temp_r2_34996 = *arg0;
-    var_r1_34997 = (*(u8 *)((u8 *)(temp_r2_34996) + (0)));
-    temp_r2_34998 = temp_r2_34996 + 1;
-    *arg0 = temp_r2_34998;
-    if (0x80 & var_r1_34997) {
-        var_r1_34997 = ((var_r1_34997 & 0x7F) << 8) | (*(u8 *)((u8 *)(temp_r2_34996) + (1)));
-        *arg0 = temp_r2_34998 + 1;
+    if (duration & 0x80)
+        duration = ((duration & 0x7F) << 8) | *track->sequence++;
+    return duration;
+}
+
+/* Original address: 0x02028A98 */
+void Sound_SetTrackBank(SoundTrack *track, u32 bank) {
+    const SoundBank *sound_bank;
+    u32 sample;
+    const u32 *offsets;
+
+    track->bank = bank;
+    track->program = 0;
+    sound_bank = gSoundBank;
+    sample = sound_bank->sample_indices[track->player->bank[bank]];
+    offsets = sound_bank->sample_offsets;
+    track->sample_offsets = (const u32 *)((const u8 *)offsets + offsets[sample]);
+}
+
+/* Each command is 0x0C bytes; the ring occupies 0x03000278..0x03000577. */
+enum SoundCommandType {
+    SOUND_COMMAND_START_MUSIC = 0,
+    SOUND_COMMAND_START_EFFECT = 1,
+    SOUND_COMMAND_FADE_OUT_PLAYER = 2,
+    SOUND_COMMAND_SET_PLAYER_PAUSED = 3,
+    SOUND_COMMAND_SET_PLAYER_TEMPO_ADJUST = 4,
+    SOUND_COMMAND_SET_PLAYER_MASTER_VOLUME = 5,
+    SOUND_COMMAND_SET_PLAYER_TEMPO_MODE = 6,
+    SOUND_COMMAND_SET_TRACKS_MUTED = 7,
+    SOUND_COMMAND_SET_TRACKS_EXPRESSION = 9,
+    SOUND_COMMAND_SET_TRACKS_PAN = 8,
+    SOUND_COMMAND_COMMAND_10 = 10,
+    SOUND_COMMAND_CALLBACK = 11,
+    SOUND_COMMAND_SET_CONTROL_CALLBACK = 12,
+    SOUND_COMMAND_SET_NOTE_CALLBACK = 13,
+};
+
+struct SoundCommand {
+    /* 0x00 */ u16 type;
+    /* 0x02 */ u16 reserved;
+    /* 0x04 */ union {
+        u32 value;
+        struct { u16 value; u16 player; } parts;
+        void (*callback)(u32);
+        SoundControlCallback control_callback;
+        SoundNoteCallback note_callback;
+    } arg0;
+    /* 0x08 */ u32 arg1;
+};
+
+/* Original address: 0x03000278 */
+extern SoundCommand gSoundCommands[64];
+/* Original address: 0x03000584 */
+extern SoundCommand *gSoundCommandRead;
+/* Original address: 0x03000588 */
+extern SoundCommand *gSoundCommandWrite;
+/* Original address: 0x0300058C */
+extern SoundCommand *gSoundCommandCommitted;
+/* Original address: 0x03000590 */
+extern SoundCommand *gSoundCommandEnd;
+
+/* Original address: 0x02028ACC */
+void Sound_InitCommandQueue(void) {
+    gSoundCommandRead = gSoundCommands;
+    gSoundCommandWrite = gSoundCommands;
+    gSoundCommandCommitted = gSoundCommands;
+    gSoundCommandEnd = gSoundCommands + 64;
+    gSoundNoteCallback = NULL;
+    gSoundControlCallback = NULL;
+}
+
+static inline void Sound_AdvanceCommandPointer(SoundCommand **cursor) {
+    (*cursor)++;
+    if (*cursor == gSoundCommandEnd) {
+        *cursor = gSoundCommands;
     }
-    return (u16) var_r1_34997;
 }
 
-void sub_02028A98(void **arg0, s16 arg1) {
-    s32 temp_r1_35034;
-    void *temp_r2_35024;
+/* Original address: 0x02028B0C */
+SoundCommand *Sound_ReadCommand(void) {
+    SoundCommand *command = gSoundCommandRead;
 
-    (*(s16 *)((u8 *)(arg0) + (0x40))) = arg1;
-    (*(s16 *)((u8 *)((arg0 + 0x40)) + (2))) = 0;
-    temp_r2_35024 = *(void **)0x03000594;
-    temp_r1_35034 = (*(s32 *)((u8 *)(temp_r2_35024) + (0)));
-    (*(s32 *)((u8 *)(arg0) + (4))) = (s32) (temp_r1_35034 + *(u32 *)((*(u32 *)((*(u32 *)((arg1 * 2) + *(*(s32 **)((u8 *)(arg0) + (8)))) * 2) + (*(s32 *)((u8 *)(temp_r2_35024) + (0x10)))) * 4) + temp_r1_35034));
-}
-
-void sub_02028ACC(void) {
-    *(s32 *)0x03000584 = 0x03000278;
-    *(s32 *)0x03000588 = 0x03000278;
-    *(s32 *)0x0300058C = 0x03000278;
-    *(s32 *)0x03000590 = 0x03000578;
-    *(s32 *)0x03000270 = 0;
-    *(s32 *)0x03000274 = 0;
-}
-
-void *sub_02028B0C(void) {
-    void *temp_r0_35088;
-    void *temp_r2_35076;
-
-    temp_r2_35076 = *(void **)0x03000584;
-    if (temp_r2_35076 == *(s32 *)0x0300058C) {
+    if (command == gSoundCommandCommitted) {
         return NULL;
-    }
-    temp_r0_35088 = temp_r2_35076 + 0xC;
-    *(void **)0x03000584 = temp_r0_35088;
-    if (temp_r0_35088 == *(s32 *)0x03000590) {
-        *(void **)0x03000584 = (void *)0x03000278;
-    }
-    return temp_r2_35076;
-}
-
-void sub_02028B44(void) {
-    *(s32 *)0x0300058C = *(s32 *)0x03000588;
-}
-
-void sub_02028B58(u16 arg0, u16 arg1) {
-    void *temp_r2_35123;
-    void *temp_r2_35128;
-
-    temp_r2_35123 = *(void **)0x03000588;
-    (*(s16 *)((u8 *)(temp_r2_35123) + (0))) = 0;
-    (*(s32 *)((u8 *)(temp_r2_35123) + (4))) = (s32) arg0;
-    (*(s32 *)((u8 *)(temp_r2_35123) + (8))) = (s32) arg1;
-    temp_r2_35128 = temp_r2_35123 + 0xC;
-    *(void **)0x03000588 = temp_r2_35128;
-    if (temp_r2_35128 == *(s32 *)0x03000590) {
-        *(void **)0x03000588 = (void *)0x03000278;
+    } else {
+        Sound_AdvanceCommandPointer(&gSoundCommandRead);
+        return command;
     }
 }
 
-void sub_02028B90(s32 arg0, u16 arg1, u16 arg2) {
-    void *temp_r3_35153;
-    void *temp_r3_35160;
+/* Original address: 0x02028B44 */
+void Sound_CommitCommands(void) {
+    gSoundCommandCommitted = gSoundCommandWrite;
+}
 
-    temp_r3_35153 = *(void **)0x03000588;
-    (*(s16 *)((u8 *)(temp_r3_35153) + (0))) = 1;
-    (*(s32 *)((u8 *)(temp_r3_35153) + (4))) = (s32) ((arg0 << 0x10) | arg1);
-    (*(s32 *)((u8 *)(temp_r3_35153) + (8))) = (s32) arg2;
-    temp_r3_35160 = temp_r3_35153 + 0xC;
-    *(void **)0x03000588 = temp_r3_35160;
-    if (temp_r3_35160 == *(s32 *)0x03000590) {
-        *(void **)0x03000588 = (void *)0x03000278;
+/* Original address: 0x02028B58 */
+void Sound_QueueStartMusic(u16 player, u16 music) {
+    SoundCommand *command = gSoundCommandWrite;
+
+    command->type = SOUND_COMMAND_START_MUSIC;
+    command->arg0.value = player;
+    command->arg1 = music;
+    gSoundCommandWrite = command + 1;
+    if (gSoundCommandWrite == gSoundCommandEnd) {
+        gSoundCommandWrite = gSoundCommands;
     }
 }
 
-void sub_02028BCC(u16 arg0, u16 arg1) {
-    void *temp_r2_35185;
-    void *temp_r2_35190;
+/* Original address: 0x02028B90 */
+void Sound_QueueStartEffect(u32 player, u16 group, u16 effect) {
+    SoundCommand *command = gSoundCommandWrite;
 
-    temp_r2_35185 = *(void **)0x03000588;
-    (*(s16 *)((u8 *)(temp_r2_35185) + (0))) = 2;
-    (*(s32 *)((u8 *)(temp_r2_35185) + (4))) = (s32) arg0;
-    (*(s32 *)((u8 *)(temp_r2_35185) + (8))) = (s32) arg1;
-    temp_r2_35190 = temp_r2_35185 + 0xC;
-    *(void **)0x03000588 = temp_r2_35190;
-    if (temp_r2_35190 == *(s32 *)0x03000590) {
-        *(void **)0x03000588 = (void *)0x03000278;
+    command->type = SOUND_COMMAND_START_EFFECT;
+    command->arg0.value = (player << 16) | group;
+    command->arg1 = effect;
+    gSoundCommandWrite = command + 1;
+    if (gSoundCommandWrite == gSoundCommandEnd) {
+        gSoundCommandWrite = gSoundCommands;
     }
 }
 
-void sub_02028C04(u16 arg0, u8 arg1) {
-    void *temp_r2_35215;
-    void *temp_r2_35220;
+/* Original address: 0x02028BCC */
+void Sound_QueueFadeOutPlayer(u16 player, u16 frames) {
+    SoundCommand *command = gSoundCommandWrite;
 
-    temp_r2_35215 = *(void **)0x03000588;
-    (*(s16 *)((u8 *)(temp_r2_35215) + (0))) = 3;
-    (*(s32 *)((u8 *)(temp_r2_35215) + (4))) = (s32) arg0;
-    (*(s32 *)((u8 *)(temp_r2_35215) + (8))) = (s32) arg1;
-    temp_r2_35220 = temp_r2_35215 + 0xC;
-    *(void **)0x03000588 = temp_r2_35220;
-    if (temp_r2_35220 == *(s32 *)0x03000590) {
-        *(void **)0x03000588 = (void *)0x03000278;
+    command->type = SOUND_COMMAND_FADE_OUT_PLAYER;
+    command->arg0.value = player;
+    command->arg1 = frames;
+    gSoundCommandWrite = command + 1;
+    if (gSoundCommandWrite == gSoundCommandEnd) {
+        gSoundCommandWrite = gSoundCommands;
     }
 }
 
-void sub_02028C3C(u16 arg0, s16 arg1) {
-    void *temp_r2_35243;
-    void *temp_r2_35250;
+/* Original address: 0x02028C04 */
+void Sound_QueueSetPlayerPaused(u16 player, u8 paused) {
+    SoundCommand *command = gSoundCommandWrite;
 
-    temp_r2_35243 = *(void **)0x03000588;
-    (*(s16 *)((u8 *)(temp_r2_35243) + (0))) = 4;
-    (*(s32 *)((u8 *)(temp_r2_35243) + (4))) = (s32) arg0;
-    (*(s32 *)((u8 *)(temp_r2_35243) + (8))) = (s32) arg1;
-    temp_r2_35250 = temp_r2_35243 + 0xC;
-    *(void **)0x03000588 = temp_r2_35250;
-    if (temp_r2_35250 == *(s32 *)0x03000590) {
-        *(void **)0x03000588 = (void *)0x03000278;
+    command->type = SOUND_COMMAND_SET_PLAYER_PAUSED;
+    command->arg0.value = player;
+    command->arg1 = paused;
+    gSoundCommandWrite = command + 1;
+    if (gSoundCommandWrite == gSoundCommandEnd) {
+        gSoundCommandWrite = gSoundCommands;
     }
 }
 
-void sub_02028C74(u16 arg0, u8 arg1) {
-    void *temp_r2_35275;
-    void *temp_r2_35280;
+/* Original address: 0x02028C3C */
+void Sound_QueueSetPlayerTempoAdjust(u16 player, s16 adjustment) {
+    SoundCommand *command = gSoundCommandWrite;
 
-    temp_r2_35275 = *(void **)0x03000588;
-    (*(s16 *)((u8 *)(temp_r2_35275) + (0))) = 5;
-    (*(s32 *)((u8 *)(temp_r2_35275) + (4))) = (s32) arg0;
-    (*(s32 *)((u8 *)(temp_r2_35275) + (8))) = (s32) arg1;
-    temp_r2_35280 = temp_r2_35275 + 0xC;
-    *(void **)0x03000588 = temp_r2_35280;
-    if (temp_r2_35280 == *(s32 *)0x03000590) {
-        *(void **)0x03000588 = (void *)0x03000278;
+    command->type = SOUND_COMMAND_SET_PLAYER_TEMPO_ADJUST;
+    command->arg0.value = player;
+    command->arg1 = adjustment;
+    gSoundCommandWrite = command + 1;
+    if (gSoundCommandWrite == gSoundCommandEnd) {
+        gSoundCommandWrite = gSoundCommands;
     }
 }
 
-void sub_02028CAC(u16 arg0, u8 arg1) {
-    void *temp_r2_35305;
-    void *temp_r2_35310;
+/* Original address: 0x02028C74 */
+void Sound_QueueSetPlayerMasterVolume(u16 player, u8 volume) {
+    SoundCommand *command = gSoundCommandWrite;
 
-    temp_r2_35305 = *(void **)0x03000588;
-    (*(s16 *)((u8 *)(temp_r2_35305) + (0))) = 6;
-    (*(s32 *)((u8 *)(temp_r2_35305) + (4))) = (s32) arg0;
-    (*(s32 *)((u8 *)(temp_r2_35305) + (8))) = (s32) arg1;
-    temp_r2_35310 = temp_r2_35305 + 0xC;
-    *(void **)0x03000588 = temp_r2_35310;
-    if (temp_r2_35310 == *(s32 *)0x03000590) {
-        *(void **)0x03000588 = (void *)0x03000278;
+    command->type = SOUND_COMMAND_SET_PLAYER_MASTER_VOLUME;
+    command->arg0.value = player;
+    command->arg1 = volume;
+    gSoundCommandWrite = command + 1;
+    if (gSoundCommandWrite == gSoundCommandEnd) {
+        gSoundCommandWrite = gSoundCommands;
     }
 }
 
-void sub_02028CE4(s32 arg0, s32 arg1, u8 arg2) {
-    void *temp_r3_35333;
-    void *temp_r3_35340;
+/* Original address: 0x02028CAC */
+void Sound_QueueSetPlayerTempoMode(u16 player, u8 mode) {
+    SoundCommand *command = gSoundCommandWrite;
 
-    temp_r3_35333 = *(void **)0x03000588;
-    (*(s16 *)((u8 *)(temp_r3_35333) + (0))) = 7;
-    (*(s32 *)((u8 *)(temp_r3_35333) + (4))) = (s32) ((arg0 << 0x10) | arg2);
-    (*(s32 *)((u8 *)(temp_r3_35333) + (8))) = arg1;
-    temp_r3_35340 = temp_r3_35333 + 0xC;
-    *(void **)0x03000588 = temp_r3_35340;
-    if (temp_r3_35340 == *(s32 *)0x03000590) {
-        *(void **)0x03000588 = (void *)0x03000278;
+    command->type = SOUND_COMMAND_SET_PLAYER_TEMPO_MODE;
+    command->arg0.value = player;
+    command->arg1 = mode;
+    gSoundCommandWrite = command + 1;
+    if (gSoundCommandWrite == gSoundCommandEnd) {
+        gSoundCommandWrite = gSoundCommands;
     }
 }
 
-void sub_02028D1C(s32 arg0, s32 arg1, u8 arg2) {
-    void *temp_r3_35363;
-    void *temp_r3_35370;
+/* Original address: 0x02028CE4 */
+void Sound_QueueSetTracksMuted(u32 player, u32 tracks, u8 muted) {
+    SoundCommand *command = gSoundCommandWrite;
 
-    temp_r3_35363 = *(void **)0x03000588;
-    (*(s16 *)((u8 *)(temp_r3_35363) + (0))) = 9;
-    (*(s32 *)((u8 *)(temp_r3_35363) + (4))) = (s32) ((arg0 << 0x10) | arg2);
-    (*(s32 *)((u8 *)(temp_r3_35363) + (8))) = arg1;
-    temp_r3_35370 = temp_r3_35363 + 0xC;
-    *(void **)0x03000588 = temp_r3_35370;
-    if (temp_r3_35370 == *(s32 *)0x03000590) {
-        *(void **)0x03000588 = (void *)0x03000278;
+    command->type = SOUND_COMMAND_SET_TRACKS_MUTED;
+    command->arg0.value = (player << 16) | muted;
+    command->arg1 = tracks;
+    gSoundCommandWrite = command + 1;
+    if (gSoundCommandWrite == gSoundCommandEnd) {
+        gSoundCommandWrite = gSoundCommands;
     }
 }
 
-void sub_02028D54(s32 arg0, s32 arg1, u8 arg2) {
-    void *temp_r3_35393;
-    void *temp_r3_35400;
+/* Original address: 0x02028D1C */
+void Sound_QueueSetTracksExpression(u32 player, u32 tracks, u8 expression) {
+    SoundCommand *command = gSoundCommandWrite;
 
-    temp_r3_35393 = *(void **)0x03000588;
-    (*(s16 *)((u8 *)(temp_r3_35393) + (0))) = 8;
-    (*(s32 *)((u8 *)(temp_r3_35393) + (4))) = (s32) ((arg0 << 0x10) | arg2);
-    (*(s32 *)((u8 *)(temp_r3_35393) + (8))) = arg1;
-    temp_r3_35400 = temp_r3_35393 + 0xC;
-    *(void **)0x03000588 = temp_r3_35400;
-    if (temp_r3_35400 == *(s32 *)0x03000590) {
-        *(void **)0x03000588 = (void *)0x03000278;
+    command->type = SOUND_COMMAND_SET_TRACKS_EXPRESSION;
+    command->arg0.value = (player << 16) | expression;
+    command->arg1 = tracks;
+    gSoundCommandWrite = command + 1;
+    if (gSoundCommandWrite == gSoundCommandEnd) {
+        gSoundCommandWrite = gSoundCommands;
     }
 }
 
-void sub_02028D8C(u8 arg0) {
-    void *temp_r2_35422;
-    void *temp_r2_35426;
+/* Original address: 0x02028D54 */
+void Sound_QueueSetTracksPan(u32 player, u32 tracks, u8 pan) {
+    SoundCommand *command = gSoundCommandWrite;
 
-    temp_r2_35422 = *(void **)0x03000588;
-    (*(s16 *)((u8 *)(temp_r2_35422) + (0))) = 0xA;
-    (*(s32 *)((u8 *)(temp_r2_35422) + (4))) = (s32) arg0;
-    temp_r2_35426 = temp_r2_35422 + 0xC;
-    *(void **)0x03000588 = temp_r2_35426;
-    if (temp_r2_35426 == *(s32 *)0x03000590) {
-        *(void **)0x03000588 = (void *)0x03000278;
+    command->type = SOUND_COMMAND_SET_TRACKS_PAN;
+    command->arg0.value = (player << 16) | pan;
+    command->arg1 = tracks;
+    gSoundCommandWrite = command + 1;
+    if (gSoundCommandWrite == gSoundCommandEnd) {
+        gSoundCommandWrite = gSoundCommands;
     }
 }
 
-void sub_02028DB8(s32 arg0, s32 arg1) {
-    void *temp_r2_35445;
-    void *temp_r2_35450;
+/* Original address: 0x02028D8C */
+void Sound_QueueCommand10(u8 value) {
+    gSoundCommandWrite->type = SOUND_COMMAND_COMMAND_10;
+    gSoundCommandWrite->arg0.value = value;
+    Sound_AdvanceCommandPointer(&gSoundCommandWrite);
+}
 
-    temp_r2_35445 = *(void **)0x03000588;
-    (*(s16 *)((u8 *)(temp_r2_35445) + (0))) = 0xB;
-    (*(s32 *)((u8 *)(temp_r2_35445) + (4))) = arg0;
-    (*(s32 *)((u8 *)(temp_r2_35445) + (8))) = arg1;
-    temp_r2_35450 = temp_r2_35445 + 0xC;
-    *(void **)0x03000588 = temp_r2_35450;
-    if (temp_r2_35450 == *(s32 *)0x03000590) {
-        *(void **)0x03000588 = (void *)0x03000278;
+/* Original address: 0x02028DB8 */
+void Sound_QueueCallback(void (*callback)(u32), u32 argument) {
+    SoundCommand *command = gSoundCommandWrite;
+
+    command->type = SOUND_COMMAND_CALLBACK;
+    command->arg0.callback = callback;
+    command->arg1 = argument;
+    gSoundCommandWrite = command + 1;
+    if (gSoundCommandWrite == gSoundCommandEnd) {
+        gSoundCommandWrite = gSoundCommands;
     }
 }
 
-void sub_02028DE8(void (*arg0)(void *, u8)) {
-    void *temp_r2_35470;
-    void *temp_r2_35474;
-
-    temp_r2_35470 = *(void **)0x03000588;
-    (*(s16 *)((u8 *)(temp_r2_35470) + (0))) = 0xC;
-    (*(void (**)(void *, u8))((u8 *)(temp_r2_35470) + (4))) = arg0;
-    temp_r2_35474 = temp_r2_35470 + 0xC;
-    *(void **)0x03000588 = temp_r2_35474;
-    if (temp_r2_35474 == *(s32 *)0x03000590) {
-        *(void **)0x03000588 = (void *)0x03000278;
-    }
+/* Original address: 0x02028DE8 */
+void Sound_QueueSetControlCallback(SoundControlCallback callback) {
+    gSoundCommandWrite->type = SOUND_COMMAND_SET_CONTROL_CALLBACK;
+    gSoundCommandWrite->arg0.control_callback = callback;
+    Sound_AdvanceCommandPointer(&gSoundCommandWrite);
 }
 
-void sub_02028E10(void (*arg0)(void **, u8, u8, u16)) {
-    void *temp_r2_35492;
-    void *temp_r2_35496;
-
-    temp_r2_35492 = *(void **)0x03000588;
-    (*(s16 *)((u8 *)(temp_r2_35492) + (0))) = 0xD;
-    (*(void (**)(void **, u8, u8, u16))((u8 *)(temp_r2_35492) + (4))) = arg0;
-    temp_r2_35496 = temp_r2_35492 + 0xC;
-    *(void **)0x03000588 = temp_r2_35496;
-    if (temp_r2_35496 == *(s32 *)0x03000590) {
-        *(void **)0x03000588 = (void *)0x03000278;
-    }
+/* Original address: 0x02028E10 */
+void Sound_QueueSetNoteCallback(SoundNoteCallback callback) {
+    gSoundCommandWrite->type = SOUND_COMMAND_SET_NOTE_CALLBACK;
+    gSoundCommandWrite->arg0.note_callback = callback;
+    Sound_AdvanceCommandPointer(&gSoundCommandWrite);
 }
 
-void sub_02028E38(void) {
-    s32 *var_r1_35717;
-    s32 temp_r1_35549;
-    s32 var_r0_35573;
-    s32 var_r2_35574;
-    u16 temp_r0_35516;
-    u32 temp_r0_35636;
-    u32 temp_r0_35670;
-    u32 temp_r0_35704;
-    u32 temp_r1_35585;
-    void **var_r2_35621;
-    void **var_r2_35655;
-    void **var_r2_35689;
-    void *temp_r0_35584;
-    void *temp_r0_35627;
-    void *temp_r0_35661;
-    void *temp_r0_35695;
-    void *temp_r0_35733;
+/* Original address: 0x02028E38 */
+void Sound_ProcessCommands(void) {
+    SoundCommand *command;
 
-loop_38:
-    temp_r0_35733 = sub_02028B0C();
-    if (temp_r0_35733 != NULL) {
-        temp_r0_35516 = (*(u16 *)((u8 *)(temp_r0_35733) + (0)));
-        switch ((u32) temp_r0_35516) {              /* irregular */
-        case 0:
-            sub_0202828C((*(s32 *)((u8 *)(temp_r0_35733) + (4))), (*(u32 *)((u8 *)(temp_r0_35733) + (8))));
+    while ((command = Sound_ReadCommand()) != NULL) {
+        switch (command->type) {
+        case SOUND_COMMAND_START_MUSIC:
+            Sound_StartMusic(command->arg0.value, command->arg1);
             break;
-        case 1:
-            temp_r1_35549 = (*(s32 *)((u8 *)(temp_r0_35733) + (4)));
-            sub_020282B4((s32) ((u32) temp_r1_35549 >> 0x10), (u16) temp_r1_35549, (*(u32 *)((u8 *)(temp_r0_35733) + (8))));
+        case SOUND_COMMAND_START_EFFECT:
+            Sound_StartEffect(command->arg0.value >> 16, command->arg0.value & 0xFFFF, command->arg1);
             break;
-        case 2:
-            sub_02028410((*(s32 *)((u8 *)(temp_r0_35733) + (4))), (s16) (*(u32 *)((u8 *)(temp_r0_35733) + (8))));
+        case SOUND_COMMAND_FADE_OUT_PLAYER:
+            Sound_FadeOutPlayer(command->arg0.value, command->arg1);
             break;
-        case 3:
-            sub_02028448((*(s32 *)((u8 *)(temp_r0_35733) + (4))), (u8) (*(u32 *)((u8 *)(temp_r0_35733) + (8))));
+        case SOUND_COMMAND_SET_PLAYER_PAUSED:
+            Sound_SetPlayerPaused(command->arg0.value, command->arg1);
             break;
-        case 6:
-            var_r0_35573 = (*(s32 *)((u8 *)(temp_r0_35733) + (4))) * 0x44;
-            var_r2_35574 = 0x0300195B;
-block_11:
-            *(u32 *)(var_r0_35573 + var_r2_35574) = (s8) (*(u32 *)((u8 *)(temp_r0_35733) + (8)));
-            break;
-        case 4:
-            temp_r0_35584 = ((*(s32 *)((u8 *)(temp_r0_35733) + (4))) * 0x44) + 0x03001918;
-            temp_r1_35585 = (*(u32 *)((u8 *)(temp_r0_35733) + (8)));
-            (*(s8 *)((u8 *)(temp_r0_35584) + (0x32))) = (s8) temp_r1_35585;
-            (*(s8 *)((u8 *)(temp_r0_35584) + (0x33))) = (s8) (temp_r1_35585 >> 8);
-            break;
-        case 5:
-            var_r0_35573 = (*(s32 *)((u8 *)(temp_r0_35733) + (4))) * 0x44;
-            var_r2_35574 = 0x03001958;
-            goto block_11;
-        case 7:
-            if ((*(u32 *)((u8 *)(temp_r0_35733) + (8))) != 0) {
-                var_r2_35621 = ((*(u16 *)((u8 *)(temp_r0_35733) + (6))) * 0x44) + 0x03001918 + 8;
-                do {
-                    if ((*(u32 *)((u8 *)(temp_r0_35733) + (8))) & 1) {
-                        temp_r0_35627 = *var_r2_35621;
-                        if (temp_r0_35627 != NULL) {
-                            (*(s8 *)((u8 *)(temp_r0_35627) + (0x4A))) = (s8) (*(s32 *)((u8 *)(temp_r0_35733) + (4)));
-                        }
-                    }
-                    var_r2_35621 += 4;
-                    temp_r0_35636 = (u32) (*(u32 *)((u8 *)(temp_r0_35733) + (8))) >> 1;
-                    (*(u32 *)((u8 *)(temp_r0_35733) + (8))) = temp_r0_35636;
-                } while (temp_r0_35636 != 0);
-            }
-            break;
-        case 9:
-            if ((*(u32 *)((u8 *)(temp_r0_35733) + (8))) != 0) {
-                var_r2_35655 = ((*(u16 *)((u8 *)(temp_r0_35733) + (6))) * 0x44) + 0x03001918 + 8;
-                do {
-                    if ((*(u32 *)((u8 *)(temp_r0_35733) + (8))) & 1) {
-                        temp_r0_35661 = *var_r2_35655;
-                        if (temp_r0_35661 != NULL) {
-                            (*(s8 *)((u8 *)(temp_r0_35661) + (0x4E))) = (s8) (*(s32 *)((u8 *)(temp_r0_35733) + (4)));
-                        }
-                    }
-                    var_r2_35655 += 4;
-                    temp_r0_35670 = (u32) (*(u32 *)((u8 *)(temp_r0_35733) + (8))) >> 1;
-                    (*(u32 *)((u8 *)(temp_r0_35733) + (8))) = temp_r0_35670;
-                } while (temp_r0_35670 != 0);
-            }
-            break;
-        case 8:
-            if ((*(u32 *)((u8 *)(temp_r0_35733) + (8))) != 0) {
-                var_r2_35689 = ((*(u16 *)((u8 *)(temp_r0_35733) + (6))) * 0x44) + 0x03001918 + 8;
-                do {
-                    if ((*(u32 *)((u8 *)(temp_r0_35733) + (8))) & 1) {
-                        temp_r0_35695 = *var_r2_35689;
-                        if (temp_r0_35695 != NULL) {
-                            (*(s8 *)((u8 *)(temp_r0_35695) + (0x4B))) = (s8) (*(s32 *)((u8 *)(temp_r0_35733) + (4)));
-                        }
-                    }
-                    var_r2_35689 += 4;
-                    temp_r0_35704 = (u32) (*(u32 *)((u8 *)(temp_r0_35733) + (8))) >> 1;
-                    (*(u32 *)((u8 *)(temp_r0_35733) + (8))) = temp_r0_35704;
-                } while (temp_r0_35704 != 0);
-            }
-            break;
-        case 11:
-            ((s32 (*)(u32)) (*(s32 *)((u8 *)(temp_r0_35733) + (4))))((*(u32 *)((u8 *)(temp_r0_35733) + (8))));
-            break;
-        case 12:
-            var_r1_35717 = (s32 *)0x03000274;
-block_36:
-            *var_r1_35717 = (*(s32 *)((u8 *)(temp_r0_35733) + (4)));
-            break;
-        case 13:
-            var_r1_35717 = (s32 *)0x03000270;
-            goto block_36;
-        case 10:
-            sub_02027370((u8) (*(s32 *)((u8 *)(temp_r0_35733) + (4))));
+        case SOUND_COMMAND_SET_PLAYER_TEMPO_MODE: {
+            SoundPlayer *players = gSoundPlayers;
+            u8 *tempo_mode = &players[command->arg0.value].tempo_mode;
+
+            *tempo_mode = command->arg1;
             break;
         }
-        goto loop_38;
+        case SOUND_COMMAND_SET_PLAYER_TEMPO_ADJUST: {
+            SoundPlayer *players = gSoundPlayers;
+            SoundPlayer *player = &players[command->arg0.value];
+            u32 adjustment = command->arg1;
+
+            player->timing.bytes.tempo_adjust[0] = adjustment;
+            player->timing.bytes.tempo_adjust[1] = adjustment >> 8;
+            break;
+        }
+        case SOUND_COMMAND_SET_PLAYER_MASTER_VOLUME: {
+            SoundPlayer *players = gSoundPlayers;
+            u8 *master_volume = &players[command->arg0.value].master_volume;
+
+            *master_volume = command->arg1;
+            break;
+        }
+        case SOUND_COMMAND_SET_TRACKS_MUTED: {
+            SoundPlayer *player = &gSoundPlayers[command->arg0.parts.player];
+            SoundTrack **track;
+
+            if (command->arg1 != 0) {
+                track = player->tracks;
+                do {
+                    if ((command->arg1 & 1) && *track != NULL) {
+                        (*track)->muted = command->arg0.value;
+                    }
+                    track++;
+                    command->arg1 >>= 1;
+                } while (command->arg1 != 0);
+            }
+            break;
+        }
+        case SOUND_COMMAND_SET_TRACKS_EXPRESSION: {
+            SoundPlayer *player = &gSoundPlayers[command->arg0.parts.player];
+            SoundTrack **track;
+
+            if (command->arg1 != 0) {
+                track = player->tracks;
+                do {
+                    if ((command->arg1 & 1) && *track != NULL) {
+                        (*track)->expression = command->arg0.value;
+                    }
+                    track++;
+                    command->arg1 >>= 1;
+                } while (command->arg1 != 0);
+            }
+            break;
+        }
+        case SOUND_COMMAND_SET_TRACKS_PAN: {
+            SoundPlayer *player = &gSoundPlayers[command->arg0.parts.player];
+            SoundTrack **track;
+
+            if (command->arg1 != 0) {
+                track = player->tracks;
+                do {
+                    if ((command->arg1 & 1) && *track != NULL) {
+                        (*track)->pan = command->arg0.value;
+                    }
+                    track++;
+                    command->arg1 >>= 1;
+                } while (command->arg1 != 0);
+            }
+            break;
+        }
+        case SOUND_COMMAND_CALLBACK:
+            command->arg0.callback(command->arg1);
+            break;
+        case SOUND_COMMAND_SET_CONTROL_CALLBACK:
+            gSoundControlCallback = command->arg0.control_callback;
+            break;
+        case SOUND_COMMAND_SET_NOTE_CALLBACK:
+            gSoundNoteCallback = command->arg0.note_callback;
+            break;
+        case SOUND_COMMAND_COMMAND_10:
+            sub_02027370(command->arg0.value);
+            break;
+        }
     }
 }
 
-/* ARM-state mixer routines copied to IWRAM by sub_02026E4C. */
+/* ARM-state mixer routines copied to IWRAM by SoundDriver_Init. */
 asm(".include \"asm/all_arm.inc\"");
 
 /* AGB BIOS wrappers kept in assembly so their SWI sequences remain exact. */

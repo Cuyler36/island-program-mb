@@ -805,11 +805,18 @@ typedef struct GameState {
     int _008;
     u32 rngValue;
     u32 game_time_frames; // time of day represented by number of frames
-    u8 pad_014[0x814 - 0x14];
+    /* Original address: 0x03001B64; offset 0x014, size 0x800. */
+    u32 interrupt_code[0x200];
     vu16 unk_814; // thanks jiang
     u16 unk_816;
-    u16 keys_held;
-    u16 keys_pressed;
+    union {
+        struct {
+            u16 held;
+            u16 pressed;
+        } buttons;
+        /* 0x818: held and newly pressed keys, accessed together. */
+        u32 combined;
+    } keys;
     u16 unk_81C;
     u16 unk_81E;
     u16 unk_820;
@@ -1027,7 +1034,7 @@ enum {
 typedef struct FieldObject {
     /* 0x00 */ s32 x;
     /* 0x04 */ s32 y;
-    /* 0x08 */ s32 _08;
+    /* 0x08 */ u16 *drop_tilemap;
     /* 0x0C */ u16 type;
     /* 0x0E */ u16 tile_idx;
     /* 0x10 */ u16 _10;
@@ -1090,36 +1097,37 @@ typedef struct Player {
     /* 0x2A */ u8 pad_2A[2];
 } Player;
 
+/* sizeof(Entity) == 0x54. Shared item and transient-effect state. */
 typedef struct Entity {
-    int x;
-    int y;
-    int _08;
-    int _0C;
-    int _10;
-    int _14;
-    int _18;
-    int _1C;
-    int _20;
-    int _24;
-    u16 item_tile_no[5];
-    u16 item[5];
-    u16 _3C;
-    u16 _3E;
-    u16 _40;
-    u16 _42;
-    u16 _44;
-    u16 _46;
-    u16 _48;
-    /* 0x4A */ u8 _4A;
+    /* 0x00 */ int x;
+    /* 0x04 */ int y;
+    /* 0x08 */ int _08;
+    /* 0x0C */ int _0C;
+    /* 0x10 */ int _10;
+    /* 0x14 */ int _14;
+    /* 0x18 */ int _18;
+    /* 0x1C */ int _1C;
+    /* 0x20 */ int _20;
+    /* 0x24 */ int _24;
+    /* 0x28 */ u16 item_tile_no[5];
+    /* 0x32 */ u16 item[5];
+    /* 0x3C */ u16 landing_tile;
+    /* 0x3E */ u16 sprite_tile;
+    /* 0x40 */ u16 lifetime;
+    /* 0x42 */ u16 _42;
+    /* 0x44 */ u16 _44;
+    /* 0x46 */ u16 _46;
+    /* 0x48 */ u16 _48;
+    /* 0x4A */ u8 item_is_resolved;
     /* 0x4B */ u8 _4B;
-    u8 item_tile_frame;
-    u8 _4D;
-    u8 type;
-    u8 _4F;
-    u8 _50;
-    u8 _51;
-    u8 _52;
-    u8 _53;
+    /* 0x4C */ u8 item_tile_frame;
+    /* 0x4D */ u8 anim_timer;
+    /* 0x4E */ u8 type;
+    /* 0x4F */ u8 anim_id;
+    /* 0x50 */ u8 palette;
+    /* 0x51 */ u8 _51;
+    /* 0x52 */ u8 _52;
+    /* 0x53 */ u8 _53;
 } Entity;
 
 typedef struct EntitySpawnParams {
@@ -1173,23 +1181,36 @@ typedef struct m_msg_choice_entry_s {
 } mMsg_ChoiceEntry_c;
 
 /*
- * Objects allocated by sub_0201C310 for the message UI.  Only the fields
+ * Objects allocated by mMsg_CreateSprite for the message UI.  Only the fields
  * touched by the message code are known so far; the allocation is 0x60 bytes.
  */
 typedef struct m_msg_sprite_s {
-    u32 _00;
-    u32 _04;
-    u32 _08;
-    u32 _0C;
-    u8 _10[4];
+    void (*init)(struct m_msg_sprite_s*);
+    void (*destroy)(struct m_msg_sprite_s*);
+    void (*update)(struct m_msg_sprite_s*);
+    void (*draw)(struct m_msg_sprite_s*);
+    void (*state_proc)(struct m_msg_sprite_s*);
     s32 _14;
-    u8 _18[0x14];
+    u8 _18[8];
+    s32 offset_x;
+    s32 offset_y;
+    s32 _28;
     s32 _2C;
     s32 _30;
-    u8 _34[0x23];
+    s16 frame_timer;
+    s16 frame_index;
+    s16 animation_index;
+    u8 _3A[0x1D];
     u8 _57;
     u8 _58[8];
 } m_msg_sprite_c;
+
+typedef struct m_msg_sprite_profile_s {
+    void (*init)(m_msg_sprite_c*);
+    void (*destroy)(m_msg_sprite_c*);
+    void (*update)(m_msg_sprite_c*);
+    void (*draw)(m_msg_sprite_c*);
+} mMsg_SpriteProfile;
 
 /* Scratch description used while drawing one eight-row message glyph. */
 typedef struct mFont_GlyphDraw_s {
@@ -1723,12 +1744,14 @@ extern u8 gFieldObjectSpriteFrameIndices[19 * 8];
 /* Original address: 0x0202FF78 */
 extern FieldObjectSpriteFrame gFieldObjectSpriteFrames[24];
 extern Player gPlayer;
+/* Original address: 0x03004790 */
 extern Entity g_EntityTable[12];
 extern ItemGroupStruct g_ItemDefinitions[ITEM_TYPE_COUNT];
-/* Original address: 0x02000102 */
-extern u16 current_time_of_day_palette0[4];
-/* Original address: 0x02000122 */
-extern u16 current_time_of_day_palette1[4];
+/* Original address: 0x02000100 */
+extern u16 current_time_of_day_palette0[16];
+/* Original address: 0x02000120 */
+extern u16 current_time_of_day_palette1[16];
+
 /* Original address: 0x02000190 */
 extern u16 current_time_of_day_palette2[8];
 /* Original address: 0x020001D6 */
@@ -1775,7 +1798,7 @@ s8 mMsg_RequestHide(mMsg_Window_c* msg);
 s8 mMsg_RequestChoice(mMsg_Window_c* msg);
 s8 mMsg_RequestDisappearWait(mMsg_Window_c* msg);
 s8 mMsg_RequestAppearWait(mMsg_Window_c* msg);
-s8 mMsg_GetMessageBody(u32 index, u8** data, u16* size);
+s32 mMsg_GetMessageBody(u32 index, u8** data, s16* size);
 s16 mMsg_GetMessageLength(u8* text);
 s8 mFont_CodeSize_get(u8* code);
 s16 mMsg_LoadMessage(u8* text, s32 index);
@@ -1797,47 +1820,47 @@ s32 mFont_DrawStringToTiles(u8* tile_data, u16* cursor, u16 y,
                             u8 stop_at_newline, u8 fixed_width);
 void mFont_DrawCharToTiles(u8* tile_data, s32 tile_offset, s32 row,
                            s32 tile_stride, s32 character, s32 palette, s32 width);
-void sub_020198B8(s8 index);
-void sub_02019910(u8 value, s8 index);
+void mFont_CopyTileBufferToVram(s8 index);
+void mFont_FillTileBuffer(u8 value, s8 index);
 void mFont_BlitGlyphToTiles(mFont_GlyphDraw_c* glyph, s32 width);
-s16 sub_02019ABC(s16 lhs, s16 rhs);
-s16 sub_02019AD8(s16 numerator, s16 denominator);
+s16 FixedMul8(s16 lhs, s16 rhs);
+s16 FixedDiv8(s16 numerator, s16 denominator);
 s32 rand_u16(GameState* state);
-void sub_02019B18(GameState* state, u32 seed);
-void sub_02019B1C(GameState* state, u16 target, u16 blend_control,
+void GameState_SeedRandom(GameState* state, u32 seed);
+void GameState_SetBrightnessFade(GameState* state, u16 darken, u16 blend_control,
                   u16 intensity);
-u16 sub_02019B58(GameState* state, u8 direction, u8 amount);
-void sub_02019BA8(u16* palette, u8 x, u8 y, u8* red, u8* green, u8* blue);
-void sub_02019BD8(u8 palette, u8 x, u8 y, u8 red, u8 green, u8 blue);
-void sub_02019C3C(void);
-void sub_02019C88(void);
-void sub_02019CC0(void);
-void sub_02019CFC(void);
-void sub_02019D28(void);
-void sub_02019D34(void);
-void sub_02019D40(void);
-void sub_02019D4C(void);
-void sub_02019D58(u16 value);
-void sub_02019D68(u16 value);
-void sub_02019D78(u16 value);
-void sub_02019D88(u16 value);
-void sub_02019D98(u16 value);
+u16 GameState_StepBrightnessFade(GameState* state, u8 direction, u8 amount);
+void GetPaletteColor(u16* palette, u8 x, u8 y, u8* red, u8* green, u8* blue);
+void SetPaletteColor(u8 palette, u8 x, u8 y, u8 red, u8 green, u8 blue);
+void WaitForVBlank(void);
+void ClearOamBuffer(void);
+void GameState_ReadKeys(void);
+void EnableVBlankInterrupt(void);
+void GameAudio_VBlank(void);
+void GameAudio_Init(void);
+void GameAudio_UpdateDriver(void);
+void GameAudio_Update(void);
+void GameAudio_PlayEffect2(u16 value);
+void GameAudio_StopEffect2(u16 value);
+void GameAudio_PlayEffect0(u16 value);
+void GameAudio_PlayMusic(u16 value);
+void GameAudio_StopMusic(u16 value);
 void mMsg_ReplaceChar(u8* data, u8 from, u8 to, s32 length);
 s32 mMsg_TrimTrailingSpaces(u8* data, s32 length);
 s32 mMsg_StringsDiffer(u8* lhs, u8* rhs, s32 length);
 void mMsg_Copy(u8* src, u8* dest, s32 length);
 void mMsg_Fill(u8 value, u8* dest, s32 length);
-void sub_02019E88(void);
+void InitializeHardware(void);
 
-m_msg_sprite_c* sub_0201C310(u8 type, s32 x, s32 y, s32 param);
-void sub_0201C300(m_msg_sprite_c* sprite);
+m_msg_sprite_c* mMsg_CreateSprite(u8 type, s32 x, s32 y, s32 param);
+void mMsg_DeactivateSprite(m_msg_sprite_c* sprite);
 void sub_020269C8(void);
 void sub_020269E0(void);
-void sub_02026A38(u16 value);
-void sub_02026B48(u16 value);
-void sub_02026BC8(u16 value);
-void sub_02026C10(u16 value);
-void sub_02026C68(u16 value);
+void Sound_PlayEffect0(u16 value);
+void Sound_PlayEffect2(u16 value);
+void Sound_StopEffect2(u16 value);
+void Sound_PlayMusic(u16 value);
+void Sound_StopMusic(u16 value);
 void sub_02026F0C(void);
 void sub_02026F18(void);
 extern u32 gIntrTable[];

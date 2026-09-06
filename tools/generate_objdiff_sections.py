@@ -59,24 +59,86 @@ class BssObject:
 
 
 DATA_OBJECTS = (
+    # Original address: 0x02029698
+    DataObject("sInitialIntrTable", 0x0, 0x38, global_symbol=True),
     DataObject("sMsgGlyphWidths", 0x0038, 0x0100),
     DataObject("sFontCodeWidths", 0x0138, 0x0100),
     DataObject("sMsgFontGlyphs", 0x0238, 0x1000),
     DataObject("sMsgSpaceGlyph", 0x1238, 0x0010),
     DataObject("sCachedMessageIds", 0x1248, 0x0024),
     DataObject("sMsgControlCodeHandlers", 0x126C, 0x01C4, "thumb_functions"),
+    # Original address: 0x0202AAC8; mMsg_UpdateChoiceHighlight's two-choice initializer.
+    DataObject("gMsgTwoChoiceHighlightTiles", 0x1430, 0x0008),
+    # Original address: 0x0202AAD0; mMsg_UpdateChoiceHighlight's three-choice initializer.
+    DataObject("gMsgThreeChoiceHighlightTiles", 0x1438, 0x000C),
     DataObject("gMsgWindowScrollOffsets", 0x148C, 0x0030),
     DataObject("sMsgControlCodeInfo", 0x14BC, 0x01C4),
+    # Original address: 0x0202AD18
+    DataObject("gMsgChoiceTemplateParams", 0x1680, 0x4, global_symbol=True),
+    # Original address: 0x0202AD1C
+    DataObject("sFontTileBufferVramDestinations", 0x1684, 0xC, global_symbol=True),
+    # Original address: 0x0202AD28
+    DataObject("sFontTileBufferSizes", 0x1690, 0xC, global_symbol=True),
+    # Original address: 0x0202AD34
+    DataObject("sSineTable", 0x169C, 0x280, global_symbol=True),
+    # Original address: 0x0202AFB4
+    DataObject("sHiddenOamAttributes", 0x191C, 0x8, global_symbol=True),
     # Original address: 0x0202AFBC
     DataObject("sJoybootGbaHandshake", 0x1924, 0x0004, global_symbol=True),
     # Original address: 0x0202AFC4
     DataObject("sJoybootGameCubeHandshake", 0x192C, 0x0004, global_symbol=True),
+    # Original address: 0x0202AFDC
+    DataObject("sIslandProgramNoticeUpdateProcs", 0x1944, 0x10, "thumb_functions", True),
+    # Original address: 0x0202AFFC
+    DataObject("sIslandProgramPromptUpdateProcs", 0x1964, 0x10, "thumb_functions", True),
     DataObject("sTimeOfDayPalette2Table", 0x197C, 0x0180, global_symbol=True),
     DataObject("sTimeOfDayPalette3Table", 0x1AFC, 0x00F0, global_symbol=True),
+    # Original address: 0x0202B2A0
+    DataObject("sIslandProgramTransferUpdateProcs", 0x1C08, 0x1C, "thumb_functions", True),
     DataObject("sIslandProgramModeEnterProcs", 0x1C24, 0x0018, "thumb_functions", True),
+    # Original address: 0x0202B2D4
+    DataObject("sIslandProgramModeUpdateProcs", 0x1C3C, 0x18, "thumb_functions", True),
+    # Original address: 0x0202B2FC
+    DataObject("sMsgSpriteProfiles", 0x1C64, 0x34, global_symbol=True),
+    # Original address: 0x0202B378
+    DataObject("sMsgContinuePromptAnimations", 0x1CE0, 4, global_symbol=True),
+    # Original address: 0x0202B3DC
+    DataObject("sMsgChoiceCursorAnimations", 0x1D44, 4, global_symbol=True),
+    # Original address: 0x0202B3FC
+    DataObject("sIslandRightAcreTilemaps", 0x1D64, 0x2000, global_symbol=True),
+    # Original address: 0x0202D3FC
+    DataObject("sIslandLeftAcreTilemaps", 0x3D64, 0x2000, global_symbol=True),
+    # Original address: 0x0202F3FC
+    DataObject("sFieldPaletteAnimation0", 0x5D64, 0x200, global_symbol=True),
+    # Original address: 0x0202F5FC
+    DataObject("sFieldPaletteAnimation2", 0x5F64, 0x200, global_symbol=True),
     DataObject("g_ItemDefinitions", 0x6164, 0x0420, global_symbol=True),
+    # Original address: 0x0202FC1C
+    DataObject("sCabanaTilemap", 0x6584, 0x80, global_symbol=True),
+    # Original address: 0x0202FC9C
+    DataObject("sIslanderHouseTilemap", 0x6604, 0x60, global_symbol=True),
+    # Original address: 0x0202FCFC
+    DataObject("sCabanaFootprint", 0x6664, 0x10, global_symbol=True),
+    # Original address: 0x0202FD0C
+    DataObject("sIslanderHouseFootprint", 0x6674, 0x9, global_symbol=True),
+    # Original address: 0x0202FD16
+    DataObject("sFieldEntityBaseTiles", 0x667E, 0x12, global_symbol=True),
+    # Original address: 0x0202FD28
+    DataObject("sIslandFieldUpdateProcs", 0x6690, 0x10, "thumb_functions", global_symbol=True),
+    # Original address: 0x0202FD40
+    DataObject("sIslandBuildingSprites", 0x66A8, 0x78, global_symbol=True),
+    # Original address: 0x0202FEB0
+    DataObject("sFieldAnimationFrames", 0x6818, 0x1C, global_symbol=True),
     DataObject("gFieldObjectSpriteFrameIndices", 0x6848, 0x0098, global_symbol=True),
     DataObject("gFieldObjectSpriteFrames", 0x68E0, 0x0180, global_symbol=True),
+    # Original address: 0x020300F8
+    DataObject("sFruitDropOffsetsX", 0x6A60, 0x0C, global_symbol=True),
+    # Original address: 0x02030104
+    DataObject("sFruitDropOffsetsY", 0x6A6C, 0x0C, global_symbol=True),
+    # Original address: 0x02030110
+    DataObject("sFieldObjectInitialTimers", 0x6A78, 0x13, global_symbol=True),
+    # Original address: 0x02030123
+    DataObject("sFieldObjectShakeFrames", 0x6A8B, 0x09, global_symbol=True),
     DataObject("sIslanderOamData", 0x6A94, 0x2668),
     DataObject("sIslanderAnimFrames", 0x90FC, 0x08E0, "islander_frames"),
     DataObject("sIslanderAnimFrameLists", 0x99DC, 0x060C, "islander_frame_list"),
@@ -116,11 +178,47 @@ DATA_OBJECTS = (
     DataObject("sIslanderRewardAdjust", 0xA8FA, 0x12, global_symbol=True),
     DataObject("gIslanderFavoriteHours", 0xA90C, 0x0012, global_symbol=True),
     DataObject("ISLANDER_FOOD_PREFERENCES", 0xA91E, 0x00AC, global_symbol=True),
+    # Original address: 0x020344E8
+    DataObject("sFallingFruitUpdateProcs", 0xAE50, 0x10, "thumb_functions", True),
+    # Original address: 0x020344F8
+    DataObject("sFallingFruitProfiles", 0xAE60, 0x228, global_symbol=True),
+    # Original address: 0x020347E0
+    DataObject("sEntityUpdateProcs", 0xB148, 0x2C, "thumb_functions", True),
+    # Original address: 0x02034C24
+    DataObject("sEntityToppleFrames", 0xB58C, 0x20, global_symbol=True),
+    # Original address: 0x02034C44
+    DataObject("sEntityLeafFrames", 0xB5AC, 0x50, global_symbol=True),
+    # Original address: 0x02034CE0
+    DataObject("sEntityReactionAnimations", 0xB648, 0x14, global_symbol=True),
     DataObject("gItemGeneratorDefs", 0xB65C, 0x0098, global_symbol=True),
+    # Original address: 0x02034E0C
+    DataObject("sPlayerHandUpdateProcs", 0xB774, 0x18, "thumb_functions", True),
+    # Original address: 0x02034ED4
+    DataObject("sPlayerHandAnimations", 0xB83C, 0x10, global_symbol=True),
     DataObject("time_of_day_palettes", 0xB84C, 0x00C0, global_symbol=True),
     DataObject("gMsgTextData", 0xB90C, 0x07D2),
     DataObject("sMsgOffsets", 0xC0E0, 0x007C),
     DataObject("sBgPalettes", 0xC15C, 0x0200),
+    # Original address: 0x020359F4
+    DataObject("sInitialObjPalette", 0xC35C, 0x200, global_symbol=True),
+    # Original address: 0x02035C10
+    DataObject("sSoundEffectTable", 0xC578, 0xAC, global_symbol=True),
+    # Original address: 0x02035CBC
+    DataObject("sMusicTable", 0xC624, 0x4, global_symbol=True),
+    # Original address: 0x02035CC4
+    DataObject("sPsgWaveVolume", 0xC62C, 0x5, global_symbol=True),
+    # Original address: 0x02035CCC
+    DataObject("sSoundInstrumentChannelTypes", 0xC634, 0x5, global_symbol=True),
+    # Original address: 0x02035CD4
+    DataObject("sSoundKeySampleEnvelope", 0xC63C, 0xC, global_symbol=True),
+    # Original address: 0x02035CE0
+    DataObject("sPsgPitchTable", 0xC648, 0xF0, global_symbol=True),
+    # Original address: 0x02035DD0
+    DataObject("sNoisePitchTable", 0xC738, 0x78, global_symbol=True),
+    # Original address: 0x02035E48
+    DataObject("sPcmPitchTable", 0xC7B0, 0x1E0, global_symbol=True),
+    # Original address: 0x02036028
+    DataObject("sSoundVibratoWave", 0xC990, 0x100, global_symbol=True),
 )
 
 ISLANDER_OAM_ADDRESS = DATA_ADDRESS + 0x6A94
@@ -139,6 +237,34 @@ BSS_OBJECTS = (
     BssObject("sMsgPreviousTextX", 0x0300001D, 0x0001),
     # Original address: 0x03000020
     BssObject("sFloatingItemIndex", 0x03000020, 4, global_symbol=True),
+    # Original address: 0x03000028
+    BssObject("sCurrentSoundEffects", 0x03000028, 0xA, global_symbol=True),
+    # Original address: 0x03000038
+    BssObject("sSoundEffectStates", 0x03000038, 0x18, global_symbol=True),
+    # Original address: 0x03000050
+    BssObject("sCurrentMusic", 0x03000050, 0x2, global_symbol=True),
+    # Original address: 0x03000052
+    BssObject("sMusicEmotion", 0x03000052, 0x1, global_symbol=True),
+    # Original address: 0x03000058
+    BssObject("gPcmOutputBuffers", 0x03000058, 0x8, global_symbol=True),
+    # Original address: 0x0300006A
+    BssObject("gPcmOutputBufferIndex", 0x0300006A, 0x1, global_symbol=True),
+    # Original address: 0x03000070
+    BssObject("gSoundChannelLists", 0x03000070, 0x1F4, global_symbol=True),
+    # Original address: 0x03000268
+    BssObject("sSoundKeySampleInstrument", 0x03000268, 0x8, global_symbol=True),
+    # Original address: 0x03000598
+    BssObject("gPcmOutputMixer", 0x03000598, 0x4, global_symbol=True),
+    # Original address: 0x03000864
+    BssObject("gPcmMixBuffer", 0x03000864, 0x2C0, global_symbol=True),
+    # Original address: 0x03000B24
+    BssObject("gSoundTracks", 0x03000B24, 0x540, global_symbol=True),
+    # Original address: 0x030013C4
+    BssObject("gPcmChannels", 0x030013C4, 0x364, global_symbol=True),
+    # Original address: 0x03001728
+    BssObject("gPsgChannels", 0x03001728, 0x1F0, global_symbol=True),
+    # Original address: 0x03001918
+    BssObject("gSoundPlayers", 0x03001918, 0x220, global_symbol=True),
     BssObject("gGameState", 0x03001B50, 0x0864, global_symbol=True),
     BssObject("gUnk3002410", 0x03002410, 0x0400),
     BssObject("sMsgWindows", 0x03002A20, 0x05A0),
@@ -147,6 +273,8 @@ BSS_OBJECTS = (
     BssObject("gIslandBuildings", 0x03003BB0, 0x0028, global_symbol=True),
     BssObject("gFieldObjects", 0x03003C00, 0x05A0, global_symbol=True),
     BssObject("gIslander", 0x030041A0, 0x00C0, global_symbol=True),
+    # Original address: 0x03004260
+    BssObject("gFallingFruit", 0x03004260, 0x0528, global_symbol=True),
     BssObject("gPlayer", 0x03004B80, 0x002C, global_symbol=True),
 )
 

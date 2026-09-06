@@ -1,3 +1,91 @@
+/* Original address: 0x02001720 */
+gMsgMainText = 0x02001720;
+/* Original address: 0x02001940 */
+gMsgPromptText = 0x02001940;
+/* Original address: 0x02001B60 */
+gMsgNoticeText = 0x02001B60;
+/* Original address: 0x0200BF80 */
+gMsgMainTiles = 0x0200BF80;
+/* Original address: 0x0200D180 */
+gMsgPromptTiles = 0x0200D180;
+/* Original address: 0x0200E380 */
+gMsgNoticeTiles = 0x0200E380;
+/* Original address: 0x03002810 */
+gFontGlyphBlitterCode = 0x03002810;
+/* Original address: 0x020102A0 */
+gIsland = 0x020102A0;
+/* Original address: 0x0203B000 */
+gInitialIsland = 0x0203B000;
+/* Original address: 0x02000200 */
+gObjPaletteBuffer = 0x02000200;
+/* Original address: 0x02000000 */
+gBgPaletteBuffer = 0x02000000;
+/* Original address: 0x02001D80 */
+gMsgTileBuffers = 0x02001D80;
+/* Original address: 0x02000400 */
+gMsgCodeBuffers = 0x02000400;
+/* Original address: 0x0200F580 */
+gMsgWindowTileData = 0x0200F580;
+/* Original address: 0x020147E0 */
+gMsgThreeChoiceTileData = 0x020147E0;
+/* Original address: 0x03000278 */
+gSoundCommands = 0x03000278;
+/* Original address: 0x03000584 */
+gSoundCommandRead = 0x03000584;
+/* Original address: 0x03000588 */
+gSoundCommandWrite = 0x03000588;
+/* Original address: 0x0300058C */
+gSoundCommandCommitted = 0x0300058C;
+/* Original address: 0x03000590 */
+gSoundCommandEnd = 0x03000590;
+/* Original address: 0x03000060 */
+gPcmRightOutputBuffers = 0x03000060;
+/* Original address: 0x03000068 */
+gSoundTimerReload = 0x03000068;
+/* Original address: 0x0300006B */
+gSoundDmaEnabled = 0x0300006B;
+/* Original address: 0x03000594 */
+gSoundBank = 0x03000594;
+/* Original address: 0x0300059C */
+gPcmChannelMixer = 0x0300059C;
+/* Original address: 0x030005A0 */
+gPcmResampleMixer = 0x030005A0;
+/* Original address: 0x030005A4 */
+gSoundPcmBuffers = 0x030005A4;
+/* Original address: 0x03001064 */
+gSoundMixerCode = 0x03001064;
+/* Original address: 0x03000058 */
+gPcmOutputBuffers = 0x03000058;
+/* Original address: 0x0300006A */
+gPcmOutputBufferIndex = 0x0300006A;
+/* Original address: 0x03000070 */
+gSoundChannelLists = 0x03000070;
+/* Original address: 0x03000268 */
+sSoundKeySampleInstrument = 0x03000268;
+/* Original address: 0x03000598 */
+gPcmOutputMixer = 0x03000598;
+/* Original address: 0x03000864 */
+gPcmMixBuffer = 0x03000864;
+/* Original address: 0x030013C4 */
+gPcmChannels = 0x030013C4;
+/* Original address: 0x03000B24 */
+gSoundTracks = 0x03000B24;
+/* Original address: 0x03001728 */
+gPsgChannels = 0x03001728;
+/* Original address: 0x03000028 */
+sCurrentSoundEffects = 0x03000028;
+/* Original address: 0x03000038 */
+sSoundEffectStates = 0x03000038;
+/* Original address: 0x03000050 */
+sCurrentMusic = 0x03000050;
+/* Original address: 0x03000052 */
+sMusicEmotion = 0x03000052;
+/* Original address: 0x03001918 */
+gSoundPlayers = 0x03001918;
+/* Original address: 0x03004260 */
+gFallingFruit = 0x03004260;
+/* Original address: 0x03003BF0 */
+gAnimatedFieldObjects = 0x03003BF0;
 gGlobalStructure = 0x03000010;
 /* Original address: 0x03000020 */
 sFloatingItemIndex = 0x03000020;
@@ -6,11 +94,17 @@ gIntrTable = 0x030023C0;
 gMsgGlyph = 0x03003100;
 /* Original address: 0x030031D0 */
 gIslandProgramWork = 0x030031D0;
-/* Original addresses: 0x02000100, 0x02000102, 0x02000120, and 0x02000122 */
-time_of_day_palette_buffer0 = 0x02000100;
-current_time_of_day_palette0 = 0x02000102;
-time_of_day_palette_buffer1 = 0x02000120;
-current_time_of_day_palette1 = 0x02000122;
+/* Original address: 0x03003250 */
+gMsgSprites = 0x03003250;
+/* Original address: 0x030036D0 */
+gIslandLinkWork = 0x030036D0;
+/* Original address: 0x03002970 */
+gIslandTransferData = 0x03002970;
+/* Original address: 0x0203E9A0 */
+gIslandDataReceived = 0x0203E9A0;
+/* Original addresses: 0x02000100, 0x02000120 */
+current_time_of_day_palette0 = 0x02000100;
+current_time_of_day_palette1 = 0x02000120;
 /* Original addresses: 0x02000180, 0x02000190, 0x020001C0, and 0x020001D6 */
 time_of_day_palette_buffer2 = 0x02000180;
 current_time_of_day_palette2 = 0x02000190;
@@ -52,3 +146,8 @@ SECTIONS {
         *(*);
     }
 }
+
+/* Original address: 0x03000270 */
+gSoundNoteCallback = 0x03000270;
+/* Original address: 0x03000274 */
+gSoundControlCallback = 0x03000274;

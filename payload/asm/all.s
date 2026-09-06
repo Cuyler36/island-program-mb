@@ -6,26 +6,26 @@
 	thumb_func_start AgbMain
 AgbMain: @ 0x0201820C
 	push {lr}
-	bl sub_02019E88
+	bl InitializeHardware
 	ldr r1, _02018224 @ =0x03000000
 	movs r0, #0xe6
 	lsls r0, r0, #6
 	str r0, [r1]
-	bl sub_0201A0D4
+	bl IslandProgram_Main
 	pop {r0}
 	bx r0
 	.align 2, 0
 _02018224: .4byte 0x03000000
 
-	thumb_func_start sub_02018228
-sub_02018228: @ 0x02018228
+	thumb_func_start UnusedInterruptHandler
+UnusedInterruptHandler: @ 0x02018228
 	bx lr
 	.align 2, 0
 
-	thumb_func_start sub_0201822C
-sub_0201822C: @ 0x0201822C
+	thumb_func_start VBlankInterruptHandler
+VBlankInterruptHandler: @ 0x0201822C
 	push {r4, r5, r6, lr}
-	bl sub_02019D28
+	bl GameAudio_VBlank
 	ldr r4, _0201833C @ =0x03001B50
 	ldr r0, _02018340 @ =0x0000085A
 	adds r1, r4, r0
@@ -34,7 +34,7 @@ sub_0201822C: @ 0x0201822C
 	bne _02018246
 	movs r0, #0
 	strb r0, [r1]
-	bl sub_02027040
+	bl SoundDriver_DisablePcm
 _02018246:
 	ldr r1, _02018344 @ =0x0000085F
 	adds r6, r4, r1
@@ -155,7 +155,7 @@ _0201831A:
 	ldr r1, _02018360 @ =0x04000004
 	movs r0, #8
 	strh r0, [r1]
-	bl sub_02019D40
+	bl GameAudio_UpdateDriver
 	pop {r4, r5, r6}
 	pop {r0}
 	bx r0
@@ -171,13 +171,13 @@ _02018358: .4byte 0x04000202
 _0201835C: .4byte 0x00000814
 _02018360: .4byte 0x04000004
 
-	thumb_func_start sub_02018364
-sub_02018364: @ 0x02018364
+	thumb_func_start HBlankInterruptHandler
+HBlankInterruptHandler: @ 0x02018364
 	bx lr
 	.align 2, 0
 
-	thumb_func_start sub_02018368
-sub_02018368: @ 0x02018368
+	thumb_func_start VCountInterruptHandler
+VCountInterruptHandler: @ 0x02018368
 	bx lr
 	.align 2, 0
 
@@ -365,7 +365,7 @@ mMsg_MainSetup_Appear: @ 0x02018468
 	adds r0, r4, #0
 	bl mMsg_ClearText
 	movs r0, #0x1f
-	bl sub_02019D78
+	bl GameAudio_PlayEffect0
 _020184B4:
 	pop {r4}
 	pop {r0}
@@ -957,7 +957,7 @@ mMsg_Cont_SoundTrgSys: @ 0x020188C4
 	bne _020188E6
 	movs r0, #0x10
 _020188E6:
-	bl sub_02019D78
+	bl GameAudio_PlayEffect0
 _020188EA:
 	movs r0, #0
 	ldrsh r1, [r4, r0]
@@ -1419,7 +1419,7 @@ _02018C66:
 	movs r2, #0x68
 	movs r3, #0
 _02018C6E:
-	bl sub_0201C310
+	bl mMsg_CreateSprite
 	str r0, [r5, #0x4c]
 _02018C74:
 	pop {r4, r5, r6, r7}
@@ -1444,7 +1444,7 @@ mMsg_MainSetup_Disappear: @ 0x02018C7C
 	movs r0, #0xff
 	strb r0, [r3]
 	movs r0, #0x20
-	bl sub_02019D78
+	bl GameAudio_PlayEffect0
 	pop {r0}
 	bx r0
 	.align 2, 0
@@ -1743,7 +1743,7 @@ mMsg_MainSetup_Choice: @ 0x02018ECC
 	movs r1, #0
 	movs r2, #0
 	movs r3, #0
-	bl sub_0201C310
+	bl mMsg_CreateSprite
 	str r0, [r4, #0x48]
 	adds r0, r4, #0
 	bl mMsg_UpdateChoiceCursorPosition
@@ -1792,7 +1792,7 @@ _02018F2E:
 	movs r1, #0
 	movs r2, #0
 	movs r3, #0
-	bl sub_0201C310
+	bl mMsg_CreateSprite
 	str r0, [r4, #0x48]
 	adds r0, r4, #0
 	bl mMsg_UpdateChoiceCursorPosition
@@ -1831,7 +1831,7 @@ _02018F86:
 	movs r1, #0x14
 	bl mMsg_SetTimer
 	adds r0, r5, #0
-	bl sub_02019D78
+	bl GameAudio_PlayEffect0
 	b _02018FE6
 	.align 2, 0
 _02018F98: .4byte 0x03001B50
@@ -1847,7 +1847,7 @@ _02018FA0:
 	adds r0, #1
 	strb r0, [r1]
 	movs r0, #0xf
-	bl sub_02019D78
+	bl GameAudio_PlayEffect0
 	adds r0, r4, #0
 	bl mMsg_UpdateChoiceHighlight
 _02018FC0:
@@ -1861,7 +1861,7 @@ _02018FC0:
 	subs r0, #1
 	strb r0, [r1]
 	movs r0, #0xf
-	bl sub_02019D78
+	bl GameAudio_PlayEffect0
 	adds r0, r4, #0
 	bl mMsg_UpdateChoiceHighlight
 _02018FE0:
@@ -1891,7 +1891,7 @@ mMsg_MainSetup_DisappearWait: @ 0x02018FEC
 	movs r0, #0xff
 	strb r0, [r1]
 	movs r0, #0x20
-	bl sub_02019D78
+	bl GameAudio_PlayEffect0
 	pop {r0}
 	bx r0
 	.align 2, 0
@@ -1947,7 +1947,7 @@ mMsg_MainSetup_AppearWait: @ 0x02019058
 	movs r0, #0xff
 	strb r0, [r3]
 	movs r0, #0x1f
-	bl sub_02019D78
+	bl GameAudio_PlayEffect0
 	pop {r0}
 	bx r0
 	.align 2, 0
@@ -2468,14 +2468,14 @@ mMsg_DestroySprites: @ 0x020193F4
 	ldr r0, [r4, #0x48]
 	cmp r0, #0
 	beq _02019406
-	bl sub_0201C300
+	bl mMsg_DeactivateSprite
 	movs r0, #0
 	str r0, [r4, #0x48]
 _02019406:
 	ldr r0, [r4, #0x4c]
 	cmp r0, #0
 	beq _02019414
-	bl sub_0201C300
+	bl mMsg_DeactivateSprite
 	movs r0, #0
 	str r0, [r4, #0x4c]
 _02019414:
@@ -3087,8 +3087,8 @@ mFont_DrawCharToTiles: @ 0x02019880
 	.align 2, 0
 _020198B4: .4byte 0x03003100
 
-	thumb_func_start sub_020198B8
-sub_020198B8: @ 0x020198B8
+	thumb_func_start mFont_CopyTileBufferToVram
+mFont_CopyTileBufferToVram: @ 0x020198B8
 	push {r4, r5, r6, r7, lr}
 	sub sp, #0x24
 	adds r4, r0, #0
@@ -3132,8 +3132,8 @@ _02019900:
 _02019908: .4byte 0x0202AD1C
 _0201990C: .4byte 0x0202AD28
 
-	thumb_func_start sub_02019910
-sub_02019910: @ 0x02019910
+	thumb_func_start mFont_FillTileBuffer
+mFont_FillTileBuffer: @ 0x02019910
 	push {r4, r5, r6, r7, lr}
 	sub sp, #0x1c
 	adds r4, r1, #0
@@ -3361,8 +3361,8 @@ _02019AAA:
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_02019ABC
-sub_02019ABC: @ 0x02019ABC
+	thumb_func_start FixedMul8
+FixedMul8: @ 0x02019ABC
 	push {lr}
 	lsls r0, r0, #0x10
 	asrs r0, r0, #0x10
@@ -3379,8 +3379,8 @@ _02019ACE:
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_02019AD8
-sub_02019AD8: @ 0x02019AD8
+	thumb_func_start FixedDiv8
+FixedDiv8: @ 0x02019AD8
 	push {lr}
 	lsls r0, r0, #0x10
 	asrs r0, r0, #8
@@ -3414,13 +3414,13 @@ _02019B0C: .4byte 0x41C64E6D
 _02019B10: .4byte 0x0000085B
 _02019B14: .4byte 0x00003039
 
-	thumb_func_start sub_02019B18
-sub_02019B18: @ 0x02019B18
+	thumb_func_start GameState_SeedRandom
+GameState_SeedRandom: @ 0x02019B18
 	str r1, [r0, #0xc]
 	bx lr
 
-	thumb_func_start sub_02019B1C
-sub_02019B1C: @ 0x02019B1C
+	thumb_func_start GameState_SetBrightnessFade
+GameState_SetBrightnessFade: @ 0x02019B1C
 	push {r4, r5, lr}
 	adds r5, r0, #0
 	lsls r1, r1, #0x10
@@ -3455,8 +3455,8 @@ _02019B48:
 	.align 2, 0
 _02019B54: .4byte 0x0000081E
 
-	thumb_func_start sub_02019B58
-sub_02019B58: @ 0x02019B58
+	thumb_func_start GameState_StepBrightnessFade
+GameState_StepBrightnessFade: @ 0x02019B58
 	push {r4, r5, lr}
 	adds r5, r0, #0
 	lsls r1, r1, #0x18
@@ -3499,8 +3499,8 @@ _02019B94:
 	.align 2, 0
 _02019BA4: .4byte 0x0000081E
 
-	thumb_func_start sub_02019BA8
-sub_02019BA8: @ 0x02019BA8
+	thumb_func_start GetPaletteColor
+GetPaletteColor: @ 0x02019BA8
 	push {r4, r5, r6, lr}
 	ldr r6, [sp, #0x10]
 	ldr r5, [sp, #0x14]
@@ -3526,8 +3526,8 @@ sub_02019BA8: @ 0x02019BA8
 	pop {r0}
 	bx r0
 
-	thumb_func_start sub_02019BD8
-sub_02019BD8: @ 0x02019BD8
+	thumb_func_start SetPaletteColor
+SetPaletteColor: @ 0x02019BD8
 	push {r4, r5, r6, r7, lr}
 	ldr r4, [sp, #0x14]
 	ldr r5, [sp, #0x18]
@@ -3578,8 +3578,8 @@ _02019C30: .4byte 0x02000200
 _02019C34: .4byte 0x03001B50
 _02019C38: .4byte 0x00000852
 
-	thumb_func_start sub_02019C3C
-sub_02019C3C: @ 0x02019C3C
+	thumb_func_start WaitForVBlank
+WaitForVBlank: @ 0x02019C3C
 	push {r4, lr}
 	ldr r2, _02019C7C @ =0x03001B50
 	ldr r0, _02019C80 @ =0x00000814
@@ -3619,8 +3619,8 @@ _02019C7C: .4byte 0x03001B50
 _02019C80: .4byte 0x00000814
 _02019C84: .4byte 0x0000FFFE
 
-	thumb_func_start sub_02019C88
-sub_02019C88: @ 0x02019C88
+	thumb_func_start ClearOamBuffer
+ClearOamBuffer: @ 0x02019C88
 	push {r4, r5, lr}
 	ldr r1, _02019CB4 @ =0x03002410
 	movs r0, #0x80
@@ -3650,8 +3650,8 @@ _02019CB4: .4byte 0x03002410
 _02019CB8: .4byte 0x03001B50
 _02019CBC: .4byte 0x0202AFB4
 
-	thumb_func_start sub_02019CC0
-sub_02019CC0: @ 0x02019CC0
+	thumb_func_start GameState_ReadKeys
+GameState_ReadKeys: @ 0x02019CC0
 	push {r4, lr}
 	ldr r0, _02019CE8 @ =0x04000130
 	ldrh r0, [r0]
@@ -3678,8 +3678,8 @@ _02019CF0: .4byte 0x03001B50
 _02019CF4: .4byte 0x00000818
 _02019CF8: .4byte 0x0000081A
 
-	thumb_func_start sub_02019CFC
-sub_02019CFC: @ 0x02019CFC
+	thumb_func_start EnableVBlankInterrupt
+EnableVBlankInterrupt: @ 0x02019CFC
 	ldr r2, _02019D20 @ =0x04000208
 	movs r0, #0
 	strh r0, [r2]
@@ -3701,84 +3701,84 @@ sub_02019CFC: @ 0x02019CFC
 _02019D20: .4byte 0x04000208
 _02019D24: .4byte 0x04000200
 
-	thumb_func_start sub_02019D28
-sub_02019D28: @ 0x02019D28
+	thumb_func_start GameAudio_VBlank
+GameAudio_VBlank: @ 0x02019D28
 	push {lr}
-	bl sub_02026F0C
+	bl SoundDriver_VBlank
 	pop {r0}
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_02019D34
-sub_02019D34: @ 0x02019D34
+	thumb_func_start GameAudio_Init
+GameAudio_Init: @ 0x02019D34
 	push {lr}
-	bl sub_020269C8
+	bl Audio_Init
 	pop {r0}
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_02019D40
-sub_02019D40: @ 0x02019D40
+	thumb_func_start GameAudio_UpdateDriver
+GameAudio_UpdateDriver: @ 0x02019D40
 	push {lr}
-	bl sub_02026F18
+	bl SoundDriver_Update
 	pop {r0}
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_02019D4C
-sub_02019D4C: @ 0x02019D4C
+	thumb_func_start GameAudio_Update
+GameAudio_Update: @ 0x02019D4C
 	push {lr}
-	bl sub_020269E0
+	bl Audio_Update
 	pop {r0}
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_02019D58
-sub_02019D58: @ 0x02019D58
+	thumb_func_start GameAudio_PlayEffect2
+GameAudio_PlayEffect2: @ 0x02019D58
 	push {lr}
 	lsls r0, r0, #0x10
 	lsrs r0, r0, #0x10
-	bl sub_02026B48
+	bl Sound_PlayEffect2
 	pop {r0}
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_02019D68
-sub_02019D68: @ 0x02019D68
+	thumb_func_start GameAudio_StopEffect2
+GameAudio_StopEffect2: @ 0x02019D68
 	push {lr}
 	lsls r0, r0, #0x10
 	lsrs r0, r0, #0x10
-	bl sub_02026BC8
+	bl Sound_StopEffect2
 	pop {r0}
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_02019D78
-sub_02019D78: @ 0x02019D78
+	thumb_func_start GameAudio_PlayEffect0
+GameAudio_PlayEffect0: @ 0x02019D78
 	push {lr}
 	lsls r0, r0, #0x10
 	lsrs r0, r0, #0x10
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 	pop {r0}
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_02019D88
-sub_02019D88: @ 0x02019D88
+	thumb_func_start GameAudio_PlayMusic
+GameAudio_PlayMusic: @ 0x02019D88
 	push {lr}
 	lsls r0, r0, #0x10
 	lsrs r0, r0, #0x10
-	bl sub_02026C10
+	bl Sound_PlayMusic
 	pop {r0}
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_02019D98
-sub_02019D98: @ 0x02019D98
+	thumb_func_start GameAudio_StopMusic
+GameAudio_StopMusic: @ 0x02019D98
 	push {lr}
 	lsls r0, r0, #0x10
 	lsrs r0, r0, #0x10
-	bl sub_02026C68
+	bl Sound_StopMusic
 	pop {r0}
 	bx r0
 	.align 2, 0
@@ -3921,8 +3921,8 @@ _02019E80:
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_02019E88
-sub_02019E88: @ 0x02019E88
+	thumb_func_start InitializeHardware
+InitializeHardware: @ 0x02019E88
 	push {lr}
 	sub sp, #4
 	movs r0, #0xc0
@@ -3958,7 +3958,7 @@ sub_02019E88: @ 0x02019E88
 	ldr r0, [r1, #8]
 	ldr r0, _02019F04 @ =0x03007FFC
 	str r2, [r0]
-	bl sub_02019D34
+	bl GameAudio_Init
 	add sp, #4
 	pop {r0}
 	bx r0
@@ -3980,8 +3980,8 @@ sub_02019F08: @ 0x02019F08
 	bx lr
 	.align 2, 0
 
-	thumb_func_start sub_02019F0C
-sub_02019F0C: @ 0x02019F0C
+	thumb_func_start InitializeIsland
+InitializeIsland: @ 0x02019F0C
 	push {r4, r5, r6, r7, lr}
 	ldr r0, _0201A030 @ =0x040000D4
 	ldr r1, _0201A034 @ =0x020357F4
@@ -4100,8 +4100,8 @@ _02019F54:
 	ldr r2, _0201A0A0 @ =0x0000082A
 	adds r4, r4, r2
 	strh r6, [r4]
-	bl sub_0201A218
-	bl sub_0201C2E0
+	bl Joybus_Init
+	bl mMsg_InitSprites
 	ldr r0, _0201A0A4 @ =0x03002FC0
 	ldr r1, _0201A0A8 @ =0x02001720
 	ldr r2, _0201A0AC @ =0x0200BF80
@@ -4114,7 +4114,7 @@ _02019F54:
 	ldr r1, _0201A0C0 @ =0x02001B60
 	ldr r2, _0201A0C4 @ =0x0200E380
 	bl mMsg_InitWindow
-	bl sub_0201BF10
+	bl IslandProgram_InitWork
 	pop {r4, r5, r6, r7}
 	pop {r0}
 	bx r0
@@ -4158,16 +4158,16 @@ _0201A0BC: .4byte 0x03002980
 _0201A0C0: .4byte 0x02001B60
 _0201A0C4: .4byte 0x0200E380
 
-	thumb_func_start sub_0201A0C8
-sub_0201A0C8: @ 0x0201A0C8
+	thumb_func_start IslandProgram_UpdateFrame
+IslandProgram_UpdateFrame: @ 0x0201A0C8
 	push {lr}
-	bl sub_0201BF58
+	bl IslandProgram_Update
 	pop {r0}
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_0201A0D4
-sub_0201A0D4: @ 0x0201A0D4
+	thumb_func_start IslandProgram_Main
+IslandProgram_Main: @ 0x0201A0D4
 	push {r4, r5, r6, r7, lr}
 	mov r7, r8
 	push {r7}
@@ -4177,7 +4177,7 @@ sub_0201A0D4: @ 0x0201A0D4
 	movs r2, #0x58
 	bl CpuFastSet
 	bl mMsg_Init
-	bl sub_02019CFC
+	bl EnableVBlankInterrupt
 	ldr r4, _0201A1C4 @ =0x03001B50
 	ldr r0, _0201A1C8 @ =0x0000085F
 	adds r1, r4, r0
@@ -4188,7 +4188,7 @@ sub_0201A0D4: @ 0x0201A0D4
 	ldr r0, _0201A1D0 @ =0x0000FFFF
 	strh r0, [r1]
 	bl sub_02019F08
-	bl sub_02019F0C
+	bl InitializeIsland
 	adds r5, r4, #0
 	movs r0, #0x85
 	lsls r0, r0, #4
@@ -4197,7 +4197,7 @@ sub_0201A0D4: @ 0x0201A0D4
 	ldr r1, _0201A1D8 @ =0x00000101
 	mov r8, r1
 _0201A116:
-	bl sub_02019CC0
+	bl GameState_ReadKeys
 	ldrh r0, [r7]
 	cmp r0, r8
 	bne _0201A172
@@ -4238,9 +4238,9 @@ _0201A116:
 	adds r0, r5, r2
 	strb r1, [r0]
 	strb r1, [r7]
-	bl sub_0201A620
+	bl Joybus_Reset
 _0201A172:
-	bl sub_02019C88
+	bl ClearOamBuffer
 	ldr r0, _0201A1E8 @ =0x03003120
 	ldr r1, [r0, #0x18]
 	ldr r2, _0201A1EC @ =0x0001FEFF
@@ -4256,7 +4256,7 @@ _0201A188:
 	movs r0, #1
 	strb r0, [r1]
 _0201A190:
-	bl sub_0201A0C8
+	bl IslandProgram_UpdateFrame
 	ldr r4, _0201A1C4 @ =0x03001B50
 	ldr r2, [r4, #0x10]
 	adds r1, r2, #1
@@ -4268,12 +4268,12 @@ _0201A190:
 	adds r0, r2, r1
 	str r0, [r4, #0x10]
 _0201A1A8:
-	bl sub_02019D4C
+	bl GameAudio_Update
 	ldr r2, _0201A1C8 @ =0x0000085F
 	adds r1, r4, r2
 	movs r0, #0
 	strb r0, [r1]
-	bl sub_02019C3C
+	bl WaitForVBlank
 	b _0201A116
 	.align 2, 0
 _0201A1BC: .4byte mFont_BlitGlyphToTiles
@@ -4310,8 +4310,8 @@ Swap32: @ 0x0201A1FC
 	add sp, #4
 	bx lr
 
-	thumb_func_start sub_0201A218
-sub_0201A218: @ 0x0201A218
+	thumb_func_start Joybus_Init
+Joybus_Init: @ 0x0201A218
 	push {r4, r5, lr}
 	sub sp, #4
 	ldr r5, _0201A268 @ =0x04000208
@@ -4832,8 +4832,8 @@ _0201A614: .4byte 0x0202AFC4
 _0201A618: .4byte 0x04000140
 _0201A61C: .4byte 0x03003120
 
-	thumb_func_start sub_0201A620
-sub_0201A620: @ 0x0201A620
+	thumb_func_start Joybus_Reset
+Joybus_Reset: @ 0x0201A620
 	push {r4, r5, lr}
 	sub sp, #4
 	ldr r5, _0201A670 @ =0x04000208
@@ -4880,8 +4880,8 @@ _0201A67C: .4byte 0x04000154
 _0201A680: .4byte 0x03003120
 _0201A684: .4byte 0x01000010
 
-	thumb_func_start sub_0201A688
-sub_0201A688: @ 0x0201A688
+	thumb_func_start Joybus_CheckTimeout
+Joybus_CheckTimeout: @ 0x0201A688
 	push {r4, lr}
 	lsls r0, r0, #0x18
 	lsrs r3, r0, #0x18
@@ -4905,7 +4905,7 @@ _0201A6B0: .4byte 0x04000208
 _0201A6B4:
 	cmp r3, #0
 	beq _0201A6BC
-	bl sub_0201A620
+	bl Joybus_Reset
 _0201A6BC:
 	movs r2, #1
 _0201A6BE:
@@ -4915,8 +4915,8 @@ _0201A6BE:
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_0201A6C8
-sub_0201A6C8: @ 0x0201A6C8
+	thumb_func_start IslandProgram_Restart
+IslandProgram_Restart: @ 0x0201A6C8
 	push {lr}
 	ldr r0, _0201A6F8 @ =_start
 	ldr r1, _0201A6FC @ =0x0203E9A0
@@ -4948,8 +4948,8 @@ _0201A708: .4byte 0x04000200
 _0201A70C: .4byte 0x04000202
 _0201A710: .4byte 0x0000FFFF
 
-	thumb_func_start sub_0201A714
-sub_0201A714: @ 0x0201A714
+	thumb_func_start IslandProgram_PrepareDialogTransition
+IslandProgram_PrepareDialogTransition: @ 0x0201A714
 	push {r4, r5, r6, r7, lr}
 	adds r5, r0, #0
 	movs r7, #0
@@ -5004,8 +5004,8 @@ _0201A776:
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_0201A780
-sub_0201A780: @ 0x0201A780
+	thumb_func_start IslandProgram_CheckWindowResumed
+IslandProgram_CheckWindowResumed: @ 0x0201A780
 	push {r4, r5, lr}
 	adds r2, r0, #0
 	lsls r1, r1, #0x18
@@ -5047,8 +5047,8 @@ _0201A7C2:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_0201A7C8
-sub_0201A7C8: @ 0x0201A7C8
+	thumb_func_start IslandProgram_CheckSleepRequest
+IslandProgram_CheckSleepRequest: @ 0x0201A7C8
 	push {r4, lr}
 	adds r2, r0, #0
 	movs r4, #0
@@ -5068,7 +5068,7 @@ sub_0201A7C8: @ 0x0201A7C8
 	adds r0, r2, #0
 	adds r0, #0x2c
 	ldr r1, _0201A80C @ =0x00004650
-	bl sub_0201A810
+	bl IslandProgram_UpdateInputTimeout
 	cmp r0, #1
 	bne _0201A7F8
 _0201A7F6:
@@ -5084,8 +5084,8 @@ _0201A804: .4byte 0x0000084E
 _0201A808: .4byte 0x0000081A
 _0201A80C: .4byte 0x00004650
 
-	thumb_func_start sub_0201A810
-sub_0201A810: @ 0x0201A810
+	thumb_func_start IslandProgram_UpdateInputTimeout
+IslandProgram_UpdateInputTimeout: @ 0x0201A810
 	push {r4, lr}
 	adds r2, r0, #0
 	movs r3, #0
@@ -5121,8 +5121,8 @@ _0201A84A:
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_0201A854
-sub_0201A854: @ 0x0201A854
+	thumb_func_start IslandProgram_SetDialogPalette
+IslandProgram_SetDialogPalette: @ 0x0201A854
 	push {r4, r5, r6, r7, lr}
 	sub sp, #0xc
 	adds r2, r0, #0
@@ -5152,7 +5152,7 @@ _0201A878:
 	movs r1, #7
 	movs r2, #1
 	movs r3, #0x10
-	bl sub_02019BD8
+	bl SetPaletteColor
 	movs r0, #0x1b
 	str r0, [sp]
 	movs r0, #0x13
@@ -5161,7 +5161,7 @@ _0201A878:
 	movs r1, #7
 	movs r2, #2
 	movs r3, #0x15
-	bl sub_02019BD8
+	bl SetPaletteColor
 	movs r0, #0x1f
 	str r0, [sp]
 	movs r0, #0x1a
@@ -5170,7 +5170,7 @@ _0201A878:
 	movs r1, #7
 	movs r2, #3
 	movs r3, #0x1a
-	bl sub_02019BD8
+	bl SetPaletteColor
 	movs r0, #0x1e
 	str r0, [sp]
 	movs r0, #0x14
@@ -5179,7 +5179,7 @@ _0201A878:
 	movs r1, #7
 	movs r2, #4
 	movs r3, #0x17
-	bl sub_02019BD8
+	bl SetPaletteColor
 	movs r0, #0x1d
 	str r0, [sp]
 	movs r0, #0x16
@@ -5188,7 +5188,7 @@ _0201A878:
 	movs r1, #7
 	movs r2, #5
 	movs r3, #0x16
-	bl sub_02019BD8
+	bl SetPaletteColor
 	b _0201AA78
 _0201A8DE:
 	movs r0, #0x17
@@ -5199,7 +5199,7 @@ _0201A8DE:
 	movs r1, #7
 	movs r2, #1
 	movs r3, #0x17
-	bl sub_02019BD8
+	bl SetPaletteColor
 	movs r0, #0x1b
 	str r0, [sp]
 	movs r0, #0x13
@@ -5208,7 +5208,7 @@ _0201A8DE:
 	movs r1, #7
 	movs r2, #2
 	movs r3, #0x1b
-	bl sub_02019BD8
+	bl SetPaletteColor
 	movs r4, #0x1f
 	str r4, [sp]
 	movs r0, #0x1a
@@ -5217,7 +5217,7 @@ _0201A8DE:
 	movs r1, #7
 	movs r2, #3
 	movs r3, #0x1f
-	bl sub_02019BD8
+	bl SetPaletteColor
 	movs r0, #0x1d
 	str r0, [sp]
 	movs r0, #0x15
@@ -5226,7 +5226,7 @@ _0201A8DE:
 	movs r1, #7
 	movs r2, #4
 	movs r3, #0x1d
-	bl sub_02019BD8
+	bl SetPaletteColor
 	str r4, [sp]
 	movs r0, #9
 	str r0, [sp, #4]
@@ -5234,7 +5234,7 @@ _0201A8DE:
 	movs r1, #7
 	movs r2, #5
 	movs r3, #0x1e
-	bl sub_02019BD8
+	bl SetPaletteColor
 	movs r0, #0xb
 	str r0, [sp]
 	movs r0, #8
@@ -5243,7 +5243,7 @@ _0201A8DE:
 	movs r1, #7
 	movs r2, #6
 	movs r3, #0xa
-	bl sub_02019BD8
+	bl SetPaletteColor
 	b _0201AA78
 _0201A956:
 	adds r0, r2, #0
@@ -5259,7 +5259,7 @@ _0201A956:
 	movs r1, #7
 	movs r2, #1
 	movs r3, #0x16
-	bl sub_02019BD8
+	bl SetPaletteColor
 	movs r0, #0xe
 	str r0, [sp]
 	movs r0, #6
@@ -5268,7 +5268,7 @@ _0201A956:
 	movs r1, #7
 	movs r2, #2
 	movs r3, #0x1a
-	bl sub_02019BD8
+	bl SetPaletteColor
 	movs r0, #0xd
 	str r0, [sp]
 	movs r0, #3
@@ -5277,7 +5277,7 @@ _0201A956:
 	movs r1, #7
 	movs r2, #3
 	movs r3, #0x1e
-	bl sub_02019BD8
+	bl SetPaletteColor
 	movs r4, #0x15
 	str r4, [sp]
 	movs r0, #0xc
@@ -5286,7 +5286,7 @@ _0201A956:
 	movs r1, #7
 	movs r2, #4
 	movs r3, #0x1d
-	bl sub_02019BD8
+	bl SetPaletteColor
 	movs r0, #0x1f
 	str r0, [sp]
 	str r4, [sp, #4]
@@ -5308,7 +5308,7 @@ _0201A9BE:
 	movs r1, #7
 	movs r2, #1
 	movs r3, #8
-	bl sub_02019BD8
+	bl SetPaletteColor
 	str r4, [sp]
 	movs r0, #0x1b
 	str r0, [sp, #4]
@@ -5316,7 +5316,7 @@ _0201A9BE:
 	movs r1, #7
 	movs r2, #2
 	movs r3, #0xa
-	bl sub_02019BD8
+	bl SetPaletteColor
 	movs r0, #0x19
 	str r0, [sp]
 	movs r4, #0x1f
@@ -5325,7 +5325,7 @@ _0201A9BE:
 	movs r1, #7
 	movs r2, #3
 	movs r3, #0x15
-	bl sub_02019BD8
+	bl SetPaletteColor
 	movs r0, #0x17
 	str r0, [sp]
 	movs r0, #0x1d
@@ -5334,7 +5334,7 @@ _0201A9BE:
 	movs r1, #7
 	movs r2, #4
 	movs r3, #0x10
-	bl sub_02019BD8
+	bl SetPaletteColor
 	movs r0, #0xf
 	str r0, [sp]
 	str r4, [sp, #4]
@@ -5342,7 +5342,7 @@ _0201A9BE:
 	movs r1, #7
 	movs r2, #5
 	movs r3, #7
-	bl sub_02019BD8
+	bl SetPaletteColor
 	str r4, [sp]
 	str r4, [sp, #4]
 	movs r0, #0
@@ -5350,7 +5350,7 @@ _0201A9BE:
 	movs r2, #6
 _0201AA32:
 	movs r3, #0x1f
-	bl sub_02019BD8
+	bl SetPaletteColor
 	b _0201AA78
 _0201AA3A:
 	movs r5, #1
@@ -5369,7 +5369,7 @@ _0201AA48:
 	movs r1, #7
 	adds r2, r4, #0
 	add r3, sp, #8
-	bl sub_02019BA8
+	bl GetPaletteColor
 	add r0, sp, #8
 	ldrb r3, [r0]
 	ldrb r0, [r7]
@@ -5379,7 +5379,7 @@ _0201AA48:
 	movs r0, #0
 	movs r1, #7
 	adds r2, r4, #0
-	bl sub_02019BD8
+	bl SetPaletteColor
 	adds r5, #1
 	cmp r5, #6
 	ble _0201AA48
@@ -5397,8 +5397,8 @@ _0201AA8C: .4byte 0x020357F4
 _0201AA90: .4byte 0x020000E0
 _0201AA94: .4byte 0x050000E0
 
-	thumb_func_start sub_0201AA98
-sub_0201AA98: @ 0x0201AA98
+	thumb_func_start IslandProgram_SetupDialogDisplay
+IslandProgram_SetupDialogDisplay: @ 0x0201AA98
 	push {r4, r5, lr}
 	adds r2, r0, #0
 	lsls r1, r1, #0x18
@@ -5476,8 +5476,8 @@ _0201AB30: .4byte 0x0000FFFC
 _0201AB34: .4byte 0x0000082A
 _0201AB38: .4byte 0x0000081E
 
-	thumb_func_start sub_0201AB3C
-sub_0201AB3C: @ 0x0201AB3C
+	thumb_func_start IslandProgram_RestoreDialogDisplay
+IslandProgram_RestoreDialogDisplay: @ 0x0201AB3C
 	push {r4, r5, lr}
 	adds r2, r0, #0
 	adds r5, r2, #0
@@ -5538,8 +5538,8 @@ _0201ABB0: .4byte 0x0000FDFF
 _0201ABB4: .4byte 0x0000081E
 _0201ABB8: .4byte 0x00000848
 
-	thumb_func_start sub_0201ABBC
-sub_0201ABBC: @ 0x0201ABBC
+	thumb_func_start IslandProgram_UpdateMessages
+IslandProgram_UpdateMessages: @ 0x0201ABBC
 	push {lr}
 	ldr r1, [r0, #0x14]
 	cmp r1, #0
@@ -5554,14 +5554,14 @@ sub_0201ABBC: @ 0x0201ABBC
 	adds r0, r1, #0
 	bl mMsg_Main_Window
 _0201ABD8:
-	bl sub_0201C5A0
+	bl mMsg_UpdateAndDrawSprites
 	pop {r0}
 	bx r0
 	.align 2, 0
 _0201ABE0: .4byte 0x03001B50
 
-	thumb_func_start sub_0201ABE4
-sub_0201ABE4: @ 0x0201ABE4
+	thumb_func_start IslandProgram_TryOpenTransferDialog
+IslandProgram_TryOpenTransferDialog: @ 0x0201ABE4
 	push {r4, r5, lr}
 	adds r4, r0, #0
 	lsls r1, r1, #0x18
@@ -5584,7 +5584,7 @@ sub_0201ABE4: @ 0x0201ABE4
 	lsls r1, r5, #0x18
 	asrs r1, r1, #0x18
 	adds r0, r4, #0
-	bl sub_0201A714
+	bl IslandProgram_PrepareDialogTransition
 	cmp r0, #1
 	bne _0201AC28
 	adds r0, r4, #0
@@ -5593,7 +5593,7 @@ sub_0201ABE4: @ 0x0201ABE4
 	ldr r0, [r4, #0x14]
 	str r0, [r4, #0x10]
 	adds r0, r4, #0
-	bl sub_0201B6D0
+	bl IslandProgram_ApplyPendingTransferState
 _0201AC28:
 	movs r1, #1
 _0201AC2A:
@@ -5604,8 +5604,8 @@ _0201AC2A:
 	.align 2, 0
 _0201AC34: .4byte 0x03001B50
 
-	thumb_func_start sub_0201AC38
-sub_0201AC38: @ 0x0201AC38
+	thumb_func_start IslandProgram_TryOpenNoticeDialog
+IslandProgram_TryOpenNoticeDialog: @ 0x0201AC38
 	push {r4, r5, lr}
 	adds r4, r0, #0
 	lsls r1, r1, #0x18
@@ -5628,7 +5628,7 @@ sub_0201AC38: @ 0x0201AC38
 	lsls r1, r5, #0x18
 	asrs r1, r1, #0x18
 	adds r0, r4, #0
-	bl sub_0201A714
+	bl IslandProgram_PrepareDialogTransition
 	cmp r0, #1
 	bne _0201AC7C
 	adds r0, r4, #0
@@ -5637,7 +5637,7 @@ sub_0201AC38: @ 0x0201AC38
 	ldr r0, [r4, #0x14]
 	str r0, [r4, #8]
 	adds r0, r4, #0
-	bl sub_0201AE0C
+	bl IslandProgram_ApplyPendingNoticeState
 _0201AC7C:
 	movs r1, #1
 _0201AC7E:
@@ -5648,8 +5648,8 @@ _0201AC7E:
 	.align 2, 0
 _0201AC88: .4byte 0x03001B50
 
-	thumb_func_start sub_0201AC8C
-sub_0201AC8C: @ 0x0201AC8C
+	thumb_func_start IslandProgram_TryOpenSleepDialog
+IslandProgram_TryOpenSleepDialog: @ 0x0201AC8C
 	push {r4, r5, lr}
 	adds r4, r0, #0
 	lsls r1, r1, #0x18
@@ -5664,7 +5664,7 @@ sub_0201AC8C: @ 0x0201AC8C
 	lsls r1, r5, #0x18
 	asrs r1, r1, #0x18
 	adds r0, r4, #0
-	bl sub_0201A714
+	bl IslandProgram_PrepareDialogTransition
 	cmp r0, #1
 	bne _0201ACC0
 	adds r0, r4, #0
@@ -5673,7 +5673,7 @@ sub_0201AC8C: @ 0x0201AC8C
 	ldr r0, [r4, #0x14]
 	str r0, [r4, #0xc]
 	adds r0, r4, #0
-	bl sub_0201B1B8
+	bl IslandProgram_ApplyPendingSleepState
 _0201ACC0:
 	movs r1, #1
 _0201ACC2:
@@ -5683,8 +5683,8 @@ _0201ACC2:
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_0201ACCC
-sub_0201ACCC: @ 0x0201ACCC
+	thumb_func_start IslandProgram_BeginJoybusReceive
+IslandProgram_BeginJoybusReceive: @ 0x0201ACCC
 	ldr r1, _0201ACF0 @ =0x03002970
 	ldr r3, [r1]
 	movs r2, #0xe6
@@ -5707,8 +5707,8 @@ sub_0201ACCC: @ 0x0201ACCC
 _0201ACF0: .4byte 0x03002970
 _0201ACF4: .4byte 0x03003120
 
-	thumb_func_start sub_0201ACF8
-sub_0201ACF8: @ 0x0201ACF8
+	thumb_func_start IslandProgram_PollJoybusReceive
+IslandProgram_PollJoybusReceive: @ 0x0201ACF8
 	push {r4, lr}
 	adds r4, r0, #0
 	movs r1, #0
@@ -5743,8 +5743,8 @@ _0201AD2A:
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_0201AD34
-sub_0201AD34: @ 0x0201AD34
+	thumb_func_start IslandProgram_BeginJoybusSend
+IslandProgram_BeginJoybusSend: @ 0x0201AD34
 	push {lr}
 	adds r3, r0, #0
 	ldr r0, _0201AD60 @ =0x03001B40
@@ -5785,8 +5785,8 @@ _0201AD74:
 	pop {r0}
 	bx r0
 
-	thumb_func_start sub_0201AD84
-sub_0201AD84: @ 0x0201AD84
+	thumb_func_start IslandProgram_PollJoybusSend
+IslandProgram_PollJoybusSend: @ 0x0201AD84
 	push {r4, lr}
 	adds r4, r0, #0
 	movs r3, #0
@@ -5838,15 +5838,15 @@ sub_0201ADDC: @ 0x0201ADDC
 	bx lr
 	.align 2, 0
 
-	thumb_func_start sub_0201ADE0
-sub_0201ADE0: @ 0x0201ADE0
+	thumb_func_start IslandProgram_RequestNoticeState
+IslandProgram_RequestNoticeState: @ 0x0201ADE0
 	adds r0, #0x58
 	strb r1, [r0]
 	movs r0, #1
 	bx lr
 
-	thumb_func_start sub_0201ADE8
-sub_0201ADE8: @ 0x0201ADE8
+	thumb_func_start IslandProgram_RequestNoticeTransfer
+IslandProgram_RequestNoticeTransfer: @ 0x0201ADE8
 	adds r0, #0x58
 	movs r1, #1
 	strb r1, [r0]
@@ -5854,8 +5854,8 @@ sub_0201ADE8: @ 0x0201ADE8
 	bx lr
 	.align 2, 0
 
-	thumb_func_start sub_0201ADF4
-sub_0201ADF4: @ 0x0201ADF4
+	thumb_func_start IslandProgram_RequestNoticeResult
+IslandProgram_RequestNoticeResult: @ 0x0201ADF4
 	adds r0, #0x58
 	movs r1, #2
 	strb r1, [r0]
@@ -5863,8 +5863,8 @@ sub_0201ADF4: @ 0x0201ADF4
 	bx lr
 	.align 2, 0
 
-	thumb_func_start sub_0201AE00
-sub_0201AE00: @ 0x0201AE00
+	thumb_func_start IslandProgram_RequestNoticeRestart
+IslandProgram_RequestNoticeRestart: @ 0x0201AE00
 	adds r0, #0x58
 	movs r1, #3
 	strb r1, [r0]
@@ -5872,8 +5872,8 @@ sub_0201AE00: @ 0x0201AE00
 	bx lr
 	.align 2, 0
 
-	thumb_func_start sub_0201AE0C
-sub_0201AE0C: @ 0x0201AE0C
+	thumb_func_start IslandProgram_ApplyPendingNoticeState
+IslandProgram_ApplyPendingNoticeState: @ 0x0201AE0C
 	push {r4, lr}
 	adds r4, r0, #0
 	adds r2, r4, #0
@@ -5900,8 +5900,8 @@ _0201AE34:
 	.align 2, 0
 _0201AE3C: .4byte 0x0202AFCC
 
-	thumb_func_start sub_0201AE40
-sub_0201AE40: @ 0x0201AE40
+	thumb_func_start IslandProgram_EnterNoticeTransfer
+IslandProgram_EnterNoticeTransfer: @ 0x0201AE40
 	push {r4, r5, lr}
 	adds r4, r0, #0
 	ldr r5, _0201AE78 @ =0x03003120
@@ -5926,7 +5926,7 @@ _0201AE52:
 	cmp r1, r0
 	bne _0201AE88
 	adds r0, r4, #0
-	bl sub_0201ACCC
+	bl IslandProgram_BeginJoybusReceive
 	b _0201AE8E
 	.align 2, 0
 _0201AE78: .4byte 0x03003120
@@ -5935,14 +5935,14 @@ _0201AE80: .4byte 0x03002980
 _0201AE84: .4byte 0xFFFE0202
 _0201AE88:
 	adds r0, r4, #0
-	bl sub_0201AD34
+	bl IslandProgram_BeginJoybusSend
 _0201AE8E:
 	adds r0, r4, #0
 	movs r1, #2
-	bl sub_0201A854
+	bl IslandProgram_SetDialogPalette
 	adds r0, r4, #0
 	movs r1, #2
-	bl sub_0201AA98
+	bl IslandProgram_SetupDialogDisplay
 	adds r1, r4, #0
 	adds r1, #0x58
 	ldrb r0, [r1]
@@ -5960,8 +5960,8 @@ _0201AEAE:
 	.align 2, 0
 _0201AEB8: .4byte 0x03002980
 
-	thumb_func_start sub_0201AEBC
-sub_0201AEBC: @ 0x0201AEBC
+	thumb_func_start IslandProgram_UpdateNoticeTransfer
+IslandProgram_UpdateNoticeTransfer: @ 0x0201AEBC
 	push {r4, r5, lr}
 	adds r4, r0, #0
 	adds r0, #0x71
@@ -5969,7 +5969,7 @@ sub_0201AEBC: @ 0x0201AEBC
 	cmp r0, #0
 	bne _0201AED6
 	adds r0, r4, #0
-	bl sub_0201ACF8
+	bl IslandProgram_PollJoybusReceive
 	adds r1, r4, #0
 	adds r1, #0x60
 	strb r0, [r1]
@@ -5981,7 +5981,7 @@ _0201AED6:
 	cmp r0, #0
 	bne _0201AF00
 	adds r0, r4, #0
-	bl sub_0201AD84
+	bl IslandProgram_PollJoybusSend
 	adds r1, r4, #0
 	adds r1, #0x75
 	strb r0, [r1]
@@ -6025,18 +6025,18 @@ _0201AF14:
 	cmp r0, #0
 	beq _0201AF42
 	adds r0, r4, #0
-	bl sub_0201ADF4
+	bl IslandProgram_RequestNoticeResult
 	cmp r0, #0
 	beq _0201AF42
 	adds r0, r4, #0
-	bl sub_0201AE0C
+	bl IslandProgram_ApplyPendingNoticeState
 _0201AF42:
 	pop {r4, r5}
 	pop {r0}
 	bx r0
 
-	thumb_func_start sub_0201AF48
-sub_0201AF48: @ 0x0201AF48
+	thumb_func_start IslandProgram_EnterNoticeResult
+IslandProgram_EnterNoticeResult: @ 0x0201AF48
 	push {r4, r5, r6, lr}
 	sub sp, #8
 	adds r5, r0, #0
@@ -6089,7 +6089,7 @@ _0201AFB0:
 	movs r0, #0x3c
 	str r0, [r5, #0x28]
 	movs r0, #0x28
-	bl sub_02019D78
+	bl GameAudio_PlayEffect0
 _0201AFBA:
 	adds r2, r5, #0
 	adds r2, #0x58
@@ -6131,7 +6131,7 @@ _0201AFD2:
 	movs r1, #0x27
 _0201B008:
 	adds r0, r1, #0
-	bl sub_02019D78
+	bl GameAudio_PlayEffect0
 	ldr r0, _0201B040 @ =0x03001B50
 	ldr r2, _0201B044 @ =0x00000856
 	adds r1, r0, r2
@@ -6161,8 +6161,8 @@ _0201B040: .4byte 0x03001B50
 _0201B044: .4byte 0x00000856
 _0201B048: .4byte 0x00000857
 
-	thumb_func_start sub_0201B04C
-sub_0201B04C: @ 0x0201B04C
+	thumb_func_start IslandProgram_UpdateNoticeResult
+IslandProgram_UpdateNoticeResult: @ 0x0201B04C
 	push {r4, r5, lr}
 	adds r4, r0, #0
 	adds r0, #0x70
@@ -6204,7 +6204,7 @@ _0201B074:
 	movs r1, #0x80
 	movs r2, #0x3f
 	movs r3, #0
-	bl sub_02019B1C
+	bl GameState_SetBrightnessFade
 	ldr r0, _0201B0B8 @ =0x0000082A
 	adds r4, r4, r0
 	ldrh r1, [r4]
@@ -6238,18 +6238,18 @@ _0201B0C0:
 _0201B0E0:
 	adds r0, r4, #0
 	movs r1, #1
-	bl sub_0201A854
+	bl IslandProgram_SetDialogPalette
 	b _0201B0F2
 _0201B0EA:
 	adds r0, r4, #0
 	movs r1, #3
-	bl sub_0201A854
+	bl IslandProgram_SetDialogPalette
 _0201B0F2:
 	ldr r0, [r4, #8]
 	str r0, [r4, #0x14]
 	adds r0, r4, #0
 	movs r1, #2
-	bl sub_0201AB3C
+	bl IslandProgram_RestoreDialogDisplay
 	ldr r0, [r4, #0x14]
 	ldr r2, [r0, #0x50]
 	movs r0, #0
@@ -6302,38 +6302,38 @@ _0201B15A:
 _0201B160: .4byte 0x03001B50
 _0201B164: .4byte 0x00000856
 
-	thumb_func_start sub_0201B168
-sub_0201B168: @ 0x0201B168
+	thumb_func_start IslandProgram_EnterNoticeRestart
+IslandProgram_EnterNoticeRestart: @ 0x0201B168
 	bx lr
 	.align 2, 0
 
-	thumb_func_start sub_0201B16C
-sub_0201B16C: @ 0x0201B16C
+	thumb_func_start IslandProgram_UpdateNoticeRestart
+IslandProgram_UpdateNoticeRestart: @ 0x0201B16C
 	push {lr}
 	ldr r0, _0201B188 @ =0x03001B50
 	movs r1, #1
 	movs r2, #1
-	bl sub_02019B58
+	bl GameState_StepBrightnessFade
 	lsls r0, r0, #0x10
 	lsrs r0, r0, #0x10
 	cmp r0, #0x10
 	bne _0201B184
-	bl sub_0201A6C8
+	bl IslandProgram_Restart
 _0201B184:
 	pop {r0}
 	bx r0
 	.align 2, 0
 _0201B188: .4byte 0x03001B50
 
-	thumb_func_start sub_0201B18C
-sub_0201B18C: @ 0x0201B18C
+	thumb_func_start IslandProgram_RequestSleepState
+IslandProgram_RequestSleepState: @ 0x0201B18C
 	adds r0, #0x59
 	strb r1, [r0]
 	movs r0, #1
 	bx lr
 
-	thumb_func_start sub_0201B194
-sub_0201B194: @ 0x0201B194
+	thumb_func_start IslandProgram_RequestSleepPrompt
+IslandProgram_RequestSleepPrompt: @ 0x0201B194
 	adds r0, #0x59
 	movs r1, #1
 	strb r1, [r0]
@@ -6341,8 +6341,8 @@ sub_0201B194: @ 0x0201B194
 	bx lr
 	.align 2, 0
 
-	thumb_func_start sub_0201B1A0
-sub_0201B1A0: @ 0x0201B1A0
+	thumb_func_start IslandProgram_RequestSleepMode
+IslandProgram_RequestSleepMode: @ 0x0201B1A0
 	adds r0, #0x59
 	movs r1, #2
 	strb r1, [r0]
@@ -6350,8 +6350,8 @@ sub_0201B1A0: @ 0x0201B1A0
 	bx lr
 	.align 2, 0
 
-	thumb_func_start sub_0201B1AC
-sub_0201B1AC: @ 0x0201B1AC
+	thumb_func_start IslandProgram_RequestSleepCleanup
+IslandProgram_RequestSleepCleanup: @ 0x0201B1AC
 	adds r0, #0x59
 	movs r1, #3
 	strb r1, [r0]
@@ -6359,8 +6359,8 @@ sub_0201B1AC: @ 0x0201B1AC
 	bx lr
 	.align 2, 0
 
-	thumb_func_start sub_0201B1B8
-sub_0201B1B8: @ 0x0201B1B8
+	thumb_func_start IslandProgram_ApplyPendingSleepState
+IslandProgram_ApplyPendingSleepState: @ 0x0201B1B8
 	push {r4, lr}
 	adds r4, r0, #0
 	adds r2, r4, #0
@@ -6387,8 +6387,8 @@ _0201B1E0:
 	.align 2, 0
 _0201B1E8: .4byte 0x0202AFEC
 
-	thumb_func_start sub_0201B1EC
-sub_0201B1EC: @ 0x0201B1EC
+	thumb_func_start IslandProgram_EnterSleepPrompt
+IslandProgram_EnterSleepPrompt: @ 0x0201B1EC
 	push {r4, r5, lr}
 	adds r4, r0, #0
 	ldr r5, _0201B234 @ =0x03003060
@@ -6401,10 +6401,10 @@ sub_0201B1EC: @ 0x0201B1EC
 	bne _0201B224
 	adds r0, r4, #0
 	movs r1, #3
-	bl sub_0201A854
+	bl IslandProgram_SetDialogPalette
 	adds r0, r4, #0
 	movs r1, #3
-	bl sub_0201AA98
+	bl IslandProgram_SetupDialogDisplay
 	adds r0, r4, #0
 	adds r0, #0x59
 	ldrb r0, [r0]
@@ -6425,8 +6425,8 @@ _0201B224:
 	.align 2, 0
 _0201B234: .4byte 0x03003060
 
-	thumb_func_start sub_0201B238
-sub_0201B238: @ 0x0201B238
+	thumb_func_start IslandProgram_UpdateSleepPrompt
+IslandProgram_UpdateSleepPrompt: @ 0x0201B238
 	push {r4, lr}
 	adds r4, r0, #0
 	ldr r2, [r4, #0x14]
@@ -6436,7 +6436,7 @@ sub_0201B238: @ 0x0201B238
 	cmp r0, #0
 	bne _0201B254
 	adds r0, r4, #0
-	bl sub_0201B1AC
+	bl IslandProgram_RequestSleepCleanup
 	cmp r0, #1
 	bne _0201B2D8
 	b _0201B2BC
@@ -6475,7 +6475,7 @@ _0201B290:
 	adds r0, #0x2c
 	movs r1, #0x96
 	lsls r1, r1, #2
-	bl sub_0201A810
+	bl IslandProgram_UpdateInputTimeout
 	cmp r0, #1
 	bne _0201B2D8
 	b _0201B2B2
@@ -6484,17 +6484,17 @@ _0201B2A2:
 	adds r0, #0x2c
 	movs r1, #0x96
 	lsls r1, r1, #2
-	bl sub_0201A810
+	bl IslandProgram_UpdateInputTimeout
 	cmp r0, #1
 	bne _0201B2C4
 _0201B2B2:
 	adds r0, r4, #0
-	bl sub_0201B1A0
+	bl IslandProgram_RequestSleepMode
 	cmp r0, #0
 	beq _0201B2D8
 _0201B2BC:
 	adds r0, r4, #0
-	bl sub_0201B1B8
+	bl IslandProgram_ApplyPendingSleepState
 	b _0201B2D8
 _0201B2C4:
 	ldr r0, _0201B2E0 @ =0x03001B50
@@ -6515,8 +6515,8 @@ _0201B2D8:
 _0201B2E0: .4byte 0x03001B50
 _0201B2E4: .4byte 0x00000856
 
-	thumb_func_start sub_0201B2E8
-sub_0201B2E8: @ 0x0201B2E8
+	thumb_func_start IslandProgram_EnterSleepMode
+IslandProgram_EnterSleepMode: @ 0x0201B2E8
 	push {lr}
 	adds r3, r0, #0
 	movs r0, #0x59
@@ -6541,15 +6541,15 @@ sub_0201B2E8: @ 0x0201B2E8
 	adds r0, r0, r1
 	strb r2, [r0]
 	movs r0, #0x14
-	bl sub_02019D98
+	bl GameAudio_StopMusic
 	pop {r0}
 	bx r0
 	.align 2, 0
 _0201B320: .4byte 0x03001B50
 _0201B324: .4byte 0x0000085A
 
-	thumb_func_start sub_0201B328
-sub_0201B328: @ 0x0201B328
+	thumb_func_start IslandProgram_UpdateSleepMode
+IslandProgram_UpdateSleepMode: @ 0x0201B328
 	push {r4, r5, r6, lr}
 	adds r4, r0, #0
 	ldr r6, _0201B378 @ =0x03001B50
@@ -6598,11 +6598,11 @@ _0201B380:
 	cmp r0, #0
 	bne _0201B39E
 	adds r0, r4, #0
-	bl sub_0201B1AC
+	bl IslandProgram_RequestSleepCleanup
 	cmp r0, #1
 	bne _0201B414
 	adds r0, r4, #0
-	bl sub_0201B1B8
+	bl IslandProgram_ApplyPendingSleepState
 	b _0201B414
 _0201B39E:
 	adds r0, r2, #0
@@ -6640,16 +6640,16 @@ _0201B3DC:
 	adds r0, #0x2c
 	movs r1, #0x96
 	lsls r1, r1, #2
-	bl sub_0201A810
+	bl IslandProgram_UpdateInputTimeout
 	cmp r0, #1
 	bne _0201B402
 _0201B3EC:
 	adds r0, r4, #0
-	bl sub_0201B1A0
+	bl IslandProgram_RequestSleepMode
 	cmp r0, #0
 	beq _0201B414
 	adds r0, r4, #0
-	bl sub_0201B1B8
+	bl IslandProgram_ApplyPendingSleepState
 	movs r0, #0x78
 	str r0, [r6, #8]
 	b _0201B414
@@ -6670,8 +6670,8 @@ _0201B414:
 	.align 2, 0
 _0201B41C: .4byte 0x00000856
 
-	thumb_func_start sub_0201B420
-sub_0201B420: @ 0x0201B420
+	thumb_func_start IslandProgram_EnterSleepCleanup
+IslandProgram_EnterSleepCleanup: @ 0x0201B420
 	push {r4, r5, lr}
 	adds r2, r0, #0
 	adds r2, #0x59
@@ -6693,9 +6693,9 @@ sub_0201B420: @ 0x0201B420
 	cmp r1, r0
 	beq _0201B44E
 	ldrh r0, [r2]
-	bl sub_02019D88
+	bl GameAudio_PlayMusic
 _0201B44E:
-	bl sub_02027068
+	bl SoundDriver_EnablePcm
 	str r5, [r4, #8]
 _0201B454:
 	pop {r4, r5}
@@ -6705,8 +6705,8 @@ _0201B454:
 _0201B45C: .4byte 0x03001B50
 _0201B460: .4byte 0x00000816
 
-	thumb_func_start sub_0201B464
-sub_0201B464: @ 0x0201B464
+	thumb_func_start IslandProgram_UpdateSleepCleanup
+IslandProgram_UpdateSleepCleanup: @ 0x0201B464
 	push {r4, r5, r6, lr}
 	adds r4, r0, #0
 	ldr r0, [r4, #0x14]
@@ -6725,14 +6725,14 @@ sub_0201B464: @ 0x0201B464
 	bne _0201B48C
 	adds r0, r4, #0
 	movs r1, #1
-	bl sub_0201A854
+	bl IslandProgram_SetDialogPalette
 _0201B48C:
 	strb r5, [r6]
 	ldr r0, [r4, #0xc]
 	str r0, [r4, #0x14]
 	adds r0, r4, #0
 	movs r1, #3
-	bl sub_0201AB3C
+	bl IslandProgram_RestoreDialogDisplay
 	ldr r0, [r4, #0x14]
 	ldr r2, [r0, #0x50]
 	movs r0, #0
@@ -6745,8 +6745,8 @@ _0201B4A8:
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_0201B4B0
-sub_0201B4B0: @ 0x0201B4B0
+	thumb_func_start IslandProgram_SetupOverviewDisplay
+IslandProgram_SetupOverviewDisplay: @ 0x0201B4B0
 	push {r4, r5, r6, lr}
 	ldr r4, _0201B55C @ =0x03001B50
 	ldr r0, _0201B560 @ =0x0000082A
@@ -6850,8 +6850,8 @@ _0201B588: .4byte 0x0000FDFF
 _0201B58C: .4byte 0x00000842
 _0201B590: .4byte 0x00000844
 
-	thumb_func_start sub_0201B594
-sub_0201B594: @ 0x0201B594
+	thumb_func_start IslandProgram_UpdateTimeOfDayPalette
+IslandProgram_UpdateTimeOfDayPalette: @ 0x0201B594
 	push {r4, r5, r6, r7, lr}
 	adds r4, r0, #0
 	ldr r6, _0201B630 @ =0x03001B50
@@ -6943,15 +6943,15 @@ _0201B674: .4byte 0x00002441
 _0201B678: .4byte 0x0000081C
 _0201B67C: .4byte 0x00001006
 
-	thumb_func_start sub_0201B680
-sub_0201B680: @ 0x0201B680
+	thumb_func_start IslandProgram_RequestTransferState
+IslandProgram_RequestTransferState: @ 0x0201B680
 	adds r0, #0x5a
 	strb r1, [r0]
 	movs r0, #1
 	bx lr
 
-	thumb_func_start sub_0201B688
-sub_0201B688: @ 0x0201B688
+	thumb_func_start IslandProgram_RequestTransferPrompt
+IslandProgram_RequestTransferPrompt: @ 0x0201B688
 	adds r0, #0x5a
 	movs r1, #1
 	strb r1, [r0]
@@ -6959,8 +6959,8 @@ sub_0201B688: @ 0x0201B688
 	bx lr
 	.align 2, 0
 
-	thumb_func_start sub_0201B694
-sub_0201B694: @ 0x0201B694
+	thumb_func_start IslandProgram_RequestTransferProgress
+IslandProgram_RequestTransferProgress: @ 0x0201B694
 	adds r0, #0x5a
 	movs r1, #2
 	strb r1, [r0]
@@ -6968,8 +6968,8 @@ sub_0201B694: @ 0x0201B694
 	bx lr
 	.align 2, 0
 
-	thumb_func_start sub_0201B6A0
-sub_0201B6A0: @ 0x0201B6A0
+	thumb_func_start IslandProgram_RequestTransferRetry
+IslandProgram_RequestTransferRetry: @ 0x0201B6A0
 	adds r0, #0x5a
 	movs r1, #3
 	strb r1, [r0]
@@ -6977,8 +6977,8 @@ sub_0201B6A0: @ 0x0201B6A0
 	bx lr
 	.align 2, 0
 
-	thumb_func_start sub_0201B6AC
-sub_0201B6AC: @ 0x0201B6AC
+	thumb_func_start IslandProgram_RequestTransferComplete
+IslandProgram_RequestTransferComplete: @ 0x0201B6AC
 	adds r0, #0x5a
 	movs r1, #4
 	strb r1, [r0]
@@ -6986,8 +6986,8 @@ sub_0201B6AC: @ 0x0201B6AC
 	bx lr
 	.align 2, 0
 
-	thumb_func_start sub_0201B6B8
-sub_0201B6B8: @ 0x0201B6B8
+	thumb_func_start IslandProgram_RequestTransferCleanup
+IslandProgram_RequestTransferCleanup: @ 0x0201B6B8
 	adds r0, #0x5a
 	movs r1, #5
 	strb r1, [r0]
@@ -6995,8 +6995,8 @@ sub_0201B6B8: @ 0x0201B6B8
 	bx lr
 	.align 2, 0
 
-	thumb_func_start sub_0201B6C4
-sub_0201B6C4: @ 0x0201B6C4
+	thumb_func_start IslandProgram_RequestTransferRestart
+IslandProgram_RequestTransferRestart: @ 0x0201B6C4
 	adds r0, #0x5a
 	movs r1, #6
 	strb r1, [r0]
@@ -7004,8 +7004,8 @@ sub_0201B6C4: @ 0x0201B6C4
 	bx lr
 	.align 2, 0
 
-	thumb_func_start sub_0201B6D0
-sub_0201B6D0: @ 0x0201B6D0
+	thumb_func_start IslandProgram_ApplyPendingTransferState
+IslandProgram_ApplyPendingTransferState: @ 0x0201B6D0
 	push {lr}
 	adds r3, r0, #0
 	adds r2, r3, #0
@@ -7029,8 +7029,8 @@ _0201B6F4:
 	.align 2, 0
 _0201B6F8: .4byte 0x0202B284
 
-	thumb_func_start sub_0201B6FC
-sub_0201B6FC: @ 0x0201B6FC
+	thumb_func_start IslandProgram_EnterTransferPrompt
+IslandProgram_EnterTransferPrompt: @ 0x0201B6FC
 	push {r4, r5, lr}
 	adds r4, r0, #0
 	ldr r5, _0201B750 @ =0x03002980
@@ -7043,15 +7043,15 @@ sub_0201B6FC: @ 0x0201B6FC
 	bne _0201B740
 	adds r0, r4, #0
 	movs r1, #4
-	bl sub_0201A854
+	bl IslandProgram_SetDialogPalette
 	adds r0, r4, #0
 	movs r1, #4
-	bl sub_0201AA98
+	bl IslandProgram_SetupDialogDisplay
 	movs r0, #0
-	bl sub_0201C7E0
-	bl sub_0201C870
+	bl InitIslandLinkTransfer
+	bl StopIslandLinkTransfer
 	ldr r0, _0201B754 @ =0x030023C0
-	ldr r1, _0201B758 @ =sub_0201CB50
+	ldr r1, _0201B758 @ =IslandLinkSerialInterrupt
 	str r1, [r0]
 	adds r0, r4, #0
 	adds r0, #0x5a
@@ -7071,10 +7071,10 @@ _0201B740:
 	.align 2, 0
 _0201B750: .4byte 0x03002980
 _0201B754: .4byte 0x030023C0
-_0201B758: .4byte sub_0201CB50
+_0201B758: .4byte IslandLinkSerialInterrupt
 
-	thumb_func_start sub_0201B75C
-sub_0201B75C: @ 0x0201B75C
+	thumb_func_start IslandProgram_UpdateTransferPrompt
+IslandProgram_UpdateTransferPrompt: @ 0x0201B75C
 	push {r4, lr}
 	adds r4, r0, #0
 	ldr r1, [r4, #0x14]
@@ -7084,11 +7084,11 @@ sub_0201B75C: @ 0x0201B75C
 	cmp r0, #0
 	bne _0201B77E
 	adds r0, r4, #0
-	bl sub_0201B6B8
+	bl IslandProgram_RequestTransferCleanup
 	cmp r0, #1
 	bne _0201B7A8
 	adds r0, r4, #0
-	bl sub_0201B6D0
+	bl IslandProgram_ApplyPendingTransferState
 	b _0201B7A8
 _0201B77E:
 	ldr r0, [r1, #0x54]
@@ -7104,19 +7104,19 @@ _0201B77E:
 	cmp r0, #6
 	bne _0201B7A8
 	adds r0, r4, #0
-	bl sub_0201B694
+	bl IslandProgram_RequestTransferProgress
 	cmp r0, #1
 	bne _0201B7A8
 	adds r0, r4, #0
-	bl sub_0201B6D0
+	bl IslandProgram_ApplyPendingTransferState
 _0201B7A8:
 	pop {r4}
 	pop {r0}
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_0201B7B0
-sub_0201B7B0: @ 0x0201B7B0
+	thumb_func_start IslandProgram_EnterTransferProgress
+IslandProgram_EnterTransferProgress: @ 0x0201B7B0
 	push {r4, r5, lr}
 	adds r4, r0, #0
 	ldr r0, [r4, #0x14]
@@ -7160,7 +7160,7 @@ _0201B7F4:
 	mov r1, ip
 	strb r0, [r1]
 	movs r0, #0
-	bl sub_0201C7E0
+	bl InitIslandLinkTransfer
 _0201B80E:
 	adds r1, r4, #0
 	adds r1, #0x5a
@@ -7173,11 +7173,11 @@ _0201B80E:
 _0201B81C: .4byte 0x03001B40
 _0201B820: .4byte 0x0000397F
 
-	thumb_func_start sub_0201B824
-sub_0201B824: @ 0x0201B824
+	thumb_func_start IslandProgram_UpdateTransferProgress
+IslandProgram_UpdateTransferProgress: @ 0x0201B824
 	push {r4, r5, lr}
 	adds r4, r0, #0
-	bl sub_0201C1B8
+	bl IslandProgram_UpdateLinkTransfer
 	adds r5, r0, #0
 	subs r0, r5, #7
 	cmp r0, #9
@@ -7202,7 +7202,7 @@ _0201B844: @ jump table
 	.4byte _0201B86C @ case 9
 _0201B86C:
 	adds r0, r4, #0
-	bl sub_0201B6A0
+	bl IslandProgram_RequestTransferRetry
 	cmp r0, #1
 	bne _0201B904
 	ldr r0, [r4, #0x14]
@@ -7220,11 +7220,11 @@ _0201B86C:
 	ldr r0, [r4, #0x14]
 	bl mMsg_ClearText
 	adds r0, r4, #0
-	bl sub_0201B6D0
+	bl IslandProgram_ApplyPendingTransferState
 	b _0201B904
 _0201B8A2:
 	adds r0, r4, #0
-	bl sub_0201B6AC
+	bl IslandProgram_RequestTransferComplete
 	cmp r0, #1
 	bne _0201B904
 	ldr r0, [r4, #0x14]
@@ -7243,7 +7243,7 @@ _0201B8A2:
 	ldr r0, [r4, #0x14]
 	bl mMsg_ClearText
 	adds r0, r4, #0
-	bl sub_0201B6D0
+	bl IslandProgram_ApplyPendingTransferState
 	adds r0, r4, #0
 	adds r0, #0x6d
 	strb r5, [r0]
@@ -7269,8 +7269,8 @@ _0201B904:
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_0201B90C
-sub_0201B90C: @ 0x0201B90C
+	thumb_func_start IslandProgram_EnterTransferRetry
+IslandProgram_EnterTransferRetry: @ 0x0201B90C
 	adds r3, r0, #0
 	adds r3, #0x5a
 	ldrb r2, [r3]
@@ -7280,8 +7280,8 @@ sub_0201B90C: @ 0x0201B90C
 	strb r1, [r3]
 	bx lr
 
-	thumb_func_start sub_0201B91C
-sub_0201B91C: @ 0x0201B91C
+	thumb_func_start IslandProgram_UpdateTransferRetry
+IslandProgram_UpdateTransferRetry: @ 0x0201B91C
 	push {r4, r5, lr}
 	adds r4, r0, #0
 	ldr r1, [r4, #0x14]
@@ -7314,8 +7314,8 @@ _0201B95A:
 	pop {r0}
 	bx r0
 
-	thumb_func_start sub_0201B960
-sub_0201B960: @ 0x0201B960
+	thumb_func_start IslandProgram_EnterTransferComplete
+IslandProgram_EnterTransferComplete: @ 0x0201B960
 	adds r3, r0, #0
 	adds r3, #0x5a
 	ldrb r2, [r3]
@@ -7325,8 +7325,8 @@ sub_0201B960: @ 0x0201B960
 	strb r1, [r3]
 	bx lr
 
-	thumb_func_start sub_0201B970
-sub_0201B970: @ 0x0201B970
+	thumb_func_start IslandProgram_UpdateTransferComplete
+IslandProgram_UpdateTransferComplete: @ 0x0201B970
 	push {r4, lr}
 	adds r4, r0, #0
 	ldr r0, [r4, #0x14]
@@ -7335,18 +7335,18 @@ sub_0201B970: @ 0x0201B970
 	cmp r0, #0
 	bne _0201B98E
 	adds r0, r4, #0
-	bl sub_0201B6B8
+	bl IslandProgram_RequestTransferCleanup
 	cmp r0, #1
 	bne _0201B98E
 	adds r0, r4, #0
-	bl sub_0201B6D0
+	bl IslandProgram_ApplyPendingTransferState
 _0201B98E:
 	pop {r4}
 	pop {r0}
 	bx r0
 
-	thumb_func_start sub_0201B994
-sub_0201B994: @ 0x0201B994
+	thumb_func_start IslandProgram_EnterTransferCleanup
+IslandProgram_EnterTransferCleanup: @ 0x0201B994
 	push {r4, r5, r6, r7, lr}
 	mov r7, r8
 	push {r7}
@@ -7439,8 +7439,8 @@ _0201BA48: .4byte 0x03002970
 _0201BA4C: .4byte 0x03002400
 _0201BA50: .4byte 0x00000856
 
-	thumb_func_start sub_0201BA54
-sub_0201BA54: @ 0x0201BA54
+	thumb_func_start IslandProgram_UpdateTransferCleanup
+IslandProgram_UpdateTransferCleanup: @ 0x0201BA54
 	push {r4, r5, r6, r7, lr}
 	mov r7, r8
 	push {r7}
@@ -7465,7 +7465,7 @@ sub_0201BA54: @ 0x0201BA54
 	beq _0201BA90
 	adds r0, r6, #0
 	movs r1, #4
-	bl sub_0201AB3C
+	bl IslandProgram_RestoreDialogDisplay
 	b _0201BA98
 _0201BA8A:
 	adds r0, r6, #0
@@ -7475,7 +7475,7 @@ _0201BA90:
 	adds r0, r6, #0
 	movs r1, #3
 _0201BA94:
-	bl sub_0201A854
+	bl IslandProgram_SetDialogPalette
 _0201BA98:
 	movs r0, #0
 	mov r8, r0
@@ -7485,7 +7485,7 @@ _0201BA98:
 	str r0, [r6, #0x14]
 	adds r0, r6, #0
 	movs r1, #4
-	bl sub_0201AB3C
+	bl IslandProgram_RestoreDialogDisplay
 	ldr r0, [r6, #0x14]
 	ldr r2, [r0, #0x50]
 	movs r0, #0
@@ -7503,7 +7503,7 @@ _0201BA98:
 	movs r1, #0x80
 	movs r2, #0x3f
 	movs r3, #0
-	bl sub_02019B1C
+	bl GameState_SetBrightnessFade
 	ldr r0, _0201BB10 @ =0x0000082A
 	adds r4, r4, r0
 	ldrh r1, [r4]
@@ -7512,7 +7512,7 @@ _0201BA98:
 	movs r5, #0
 	strh r0, [r4]
 	movs r0, #0x14
-	bl sub_02019D98
+	bl GameAudio_StopMusic
 	strb r5, [r7]
 _0201BAEA:
 	adds r0, r6, #0
@@ -7524,7 +7524,7 @@ _0201BAEA:
 	ldr r1, _0201BB18 @ =0x030023C0
 	ldr r0, _0201BB1C @ =JoybootHandler
 	str r0, [r1]
-	bl sub_0201A218
+	bl Joybus_Init
 _0201BB00:
 	pop {r3}
 	mov r8, r3
@@ -7538,73 +7538,73 @@ _0201BB14: .4byte 0x0000FEFF
 _0201BB18: .4byte 0x030023C0
 _0201BB1C: .4byte JoybootHandler
 
-	thumb_func_start sub_0201BB20
-sub_0201BB20: @ 0x0201BB20
+	thumb_func_start IslandProgram_EnterTransferRestart
+IslandProgram_EnterTransferRestart: @ 0x0201BB20
 	bx lr
 	.align 2, 0
 
-	thumb_func_start sub_0201BB24
-sub_0201BB24: @ 0x0201BB24
+	thumb_func_start IslandProgram_UpdateTransferRestart
+IslandProgram_UpdateTransferRestart: @ 0x0201BB24
 	push {lr}
 	ldr r0, _0201BB40 @ =0x03001B50
 	movs r1, #1
 	movs r2, #1
-	bl sub_02019B58
+	bl GameState_StepBrightnessFade
 	lsls r0, r0, #0x10
 	lsrs r0, r0, #0x10
 	cmp r0, #0x10
 	bne _0201BB3C
-	bl sub_0201A6C8
+	bl IslandProgram_Restart
 _0201BB3C:
 	pop {r0}
 	bx r0
 	.align 2, 0
 _0201BB40: .4byte 0x03001B50
 
-	thumb_func_start sub_0201BB44
-sub_0201BB44: @ 0x0201BB44
+	thumb_func_start IslandProgram_RequestMode
+IslandProgram_RequestMode: @ 0x0201BB44
 	adds r0, #0x57
 	strb r1, [r0]
 	movs r0, #1
 	bx lr
 
-	thumb_func_start sub_0201BB4C
-sub_0201BB4C: @ 0x0201BB4C
+	thumb_func_start IslandProgram_RequestNormalMode
+IslandProgram_RequestNormalMode: @ 0x0201BB4C
 	push {lr}
 	movs r1, #1
-	bl sub_0201BB44
+	bl IslandProgram_RequestMode
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_0201BB58
-sub_0201BB58: @ 0x0201BB58
+	thumb_func_start IslandProgram_RequestFieldLoadMode
+IslandProgram_RequestFieldLoadMode: @ 0x0201BB58
 	push {lr}
 	movs r1, #2
-	bl sub_0201BB44
+	bl IslandProgram_RequestMode
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_0201BB64
-sub_0201BB64: @ 0x0201BB64
+	thumb_func_start IslandProgram_RequestMosaicCoverMode
+IslandProgram_RequestMosaicCoverMode: @ 0x0201BB64
 	push {lr}
 	movs r1, #4
-	bl sub_0201BB44
+	bl IslandProgram_RequestMode
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_0201BB70
-sub_0201BB70: @ 0x0201BB70
+	thumb_func_start IslandProgram_RequestMosaicRevealMode
+IslandProgram_RequestMosaicRevealMode: @ 0x0201BB70
 	push {lr}
 	movs r1, #3
-	bl sub_0201BB44
+	bl IslandProgram_RequestMode
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_0201BB7C
-sub_0201BB7C: @ 0x0201BB7C
+	thumb_func_start IslandProgram_RequestMessageMode
+IslandProgram_RequestMessageMode: @ 0x0201BB7C
 	push {lr}
 	movs r1, #5
-	bl sub_0201BB44
+	bl IslandProgram_RequestMode
 	pop {r1}
 	bx r1
 
@@ -7651,12 +7651,12 @@ IslandProgram_EnterNormalMode: @ 0x0201BBB4
 	adds r0, r4, r2
 	strh r1, [r0]
 	movs r0, #0
-	bl sub_02019D88
+	bl GameAudio_PlayMusic
 	ldr r0, _0201BBF4 @ =0x0000085A
 	adds r4, r4, r0
 	movs r0, #1
 	strb r0, [r4]
-	bl sub_0201B4B0
+	bl IslandProgram_SetupOverviewDisplay
 	pop {r4}
 	pop {r0}
 	bx r0
@@ -7682,7 +7682,7 @@ IslandProgram_UpdateNormalMode: @ 0x0201BBF8
 	cmp r0, #0
 	beq _0201BC1E
 	adds r0, r4, #0
-	bl sub_0201BB64
+	bl IslandProgram_RequestMosaicCoverMode
 	cmp r0, #1
 	beq _0201BC66
 _0201BC1E:
@@ -7714,7 +7714,7 @@ _0201BC4C:
 	cmp r0, #0
 	beq _0201BC78
 	adds r0, r4, #0
-	bl sub_0201BB7C
+	bl IslandProgram_RequestMessageMode
 	cmp r0, #1
 	bne _0201BC78
 _0201BC66:
@@ -7767,8 +7767,8 @@ IslandProgram_EnterFieldLoadMode: @ 0x0201BCA4
 	movs r0, #1
 	strh r0, [r1]
 	ldrh r0, [r1]
-	bl sub_02019D88
-	bl sub_02027068
+	bl GameAudio_PlayMusic
+	bl SoundDriver_EnablePcm
 	ldr r1, _0201BD5C @ =0x0000082A
 	adds r2, r4, r1
 	ldrh r1, [r2]
@@ -7853,15 +7853,15 @@ _0201BD78: .4byte 0x0000083E
 IslandProgram_UpdateFieldLoadMode: @ 0x0201BD7C
 	push {r4, r5, lr}
 	adds r5, r0, #0
-	bl sub_0201D904
+	bl UpdateIslandField
 	adds r4, r0, #0
 	lsls r4, r4, #0x18
 	lsrs r4, r4, #0x18
-	bl sub_0201DD94
+	bl DrawIslandField
 	cmp r4, #1
 	bne _0201BDA2
 	adds r0, r5, #0
-	bl sub_0201BB70
+	bl IslandProgram_RequestMosaicRevealMode
 	cmp r0, #1
 	bne _0201BDA2
 	adds r0, r5, #0
@@ -7882,7 +7882,7 @@ IslandProgram_EnterMosaicCoverMode: @ 0x0201BDA8
 	strb r2, [r0]
 	strb r1, [r3]
 	movs r0, #0x14
-	bl sub_02019D98
+	bl GameAudio_StopMusic
 	pop {r0}
 	bx r0
 	.align 2, 0
@@ -7892,11 +7892,11 @@ IslandProgram_UpdateMosaicCoverMode: @ 0x0201BDC4
 	push {r4, lr}
 	adds r4, r0, #0
 	movs r0, #1
-	bl sub_0201D800
+	bl UpdateIslandMosaic
 	cmp r0, #1
 	bne _0201BDE2
 	adds r0, r4, #0
-	bl sub_0201BB58
+	bl IslandProgram_RequestFieldLoadMode
 	cmp r0, #1
 	bne _0201BDE2
 	adds r0, r4, #0
@@ -7921,8 +7921,8 @@ IslandProgram_EnterMosaicRevealMode: @ 0x0201BDE8
 	adds r0, r4, r1
 	strh r5, [r0]
 	movs r0, #0
-	bl sub_02019D88
-	bl sub_0201B4B0
+	bl GameAudio_PlayMusic
+	bl IslandProgram_SetupOverviewDisplay
 	ldr r2, _0201BE34 @ =0x00000842
 	adds r0, r4, r2
 	movs r1, #0x80
@@ -7951,7 +7951,7 @@ IslandProgram_UpdateMosaicRevealMode: @ 0x0201BE3C
 	push {r4, lr}
 	adds r4, r0, #0
 	movs r0, #0
-	bl sub_0201D800
+	bl UpdateIslandMosaic
 	adds r1, r0, #0
 	cmp r1, #1
 	bne _0201BE5A
@@ -7984,10 +7984,10 @@ IslandProgram_EnterMessageMode: @ 0x0201BE68
 	bne _0201BE9C
 	adds r0, r4, #0
 	movs r1, #1
-	bl sub_0201A854
+	bl IslandProgram_SetDialogPalette
 	adds r0, r4, #0
 	movs r1, #1
-	bl sub_0201AA98
+	bl IslandProgram_SetupDialogDisplay
 	adds r0, r4, #0
 	adds r0, #0x57
 	ldrb r0, [r0]
@@ -8006,8 +8006,8 @@ _0201BE9C:
 	.align 2, 0
 _0201BEAC: .4byte 0x03002FC0
 
-	thumb_func_start sub_0201BEB0
-sub_0201BEB0: @ 0x0201BEB0
+	thumb_func_start IslandProgram_UpdateMessageMode
+IslandProgram_UpdateMessageMode: @ 0x0201BEB0
 	push {lr}
 	adds r2, r0, #0
 	ldr r1, [r2, #0x14]
@@ -8060,8 +8060,8 @@ _0201BF04:
 _0201BF08: .4byte 0x03001B50
 _0201BF0C: .4byte 0x00000856
 
-	thumb_func_start sub_0201BF10
-sub_0201BF10: @ 0x0201BF10
+	thumb_func_start IslandProgram_InitWork
+IslandProgram_InitWork: @ 0x0201BF10
 	push {r4, lr}
 	sub sp, #4
 	movs r0, #0
@@ -8075,16 +8075,16 @@ sub_0201BF10: @ 0x0201BF10
 	adds r1, #0x63
 	movs r0, #0xff
 	strb r0, [r1]
-	bl sub_0201D5C4
+	bl InitIslandField
 	adds r0, r4, #0
-	bl sub_0201BB4C
+	bl IslandProgram_RequestNormalMode
 	cmp r0, #1
 	bne _0201BF40
 	adds r0, r4, #0
 	bl IslandProgram_ApplyPendingMode
 _0201BF40:
 	adds r0, r4, #0
-	bl sub_0201B594
+	bl IslandProgram_UpdateTimeOfDayPalette
 	add sp, #4
 	pop {r4}
 	pop {r0}
@@ -8093,8 +8093,8 @@ _0201BF40:
 _0201BF50: .4byte 0x030031D0
 _0201BF54: .4byte 0x01000020
 
-	thumb_func_start sub_0201BF58
-sub_0201BF58: @ 0x0201BF58
+	thumb_func_start IslandProgram_Update
+IslandProgram_Update: @ 0x0201BF58
 	push {r4, r5, r6, r7, lr}
 	mov r7, r8
 	push {r7}
@@ -8124,7 +8124,7 @@ sub_0201BF58: @ 0x0201BF58
 	cmp r0, #2
 	beq _0201BF96
 	adds r0, r5, #0
-	bl sub_0201B594
+	bl IslandProgram_UpdateTimeOfDayPalette
 _0201BF96:
 	ldr r0, _0201C028 @ =0x03001B40
 	ldr r0, [r0]
@@ -8155,7 +8155,7 @@ _0201BF96:
 	strb r0, [r3]
 _0201BFCC:
 	adds r0, r5, #0
-	bl sub_0201ABBC
+	bl IslandProgram_UpdateMessages
 	adds r1, r5, #0
 	adds r1, #0x53
 	movs r0, #0
@@ -8179,11 +8179,11 @@ _0201BFCC:
 	b _0201C186
 _0201BFFE:
 	adds r0, r5, #0
-	bl sub_0201ADE8
+	bl IslandProgram_RequestNoticeTransfer
 	movs r4, #0
 	strb r4, [r6]
 	adds r0, r5, #0
-	bl sub_0201AE0C
+	bl IslandProgram_ApplyPendingNoticeState
 	ldr r0, _0201C030 @ =0x03001B50
 	ldr r2, _0201C040 @ =0x00000857
 	adds r1, r0, r2
@@ -8275,7 +8275,7 @@ _0201C0C0:
 	movs r1, #3
 	movs r2, #1
 	movs r3, #1
-	bl sub_0201C1C4
+	bl IslandProgram_TryOpenPendingDialog
 	b _0201C186
 _0201C0D8:
 	adds r0, r5, #0
@@ -8303,7 +8303,7 @@ _0201C0D8:
 	strb r2, [r0]
 _0201C106:
 	adds r0, r5, #0
-	bl sub_0201A7C8
+	bl IslandProgram_CheckSleepRequest
 	ldr r1, _0201C148 @ =0x03001B50
 	ldr r2, _0201C154 @ =0x0000084E
 	adds r1, r1, r2
@@ -8359,10 +8359,10 @@ _0201C172:
 	movs r1, #1
 	movs r2, #1
 	movs r3, #1
-	bl sub_0201C1C4
+	bl IslandProgram_TryOpenPendingDialog
 _0201C186:
 	mov r0, r8
-	bl sub_0201A688
+	bl Joybus_CheckTimeout
 	add sp, #4
 	pop {r3}
 	mov r8, r3
@@ -8375,8 +8375,8 @@ sub_0201C198: @ 0x0201C198
 	bx lr
 	.align 2, 0
 
-	thumb_func_start sub_0201C19C
-sub_0201C19C: @ 0x0201C19C
+	thumb_func_start IslandProgram_GetElapsedSeconds
+IslandProgram_GetElapsedSeconds: @ 0x0201C19C
 	push {lr}
 	ldr r0, _0201C1B4 @ =0x030031D0
 	ldr r0, [r0, #0x18]
@@ -8390,16 +8390,16 @@ sub_0201C19C: @ 0x0201C19C
 	.align 2, 0
 _0201C1B4: .4byte 0x030031D0
 
-	thumb_func_start sub_0201C1B8
-sub_0201C1B8: @ 0x0201C1B8
+	thumb_func_start IslandProgram_UpdateLinkTransfer
+IslandProgram_UpdateLinkTransfer: @ 0x0201C1B8
 	push {lr}
-	bl sub_0201C8C0
+	bl UpdateIslandLinkTransfer
 	pop {r1}
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_0201C1C4
-sub_0201C1C4: @ 0x0201C1C4
+	thumb_func_start IslandProgram_TryOpenPendingDialog
+IslandProgram_TryOpenPendingDialog: @ 0x0201C1C4
 	push {r4, r5, r6, r7, lr}
 	mov r7, sl
 	mov r6, sb
@@ -8419,7 +8419,7 @@ sub_0201C1C4: @ 0x0201C1C4
 	lsrs r7, r1, #0x18
 	asrs r1, r1, #0x18
 	adds r0, r5, #0
-	bl sub_0201A714
+	bl IslandProgram_PrepareDialogTransition
 	mov r8, r0
 	cmp r0, #1
 	bne _0201C2C4
@@ -8432,7 +8432,7 @@ sub_0201C1C4: @ 0x0201C1C4
 	cmp r0, #0
 	beq _0201C238
 	adds r0, r5, #0
-	bl sub_0201ADE8
+	bl IslandProgram_RequestNoticeTransfer
 	adds r0, r5, #0
 	adds r0, #0x72
 	movs r4, #0
@@ -8442,7 +8442,7 @@ sub_0201C1C4: @ 0x0201C1C4
 	ldr r0, [r5, #0x14]
 	str r0, [r5, #8]
 	adds r0, r5, #0
-	bl sub_0201AE0C
+	bl IslandProgram_ApplyPendingNoticeState
 	ldr r1, _0201C234 @ =0x00000857
 	adds r0, r6, r1
 	mov r1, r8
@@ -8463,7 +8463,7 @@ _0201C238:
 	cmp r0, #0
 	beq _0201C28C
 	adds r0, r5, #0
-	bl sub_0201B688
+	bl IslandProgram_RequestTransferPrompt
 	adds r0, r5, #0
 	adds r0, #0x72
 	movs r4, #0
@@ -8473,7 +8473,7 @@ _0201C238:
 	ldr r0, [r5, #0x14]
 	str r0, [r5, #0x10]
 	adds r0, r5, #0
-	bl sub_0201B6D0
+	bl IslandProgram_ApplyPendingTransferState
 	ldr r0, _0201C284 @ =0x0000084D
 	adds r1, r6, r0
 	movs r0, #1
@@ -8502,7 +8502,7 @@ _0201C28C:
 	cmp r0, #0
 	beq _0201C2C4
 	adds r0, r5, #0
-	bl sub_0201B194
+	bl IslandProgram_RequestSleepPrompt
 	adds r1, r5, #0
 	adds r1, #0x72
 	movs r0, #0
@@ -8513,7 +8513,7 @@ _0201C28C:
 	ldr r0, [r5, #0x14]
 	str r0, [r5, #0xc]
 	adds r0, r5, #0
-	bl sub_0201B1B8
+	bl IslandProgram_ApplyPendingSleepState
 	ldr r0, _0201C2DC @ =0x0000084F
 	adds r1, r4, r0
 	movs r0, #1
@@ -8531,8 +8531,8 @@ _0201C2D4: .4byte 0x03001B50
 _0201C2D8: .4byte 0x0000084E
 _0201C2DC: .4byte 0x0000084F
 
-	thumb_func_start sub_0201C2E0
-sub_0201C2E0: @ 0x0201C2E0
+	thumb_func_start mMsg_InitSprites
+mMsg_InitSprites: @ 0x0201C2E0
 	push {lr}
 	sub sp, #4
 	movs r0, #0
@@ -8548,8 +8548,8 @@ sub_0201C2E0: @ 0x0201C2E0
 _0201C2F8: .4byte 0x03003250
 _0201C2FC: .4byte 0x01000120
 
-	thumb_func_start sub_0201C300
-sub_0201C300: @ 0x0201C300
+	thumb_func_start mMsg_DeactivateSprite
+mMsg_DeactivateSprite: @ 0x0201C300
 	adds r2, r0, #0
 	adds r2, #0x57
 	movs r1, #0
@@ -8559,8 +8559,8 @@ sub_0201C300: @ 0x0201C300
 	bx lr
 	.align 2, 0
 
-	thumb_func_start sub_0201C310
-sub_0201C310: @ 0x0201C310
+	thumb_func_start mMsg_CreateSprite
+mMsg_CreateSprite: @ 0x0201C310
 	push {r4, r5, r6, r7, lr}
 	mov r7, sl
 	mov r6, sb
@@ -8575,7 +8575,7 @@ sub_0201C310: @ 0x0201C310
 	mov r8, r0
 	movs r4, #0
 	movs r0, #0
-	bl sub_0201C3C8
+	bl mMsg_FindSpriteByType
 	adds r2, r0, #0
 	cmp r2, #0
 	blt _0201C3AA
@@ -8651,8 +8651,8 @@ _0201C3BC: .4byte 0x0202B2FC
 _0201C3C0: .4byte 0x03003250
 _0201C3C4: .4byte 0x01000018
 
-	thumb_func_start sub_0201C3C8
-sub_0201C3C8: @ 0x0201C3C8
+	thumb_func_start mMsg_FindSpriteByType
+mMsg_FindSpriteByType: @ 0x0201C3C8
 	push {lr}
 	lsls r0, r0, #0x18
 	lsrs r3, r0, #0x18
@@ -8682,8 +8682,8 @@ _0201C3F4:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_0201C3F8
-sub_0201C3F8: @ 0x0201C3F8
+	thumb_func_start mMsg_IsSpriteAnimationFinished
+mMsg_IsSpriteAnimationFinished: @ 0x0201C3F8
 	push {r4, lr}
 	adds r2, r0, #0
 	movs r3, #0
@@ -8710,8 +8710,8 @@ _0201C420:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_0201C428
-sub_0201C428: @ 0x0201C428
+	thumb_func_start mMsg_StartSpriteAnimation
+mMsg_StartSpriteAnimation: @ 0x0201C428
 	push {r4, lr}
 	movs r3, #0
 	strh r2, [r0, #0x38]
@@ -8727,8 +8727,8 @@ sub_0201C428: @ 0x0201C428
 	pop {r0}
 	bx r0
 
-	thumb_func_start sub_0201C444
-sub_0201C444: @ 0x0201C444
+	thumb_func_start mMsg_UpdateSpriteAnimation
+mMsg_UpdateSpriteAnimation: @ 0x0201C444
 	push {lr}
 	adds r2, r0, #0
 	movs r3, #0x38
@@ -8772,8 +8772,8 @@ _0201C48A:
 	pop {r0}
 	bx r0
 
-	thumb_func_start sub_0201C490
-sub_0201C490: @ 0x0201C490
+	thumb_func_start mMsg_CopySpriteOam
+mMsg_CopySpriteOam: @ 0x0201C490
 	push {r4, r5, r6, lr}
 	mov r6, sb
 	mov r5, r8
@@ -8909,8 +8909,8 @@ _0201C594: .4byte 0x000001FF
 _0201C598: .4byte 0xFFFFFE00
 _0201C59C: .4byte 0xFFFFFC00
 
-	thumb_func_start sub_0201C5A0
-sub_0201C5A0: @ 0x0201C5A0
+	thumb_func_start mMsg_UpdateAndDrawSprites
+mMsg_UpdateAndDrawSprites: @ 0x0201C5A0
 	push {r4, r5, r6, lr}
 	ldr r0, _0201C5F4 @ =0x03003250
 	adds r6, r0, #0
@@ -8963,8 +8963,8 @@ sub_0201C5F8: @ 0x0201C5F8
 	bx lr
 	.align 2, 0
 
-	thumb_func_start sub_0201C5FC
-sub_0201C5FC: @ 0x0201C5FC
+	thumb_func_start mMsg_ContinuePromptSetColor
+mMsg_ContinuePromptSetColor: @ 0x0201C5FC
 	push {r4, r5, r6, lr}
 	sub sp, #0x20
 	adds r6, r0, #0
@@ -8995,7 +8995,7 @@ sub_0201C5FC: @ 0x0201C5FC
 	movs r0, #1
 	movs r1, #7
 	movs r2, #6
-	bl sub_02019BD8
+	bl SetPaletteColor
 	ldr r0, _0201C660 @ =0x020002E0
 	ldr r1, _0201C664 @ =0x050002E0
 	movs r2, #8
@@ -9011,8 +9011,8 @@ _0201C65C: .4byte 0x0202B38C
 _0201C660: .4byte 0x020002E0
 _0201C664: .4byte 0x050002E0
 
-	thumb_func_start sub_0201C668
-sub_0201C668: @ 0x0201C668
+	thumb_func_start mMsg_ContinuePromptCycleColor
+mMsg_ContinuePromptCycleColor: @ 0x0201C668
 	push {r4, lr}
 	adds r4, r0, #0
 	ldr r0, [r4, #0x18]
@@ -9021,7 +9021,7 @@ sub_0201C668: @ 0x0201C668
 	ldr r1, [r4, #0x14]
 	lsls r1, r1, #2
 	adds r0, r0, r1
-	bl sub_0201C5FC
+	bl mMsg_ContinuePromptSetColor
 	ldr r0, [r4, #0x1c]
 	adds r0, #1
 	str r0, [r4, #0x1c]
@@ -9039,16 +9039,16 @@ _0201C690:
 	pop {r0}
 	bx r0
 
-	thumb_func_start sub_0201C69C
-sub_0201C69C: @ 0x0201C69C
+	thumb_func_start mMsg_ContinuePromptInit
+mMsg_ContinuePromptInit: @ 0x0201C69C
 	push {r4, lr}
 	adds r4, r0, #0
 	ldr r1, _0201C6C0 @ =0x0202B378
 	movs r2, #0
-	bl sub_0201C428
+	bl mMsg_StartSpriteAnimation
 	adds r0, r4, #0
 	bl sub_0201C5F8
-	ldr r1, _0201C6C4 @ =sub_0201C668
+	ldr r1, _0201C6C4 @ =mMsg_ContinuePromptCycleColor
 	str r1, [r4, #0x10]
 	adds r0, r4, #0
 	bl _call_via_r1
@@ -9057,15 +9057,15 @@ sub_0201C69C: @ 0x0201C69C
 	bx r0
 	.align 2, 0
 _0201C6C0: .4byte 0x0202B378
-_0201C6C4: .4byte sub_0201C668
+_0201C6C4: .4byte mMsg_ContinuePromptCycleColor
 
-	thumb_func_start sub_0201C6C8
-sub_0201C6C8: @ 0x0201C6C8
+	thumb_func_start mMsg_ContinuePromptDestroy
+mMsg_ContinuePromptDestroy: @ 0x0201C6C8
 	bx lr
 	.align 2, 0
 
-	thumb_func_start sub_0201C6CC
-sub_0201C6CC: @ 0x0201C6CC
+	thumb_func_start mMsg_ContinuePromptUpdate
+mMsg_ContinuePromptUpdate: @ 0x0201C6CC
 	push {r4, lr}
 	adds r4, r0, #0
 	ldr r1, [r4, #0x10]
@@ -9075,15 +9075,15 @@ sub_0201C6CC: @ 0x0201C6CC
 _0201C6DA:
 	ldr r1, _0201C6E8 @ =0x0202B378
 	adds r0, r4, #0
-	bl sub_0201C444
+	bl mMsg_UpdateSpriteAnimation
 	pop {r4}
 	pop {r0}
 	bx r0
 	.align 2, 0
 _0201C6E8: .4byte 0x0202B378
 
-	thumb_func_start sub_0201C6EC
-sub_0201C6EC: @ 0x0201C6EC
+	thumb_func_start mMsg_ContinuePromptDraw
+mMsg_ContinuePromptDraw: @ 0x0201C6EC
 	push {r4, r5, r6, r7, lr}
 	adds r6, r0, #0
 	ldr r1, _0201C730 @ =0x0202B378
@@ -9106,7 +9106,7 @@ _0201C70A:
 	adds r2, r2, r0
 	adds r0, r6, #0
 	adds r1, r4, #0
-	bl sub_0201C490
+	bl mMsg_CopySpriteOam
 	ldrb r0, [r5]
 	adds r0, #1
 	strb r0, [r5]
@@ -9124,19 +9124,19 @@ _0201C734: .4byte 0x0000FFFF
 _0201C738: .4byte 0x030023B0
 _0201C73C: .4byte 0x03002410
 
-	thumb_func_start sub_0201C740
-sub_0201C740: @ 0x0201C740
+	thumb_func_start mMsg_ChoiceCursorIdle
+mMsg_ChoiceCursorIdle: @ 0x0201C740
 	bx lr
 	.align 2, 0
 
-	thumb_func_start sub_0201C744
-sub_0201C744: @ 0x0201C744
+	thumb_func_start mMsg_ChoiceCursorInit
+mMsg_ChoiceCursorInit: @ 0x0201C744
 	push {r4, lr}
 	adds r4, r0, #0
 	ldr r1, _0201C760 @ =0x0202B3DC
 	movs r2, #0
-	bl sub_0201C428
-	ldr r1, _0201C764 @ =sub_0201C740
+	bl mMsg_StartSpriteAnimation
+	ldr r1, _0201C764 @ =mMsg_ChoiceCursorIdle
 	str r1, [r4, #0x10]
 	adds r0, r4, #0
 	bl _call_via_r1
@@ -9145,15 +9145,15 @@ sub_0201C744: @ 0x0201C744
 	bx r0
 	.align 2, 0
 _0201C760: .4byte 0x0202B3DC
-_0201C764: .4byte sub_0201C740
+_0201C764: .4byte mMsg_ChoiceCursorIdle
 
-	thumb_func_start sub_0201C768
-sub_0201C768: @ 0x0201C768
+	thumb_func_start mMsg_ChoiceCursorDestroy
+mMsg_ChoiceCursorDestroy: @ 0x0201C768
 	bx lr
 	.align 2, 0
 
-	thumb_func_start sub_0201C76C
-sub_0201C76C: @ 0x0201C76C
+	thumb_func_start mMsg_ChoiceCursorUpdate
+mMsg_ChoiceCursorUpdate: @ 0x0201C76C
 	push {r4, lr}
 	adds r4, r0, #0
 	ldr r1, [r4, #0x10]
@@ -9163,15 +9163,15 @@ sub_0201C76C: @ 0x0201C76C
 _0201C77A:
 	ldr r1, _0201C788 @ =0x0202B3DC
 	adds r0, r4, #0
-	bl sub_0201C444
+	bl mMsg_UpdateSpriteAnimation
 	pop {r4}
 	pop {r0}
 	bx r0
 	.align 2, 0
 _0201C788: .4byte 0x0202B3DC
 
-	thumb_func_start sub_0201C78C
-sub_0201C78C: @ 0x0201C78C
+	thumb_func_start mMsg_ChoiceCursorDraw
+mMsg_ChoiceCursorDraw: @ 0x0201C78C
 	push {r4, r5, r6, r7, lr}
 	adds r6, r0, #0
 	ldr r1, _0201C7D0 @ =0x0202B3DC
@@ -9194,7 +9194,7 @@ _0201C7AA:
 	adds r2, r2, r0
 	adds r0, r6, #0
 	adds r1, r4, #0
-	bl sub_0201C490
+	bl mMsg_CopySpriteOam
 	ldrb r0, [r5]
 	adds r0, #1
 	strb r0, [r5]
@@ -9212,8 +9212,8 @@ _0201C7D4: .4byte 0x0000FFFF
 _0201C7D8: .4byte 0x030023B0
 _0201C7DC: .4byte 0x03002410
 
-	thumb_func_start sub_0201C7E0
-sub_0201C7E0: @ 0x0201C7E0
+	thumb_func_start InitIslandLinkTransfer
+InitIslandLinkTransfer: @ 0x0201C7E0
 	push {r4, r5, r6, lr}
 	mov r6, sb
 	mov r5, r8
@@ -9278,8 +9278,8 @@ _0201C864: .4byte 0x00004003
 _0201C868: .4byte 0x030036D0
 _0201C86C: .4byte 0x0500000E
 
-	thumb_func_start sub_0201C870
-sub_0201C870: @ 0x0201C870
+	thumb_func_start StopIslandLinkTransfer
+StopIslandLinkTransfer: @ 0x0201C870
 	push {r4, lr}
 	ldr r3, _0201C8A4 @ =0x04000208
 	movs r4, #0
@@ -9315,8 +9315,8 @@ _0201C8B4: .4byte 0x04000128
 _0201C8B8: .4byte 0x00002003
 _0201C8BC: .4byte 0x0000A4FB
 
-	thumb_func_start sub_0201C8C0
-sub_0201C8C0: @ 0x0201C8C0
+	thumb_func_start UpdateIslandLinkTransfer
+UpdateIslandLinkTransfer: @ 0x0201C8C0
 	push {r4, r5, r6, r7, lr}
 	ldr r5, _0201C8E0 @ =0x04000128
 	ldr r2, [r5]
@@ -9479,7 +9479,7 @@ _0201C9F2:
 	movs r0, #3
 	strb r0, [r1, #1]
 	movs r0, #0x29
-	bl sub_02019D58
+	bl GameAudio_PlayEffect2
 	b _0201CB18
 _0201CA04:
 	ldr r3, _0201CA14 @ =0x030036D0
@@ -9648,14 +9648,14 @@ _0201CB18:
 	cmp r7, #7
 	beq _0201CB42
 	movs r0, #0x29
-	bl sub_02019D68
+	bl GameAudio_StopEffect2
 	movs r0, #0x28
 	cmp r7, #9
 	bne _0201CB3A
 	movs r0, #0x27
 _0201CB3A:
-	bl sub_02019D78
-	bl sub_0201C870
+	bl GameAudio_PlayEffect0
+	bl StopIslandLinkTransfer
 _0201CB42:
 	adds r0, r7, #0
 	pop {r4, r5, r6, r7}
@@ -9664,8 +9664,8 @@ _0201CB42:
 	.align 2, 0
 _0201CB4C: .4byte 0x030036D0
 
-	thumb_func_start sub_0201CB50
-sub_0201CB50: @ 0x0201CB50
+	thumb_func_start IslandLinkSerialInterrupt
+IslandLinkSerialInterrupt: @ 0x0201CB50
 	push {r4, r5, r6, lr}
 	sub sp, #8
 	ldr r0, _0201CBBC @ =0x04000120
@@ -9972,8 +9972,8 @@ _0201CD94: .4byte 0x0000FEFD
 _0201CD98: .4byte 0x04000128
 _0201CD9C: .4byte 0x0400010E
 
-	thumb_func_start sub_0201CDA0
-sub_0201CDA0: @ 0x0201CDA0
+	thumb_func_start LoadIslandBuildingTiles
+LoadIslandBuildingTiles: @ 0x0201CDA0
 	push {r4, r5, r6, r7, lr}
 	mov r7, sl
 	mov r6, sb
@@ -10060,7 +10060,7 @@ _0201CE22:
 	movs r1, #0
 	mov r2, sb
 	movs r3, #0
-	bl sub_0201DF9C
+	bl InitIslandBuilding
 	b _0201CF20
 	.align 2, 0
 _0201CE4C: .4byte 0x0600C000
@@ -10167,7 +10167,7 @@ _0201CEFE:
 	movs r1, #2
 	mov r2, sb
 	adds r3, r7, #0
-	bl sub_0201DF9C
+	bl InitIslandBuilding
 _0201CF20:
 	movs r0, #0
 _0201CF22:
@@ -10183,8 +10183,8 @@ _0201CF22:
 _0201CF34: .4byte 0x0000049A
 _0201CF38: .4byte 0x00000429
 
-	thumb_func_start sub_0201CF3C
-sub_0201CF3C: @ 0x0201CF3C
+	thumb_func_start LoadIslandFieldEntity
+LoadIslandFieldEntity: @ 0x0201CF3C
 	push {r4, r5, r6, r7, lr}
 	mov r7, sl
 	mov r6, sb
@@ -10364,7 +10364,7 @@ _0201D0B4:
 	movs r0, #0x54
 	adds r1, r5, #0
 	mov r2, ip
-	bl sub_0201E1E0
+	bl AnimatedFieldObject_Init
 	b _0201D188
 _0201D0C0:
 	mov r1, ip
@@ -10454,7 +10454,7 @@ _0201D166:
 	adds r1, r7, #0
 	adds r2, r5, #0
 	mov r3, ip
-	bl sub_0201E430
+	bl FieldObject_Init
 	b _0201D188
 _0201D174:
 	movs r2, #0
@@ -10480,8 +10480,8 @@ _0201D188:
 	.align 2, 0
 _0201D198: .4byte 0x0000044D
 
-	thumb_func_start sub_0201D19C
-sub_0201D19C: @ 0x0201D19C
+	thumb_func_start LoadIslandForeground
+LoadIslandForeground: @ 0x0201D19C
 	push {r4, r5, r6, r7, lr}
 	mov r7, sl
 	mov r6, sb
@@ -10651,7 +10651,7 @@ _0201D2E0:
 	ldrh r0, [r4]
 	mov r1, r8
 	movs r2, #0
-	bl sub_0201CDA0
+	bl LoadIslandBuildingTiles
 	adds r3, r0, #0
 	cmp r3, #1
 	bne _0201D37E
@@ -10720,7 +10720,7 @@ _0201D34E:
 	ldrh r0, [r1, #2]
 	mov r1, r8
 	movs r2, #0
-	bl sub_0201CF3C
+	bl LoadIslandFieldEntity
 _0201D37E:
 	ldr r5, _0201D3F0 @ =0x03001B40
 	ldr r2, [r5]
@@ -10847,7 +10847,7 @@ _0201D47A:
 	ldrh r0, [r7]
 	mov r1, r8
 	movs r2, #1
-	bl sub_0201CDA0
+	bl LoadIslandBuildingTiles
 	adds r3, r0, #0
 	cmp r3, #1
 	bne _0201D514
@@ -10917,7 +10917,7 @@ _0201D4E4:
 	ldrh r0, [r1, #2]
 	mov r1, r8
 	movs r2, #1
-	bl sub_0201CF3C
+	bl LoadIslandFieldEntity
 _0201D514:
 	ldr r2, [sp]
 	mov r8, r2
@@ -10999,8 +10999,8 @@ _0201D5B8: .4byte 0x02000102
 _0201D5BC: .4byte 0x02000122
 _0201D5C0: .4byte 0x02034EE4
 
-	thumb_func_start sub_0201D5C4
-sub_0201D5C4: @ 0x0201D5C4
+	thumb_func_start InitIslandField
+InitIslandField: @ 0x0201D5C4
 	push {r4, r5, r6, r7, lr}
 	ldr r6, _0201D684 @ =0x03003710
 	ldr r0, _0201D688 @ =0x03001B50
@@ -11048,7 +11048,7 @@ _0201D60E:
 	movs r4, #0
 	movs r0, #1
 	strb r0, [r1]
-	bl sub_02025D70
+	bl PlayerHand_Init
 	bl Islander_Init
 	ldr r0, _0201D6A4 @ =0x00000497
 	adds r1, r6, r0
@@ -11216,7 +11216,7 @@ _0201D784:
 	subs r2, #1
 	cmp r2, #0
 	bge _0201D784
-	bl sub_0201D19C
+	bl LoadIslandForeground
 	pop {r4, r5, r6, r7}
 	pop {r0}
 	bx r0
@@ -11227,8 +11227,8 @@ _0201D7A0: .4byte 0x0600A800
 _0201D7A4: .4byte 0x84000200
 _0201D7A8: .4byte 0x00000496
 
-	thumb_func_start sub_0201D7AC
-sub_0201D7AC: @ 0x0201D7AC
+	thumb_func_start ExpandIslandBg3
+ExpandIslandBg3: @ 0x0201D7AC
 	push {lr}
 	ldr r0, _0201D7EC @ =0x0400000E
 	ldrh r1, [r0]
@@ -11257,7 +11257,7 @@ sub_0201D7AC: @ 0x0201D7AC
 	cmp r0, #0
 	beq _0201D7E8
 	movs r0, #0x26
-	bl sub_02026BC8
+	bl Sound_StopEffect2
 _0201D7E8:
 	pop {r0}
 	bx r0
@@ -11268,8 +11268,8 @@ _0201D7F4: .4byte 0x00000828
 _0201D7F8: .4byte 0x03001B40
 _0201D7FC: .4byte 0x0000193A
 
-	thumb_func_start sub_0201D800
-sub_0201D800: @ 0x0201D800
+	thumb_func_start UpdateIslandMosaic
+UpdateIslandMosaic: @ 0x0201D800
 	push {r4, r5, r6, r7, lr}
 	lsls r0, r0, #0x18
 	lsrs r2, r0, #0x18
@@ -11392,8 +11392,8 @@ _0201D8FE:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_0201D904
-sub_0201D904: @ 0x0201D904
+	thumb_func_start UpdateIslandField
+UpdateIslandField: @ 0x0201D904
 	push {r4, lr}
 	ldr r4, _0201D930 @ =0x03003710
 	ldr r1, _0201D934 @ =0x0400004C
@@ -11427,8 +11427,8 @@ _0201D946:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_0201D94C
-sub_0201D94C: @ 0x0201D94C
+	thumb_func_start GameStateUpdateFunc_Normal
+GameStateUpdateFunc_Normal: @ 0x0201D94C
 	push {r4, r5, r6, r7, lr}
 	mov r7, sb
 	mov r6, r8
@@ -11454,7 +11454,7 @@ sub_0201D94C: @ 0x0201D94C
 	cmp r0, #1
 	beq _0201DA28
 	movs r0, #0
-	bl sub_0201D800
+	bl UpdateIslandMosaic
 	adds r2, r0, #0
 	cmp r2, #0
 	bne _0201DA28
@@ -11544,8 +11544,8 @@ _0201DA28:
 	cmp r0, #1
 	beq _0201DA80
 	movs r0, #0x14
-	bl sub_02026C68
-	bl sub_02026BD8
+	bl Sound_StopMusic
+	bl Sound_InitMusic
 	movs r7, #0x82
 	lsls r7, r7, #3
 	adds r1, r6, r7
@@ -11582,8 +11582,8 @@ _0201DA80:
 	cmp r0, #1
 	beq _0201DAD8
 	movs r0, #0x14
-	bl sub_02026C68
-	bl sub_02026BD8
+	bl Sound_StopMusic
+	bl Sound_InitMusic
 	movs r3, #0x82
 	lsls r3, r3, #3
 	adds r1, r6, r3
@@ -11632,8 +11632,8 @@ _0201DAD8:
 	cmp r4, #0
 	bne _0201DB44
 	movs r0, #0x14
-	bl sub_02026C68
-	bl sub_02026BD8
+	bl Sound_StopMusic
+	bl Sound_InitMusic
 	movs r3, #0x82
 	lsls r3, r3, #3
 	adds r0, r6, r3
@@ -11690,7 +11690,7 @@ _0201DB44:
 	cmp r0, #0
 	beq _0201DB84
 	movs r0, #0x26
-	bl sub_02026B48
+	bl Sound_PlayEffect2
 _0201DB84:
 	ldr r7, _0201DCB4 @ =0x00000497
 	adds r1, r6, r7
@@ -11773,7 +11773,7 @@ _0201DBEE:
 	ldr r1, _0201DCD0 @ =0x0000084A
 	adds r2, r2, r1
 	strh r0, [r2]
-	bl sub_020267D0
+	bl PlayerHand_Update
 	bl Islander_UpdateMovement
 	movs r4, #0
 _0201DC2E:
@@ -11784,7 +11784,7 @@ _0201DC2E:
 	cmp r0, #1
 	bne _0201DC40
 	adds r0, r4, #0
-	bl sub_02024DD0
+	bl FallingFruit_Update
 _0201DC40:
 	adds r4, #1
 	cmp r4, #0x1d
@@ -11798,7 +11798,7 @@ _0201DC48:
 	cmp r0, #1
 	bne _0201DC5A
 	adds r0, r4, #0
-	bl sub_0201E538
+	bl FieldObject_Update
 _0201DC5A:
 	adds r4, #1
 	cmp r4, #0x1d
@@ -11809,7 +11809,7 @@ _0201DC5A:
 	cmp r0, #1
 	bne _0201DC70
 	movs r0, #2
-	bl sub_020255F0
+	bl Entity_Update
 _0201DC70:
 	movs r4, #3
 _0201DC72:
@@ -11820,16 +11820,16 @@ _0201DC72:
 	cmp r0, #1
 	bne _0201DC84
 	adds r0, r4, #0
-	bl sub_020255F0
+	bl Entity_Update
 _0201DC84:
 	adds r4, #1
 	cmp r4, #0xb
 	ble _0201DC72
 	movs r0, #1
 	movs r1, #2
-	bl sub_0201E038
+	bl IslandBuilding_Update
 	movs r0, #0x54
-	bl sub_0201E230
+	bl AnimatedFieldObject_Update
 _0201DC98:
 	pop {r3, r4}
 	mov r8, r3
@@ -11855,18 +11855,18 @@ _0201DCD8: .4byte 0x0000044D
 _0201DCDC: .4byte 0x00000419
 _0201DCE0: .4byte 0x0000041A
 
-	thumb_func_start sub_0201DCE4
-sub_0201DCE4: @ 0x0201DCE4
+	thumb_func_start IslandField_UpdateJoybusExit
+IslandField_UpdateJoybusExit: @ 0x0201DCE4
 	push {r4, lr}
 	ldr r0, _0201DD14 @ =0x03003710
 	ldr r1, _0201DD18 @ =0x0000049B
 	adds r4, r0, r1
 	ldrb r0, [r4]
-	bl sub_0201D800
+	bl UpdateIslandMosaic
 	ldrb r0, [r4]
 	cmp r0, #2
 	bne _0201DD0E
-	bl sub_0201D7AC
+	bl ExpandIslandBg3
 	bl RestoreHeldItemsToField
 	ldr r0, _0201DD1C @ =0x03001B50
 	ldr r1, _0201DD20 @ =0x00000857
@@ -11885,18 +11885,18 @@ _0201DD18: .4byte 0x0000049B
 _0201DD1C: .4byte 0x03001B50
 _0201DD20: .4byte 0x00000857
 
-	thumb_func_start sub_0201DD24
-sub_0201DD24: @ 0x0201DD24
+	thumb_func_start IslandField_UpdateSleepExit
+IslandField_UpdateSleepExit: @ 0x0201DD24
 	push {r4, lr}
 	ldr r0, _0201DD54 @ =0x03003710
 	ldr r1, _0201DD58 @ =0x0000049B
 	adds r4, r0, r1
 	ldrb r0, [r4]
-	bl sub_0201D800
+	bl UpdateIslandMosaic
 	ldrb r0, [r4]
 	cmp r0, #2
 	bne _0201DD4E
-	bl sub_0201D7AC
+	bl ExpandIslandBg3
 	bl RestoreHeldItemsToField
 	ldr r0, _0201DD5C @ =0x03001B50
 	ldr r1, _0201DD60 @ =0x0000084F
@@ -11915,18 +11915,18 @@ _0201DD58: .4byte 0x0000049B
 _0201DD5C: .4byte 0x03001B50
 _0201DD60: .4byte 0x0000084F
 
-	thumb_func_start sub_0201DD64
-sub_0201DD64: @ 0x0201DD64
+	thumb_func_start IslandField_UpdateOverviewExit
+IslandField_UpdateOverviewExit: @ 0x0201DD64
 	push {r4, lr}
 	ldr r0, _0201DD8C @ =0x03003710
 	ldr r1, _0201DD90 @ =0x0000049B
 	adds r4, r0, r1
 	ldrb r0, [r4]
-	bl sub_0201D800
+	bl UpdateIslandMosaic
 	ldrb r0, [r4]
 	cmp r0, #2
 	bne _0201DD84
-	bl sub_0201D7AC
+	bl ExpandIslandBg3
 	bl RestoreHeldItemsToField
 	movs r0, #3
 	strb r0, [r4]
@@ -11938,8 +11938,8 @@ _0201DD84:
 _0201DD8C: .4byte 0x03003710
 _0201DD90: .4byte 0x0000049B
 
-	thumb_func_start sub_0201DD94
-sub_0201DD94: @ 0x0201DD94
+	thumb_func_start DrawIslandField
+DrawIslandField: @ 0x0201DD94
 	push {r4, r5, r6, r7, lr}
 	mov r7, sl
 	mov r6, sb
@@ -11961,7 +11961,7 @@ sub_0201DD94: @ 0x0201DD94
 	cmp r0, #1
 	bne _0201DDC2
 	movs r0, #2
-	bl sub_020256D0
+	bl Entity_DrawSprite
 _0201DDC2:
 	mov r0, sb
 	adds r0, #0x87
@@ -11983,7 +11983,7 @@ _0201DDE0:
 	ldrb r0, [r0]
 	cmp r0, #1
 	bne _0201DDEC
-	bl sub_02026830
+	bl PlayerHand_Draw
 _0201DDEC:
 	adds r6, #1
 	cmp r6, #1
@@ -11997,13 +11997,13 @@ _0201DDF4:
 	cmp r0, #1
 	bne _0201DE06
 	adds r0, r6, #0
-	bl sub_020256D0
+	bl Entity_DrawSprite
 _0201DE06:
 	adds r6, #1
 	cmp r6, #0xb
 	ble _0201DDF4
 	movs r0, #0x54
-	bl sub_0201E27C
+	bl AnimatedFieldObject_Draw
 	movs r4, #0
 	mov sl, r4
 	movs r0, #0
@@ -12037,7 +12037,7 @@ _0201DE32:
 	bls _0201DE58
 	movs r0, #0
 	movs r1, #0
-	bl sub_0201E178
+	bl IslandBuilding_Draw
 	movs r4, #1
 	mov sl, r4
 _0201DE58:
@@ -12051,7 +12051,7 @@ _0201DE58:
 	bls _0201DE74
 	movs r0, #1
 	movs r1, #2
-	bl sub_0201E178
+	bl IslandBuilding_Draw
 	movs r4, #1
 	str r4, [sp]
 _0201DE74:
@@ -12065,7 +12065,7 @@ _0201DE74:
 	beq _0201DEBC
 	adds r0, r1, #0
 	subs r0, #1
-	bl sub_02024DF8
+	bl FallingFruit_Draw
 	b _0201DED6
 	.align 2, 0
 _0201DE90: .4byte 0x030041A0
@@ -12089,7 +12089,7 @@ _0201DEBE:
 	cmp r0, #1
 	bne _0201DED0
 	adds r0, r4, #0
-	bl sub_02024DF8
+	bl FallingFruit_Draw
 _0201DED0:
 	adds r4, #1
 	cmp r4, #2
@@ -12154,14 +12154,14 @@ _0201DF3C:
 	bne _0201DF4A
 	movs r0, #0
 	movs r1, #0
-	bl sub_0201E178
+	bl IslandBuilding_Draw
 _0201DF4A:
 	ldr r0, [sp]
 	cmp r0, #0
 	bne _0201DF58
 	movs r0, #1
 	movs r1, #2
-	bl sub_0201E178
+	bl IslandBuilding_Draw
 _0201DF58:
 	ldr r1, [sp, #4]
 	cmp r1, #0
@@ -12170,7 +12170,7 @@ _0201DF58:
 _0201DF62:
 	movs r0, #1
 	movs r1, #1
-	bl sub_0201E178
+	bl IslandBuilding_Draw
 	movs r6, #0
 _0201DF6C:
 	adds r0, r7, r6
@@ -12180,7 +12180,7 @@ _0201DF6C:
 	cmp r0, #1
 	bne _0201DF7E
 	adds r0, r6, #0
-	bl sub_02025618
+	bl Entity_DrawFloatingItemShadow
 _0201DF7E:
 	adds r6, #1
 	cmp r6, #0xb
@@ -12197,8 +12197,8 @@ _0201DF7E:
 _0201DF94: .4byte 0x0000042C
 _0201DF98: .4byte 0x0000041A
 
-	thumb_func_start sub_0201DF9C
-sub_0201DF9C: @ 0x0201DF9C
+	thumb_func_start InitIslandBuilding
+InitIslandBuilding: @ 0x0201DF9C
 	push {r4, r5, lr}
 	adds r4, r2, #0
 	lsls r1, r1, #0x18
@@ -12284,8 +12284,8 @@ sub_0201E034: @ 0x0201E034
 	bx lr
 	.align 2, 0
 
-	thumb_func_start sub_0201E038
-sub_0201E038: @ 0x0201E038
+	thumb_func_start IslandBuilding_Update
+IslandBuilding_Update: @ 0x0201E038
 	push {lr}
 	lsls r1, r1, #0x18
 	lsrs r1, r1, #0x18
@@ -12305,8 +12305,8 @@ _0201E052:
 _0201E058: .4byte 0x03003BC4
 _0201E05C: .4byte 0x0202FD38
 
-	thumb_func_start sub_0201E060
-sub_0201E060: @ 0x0201E060
+	thumb_func_start IslandBuilding_DrawSprite
+IslandBuilding_DrawSprite: @ 0x0201E060
 	push {r4, r5, r6, r7, lr}
 	mov r7, r8
 	push {r7}
@@ -12441,8 +12441,8 @@ _0201E16C: .4byte 0x00000846
 _0201E170: .4byte 0x000003FF
 _0201E174: .4byte 0xFFFFFC00
 
-	thumb_func_start sub_0201E178
-sub_0201E178: @ 0x0201E178
+	thumb_func_start IslandBuilding_Draw
+IslandBuilding_Draw: @ 0x0201E178
 	push {r4, r5, r6, r7, lr}
 	mov r7, r8
 	push {r7}
@@ -12487,7 +12487,7 @@ _0201E1BC:
 	lsls r2, r4, #0x18
 	lsrs r2, r2, #0x18
 	mov r1, r8
-	bl sub_0201E060
+	bl IslandBuilding_DrawSprite
 	adds r5, #0x14
 	adds r4, #1
 	cmp r4, r6
@@ -12501,8 +12501,8 @@ _0201E1D0:
 	.align 2, 0
 _0201E1DC: .4byte 0x0202FD40
 
-	thumb_func_start sub_0201E1E0
-sub_0201E1E0: @ 0x0201E1E0
+	thumb_func_start AnimatedFieldObject_Init
+AnimatedFieldObject_Init: @ 0x0201E1E0
 	push {r4, r5, lr}
 	adds r5, r1, #0
 	lsls r2, r2, #0x18
@@ -12543,8 +12543,8 @@ _0201E1FE:
 _0201E228: .4byte 0x03003BF0
 _0201E22C: .4byte 0x0202FEB0
 
-	thumb_func_start sub_0201E230
-sub_0201E230: @ 0x0201E230
+	thumb_func_start AnimatedFieldObject_Update
+AnimatedFieldObject_Update: @ 0x0201E230
 	push {lr}
 	lsls r1, r0, #1
 	adds r1, r1, r0
@@ -12584,8 +12584,8 @@ _0201E26E:
 _0201E274: .4byte 0x03003BF0
 _0201E278: .4byte 0x0202FEB0
 
-	thumb_func_start sub_0201E27C
-sub_0201E27C: @ 0x0201E27C
+	thumb_func_start AnimatedFieldObject_Draw
+AnimatedFieldObject_Draw: @ 0x0201E27C
 	push {r4, r5, r6, r7, lr}
 	mov r7, sl
 	mov r6, sb
@@ -12757,8 +12757,8 @@ _0201E3D0: .4byte 0x000001FF
 _0201E3D4: .4byte 0xFFFFFE00
 _0201E3D8: .4byte 0xFFFFFC00
 
-	thumb_func_start sub_0201E3DC
-sub_0201E3DC: @ 0x0201E3DC
+	thumb_func_start FieldObject_AttachEntity
+FieldObject_AttachEntity: @ 0x0201E3DC
 	push {r4, r5, r6, r7, lr}
 	adds r6, r0, #0
 	lsls r0, r6, #1
@@ -12785,7 +12785,7 @@ _0201E3F0:
 	ldrb r3, [r0]
 	adds r0, r6, #0
 	lsrs r2, r2, #0x18
-	bl sub_02024B08
+	bl FallingFruit_Init
 	adds r0, r4, #1
 	strh r0, [r5, #0x1c]
 	b _0201E42A
@@ -12802,8 +12802,8 @@ _0201E42A:
 	pop {r0}
 	bx r0
 
-	thumb_func_start sub_0201E430
-sub_0201E430: @ 0x0201E430
+	thumb_func_start FieldObject_Init
+FieldObject_Init: @ 0x0201E430
 	push {r4, r5, r6, r7, lr}
 	mov r7, r8
 	push {r7}
@@ -12885,42 +12885,42 @@ _0201E4B4:
 	bne _0201E4D4
 	adds r0, r6, #0
 	movs r1, #0
-	bl sub_0201E3DC
+	bl FieldObject_AttachEntity
 _0201E4D4:
 	ldrh r0, [r5, #0xc]
 	cmp r0, #7
 	bne _0201E4E2
 	adds r0, r6, #0
 	movs r1, #3
-	bl sub_0201E3DC
+	bl FieldObject_AttachEntity
 _0201E4E2:
 	ldrh r0, [r5, #0xc]
 	cmp r0, #8
 	bne _0201E4F0
 	adds r0, r6, #0
 	movs r1, #7
-	bl sub_0201E3DC
+	bl FieldObject_AttachEntity
 _0201E4F0:
 	ldrh r0, [r5, #0xc]
 	cmp r0, #9
 	bne _0201E4FE
 	adds r0, r6, #0
 	movs r1, #0xb
-	bl sub_0201E3DC
+	bl FieldObject_AttachEntity
 _0201E4FE:
 	ldrh r0, [r5, #0xc]
 	cmp r0, #0xa
 	bne _0201E50C
 	adds r0, r6, #0
 	movs r1, #0xf
-	bl sub_0201E3DC
+	bl FieldObject_AttachEntity
 _0201E50C:
 	ldrh r0, [r5, #0xc]
 	cmp r0, #0xb
 	bne _0201E51A
 	adds r0, r6, #0
 	movs r1, #0x13
-	bl sub_0201E3DC
+	bl FieldObject_AttachEntity
 _0201E51A:
 	ldrh r0, [r5, #0xc]
 	cmp r0, #6
@@ -12938,8 +12938,8 @@ _0201E526:
 _0201E530: .4byte 0x03003C00
 _0201E534: .4byte 0x02030110
 
-	thumb_func_start sub_0201E538
-sub_0201E538: @ 0x0201E538
+	thumb_func_start FieldObject_Update
+FieldObject_Update: @ 0x0201E538
 	push {lr}
 	lsls r1, r0, #1
 	adds r1, r1, r0
@@ -12959,13 +12959,13 @@ sub_0201E538: @ 0x0201E538
 _0201E558: .4byte 0x03003C00
 _0201E55C: .4byte 0x0202FECC
 
-	thumb_func_start sub_0201E560
-sub_0201E560: @ 0x0201E560
+	thumb_func_start FieldObject_Idle
+FieldObject_Idle: @ 0x0201E560
 	bx lr
 	.align 2, 0
 
-	thumb_func_start sub_0201E564
-sub_0201E564: @ 0x0201E564
+	thumb_func_start FieldObject_SpawnToppleEffect
+FieldObject_SpawnToppleEffect: @ 0x0201E564
 	push {r4, r5, r6, r7, lr}
 	mov r7, r8
 	push {r7}
@@ -12998,7 +12998,7 @@ _0201E586:
 	movs r7, #1
 	strb r7, [r2]
 	adds r0, r3, #0
-	bl Unk_Struct_Size54_ResetIdx
+	bl Entity_Reset
 	mov r0, r8
 	bl rand_u16
 	movs r1, #0x21
@@ -13043,8 +13043,8 @@ _0201E5FE:
 	pop {r0}
 	bx r0
 
-	thumb_func_start sub_0201E608
-sub_0201E608: @ 0x0201E608
+	thumb_func_start FieldObject_UpdateForegroundItem
+FieldObject_UpdateForegroundItem: @ 0x0201E608
 	push {r4, lr}
 	lsls r1, r0, #1
 	adds r1, r1, r0
@@ -13186,8 +13186,8 @@ _0201E700:
 	.align 2, 0
 _0201E70C: .4byte 0x03001B40
 
-	thumb_func_start sub_0201E710
-sub_0201E710: @ 0x0201E710
+	thumb_func_start FieldObject_HandleHit
+FieldObject_HandleHit: @ 0x0201E710
 	push {r4, r5, r6, r7, lr}
 	mov r7, sl
 	mov r6, sb
@@ -13214,7 +13214,7 @@ sub_0201E710: @ 0x0201E710
 	beq _0201E77C
 _0201E740:
 	mov r0, sb
-	bl sub_0201E564
+	bl FieldObject_SpawnToppleEffect
 	adds r1, r5, #0
 	adds r1, #0x27
 	movs r0, #8
@@ -13229,9 +13229,9 @@ _0201E740:
 	movs r0, #3
 	strb r0, [r4]
 	mov r0, sb
-	bl sub_0201E608
+	bl FieldObject_UpdateForegroundItem
 	movs r0, #0x13
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 	str r4, [sp, #0x1c]
 	b _0201E798
 	.align 2, 0
@@ -13240,7 +13240,7 @@ _0201E774: .4byte 0x03003710
 _0201E778: .4byte 0x0000FFFF
 _0201E77C:
 	movs r0, #0x18
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 	adds r0, r5, #0
 	adds r0, #0x27
 	movs r1, #2
@@ -13485,7 +13485,7 @@ _0201E93E:
 	lsrs r1, r6, #0x10
 	lsrs r2, r2, #0x18
 	mov r3, r8
-	bl sub_02024B08
+	bl FallingFruit_Init
 _0201E95E:
 	ldrh r0, [r5, #0xc]
 	cmp r0, #7
@@ -13498,7 +13498,7 @@ _0201E95E:
 	lsrs r1, r3, #0x10
 	lsrs r2, r2, #0x18
 	mov r3, r8
-	bl sub_02024B08
+	bl FallingFruit_Init
 _0201E978:
 	ldrh r0, [r5, #0xc]
 	cmp r0, #8
@@ -13511,7 +13511,7 @@ _0201E978:
 	lsrs r1, r4, #0x10
 	lsrs r2, r2, #0x18
 	mov r3, r8
-	bl sub_02024B08
+	bl FallingFruit_Init
 _0201E992:
 	ldrh r0, [r5, #0xc]
 	cmp r0, #9
@@ -13524,7 +13524,7 @@ _0201E992:
 	lsrs r1, r6, #0x10
 	lsrs r2, r2, #0x18
 	mov r3, r8
-	bl sub_02024B08
+	bl FallingFruit_Init
 _0201E9AC:
 	ldrh r0, [r5, #0xc]
 	cmp r0, #0xa
@@ -13537,7 +13537,7 @@ _0201E9AC:
 	lsrs r1, r3, #0x10
 	lsrs r2, r2, #0x18
 	mov r3, r8
-	bl sub_02024B08
+	bl FallingFruit_Init
 _0201E9C6:
 	ldrh r0, [r5, #0xc]
 	cmp r0, #0xb
@@ -13550,7 +13550,7 @@ _0201E9C6:
 	lsrs r1, r4, #0x10
 	lsrs r2, r2, #0x18
 	mov r3, r8
-	bl sub_02024B08
+	bl FallingFruit_Init
 _0201E9E0:
 	mov r6, r8
 	cmp r6, #0
@@ -13648,7 +13648,7 @@ _0201EA80:
 	b _0201E7C4
 _0201EA9C:
 	mov r0, sb
-	bl sub_0201E608
+	bl FieldObject_UpdateForegroundItem
 	ldr r3, [sp, #0x1c]
 	ldrb r0, [r3]
 	cmp r0, #3
@@ -13739,8 +13739,8 @@ _0201EB2E:
 _0201EB40: .4byte 0x0000042E
 _0201EB44: .4byte 0x0000FFFF
 
-	thumb_func_start sub_0201EB48
-sub_0201EB48: @ 0x0201EB48
+	thumb_func_start FieldObject_UpdateShake
+FieldObject_UpdateShake: @ 0x0201EB48
 	push {r4, r5, r6, r7, lr}
 	mov r7, sl
 	mov r6, sb
@@ -13820,7 +13820,7 @@ _0201EBC2:
 	movs r0, #1
 	strb r0, [r1]
 	adds r0, r2, #0
-	bl Unk_Struct_Size54_ResetIdx
+	bl Entity_Reset
 	mov r0, r8
 	bl rand_u16
 	ldr r4, [r6]
@@ -15349,8 +15349,8 @@ _0201F786:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_0201F78C
-sub_0201F78C: @ 0x0201F78C
+	thumb_func_start Islander_ChooseNewMoveDirection
+Islander_ChooseNewMoveDirection: @ 0x0201F78C
 	push {r4, r5, r6, r7, lr}
 	mov r7, r8
 	push {r7}
@@ -16330,7 +16330,7 @@ _0201FEE4:
 	movs r0, #1
 	strb r0, [r2]
 	adds r0, r3, #0
-	bl Unk_Struct_Size54_ResetIdx
+	bl Entity_Reset
 	adds r0, r4, #0
 	adds r0, #0x40
 	strh r6, [r0]
@@ -16500,7 +16500,7 @@ _02020026:
 	adds r3, r0, r1
 	adds r0, r6, #0
 	str r3, [sp, #8]
-	bl Unk_Struct_Size54_ResetIdx
+	bl Entity_Reset
 	ldr r0, [r7]
 	asrs r0, r0, #8
 	subs r0, #8
@@ -17383,7 +17383,7 @@ _020206F2:
 	ldr r0, [r4, #0xc]
 	str r0, [r4, #4]
 	movs r0, #1
-	bl sub_0201F78C
+	bl Islander_ChooseNewMoveDirection
 	adds r2, r0, #0
 	movs r0, #0
 	str r0, [r4, #0x10]
@@ -18180,7 +18180,7 @@ _02020CCA:
 	lsls r0, r0, #0x18
 	lsrs r0, r0, #0x18
 	bl ChangeEmotion
-	bl sub_02026BD8
+	bl Sound_InitMusic
 	movs r0, #0xfe
 	strb r0, [r6]
 	movs r0, #0x60
@@ -19348,8 +19348,8 @@ _020215C4: .4byte 0x03003710
 _020215C8: .4byte 0x0000049E
 _020215CC: .4byte 0x0203380C
 
-	thumb_func_start sub_020215D0
-sub_020215D0: @ 0x020215D0
+	thumb_func_start Islander_StartHouseTransition
+Islander_StartHouseTransition: @ 0x020215D0
 	push {lr}
 	ldr r1, _02021604 @ =0x030041A0
 	adds r3, r1, #0
@@ -19407,13 +19407,13 @@ Islander_MoveIndoorsOrOutdoors: @ 0x02021608
 	cmp r0, #8
 	bne _02021640
 	movs r0, #1
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 _02021640:
 	ldrb r0, [r5]
 	cmp r0, #0x13
 	bne _02021674
 	movs r0, #0xe
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 	b _02021674
 	.align 2, 0
 _02021650: .4byte 0x030041A0
@@ -19425,13 +19425,13 @@ _02021658:
 	cmp r0, #1
 	bne _02021668
 	movs r0, #1
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 _02021668:
 	ldrb r0, [r5]
 	cmp r0, #0xb
 	bne _02021674
 	movs r0, #0xe
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 _02021674:
 	movs r0, #1
 	bl Islander_PlayAnim
@@ -19592,8 +19592,8 @@ _0202177E:
 _020217A4: .4byte 0x03001B50
 _020217A8: .4byte 0x00000151
 
-	thumb_func_start sub_020217AC
-sub_020217AC: @ 0x020217AC
+	thumb_func_start Islander_UpdateWandering
+Islander_UpdateWandering: @ 0x020217AC
 	push {r4, r5, r6, lr}
 	ldr r4, _02021818 @ =0x030041A0
 	movs r6, #0
@@ -19700,7 +19700,7 @@ _02021870:
 	cmp r0, #0
 	bne _020218A0
 	movs r0, #0
-	bl sub_0201F78C
+	bl Islander_ChooseNewMoveDirection
 	adds r6, r0, #0
 	ldr r0, _0202189C @ =0x00000777
 	cmp r6, r0
@@ -19847,7 +19847,7 @@ _02021976:
 	adds r0, r5, #0
 	adds r0, #0x87
 	strb r2, [r0]
-	bl sub_020215D0
+	bl Islander_StartHouseTransition
 	adds r1, r5, #0
 	adds r1, #0x8a
 	movs r0, #4
@@ -19922,7 +19922,7 @@ _02021A12:
 	adds r1, #0x87
 	movs r0, #0xb
 	strb r0, [r1]
-	bl sub_020223AC
+	bl Islander_StartFieldObjectInteraction
 	b _02021AB4
 _02021A2A:
 	ldr r0, [r5, #0x10]
@@ -19930,7 +19930,7 @@ _02021A2A:
 	ldr r0, [r5, #0x14]
 	str r0, [r5, #4]
 	movs r0, #1
-	bl sub_0201F78C
+	bl Islander_ChooseNewMoveDirection
 	adds r1, r5, #0
 	adds r1, #0x87
 	movs r0, #2
@@ -20091,7 +20091,7 @@ _02021B48:
 _02021B68:
 	ldrb r0, [r4]
 	ldr r1, [r5]
-	bl sub_020262DC
+	bl Field_RestoreAdjacentTreeTiles
 	adds r1, r5, #0
 	adds r1, #0xa0
 	ldrb r0, [r1]
@@ -20167,7 +20167,7 @@ Islander_ProcessFood: @ 0x02021BCC
 	cmp r0, #2
 	bne _02021C02
 	movs r0, #0x1d
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 _02021C02:
 	movs r0, #1
 	bl Islander_PlayAnim
@@ -20254,7 +20254,7 @@ _02021C98:
 	movs r0, #0x57
 	strb r0, [r3]
 	movs r0, #0x19
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 	b _02021EE6
 _02021CA4:
 	movs r0, #0
@@ -20699,23 +20699,23 @@ _02021FF0: @ jump table
 	.4byte _0202202E @ case 5
 _02022008:
 	movs r0, #9
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 	b _0202202E
 _02022010:
 	movs r0, #0xa
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 	b _0202202E
 _02022018:
 	movs r0, #0xb
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 	b _0202202E
 _02022020:
 	movs r0, #0xc
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 	b _0202202E
 _02022028:
 	movs r0, #0xd
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 _0202202E:
 	adds r0, r4, #0
 	adds r0, #0x90
@@ -20736,8 +20736,8 @@ _0202202E:
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_02022054
-sub_02022054: @ 0x02022054
+	thumb_func_start Islander_UpdateEmotionAnimation
+Islander_UpdateEmotionAnimation: @ 0x02022054
 	push {r4, r5, r6, lr}
 	ldr r4, _020220B8 @ =0x030041A0
 	ldr r6, _020220BC @ =0x03003BC4
@@ -20882,7 +20882,7 @@ _0202215C:
 	adds r0, r4, #0
 	adds r0, #0x87
 	strb r2, [r0]
-	bl sub_020215D0
+	bl Islander_StartHouseTransition
 	adds r1, r4, #0
 	adds r1, #0x8a
 	movs r0, #4
@@ -20903,7 +20903,7 @@ _02022196:
 	b _020221B8
 _020221A6:
 	movs r0, #1
-	bl sub_0201F78C
+	bl Islander_ChooseNewMoveDirection
 	adds r1, r4, #0
 	adds r1, #0x87
 	movs r0, #2
@@ -20915,8 +20915,8 @@ _020221B8:
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_020221C0
-sub_020221C0: @ 0x020221C0
+	thumb_func_start Islander_StartClickReaction
+Islander_StartClickReaction: @ 0x020221C0
 	push {r4, r5, r6, r7, lr}
 	ldr r4, _020221EC @ =0x030041A0
 	ldr r2, _020221F0 @ =0x03003710
@@ -21167,8 +21167,8 @@ _020223A6:
 	pop {r0}
 	bx r0
 
-	thumb_func_start sub_020223AC
-sub_020223AC: @ 0x020223AC
+	thumb_func_start Islander_StartFieldObjectInteraction
+Islander_StartFieldObjectInteraction: @ 0x020223AC
 	push {r4, lr}
 	ldr r3, _02022410 @ =0x030041A0
 	adds r0, r3, #0
@@ -21367,7 +21367,7 @@ _02022530:
 	adds r1, #0x87
 	movs r0, #0xb
 	strb r0, [r1]
-	bl sub_020223AC
+	bl Islander_StartFieldObjectInteraction
 _0202253C:
 	adds r0, r5, #0
 	adds r0, #0x88
@@ -21570,7 +21570,7 @@ _020226BA:
 	subs r0, #1
 	strb r0, [r1]
 	movs r0, #0
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 _020226D0:
 	pop {r3, r4, r5}
 	mov r8, r3
@@ -21645,8 +21645,8 @@ _02022752:
 	.align 2, 0
 _02022758: .4byte 0x030041A0
 
-	thumb_func_start sub_0202275C
-sub_0202275C: @ 0x0202275C
+	thumb_func_start Islander_UpdateFieldObjectInteraction
+Islander_UpdateFieldObjectInteraction: @ 0x0202275C
 	push {lr}
 	ldr r0, _02022774 @ =0x030041A0
 	ldr r1, _02022778 @ =0x02033860
@@ -21772,7 +21772,7 @@ _02022834:
 	cmp r0, #3
 	bne _0202284E
 	movs r0, #0x14
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 _0202284E:
 	pop {r4}
 	pop {r0}
@@ -21868,7 +21868,7 @@ _020228CE:
 	movs r0, #3
 	strb r0, [r1]
 	movs r0, #0x15
-	bl sub_02026AB8
+	bl Sound_PlayEffect1
 	adds r1, r4, #0
 	adds r1, #0x70
 	movs r0, #0x51
@@ -21935,9 +21935,9 @@ _0202294E:
 	movs r0, #4
 	strb r0, [r1]
 	movs r0, #0x15
-	bl sub_02026B38
+	bl Sound_StopEffect1
 	movs r0, #0x16
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 _0202298A:
 	pop {r4}
 	pop {r0}
@@ -21956,7 +21956,7 @@ Islander_Fishing_State4: @ 0x02022994
 	b _02022AD8
 _020229A4:
 	movs r0, #0x1c
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 	adds r0, r4, #0
 	adds r0, #0x6e
 	ldrh r0, [r0]
@@ -22265,7 +22265,7 @@ Islander_Fishing_State7: @ 0x02022BE0
 	cmp r0, #0
 	beq _02022C04
 	movs r0, #1
-	bl sub_0201F78C
+	bl Islander_ChooseNewMoveDirection
 	movs r0, #0
 	str r0, [r4, #0x40]
 	adds r1, r4, #0
@@ -22399,19 +22399,19 @@ _02022CD8:
 	cmp r0, #2
 	bne _02022CF4
 	movs r0, #0x1a
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 _02022CF4:
 	ldrb r0, [r4]
 	cmp r0, #4
 	bne _02022D00
 	movs r0, #0x1b
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 _02022D00:
 	ldrb r0, [r4]
 	cmp r0, #8
 	bne _02022D0C
 	movs r0, #0x1c
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 _02022D0C:
 	movs r0, #1
 	bl Islander_PlayAnim
@@ -22640,7 +22640,7 @@ Islander_ProcessFishReceived: @ 0x02022EC0
 	cmp r0, #0
 	beq _02022F20
 	movs r0, #1
-	bl sub_0201F78C
+	bl Islander_ChooseNewMoveDirection
 	ldr r0, [r4, #0x40]
 	ldr r1, _02022F08 @ =0x0000FFFF
 	ands r0, r1
@@ -22754,7 +22754,7 @@ Islander_BuryItem_State0: @ 0x02022F84
 	cmp r0, #3
 	bne _02022FB4
 	movs r0, #0x21
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 _02022FB4:
 	movs r0, #1
 	bl Islander_PlayAnim
@@ -23293,7 +23293,7 @@ _020233AE:
 	movs r0, #5
 	strb r0, [r1]
 	movs r0, #0x1c
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 _020233D8:
 	pop {r4, r5}
 	pop {r0}
@@ -23458,19 +23458,19 @@ _020234F8:
 	cmp r0, #1
 	bne _02023510
 	movs r0, #0x1e
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 _02023510:
 	ldrb r0, [r4]
 	cmp r0, #0xa
 	bne _0202351C
 	movs r0, #0x22
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 _0202351C:
 	ldrb r0, [r7]
 	cmp r0, #0x11
 	bne _02023528
 	movs r0, #0x23
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 _02023528:
 	movs r0, #1
 	bl Islander_PlayAnim
@@ -23518,7 +23518,7 @@ _02023556:
 	cmp r1, r0
 	beq _0202358A
 	movs r0, #0x24
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 _0202358A:
 	adds r0, r5, #0
 	adds r0, #0x97
@@ -23788,7 +23788,7 @@ _02023760:
 	movs r1, #0x20
 	bl Islander_SpawnReactionEffect
 	movs r0, #0x25
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 _02023792:
 	ldrh r1, [r4]
 	movs r0, #0x80
@@ -26659,8 +26659,8 @@ _02024B00:
 	.align 2, 0
 _02024B04: .4byte 0x020344C4
 
-	thumb_func_start sub_02024B08
-sub_02024B08: @ 0x02024B08
+	thumb_func_start FallingFruit_Init
+FallingFruit_Init: @ 0x02024B08
 	push {r4, r5, lr}
 	lsls r1, r1, #0x10
 	lsrs r1, r1, #0x10
@@ -26773,8 +26773,8 @@ sub_02024C04: @ 0x02024C04
 	bx lr
 	.align 2, 0
 
-	thumb_func_start sub_02024C08
-sub_02024C08: @ 0x02024C08
+	thumb_func_start FallingFruit_BeginFall
+FallingFruit_BeginFall: @ 0x02024C08
 	push {r4, lr}
 	movs r1, #0x2c
 	adds r4, r0, #0
@@ -26804,8 +26804,8 @@ sub_02024C08: @ 0x02024C08
 _02024C3C: .4byte 0x03004260
 _02024C40: .4byte 0x03001B50
 
-	thumb_func_start sub_02024C44
-sub_02024C44: @ 0x02024C44
+	thumb_func_start FallingFruit_UpdateFall
+FallingFruit_UpdateFall: @ 0x02024C44
 	push {r4, r5, r6, r7, lr}
 	mov r7, sl
 	mov r6, sb
@@ -26846,7 +26846,7 @@ sub_02024C44: @ 0x02024C44
 	cmp r0, #0xc
 	bne _02024CA0
 	movs r0, #0x17
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 	adds r1, r4, #0
 	adds r1, #0x27
 	movs r0, #1
@@ -27008,8 +27008,8 @@ _02024DBA:
 	.align 2, 0
 _02024DCC: .4byte 0x00000417
 
-	thumb_func_start sub_02024DD0
-sub_02024DD0: @ 0x02024DD0
+	thumb_func_start FallingFruit_Update
+FallingFruit_Update: @ 0x02024DD0
 	push {lr}
 	movs r1, #0x2c
 	muls r1, r0, r1
@@ -27028,8 +27028,8 @@ sub_02024DD0: @ 0x02024DD0
 _02024DF0: .4byte 0x03004260
 _02024DF4: .4byte 0x020344E8
 
-	thumb_func_start sub_02024DF8
-sub_02024DF8: @ 0x02024DF8
+	thumb_func_start FallingFruit_Draw
+FallingFruit_Draw: @ 0x02024DF8
 	push {r4, r5, r6, lr}
 	mov r6, sl
 	mov r5, sb
@@ -27158,8 +27158,8 @@ _02024EFC: .4byte 0x000001FF
 _02024F00: .4byte 0xFFFFFE00
 _02024F04: .4byte 0x00000846
 
-	thumb_func_start Unk_Struct_Size54_ResetIdx
-Unk_Struct_Size54_ResetIdx: @ 0x02024F08
+	thumb_func_start Entity_Reset
+Entity_Reset: @ 0x02024F08
 	push {lr}
 	movs r1, #0x54
 	muls r1, r0, r1
@@ -27228,8 +27228,8 @@ _02024F64:
 	.align 2, 0
 _02024F88: .4byte 0x03004790
 
-	thumb_func_start sub_02024F8C
-sub_02024F8C: @ 0x02024F8C
+	thumb_func_start Entity_PlaceLandedItem
+Entity_PlaceLandedItem: @ 0x02024F8C
 	push {r4, r5, r6, r7, lr}
 	mov r7, sb
 	mov r6, r8
@@ -27374,8 +27374,8 @@ _020250A4: .4byte 0x03001B40
 _020250A8: .4byte 0x0202F7FC
 _020250AC: .4byte 0x0000041A
 
-	thumb_func_start sub_020250B0
-sub_020250B0: @ 0x020250B0
+	thumb_func_start Entity_UpdateLifetime
+Entity_UpdateLifetime: @ 0x020250B0
 	push {r4, lr}
 	adds r3, r0, #0
 	ldr r4, _020250D4 @ =0x03003710
@@ -27407,8 +27407,8 @@ _020250E4:
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_020250EC
-sub_020250EC: @ 0x020250EC
+	thumb_func_start Entity_BeginToppleEffect
+Entity_BeginToppleEffect: @ 0x020250EC
 	movs r1, #0x54
 	muls r1, r0, r1
 	ldr r0, _02025110 @ =0x03004790
@@ -27430,8 +27430,8 @@ sub_020250EC: @ 0x020250EC
 _02025110: .4byte 0x03004790
 _02025114: .4byte 0x02034C24
 
-	thumb_func_start sub_02025118
-sub_02025118: @ 0x02025118
+	thumb_func_start Entity_UpdateToppleEffect
+Entity_UpdateToppleEffect: @ 0x02025118
 	push {r4, r5, lr}
 	adds r4, r0, #0
 	movs r0, #0x54
@@ -27484,8 +27484,8 @@ _02025174:
 	.align 2, 0
 _0202517C: .4byte 0x02034C24
 
-	thumb_func_start sub_02025180
-sub_02025180: @ 0x02025180
+	thumb_func_start Entity_BeginLeafEffect
+Entity_BeginLeafEffect: @ 0x02025180
 	movs r1, #0x54
 	muls r1, r0, r1
 	ldr r0, _020251A4 @ =0x03004790
@@ -27507,8 +27507,8 @@ sub_02025180: @ 0x02025180
 _020251A4: .4byte 0x03004790
 _020251A8: .4byte 0x02034C44
 
-	thumb_func_start sub_020251AC
-sub_020251AC: @ 0x020251AC
+	thumb_func_start Entity_UpdateLeafEffect
+Entity_UpdateLeafEffect: @ 0x020251AC
 	push {r4, r5, r6, lr}
 	adds r5, r0, #0
 	movs r0, #0x54
@@ -27559,8 +27559,8 @@ _02025206:
 	.align 2, 0
 _0202520C: .4byte 0x02034C44
 
-	thumb_func_start sub_02025210
-sub_02025210: @ 0x02025210
+	thumb_func_start Entity_BeginReactionEffect
+Entity_BeginReactionEffect: @ 0x02025210
 	push {r4, r5, lr}
 	movs r1, #0x54
 	muls r1, r0, r1
@@ -27593,22 +27593,22 @@ _02025244: @ jump table
 	.4byte 0x02025276
 _02025258:
 	movs r0, #5
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 	b _02025276
 
 _02025260:
 	movs r0, #6
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 	b _02025276
 
 _02025268:
 	movs r0, #7
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 	b _02025276
 
 _02025270:
 	movs r0, #8
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 _02025276:
 	ldrh r0, [r5, #4]
 	adds r2, r4, #0
@@ -27630,8 +27630,8 @@ _02025276:
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_0202529C
-sub_0202529C: @ 0x0202529C
+	thumb_func_start Entity_UpdateReactionEffect
+Entity_UpdateReactionEffect: @ 0x0202529C
 	push {r4, r5, r6, lr}
 	adds r5, r0, #0
 	movs r0, #0x54
@@ -27689,8 +27689,8 @@ _0202530A:
 	pop {r0}
 	bx r0
 
-	thumb_func_start sub_02025310
-sub_02025310: @ 0x02025310
+	thumb_func_start Entity_BeginItemDrop
+Entity_BeginItemDrop: @ 0x02025310
 	push {r4, r5, lr}
 	movs r1, #0x54
 	adds r4, r0, #0
@@ -27711,7 +27711,7 @@ sub_02025310: @ 0x02025310
 	movs r0, #0x20
 	str r0, [r4, #0x20]
 	movs r0, #0x1e
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 	adds r0, r4, #0
 	adds r0, #0x4f
 	strb r5, [r0]
@@ -27724,8 +27724,8 @@ sub_02025310: @ 0x02025310
 	.align 2, 0
 _02025350: .4byte 0x03004790
 
-	thumb_func_start sub_02025354
-sub_02025354: @ 0x02025354
+	thumb_func_start Entity_UpdateItemDrop
+Entity_UpdateItemDrop: @ 0x02025354
 	push {r4, r5, lr}
 	adds r5, r0, #0
 	movs r0, #0x54
@@ -27757,7 +27757,7 @@ sub_02025354: @ 0x02025354
 	cmp r3, r0
 	ble _020253A0
 	adds r0, r5, #0
-	bl sub_02024F8C
+	bl Entity_PlaceLandedItem
 	b _020253A0
 	.align 2, 0
 _02025398: .4byte 0x03004790
@@ -27770,8 +27770,8 @@ _020253A0:
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_020253A8
-sub_020253A8: @ 0x020253A8
+	thumb_func_start Entity_BeginFloatingItem
+Entity_BeginFloatingItem: @ 0x020253A8
 	movs r1, #0x54
 	muls r1, r0, r1
 	ldr r0, _020253FC @ =0x03004790
@@ -27816,8 +27816,8 @@ sub_020253A8: @ 0x020253A8
 	.align 2, 0
 _020253FC: .4byte 0x03004790
 
-	thumb_func_start sub_02025400
-sub_02025400: @ 0x02025400
+	thumb_func_start Entity_UpdateFloatingItem
+Entity_UpdateFloatingItem: @ 0x02025400
 	push {r4, r5, r6, r7, lr}
 	mov r7, sb
 	mov r6, r8
@@ -28068,8 +28068,8 @@ _020255E4: .4byte 0x000003FF
 _020255E8: .4byte 0x0202AD34
 _020255EC: .4byte 0xFFFF0000
 
-	thumb_func_start sub_020255F0
-sub_020255F0: @ 0x020255F0
+	thumb_func_start Entity_Update
+Entity_Update: @ 0x020255F0
 	push {lr}
 	movs r1, #0x54
 	muls r1, r0, r1
@@ -28088,8 +28088,8 @@ sub_020255F0: @ 0x020255F0
 _02025610: .4byte 0x03004790
 _02025614: .4byte 0x020347E0
 
-	thumb_func_start sub_02025618
-sub_02025618: @ 0x02025618
+	thumb_func_start Entity_DrawFloatingItemShadow
+Entity_DrawFloatingItemShadow: @ 0x02025618
 	push {r4, r5, r6, lr}
 	movs r1, #0x54
 	muls r1, r0, r1
@@ -28176,8 +28176,8 @@ _020256C4: .4byte 0x000001FF
 _020256C8: .4byte 0xFFFFFE00
 _020256CC: .4byte 0xFFFFFC00
 
-	thumb_func_start sub_020256D0
-sub_020256D0: @ 0x020256D0
+	thumb_func_start Entity_DrawSprite
+Entity_DrawSprite: @ 0x020256D0
 	push {r4, r5, r6, r7, lr}
 	mov r7, sl
 	mov r6, sb
@@ -28555,8 +28555,8 @@ _020259BC: .4byte 0xFFFFFC00
 _020259C0: .4byte 0xFFFF0000
 _020259C4: .4byte 0x0000FFFF
 
-	thumb_func_start sub_020259C8
-sub_020259C8: @ 0x020259C8
+	thumb_func_start PlayerHand_IsItemPlacementBlocked
+PlayerHand_IsItemPlacementBlocked: @ 0x020259C8
 	push {r4, r5, r6, r7, lr}
 	ldr r4, _02025A58 @ =0x03004B80
 	ldr r0, _02025A5C @ =0x030041A0
@@ -28794,8 +28794,8 @@ _02025B8C:
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_02025B94
-sub_02025B94: @ 0x02025B94
+	thumb_func_start PlayerHand_IsNearInteractionTarget
+PlayerHand_IsNearInteractionTarget: @ 0x02025B94
 	push {r4, r5, r6, lr}
 	adds r5, r0, #0
 	adds r6, r1, #0
@@ -28843,8 +28843,8 @@ _02025BE6:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_02025BEC
-sub_02025BEC: @ 0x02025BEC
+	thumb_func_start PlayerHand_CheckHouseDoorInteraction
+PlayerHand_CheckHouseDoorInteraction: @ 0x02025BEC
 	push {r4, r5, r6, r7, lr}
 	ldr r0, _02025C38 @ =0x03004B80
 	ldr r7, _02025C3C @ =0x030041A0
@@ -28858,7 +28858,7 @@ sub_02025BEC: @ 0x02025BEC
 	ldr r1, [r6, #0xc]
 	lsls r1, r1, #8
 	movs r2, #0x10
-	bl sub_02025B94
+	bl PlayerHand_IsNearInteractionTarget
 	cmp r0, #0
 	beq _02025C12
 	movs r0, #1
@@ -28895,8 +28895,8 @@ _02025C46:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_02025C4C
-sub_02025C4C: @ 0x02025C4C
+	thumb_func_start PlayerHand_TryInteractWithIslander
+PlayerHand_TryInteractWithIslander: @ 0x02025C4C
 	push {r4, r5, r6, r7, lr}
 	mov r7, r8
 	push {r7}
@@ -28927,7 +28927,7 @@ _02025C74:
 	ldr r0, [r4]
 	ldr r1, [r4, #4]
 	movs r2, #8
-	bl sub_02025B94
+	bl PlayerHand_IsNearInteractionTarget
 	cmp r0, #0
 	beq _02025D10
 	adds r6, r4, #0
@@ -28959,7 +28959,7 @@ _02025CB2:
 	movs r0, #0x30
 	strb r0, [r1]
 	strb r5, [r7, #0x1f]
-	bl sub_02025F60
+	bl PlayerHand_ResetToIdle
 	movs r0, #1
 	b _02025D12
 	.align 2, 0
@@ -28978,17 +28978,17 @@ _02025CD8:
 	ldr r0, [r4]
 	ldr r1, [r4, #4]
 	movs r2, #0x10
-	bl sub_02025B94
+	bl PlayerHand_IsNearInteractionTarget
 	cmp r0, #0
 	beq _02025D10
 	movs r0, #3
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 	adds r1, r4, #0
 	adds r1, #0x84
 	movs r0, #2
 	strb r0, [r1]
 	strb r0, [r7, #0x1f]
-	bl sub_020263A0
+	bl PlayerHand_BeginCarrying
 	movs r0, #1
 	b _02025D12
 _02025D10:
@@ -29000,8 +29000,8 @@ _02025D12:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_02025D1C
-sub_02025D1C: @ 0x02025D1C
+	thumb_func_start PlayerHand_TrySelectIslanderTarget
+PlayerHand_TrySelectIslanderTarget: @ 0x02025D1C
 	push {r4, r5, lr}
 	ldr r4, _02025D64 @ =0x030041A0
 	adds r5, r4, #0
@@ -29020,7 +29020,7 @@ _02025D38:
 	ldr r0, [r4, #0x38]
 	ldr r1, [r4, #0x3c]
 	movs r2, #0x10
-	bl sub_02025B94
+	bl PlayerHand_IsNearInteractionTarget
 	cmp r0, #0
 	beq _02025D68
 	movs r1, #0
@@ -29047,8 +29047,8 @@ _02025D6A:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_02025D70
-sub_02025D70: @ 0x02025D70
+	thumb_func_start PlayerHand_Init
+PlayerHand_Init: @ 0x02025D70
 	ldr r3, _02025DC4 @ =0x03004B80
 	movs r1, #0xf8
 	lsls r1, r1, #8
@@ -29093,8 +29093,8 @@ sub_02025D70: @ 0x02025D70
 	.align 2, 0
 _02025DC4: .4byte 0x03004B80
 
-	thumb_func_start sub_02025DC8
-sub_02025DC8: @ 0x02025DC8
+	thumb_func_start PlayerHand_UpdateMovement
+PlayerHand_UpdateMovement: @ 0x02025DC8
 	push {r4, r5, r6, lr}
 	ldr r3, _02025E08 @ =0x03004B80
 	ldr r5, _02025E0C @ =0x030041A0
@@ -29297,8 +29297,8 @@ _02025F54: .4byte 0x0001DFFF
 _02025F58: .4byte 0x00000844
 _02025F5C: .4byte 0x00000846
 
-	thumb_func_start sub_02025F60
-sub_02025F60: @ 0x02025F60
+	thumb_func_start PlayerHand_ResetToIdle
+PlayerHand_ResetToIdle: @ 0x02025F60
 	ldr r2, _02025F88 @ =0x03004B80
 	adds r0, r2, #0
 	adds r0, #0x20
@@ -29323,8 +29323,8 @@ sub_02025F60: @ 0x02025F60
 _02025F88: .4byte 0x03004B80
 _02025F8C: .4byte 0x02034ED4
 
-	thumb_func_start sub_02025F90
-sub_02025F90: @ 0x02025F90
+	thumb_func_start PlayerHand_UpdateIdle
+PlayerHand_UpdateIdle: @ 0x02025F90
 	push {r4, r5, r6, r7, lr}
 	mov r7, sl
 	mov r6, sb
@@ -29559,10 +29559,10 @@ _0202614C:
 	strh r0, [r5, #0x18]
 	strh r6, [r5, #0x1a]
 	movs r0, #3
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 	movs r0, #2
 	strb r0, [r5, #0x1f]
-	bl sub_020263A0
+	bl PlayerHand_BeginCarrying
 	b _0202621C
 	.align 2, 0
 _02026174: .4byte 0x00007777
@@ -29572,7 +29572,7 @@ _02026178:
 	ldrb r0, [r0]
 	cmp r0, #0
 	bne _0202619A
-	bl sub_02025DC8
+	bl PlayerHand_UpdateMovement
 	b _0202621C
 _02026188:
 	adds r1, r5, #0
@@ -29620,32 +29620,32 @@ _020261AA:
 	.align 2, 0
 _020261D8: .4byte 0x02034ED4
 _020261DC:
-	bl sub_02025BEC
+	bl PlayerHand_CheckHouseDoorInteraction
 	cmp r0, #0
 	beq _020261F4
 	movs r0, #2
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 	movs r0, #0
 	strb r0, [r5, #0x1f]
-	bl sub_02025F60
+	bl PlayerHand_ResetToIdle
 	b _0202621C
 _020261F4:
-	bl sub_02025C4C
+	bl PlayerHand_TryInteractWithIslander
 	adds r6, r0, #0
 	cmp r6, #0
 	bne _0202621C
-	bl sub_02025D1C
+	bl PlayerHand_TrySelectIslanderTarget
 	adds r4, r0, #0
 	cmp r4, #0
 	beq _02026210
 	strb r6, [r5, #0x1f]
-	bl sub_02025F60
+	bl PlayerHand_ResetToIdle
 	b _0202621C
 _02026210:
 	movs r0, #2
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 	strb r4, [r5, #0x1f]
-	bl sub_02025F60
+	bl PlayerHand_ResetToIdle
 _0202621C:
 	pop {r3, r4, r5}
 	mov r8, r3
@@ -29656,8 +29656,8 @@ _0202621C:
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_0202622C
-sub_0202622C: @ 0x0202622C
+	thumb_func_start Field_RestoreNeighborTreeTile
+Field_RestoreNeighborTreeTile: @ 0x0202622C
 	push {r4, r5, lr}
 	adds r5, r1, #0
 	ldr r1, [sp, #0xc]
@@ -29754,8 +29754,8 @@ _020262D0:
 	.align 2, 0
 _020262D8: .4byte 0x00003294
 
-	thumb_func_start sub_020262DC
-sub_020262DC: @ 0x020262DC
+	thumb_func_start Field_RestoreAdjacentTreeTiles
+Field_RestoreAdjacentTreeTiles: @ 0x020262DC
 	push {r4, r5, r6, r7, lr}
 	mov r7, sb
 	mov r6, r8
@@ -29795,7 +29795,7 @@ sub_020262DC: @ 0x020262DC
 	adds r0, r4, #0
 	adds r1, r6, #0
 	movs r3, #0
-	bl sub_0202622C
+	bl Field_RestoreNeighborTreeTile
 	ldrb r1, [r5, #0x1d]
 	adds r0, r7, #0
 	ands r0, r1
@@ -29807,7 +29807,7 @@ sub_020262DC: @ 0x020262DC
 	adds r0, r4, #0
 	adds r1, r6, #0
 	movs r3, #1
-	bl sub_0202622C
+	bl Field_RestoreNeighborTreeTile
 	b _02026392
 	.align 2, 0
 _0202634C: .4byte 0x03004B80
@@ -29822,7 +29822,7 @@ _02026356:
 	adds r0, r4, #0
 	adds r1, r6, #0
 	movs r3, #1
-	bl sub_0202622C
+	bl Field_RestoreNeighborTreeTile
 	ldrb r1, [r5, #0x1c]
 	adds r0, r7, #0
 	ands r0, r1
@@ -29835,7 +29835,7 @@ _02026374:
 	adds r0, r4, #0
 	adds r1, r6, #0
 	movs r3, #0
-	bl sub_0202622C
+	bl Field_RestoreNeighborTreeTile
 	b _02026392
 _02026382:
 	ldrb r2, [r5, #0x1c]
@@ -29844,7 +29844,7 @@ _02026382:
 	mov r0, sb
 	adds r1, r6, #0
 	movs r3, #1
-	bl sub_0202622C
+	bl Field_RestoreNeighborTreeTile
 _02026392:
 	add sp, #4
 	pop {r3, r4}
@@ -29854,8 +29854,8 @@ _02026392:
 	pop {r0}
 	bx r0
 
-	thumb_func_start sub_020263A0
-sub_020263A0: @ 0x020263A0
+	thumb_func_start PlayerHand_BeginCarrying
+PlayerHand_BeginCarrying: @ 0x020263A0
 	push {r4, r5, r6, r7, lr}
 	ldr r4, _02026428 @ =0x03004B80
 	ldr r5, _0202642C @ =0x03004838
@@ -29887,7 +29887,7 @@ sub_020263A0: @ 0x020263A0
 	adds r0, r7, r1
 	strb r6, [r0]
 	movs r0, #2
-	bl Unk_Struct_Size54_ResetIdx
+	bl Entity_Reset
 	adds r1, r5, #0
 	adds r1, #0x40
 	movs r3, #0
@@ -29919,7 +29919,7 @@ sub_020263A0: @ 0x020263A0
 	bl WriteItemToTile
 	ldrb r0, [r4, #0x1e]
 	ldr r1, [r4]
-	bl sub_020262DC
+	bl Field_RestoreAdjacentTreeTiles
 	b _02026452
 	.align 2, 0
 _02026428: .4byte 0x03004B80
@@ -29948,8 +29948,8 @@ _02026452:
 	pop {r0}
 	bx r0
 
-	thumb_func_start sub_02026464
-sub_02026464: @ 0x02026464
+	thumb_func_start PlayerHand_UpdateCarrying
+PlayerHand_UpdateCarrying: @ 0x02026464
 	push {r4, r5, r6, r7, lr}
 	ldr r4, _02026484 @ =0x03004B80
 	ldr r6, _02026488 @ =0x030041A0
@@ -29963,7 +29963,7 @@ sub_02026464: @ 0x02026464
 	cmp r0, #0
 	bne _02026490
 	strb r0, [r4, #0x1f]
-	bl sub_02025F60
+	bl PlayerHand_ResetToIdle
 	b _020265A0
 	.align 2, 0
 _02026484: .4byte 0x03004B80
@@ -30019,14 +30019,14 @@ _020264E4:
 	adds r0, #8
 _020264EE:
 	str r0, [r4, #0x14]
-	bl sub_020259C8
+	bl PlayerHand_IsItemPlacementBlocked
 	cmp r0, #0
 	bne _02026508
 	movs r0, #4
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 	movs r0, #4
 	strb r0, [r4, #0x1f]
-	bl sub_020265A8
+	bl PlayerHand_BeginPlacing
 	b _020265A0
 _02026508:
 	adds r1, r4, #0
@@ -30043,9 +30043,9 @@ _02026508:
 	adds r1, #1
 	strb r0, [r1]
 	movs r0, #0x12
-	bl sub_02026A38
+	bl Sound_PlayEffect0
 _02026528:
-	bl sub_02025DC8
+	bl PlayerHand_UpdateMovement
 	ldrb r0, [r5]
 	cmp r0, #0
 	bne _02026550
@@ -30115,8 +30115,8 @@ _020265A0:
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_020265A8
-sub_020265A8: @ 0x020265A8
+	thumb_func_start PlayerHand_BeginPlacing
+PlayerHand_BeginPlacing: @ 0x020265A8
 	ldr r3, _020265CC @ =0x03004B80
 	adds r1, r3, #0
 	adds r1, #0x20
@@ -30138,8 +30138,8 @@ sub_020265A8: @ 0x020265A8
 _020265CC: .4byte 0x03004B80
 _020265D0: .4byte 0x02034ED4
 
-	thumb_func_start sub_020265D4
-sub_020265D4: @ 0x020265D4
+	thumb_func_start PlayerHand_UpdatePlacing
+PlayerHand_UpdatePlacing: @ 0x020265D4
 	push {r4, r5, r6, r7, lr}
 	mov r7, sb
 	mov r6, r8
@@ -30159,7 +30159,7 @@ sub_020265D4: @ 0x020265D4
 	bne _0202660C
 	mov r1, sb
 	strb r1, [r5, #0x1f]
-	bl sub_02025F60
+	bl PlayerHand_ResetToIdle
 	b _020267C4
 	.align 2, 0
 _02026600: .4byte 0x03004B80
@@ -30397,7 +30397,7 @@ _020267AC:
 	adds r0, #0x9d
 	strb r1, [r0]
 	strb r2, [r5, #0x1f]
-	bl sub_02025F60
+	bl PlayerHand_ResetToIdle
 _020267C4:
 	pop {r3, r4}
 	mov r8, r3
@@ -30406,8 +30406,8 @@ _020267C4:
 	pop {r0}
 	bx r0
 
-	thumb_func_start sub_020267D0
-sub_020267D0: @ 0x020267D0
+	thumb_func_start PlayerHand_Update
+PlayerHand_Update: @ 0x020267D0
 	push {r4, lr}
 	ldr r4, _0202681C @ =0x03004B80
 	ldr r3, _02026820 @ =0x030041A0
@@ -30453,8 +30453,8 @@ _02026824: .4byte 0x03003710
 _02026828: .4byte 0x00000417
 _0202682C: .4byte 0x02034E0C
 
-	thumb_func_start sub_02026830
-sub_02026830: @ 0x02026830
+	thumb_func_start PlayerHand_Draw
+PlayerHand_Draw: @ 0x02026830
 	push {r4, r5, r6, r7, lr}
 	mov r7, sl
 	mov r6, sb
@@ -30651,29 +30651,29 @@ _020269BC: .4byte 0x000001FF
 _020269C0: .4byte 0xFFFFFE00
 _020269C4: .4byte 0xFFFFFC00
 
-	thumb_func_start sub_020269C8
-sub_020269C8: @ 0x020269C8
+	thumb_func_start Audio_Init
+Audio_Init: @ 0x020269C8
 	push {lr}
 	ldr r0, _020269DC @ =0x02035BF4
-	bl sub_02026E4C
-	bl sub_02026BD8
-	bl sub_020269F0
+	bl SoundDriver_Init
+	bl Sound_InitMusic
+	bl Sound_InitEffects
 	pop {r0}
 	bx r0
 	.align 2, 0
 _020269DC: .4byte 0x02035BF4
 
-	thumb_func_start sub_020269E0
-sub_020269E0: @ 0x020269E0
+	thumb_func_start Audio_Update
+Audio_Update: @ 0x020269E0
 	push {lr}
 	bl sub_02026A34
-	bl sub_02028B44
+	bl Sound_CommitCommands
 	pop {r0}
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_020269F0
-sub_020269F0: @ 0x020269F0
+	thumb_func_start Sound_InitEffects
+Sound_InitEffects: @ 0x020269F0
 	push {r4, lr}
 	sub sp, #4
 	ldr r4, _02026A24 @ =0x03000028
@@ -30711,8 +30711,8 @@ sub_02026A34: @ 0x02026A34
 	bx lr
 	.align 2, 0
 
-	thumb_func_start sub_02026A38
-sub_02026A38: @ 0x02026A38
+	thumb_func_start Sound_PlayEffect0
+Sound_PlayEffect0: @ 0x02026A38
 	push {r4, r5, r6, r7, lr}
 	lsls r0, r0, #0x10
 	lsrs r6, r0, #0x10
@@ -30722,7 +30722,7 @@ sub_02026A38: @ 0x02026A38
 	adds r0, r0, r5
 	ldr r4, [r0]
 	movs r0, #0
-	bl sub_0202846C
+	bl Sound_GetPlayerStatus
 	cmp r0, #0
 	beq _02026A98
 	ldr r0, _02026A78 @ =0x03000028
@@ -30766,7 +30766,7 @@ _02026A98:
 	lsrs r2, r2, #0x10
 	adds r0, r7, #0
 	movs r1, #0
-	bl sub_02028B90
+	bl Sound_QueueStartEffect
 	ldr r1, _02026AB4 @ =0x03000028
 	lsls r0, r7, #1
 	adds r0, r0, r1
@@ -30778,8 +30778,8 @@ _02026AAC:
 	.align 2, 0
 _02026AB4: .4byte 0x03000028
 
-	thumb_func_start sub_02026AB8
-sub_02026AB8: @ 0x02026AB8
+	thumb_func_start Sound_PlayEffect1
+Sound_PlayEffect1: @ 0x02026AB8
 	push {r4, r5, r6, r7, lr}
 	lsls r0, r0, #0x10
 	lsrs r7, r0, #0x10
@@ -30789,7 +30789,7 @@ sub_02026AB8: @ 0x02026AB8
 	adds r0, r0, r5
 	ldr r4, [r0]
 	movs r0, #1
-	bl sub_0202846C
+	bl Sound_GetPlayerStatus
 	cmp r0, #0
 	beq _02026B18
 	ldr r0, _02026AF8 @ =0x03000028
@@ -30833,7 +30833,7 @@ _02026B18:
 	lsrs r2, r2, #0x10
 	adds r0, r6, #0
 	movs r1, #0
-	bl sub_02028B90
+	bl Sound_QueueStartEffect
 	ldr r1, _02026B34 @ =0x03000028
 	lsls r0, r6, #1
 	adds r0, r0, r1
@@ -30845,18 +30845,18 @@ _02026B2C:
 	.align 2, 0
 _02026B34: .4byte 0x03000028
 
-	thumb_func_start sub_02026B38
-sub_02026B38: @ 0x02026B38
+	thumb_func_start Sound_StopEffect1
+Sound_StopEffect1: @ 0x02026B38
 	push {lr}
 	movs r0, #1
 	movs r1, #0
-	bl sub_02028BCC
+	bl Sound_QueueFadeOutPlayer
 	pop {r0}
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_02026B48
-sub_02026B48: @ 0x02026B48
+	thumb_func_start Sound_PlayEffect2
+Sound_PlayEffect2: @ 0x02026B48
 	push {r4, r5, r6, r7, lr}
 	lsls r0, r0, #0x10
 	lsrs r6, r0, #0x10
@@ -30866,7 +30866,7 @@ sub_02026B48: @ 0x02026B48
 	adds r0, r0, r5
 	ldr r4, [r0]
 	movs r0, #2
-	bl sub_0202846C
+	bl Sound_GetPlayerStatus
 	cmp r0, #0
 	beq _02026BA8
 	ldr r0, _02026B88 @ =0x03000028
@@ -30910,7 +30910,7 @@ _02026BA8:
 	lsrs r2, r2, #0x10
 	adds r0, r7, #0
 	movs r1, #0
-	bl sub_02028B90
+	bl Sound_QueueStartEffect
 	ldr r1, _02026BC4 @ =0x03000028
 	lsls r0, r7, #1
 	adds r0, r0, r1
@@ -30922,23 +30922,23 @@ _02026BBC:
 	.align 2, 0
 _02026BC4: .4byte 0x03000028
 
-	thumb_func_start sub_02026BC8
-sub_02026BC8: @ 0x02026BC8
+	thumb_func_start Sound_StopEffect2
+Sound_StopEffect2: @ 0x02026BC8
 	push {lr}
 	movs r0, #2
 	movs r1, #0
-	bl sub_02028BCC
+	bl Sound_QueueFadeOutPlayer
 	pop {r0}
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_02026BD8
-sub_02026BD8: @ 0x02026BD8
+	thumb_func_start Sound_InitMusic
+Sound_InitMusic: @ 0x02026BD8
 	push {lr}
-	ldr r0, _02026BF8 @ =sub_02026D74
-	bl sub_02028E10
-	ldr r0, _02026BFC @ =sub_02026DFC
-	bl sub_02028DE8
+	ldr r0, _02026BF8 @ =Sound_PlayEmotionNote
+	bl Sound_QueueSetNoteCallback
+	ldr r0, _02026BFC @ =Sound_ApplyEmotionTrackDelay
+	bl Sound_QueueSetControlCallback
 	ldr r1, _02026C00 @ =0x03000050
 	ldr r2, _02026C04 @ =0x0000FFFF
 	adds r0, r2, #0
@@ -30949,8 +30949,8 @@ sub_02026BD8: @ 0x02026BD8
 	pop {r0}
 	bx r0
 	.align 2, 0
-_02026BF8: .4byte sub_02026D74
-_02026BFC: .4byte sub_02026DFC
+_02026BF8: .4byte Sound_PlayEmotionNote
+_02026BFC: .4byte Sound_ApplyEmotionTrackDelay
 _02026C00: .4byte 0x03000050
 _02026C04: .4byte 0x0000FFFF
 _02026C08: .4byte 0x03000052
@@ -30960,13 +30960,13 @@ sub_02026C0C: @ 0x02026C0C
 	bx lr
 	.align 2, 0
 
-	thumb_func_start sub_02026C10
-sub_02026C10: @ 0x02026C10
+	thumb_func_start Sound_PlayMusic
+Sound_PlayMusic: @ 0x02026C10
 	push {r4, lr}
 	lsls r0, r0, #0x10
 	lsrs r4, r0, #0x10
 	movs r0, #4
-	bl sub_0202846C
+	bl Sound_GetPlayerStatus
 	cmp r0, #0
 	beq _02026C28
 	ldr r0, _02026C44 @ =0x03000050
@@ -30979,7 +30979,7 @@ _02026C28:
 	adds r1, r1, r0
 	ldrb r1, [r1]
 	movs r0, #4
-	bl sub_02028B58
+	bl Sound_QueueStartMusic
 	cmp r4, #1
 	bne _02026C50
 	ldr r0, _02026C4C @ =0x03000052
@@ -30994,7 +30994,7 @@ _02026C50:
 	movs r0, #4
 	movs r1, #0
 	movs r2, #0
-	bl sub_02028CE4
+	bl Sound_QueueSetTracksMuted
 _02026C5A:
 	ldr r0, _02026C64 @ =0x03000050
 	strh r4, [r0]
@@ -31005,14 +31005,14 @@ _02026C5E:
 	.align 2, 0
 _02026C64: .4byte 0x03000050
 
-	thumb_func_start sub_02026C68
-sub_02026C68: @ 0x02026C68
+	thumb_func_start Sound_StopMusic
+Sound_StopMusic: @ 0x02026C68
 	push {lr}
 	adds r1, r0, #0
 	lsls r1, r1, #0x10
 	lsrs r1, r1, #0x10
 	movs r0, #4
-	bl sub_02028BCC
+	bl Sound_QueueFadeOutPlayer
 	pop {r0}
 	bx r0
 	.align 2, 0
@@ -31029,7 +31029,7 @@ ChangeEmotion: @ 0x02026C7C
 	beq _02026D66
 	strb r4, [r0]
 	movs r0, #4
-	bl sub_0202846C
+	bl Sound_GetPlayerStatus
 	cmp r0, #0
 	beq _02026D66
 	ldr r0, _02026CB8 @ =0x03000050
@@ -31058,11 +31058,11 @@ _02026CC6:
 	ldr r1, _02026CDC @ =0x0000FFFF
 	movs r0, #4
 	movs r2, #0
-	bl sub_02028CE4
+	bl Sound_QueueSetTracksMuted
 	movs r0, #4
 	movs r1, #0
 	movs r2, #1
-	bl sub_02028CE4
+	bl Sound_QueueSetTracksMuted
 	b _02026D54
 	.align 2, 0
 _02026CDC: .4byte 0x0000FFFF
@@ -31070,11 +31070,11 @@ _02026CE0:
 	ldr r1, _02026CFC @ =0x0000FFFF
 	movs r0, #4
 	movs r2, #0
-	bl sub_02028CE4
+	bl Sound_QueueSetTracksMuted
 	movs r0, #4
 	movs r1, #0x94
 	movs r2, #1
-	bl sub_02028CE4
+	bl Sound_QueueSetTracksMuted
 	movs r5, #0x1e
 	movs r7, #1
 	b _02026D54
@@ -31084,12 +31084,12 @@ _02026D00:
 	ldr r1, _02026D1C @ =0x0000FFFF
 	movs r0, #4
 	movs r2, #0
-	bl sub_02028CE4
+	bl Sound_QueueSetTracksMuted
 	movs r1, #0x84
 	lsls r1, r1, #2
 	movs r0, #4
 	movs r2, #1
-	bl sub_02028CE4
+	bl Sound_QueueSetTracksMuted
 	ldr r5, _02026D20 @ =0x0000FFF0
 	movs r7, #1
 	b _02026D54
@@ -31100,11 +31100,11 @@ _02026D24:
 	ldr r1, _02026D6C @ =0x0000FFFF
 	movs r0, #4
 	movs r2, #0
-	bl sub_02028CE4
+	bl Sound_QueueSetTracksMuted
 	movs r0, #4
 	movs r1, #0
 	movs r2, #1
-	bl sub_02028CE4
+	bl Sound_QueueSetTracksMuted
 	ldr r2, _02026D70 @ =0x03001918
 	movs r3, #0xa0
 	lsls r3, r3, #1
@@ -31122,11 +31122,11 @@ _02026D24:
 _02026D54:
 	movs r0, #4
 	adds r1, r7, #0
-	bl sub_02028CAC
+	bl Sound_QueueSetPlayerTempoMode
 	lsls r1, r5, #0x10
 	asrs r1, r1, #0x10
 	movs r0, #4
-	bl sub_02028C3C
+	bl Sound_QueueSetPlayerTempoAdjust
 _02026D66:
 	pop {r4, r5, r6, r7}
 	pop {r0}
@@ -31135,8 +31135,8 @@ _02026D66:
 _02026D6C: .4byte 0x0000FFFF
 _02026D70: .4byte 0x03001918
 
-	thumb_func_start sub_02026D74
-sub_02026D74: @ 0x02026D74
+	thumb_func_start Sound_PlayEmotionNote
+Sound_PlayEmotionNote: @ 0x02026D74
 	push {r4, r5, r6, r7, lr}
 	adds r5, r0, #0
 	lsls r1, r1, #0x18
@@ -31205,13 +31205,13 @@ _02026DEA:
 	adds r1, r4, #0
 	adds r2, r7, #0
 	adds r3, r6, #0
-	bl sub_020279BC
+	bl Sound_PlayNote
 	pop {r4, r5, r6, r7}
 	pop {r0}
 	bx r0
 
-	thumb_func_start sub_02026DFC
-sub_02026DFC: @ 0x02026DFC
+	thumb_func_start Sound_ApplyEmotionTrackDelay
+Sound_ApplyEmotionTrackDelay: @ 0x02026DFC
 	push {r4, lr}
 	lsls r1, r1, #0x18
 	lsrs r1, r1, #0x18
@@ -31256,8 +31256,8 @@ _02026E3C:
 _02026E44: .4byte 0x03000052
 _02026E48: .4byte 0x04000100
 
-	thumb_func_start sub_02026E4C
-sub_02026E4C: @ 0x02026E4C
+	thumb_func_start SoundDriver_Init
+SoundDriver_Init: @ 0x02026E4C
 	push {r4, r5, lr}
 	ldr r1, _02026ED4 @ =0x03000594
 	str r0, [r1]
@@ -31309,12 +31309,12 @@ sub_02026E4C: @ 0x02026E4C
 	adds r0, r0, r4
 	str r0, [r1]
 	ldr r0, _02026F08 @ =0x030005A4
-	bl sub_02026F3C
-	bl sub_02028ACC
-	bl sub_02028098
-	bl sub_02027074
-	bl sub_02028480
-	bl sub_02028190
+	bl SoundDriver_InitPcmBuffers
+	bl Sound_InitCommandQueue
+	bl Sound_InitKeySampleInstrument
+	bl SoundDriver_InitChannelLists
+	bl Sound_InitTracks
+	bl Sound_InitPlayers
 	pop {r4, r5}
 	pop {r0}
 	bx r0
@@ -31334,33 +31334,33 @@ _02026F00: .4byte 0x030005A0
 _02026F04: .4byte sub_020291E4
 _02026F08: .4byte 0x030005A4
 
-	thumb_func_start sub_02026F0C
-sub_02026F0C: @ 0x02026F0C
+	thumb_func_start SoundDriver_VBlank
+SoundDriver_VBlank: @ 0x02026F0C
 	push {lr}
-	bl sub_02026FAC
+	bl SoundDriver_SwapPcmBuffers
 	pop {r0}
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_02026F18
-sub_02026F18: @ 0x02026F18
+	thumb_func_start SoundDriver_Update
+SoundDriver_Update: @ 0x02026F18
 	push {lr}
-	bl sub_02028E38
-	bl sub_020281FC
-	bl sub_02027728
+	bl Sound_ProcessCommands
+	bl Sound_UpdatePlayers
+	bl Sound_UpdatePsgChannels
 	ldr r0, _02026F38 @ =0x0300006B
 	ldrb r0, [r0]
 	cmp r0, #0
 	beq _02026F32
-	bl sub_02027610
+	bl Sound_UpdatePcmChannels
 _02026F32:
 	pop {r0}
 	bx r0
 	.align 2, 0
 _02026F38: .4byte 0x0300006B
 
-	thumb_func_start sub_02026F3C
-sub_02026F3C: @ 0x02026F3C
+	thumb_func_start SoundDriver_InitPcmBuffers
+SoundDriver_InitPcmBuffers: @ 0x02026F3C
 	push {r4, lr}
 	sub sp, #4
 	adds r3, r0, #0
@@ -31410,8 +31410,8 @@ _02026FA0: .4byte 0x0300006A
 _02026FA4: .4byte 0x04000083
 _02026FA8: .4byte 0x040000A0
 
-	thumb_func_start sub_02026FAC
-sub_02026FAC: @ 0x02026FAC
+	thumb_func_start SoundDriver_SwapPcmBuffers
+SoundDriver_SwapPcmBuffers: @ 0x02026FAC
 	push {r4, lr}
 	ldr r2, _02027018 @ =0x04000100
 	ldr r0, _0202701C @ =0x03000068
@@ -31478,8 +31478,8 @@ _02027034: .4byte 0xB6400004
 _02027038: .4byte 0x03000060
 _0202703C: .4byte 0x040000A4
 
-	thumb_func_start sub_02027040
-sub_02027040: @ 0x02027040
+	thumb_func_start SoundDriver_DisablePcm
+SoundDriver_DisablePcm: @ 0x02027040
 	ldr r1, _02027060 @ =0x0300006B
 	movs r0, #0
 	strb r0, [r1]
@@ -31500,8 +31500,8 @@ sub_02027040: @ 0x02027040
 _02027060: .4byte 0x0300006B
 _02027064: .4byte 0x040000BC
 
-	thumb_func_start sub_02027068
-sub_02027068: @ 0x02027068
+	thumb_func_start SoundDriver_EnablePcm
+SoundDriver_EnablePcm: @ 0x02027068
 	ldr r1, _02027070 @ =0x0300006B
 	movs r0, #1
 	strb r0, [r1]
@@ -31509,8 +31509,8 @@ sub_02027068: @ 0x02027068
 	.align 2, 0
 _02027070: .4byte 0x0300006B
 
-	thumb_func_start sub_02027074
-sub_02027074: @ 0x02027074
+	thumb_func_start SoundDriver_InitChannelLists
+SoundDriver_InitChannelLists: @ 0x02027074
 	push {r4, r5, r6, r7, lr}
 	mov r7, r8
 	push {r7}
@@ -31699,8 +31699,8 @@ _020271F0: .4byte 0x00000357
 _020271F4: .4byte 0xFFFFFE88
 _020271F8: .4byte 0xFFFFFE8C
 
-	thumb_func_start sub_020271FC
-sub_020271FC: @ 0x020271FC
+	thumb_func_start Sound_UnlinkChannel
+Sound_UnlinkChannel: @ 0x020271FC
 	ldr r2, [r0, #0x6c]
 	ldr r1, [r0, #0x70]
 	str r1, [r2, #0x70]
@@ -31710,8 +31710,8 @@ sub_020271FC: @ 0x020271FC
 	bx lr
 	.align 2, 0
 
-	thumb_func_start sub_0202720C
-sub_0202720C: @ 0x0202720C
+	thumb_func_start Sound_InsertPcmChannelByPriority
+Sound_InsertPcmChannelByPriority: @ 0x0202720C
 	push {r4, lr}
 	adds r3, r0, #0
 	ldr r0, _02027248 @ =0x03000070
@@ -31784,8 +31784,8 @@ _0202728C:
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_02027294
-sub_02027294: @ 0x02027294
+	thumb_func_start Sound_NoteToPitch
+Sound_NoteToPitch: @ 0x02027294
 	lsls r1, r1, #0x18
 	lsrs r1, r1, #0x18
 	lsls r2, r2, #0x18
@@ -31833,8 +31833,8 @@ _020272E4:
 	bx lr
 	.align 2, 0
 
-	thumb_func_start sub_020272E8
-sub_020272E8: @ 0x020272E8
+	thumb_func_start Sound_NoteToNoiseControl
+Sound_NoteToNoiseControl: @ 0x020272E8
 	lsls r0, r0, #0x10
 	lsrs r1, r0, #0x10
 	cmp r1, #0x77
@@ -31848,8 +31848,8 @@ _020272F2:
 	.align 2, 0
 _020272FC: .4byte 0x02035DD0
 
-	thumb_func_start sub_02027300
-sub_02027300: @ 0x02027300
+	thumb_func_start Sound_UpdateChannelEnvelope
+Sound_UpdateChannelEnvelope: @ 0x02027300
 	push {r4, r5, lr}
 	adds r3, r0, #0
 	adds r4, r3, #0
@@ -31913,8 +31913,8 @@ sub_02027370: @ 0x02027370
 	bx lr
 	.align 2, 0
 
-	thumb_func_start sub_02027374
-sub_02027374: @ 0x02027374
+	thumb_func_start Sound_UpdatePcmChannelVolume
+Sound_UpdatePcmChannelVolume: @ 0x02027374
 	push {r4, r5, lr}
 	adds r5, r0, #0
 	ldrb r0, [r5, #1]
@@ -31941,7 +31941,7 @@ sub_02027374: @ 0x02027374
 	muls r4, r0, r4
 	lsrs r4, r4, #7
 	adds r0, r5, #0
-	bl sub_02027300
+	bl Sound_UpdateChannelEnvelope
 	muls r4, r0, r4
 	lsrs r4, r4, #0xf
 	str r4, [r5, #0x14]
@@ -31963,8 +31963,8 @@ _020273C6:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_020273D0
-sub_020273D0: @ 0x020273D0
+	thumb_func_start Sound_GetPsgEnvelopeControl
+Sound_GetPsgEnvelopeControl: @ 0x020273D0
 	push {r4, r5, r6, r7, lr}
 	mov r7, r8
 	push {r7}
@@ -31982,7 +31982,7 @@ sub_020273D0: @ 0x020273D0
 	movs r6, #1
 _020273EE:
 	adds r0, r5, #0
-	bl sub_02027300
+	bl Sound_UpdateChannelEnvelope
 	cmp r6, #0
 	bne _020273FC
 	movs r0, #8
@@ -32105,8 +32105,8 @@ _020274C2:
 	.align 2, 0
 _020274CC: .4byte 0x0000FFF8
 
-	thumb_func_start sub_020274D0
-sub_020274D0: @ 0x020274D0
+	thumb_func_start Sound_UpdateChannelPitch
+Sound_UpdateChannelPitch: @ 0x020274D0
 	push {r4, r5, r6, lr}
 	adds r5, r0, #0
 	ldr r3, [r5, #0xc]
@@ -32274,8 +32274,8 @@ _02027608:
 	pop {r1}
 	bx r1
 
-	thumb_func_start sub_02027610
-sub_02027610: @ 0x02027610
+	thumb_func_start Sound_UpdatePcmChannels
+Sound_UpdatePcmChannels: @ 0x02027610
 	push {r4, r5, r6, r7, lr}
 	sub sp, #4
 	ldr r4, _0202764C @ =0x03000070
@@ -32291,7 +32291,7 @@ sub_02027610: @ 0x02027610
 	beq _020276C8
 _0202762C:
 	adds r0, r5, #0
-	bl sub_02027374
+	bl Sound_UpdatePcmChannelVolume
 	adds r7, r0, #0
 	ldrb r0, [r5, #1]
 	cmp r0, #1
@@ -32316,7 +32316,7 @@ _02027658:
 _0202765E:
 	adds r6, r3, #0
 	adds r0, r5, #0
-	bl sub_020274D0
+	bl Sound_UpdateChannelPitch
 	adds r2, r0, #0
 	str r2, [r5, #0x10]
 	adds r0, r4, #0
@@ -32348,7 +32348,7 @@ _0202767C:
 	adds r0, r5, #0
 	adds r1, r7, #0
 	adds r3, r6, #0
-	bl sub_02027F0C
+	bl Sound_MixPcmChannel
 	lsls r0, r0, #0x18
 	lsrs r0, r0, #0x18
 	cmp r0, #1
@@ -32356,7 +32356,7 @@ _0202767C:
 _020276B0:
 	ldr r5, [r5, #0x70]
 	ldr r0, [r5, #0x6c]
-	bl sub_02027C78
+	bl Sound_StopChannel
 	b _020276C2
 	.align 2, 0
 _020276BC: .4byte 0x00002910
@@ -32379,7 +32379,7 @@ _020276CC:
 	cmp r0, #0
 	bne _020276E2
 	adds r0, r1, #0
-	bl sub_02027B94
+	bl Sound_ReleaseChannel
 _020276E2:
 	adds r5, #0x7c
 	subs r4, #1
@@ -32410,8 +32410,8 @@ _0202771C: .4byte 0x03000864
 _02027720: .4byte 0x03000058
 _02027724: .4byte 0x0300006A
 
-	thumb_func_start sub_02027728
-sub_02027728: @ 0x02027728
+	thumb_func_start Sound_UpdatePsgChannels
+Sound_UpdatePsgChannels: @ 0x02027728
 	push {r4, r5, r6, r7, lr}
 	mov r7, sl
 	mov r6, sb
@@ -32433,7 +32433,7 @@ _02027736:
 	cmp r0, #0
 	bne _02027754
 	adds r0, r4, #0
-	bl sub_02027B94
+	bl Sound_ReleaseChannel
 _02027754:
 	ldrb r0, [r4, #1]
 	cmp r0, #0
@@ -32443,7 +32443,7 @@ _0202775C:
 	cmp r0, #1
 	bne _02027782
 	adds r0, r4, #0
-	bl sub_020274D0
+	bl Sound_UpdateChannelPitch
 	adds r6, r0, #0
 	str r6, [r4, #0x10]
 	ldrb r0, [r4, #0x1b]
@@ -32472,7 +32472,7 @@ _02027788:
 	orrs r1, r0
 	lsrs r1, r1, #0x1f
 	adds r0, r4, #0
-	bl sub_020273D0
+	bl Sound_GetPsgEnvelopeControl
 	lsls r0, r0, #0x18
 	lsrs r7, r0, #0x18
 	ldr r0, _020277CC @ =0x04000081
@@ -32532,7 +32532,7 @@ _020277FA:
 	bne _02027818
 	adds r0, r4, #0
 	adds r1, r7, #0
-	bl sub_02027D14
+	bl Sound_StartPsgChannel
 	str r5, [r4, #0x64]
 	ldrh r0, [r4, #0x18]
 	subs r0, #1
@@ -32585,7 +32585,7 @@ _02027864: .4byte 0x04000073
 _02027868: .4byte 0x02035CC4
 _0202786C:
 	adds r0, r4, #0
-	bl sub_02027C78
+	bl Sound_StopChannel
 	b _0202799C
 _02027874:
 	ldr r2, [r4, #0x58]
@@ -32717,7 +32717,7 @@ _0202795E:
 	ldr r4, _02027984 @ =0x0400007C
 	lsls r0, r6, #0x10
 	lsrs r0, r0, #0x10
-	bl sub_020272E8
+	bl Sound_NoteToNoiseControl
 	lsls r0, r0, #0x18
 	lsrs r1, r0, #0x18
 	cmp r5, #0
@@ -32734,7 +32734,7 @@ _02027984: .4byte 0x0400007C
 _02027988:
 	lsls r0, r6, #0x10
 	lsrs r0, r0, #0x10
-	bl sub_020272E8
+	bl Sound_NoteToNoiseControl
 	ldr r3, _020279B8 @ =0x0400007C
 	ldrb r2, [r3]
 	movs r1, #8
@@ -32759,8 +32759,8 @@ _020279A8:
 	.align 2, 0
 _020279B8: .4byte 0x0400007C
 
-	thumb_func_start sub_020279BC
-sub_020279BC: @ 0x020279BC
+	thumb_func_start Sound_PlayNote
+Sound_PlayNote: @ 0x020279BC
 	push {r4, r5, r6, r7, lr}
 	mov r7, sb
 	mov r6, r8
@@ -32791,7 +32791,7 @@ _020279E4:
 	adds r0, r5, #0
 	adds r1, r7, #0
 	mov r2, sp
-	bl sub_020280B4
+	bl Sound_ResolveInstrument
 	ldr r6, [sp]
 	ldrb r1, [r6, #1]
 	movs r0, #0x10
@@ -32832,7 +32832,7 @@ _02027A38:
 	adds r1, #0x52
 	ldrb r2, [r1]
 	adds r1, r5, #0
-	bl sub_02027E74
+	bl Sound_AllocateChannel
 	adds r4, r0, #0
 	cmp r4, #0
 	bne _02027A54
@@ -32840,7 +32840,7 @@ _02027A38:
 _02027A54:
 	adds r0, r5, #0
 	adds r1, r4, #0
-	bl sub_02028A34
+	bl Sound_AttachChannelToTrack
 	movs r1, #0
 	str r1, [r4, #0x64]
 	adds r0, r5, #0
@@ -32899,7 +32899,7 @@ _02027AB2:
 	ldrb r2, [r6, #7]
 	adds r0, r4, #0
 	adds r1, r7, #0
-	bl sub_02027294
+	bl Sound_NoteToPitch
 	str r0, [r4, #0xc]
 	adds r0, r5, #0
 	adds r0, #0x1c
@@ -32910,7 +32910,7 @@ _02027AB2:
 	ldrb r1, [r5, #0x1e]
 	ldrb r2, [r6, #7]
 	adds r0, r4, #0
-	bl sub_02027294
+	bl Sound_NoteToPitch
 	adds r2, r0, #0
 	ldrh r0, [r5, #0x20]
 	str r0, [r4, #0x2c]
@@ -32998,7 +32998,7 @@ _02027B7A:
 	cmp r0, #0
 	bne _02027B86
 	adds r0, r4, #0
-	bl sub_02027B94
+	bl Sound_ReleaseChannel
 _02027B86:
 	add sp, #0x14
 	pop {r3, r4}
@@ -33008,8 +33008,8 @@ _02027B86:
 	pop {r0}
 	bx r0
 
-	thumb_func_start sub_02027B94
-sub_02027B94: @ 0x02027B94
+	thumb_func_start Sound_ReleaseChannel
+Sound_ReleaseChannel: @ 0x02027B94
 	push {r4, lr}
 	adds r4, r0, #0
 	ldrb r0, [r4, #1]
@@ -33024,11 +33024,11 @@ sub_02027B94: @ 0x02027B94
 	cmp r3, #0
 	bne _02027BC0
 	adds r0, r4, #0
-	bl sub_020271FC
+	bl Sound_UnlinkChannel
 	movs r0, #2
 	strb r0, [r4, #1]
 	adds r0, r4, #0
-	bl sub_0202720C
+	bl Sound_InsertPcmChannelByPriority
 	b _02027C52
 _02027BC0:
 	ldrh r2, [r4, #0x10]
@@ -33121,7 +33121,7 @@ _02027C52:
 _02027C62:
 	adds r0, r1, #0
 	adds r1, r4, #0
-	bl sub_02028A4C
+	bl Sound_DetachChannelFromTrack
 _02027C6A:
 	pop {r4}
 	pop {r0}
@@ -33130,8 +33130,8 @@ _02027C6A:
 _02027C70: .4byte 0x04000079
 _02027C74: .4byte 0x0400007D
 
-	thumb_func_start sub_02027C78
-sub_02027C78: @ 0x02027C78
+	thumb_func_start Sound_StopChannel
+Sound_StopChannel: @ 0x02027C78
 	push {r4, lr}
 	adds r4, r0, #0
 	ldrb r0, [r4, #1]
@@ -33155,7 +33155,7 @@ _02027C98: @ jump table
 	.4byte _02027CF0 @ case 4
 _02027CAC:
 	adds r0, r4, #0
-	bl sub_020271FC
+	bl Sound_UnlinkChannel
 	ldr r0, _02027CC8 @ =0x03000070
 	movs r1, #0xb6
 	lsls r1, r1, #1
@@ -33201,7 +33201,7 @@ _02027CFA:
 _02027CFC:
 	ldr r0, [r4, #4]
 	adds r1, r4, #0
-	bl sub_02028A4C
+	bl Sound_DetachChannelFromTrack
 	movs r0, #0
 	strb r0, [r4, #1]
 _02027D08:
@@ -33211,8 +33211,8 @@ _02027D08:
 	.align 2, 0
 _02027D10: .4byte 0x04000079
 
-	thumb_func_start sub_02027D14
-sub_02027D14: @ 0x02027D14
+	thumb_func_start Sound_StartPsgChannel
+Sound_StartPsgChannel: @ 0x02027D14
 	push {r4, r5, r6, lr}
 	adds r4, r0, #0
 	lsls r1, r1, #0x18
@@ -33347,7 +33347,7 @@ _02027E18:
 	cmp r0, #0
 	beq _02027E3C
 	ldrh r0, [r4, #0xc]
-	bl sub_020272E8
+	bl Sound_NoteToNoiseControl
 	lsls r0, r0, #0x18
 	lsrs r1, r0, #0x18
 	ldr r0, [r4, #0x68]
@@ -33357,7 +33357,7 @@ _02027E18:
 _02027E38: .4byte 0x04000079
 _02027E3C:
 	ldrh r0, [r4, #0xc]
-	bl sub_020272E8
+	bl Sound_NoteToNoiseControl
 	lsls r0, r0, #0x18
 	lsrs r1, r0, #0x18
 	adds r0, r4, #0
@@ -33387,8 +33387,8 @@ _02027E64:
 _02027E6C: .4byte 0x0400007C
 _02027E70: .4byte 0x0400007D
 
-	thumb_func_start sub_02027E74
-sub_02027E74: @ 0x02027E74
+	thumb_func_start Sound_AllocateChannel
+Sound_AllocateChannel: @ 0x02027E74
 	push {r4, r5, lr}
 	lsls r0, r0, #0x18
 	lsrs r1, r0, #0x18
@@ -33425,15 +33425,15 @@ _02027EA0:
 _02027EB6:
 	adds r4, r2, #0
 	adds r0, r4, #0
-	bl sub_02027C78
+	bl Sound_StopChannel
 _02027EBE:
 	adds r0, r4, #0
-	bl sub_020271FC
+	bl Sound_UnlinkChannel
 	movs r0, #1
 	strb r0, [r4, #1]
 	strb r5, [r4, #8]
 	adds r0, r4, #0
-	bl sub_0202720C
+	bl Sound_InsertPcmChannelByPriority
 	b _02027F02
 _02027ED2:
 	lsls r0, r1, #5
@@ -33457,7 +33457,7 @@ _02027EF0:
 	cmp r0, #0
 	beq _02027EFC
 	adds r0, r4, #0
-	bl sub_02027C78
+	bl Sound_StopChannel
 _02027EFC:
 	movs r0, #1
 	strb r0, [r4, #1]
@@ -33470,8 +33470,8 @@ _02027F04:
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_02027F0C
-sub_02027F0C: @ 0x02027F0C
+	thumb_func_start Sound_MixPcmChannel
+Sound_MixPcmChannel: @ 0x02027F0C
 	push {r4, r5, r6, r7, lr}
 	mov r7, sl
 	mov r6, sb
@@ -33677,8 +33677,8 @@ _02028084:
 	.align 2, 0
 _02028094: .4byte 0x0300059C
 
-	thumb_func_start sub_02028098
-sub_02028098: @ 0x02028098
+	thumb_func_start Sound_InitKeySampleInstrument
+Sound_InitKeySampleInstrument: @ 0x02028098
 	ldr r1, _020280B0 @ =0x03000268
 	movs r0, #0
 	strb r0, [r1]
@@ -33693,8 +33693,8 @@ sub_02028098: @ 0x02028098
 	.align 2, 0
 _020280B0: .4byte 0x03000268
 
-	thumb_func_start sub_020280B4
-sub_020280B4: @ 0x020280B4
+	thumb_func_start Sound_ResolveInstrument
+Sound_ResolveInstrument: @ 0x020280B4
 	push {r4, r5, r6, lr}
 	adds r4, r2, #0
 	lsls r1, r1, #0x18
@@ -33813,8 +33813,8 @@ _0202818A:
 	pop {r0}
 	bx r0
 
-	thumb_func_start sub_02028190
-sub_02028190: @ 0x02028190
+	thumb_func_start Sound_InitPlayers
+Sound_InitPlayers: @ 0x02028190
 	push {r4, lr}
 	movs r2, #0
 	ldr r4, _020281C0 @ =0x03001918
@@ -33844,8 +33844,8 @@ _020281AC:
 	.align 2, 0
 _020281C0: .4byte 0x03001918
 
-	thumb_func_start sub_020281C4
-sub_020281C4: @ 0x020281C4
+	thumb_func_start Sound_ResetPlayerParameters
+Sound_ResetPlayerParameters: @ 0x020281C4
 	mov ip, r0
 	mov r2, ip
 	adds r2, #0x3c
@@ -33875,8 +33875,8 @@ sub_020281C4: @ 0x020281C4
 	strb r3, [r0]
 	bx lr
 
-	thumb_func_start sub_020281FC
-sub_020281FC: @ 0x020281FC
+	thumb_func_start Sound_UpdatePlayers
+Sound_UpdatePlayers: @ 0x020281FC
 	push {r4, r5, r6, r7, lr}
 	sub sp, #4
 	movs r6, #0
@@ -33898,7 +33898,7 @@ _02028202:
 	cmp r0, #2
 	bne _02028246
 	adds r0, r6, #0
-	bl sub_020283D4
+	bl Sound_StopPlayer
 	b _0202827E
 	.align 2, 0
 _0202822C: .4byte 0x03001918
@@ -33925,7 +33925,7 @@ _02028250:
 	cmp r0, #0
 	beq _0202826C
 	str r2, [sp]
-	bl sub_020285C8
+	bl Sound_UpdateTrack
 	lsls r0, r0, #0x18
 	ldr r2, [sp]
 	cmp r0, #0
@@ -33943,7 +33943,7 @@ _0202826C:
 	cmp r2, #0
 	bne _0202827E
 	adds r0, r6, #0
-	bl sub_020283D4
+	bl Sound_StopPlayer
 _0202827E:
 	adds r6, r7, #0
 	cmp r6, #7
@@ -33953,8 +33953,8 @@ _0202827E:
 	pop {r0}
 	bx r0
 
-	thumb_func_start sub_0202828C
-sub_0202828C: @ 0x0202828C
+	thumb_func_start Sound_StartMusic
+Sound_StartMusic: @ 0x0202828C
 	push {r4, lr}
 	ldr r2, _020282B0 @ =0x03000594
 	ldr r4, [r2]
@@ -33968,15 +33968,15 @@ sub_0202828C: @ 0x0202828C
 	ldr r1, [r1]
 	adds r2, r2, r1
 	adds r1, r3, #0
-	bl sub_020282E0
+	bl Sound_StartMusicSequence
 	pop {r4}
 	pop {r0}
 	bx r0
 	.align 2, 0
 _020282B0: .4byte 0x03000594
 
-	thumb_func_start sub_020282B4
-sub_020282B4: @ 0x020282B4
+	thumb_func_start Sound_StartEffect
+Sound_StartEffect: @ 0x020282B4
 	push {r4, r5, lr}
 	adds r3, r2, #0
 	ldr r2, _020282DC @ =0x03000594
@@ -33991,15 +33991,15 @@ sub_020282B4: @ 0x020282B4
 	ldr r1, [r1]
 	adds r2, r2, r1
 	adds r1, r4, #0
-	bl sub_02028368
+	bl Sound_StartEffectSequence
 	pop {r4, r5}
 	pop {r0}
 	bx r0
 	.align 2, 0
 _020282DC: .4byte 0x03000594
 
-	thumb_func_start sub_020282E0
-sub_020282E0: @ 0x020282E0
+	thumb_func_start Sound_StartMusicSequence
+Sound_StartMusicSequence: @ 0x020282E0
 	push {r4, r5, r6, r7, lr}
 	mov r7, r8
 	push {r7}
@@ -34017,7 +34017,7 @@ sub_020282E0: @ 0x020282E0
 	cmp r0, #0
 	beq _02028306
 	adds r0, r3, #0
-	bl sub_020283D4
+	bl Sound_StopPlayer
 _02028306:
 	str r6, [r5, #4]
 	str r7, [r5]
@@ -34026,7 +34026,7 @@ _02028306:
 	movs r0, #0
 	strb r0, [r1]
 	adds r0, r5, #0
-	bl sub_020281C4
+	bl Sound_ResetPlayerParameters
 	ldr r0, [r5, #4]
 	movs r7, #0
 	ldrsb r7, [r0, r7]
@@ -34040,7 +34040,7 @@ _0202832A:
 	ldrh r0, [r4]
 	cmp r0, #0
 	beq _0202834A
-	bl sub_020284A0
+	bl Sound_FindFreeTrack
 	lsls r2, r6, #2
 	adds r1, r5, #0
 	adds r1, #8
@@ -34050,7 +34050,7 @@ _0202832A:
 	ldr r2, [r5, #4]
 	adds r2, r2, r1
 	adds r1, r5, #0
-	bl sub_020284C4
+	bl Sound_StartTrack
 _0202834A:
 	adds r4, #2
 	adds r6, #1
@@ -34068,8 +34068,8 @@ _02028352:
 	.align 2, 0
 _02028364: .4byte 0x03001918
 
-	thumb_func_start sub_02028368
-sub_02028368: @ 0x02028368
+	thumb_func_start Sound_StartEffectSequence
+Sound_StartEffectSequence: @ 0x02028368
 	push {r4, r5, r6, r7, lr}
 	mov r7, sb
 	mov r6, r8
@@ -34090,7 +34090,7 @@ sub_02028368: @ 0x02028368
 	cmp r0, #0
 	beq _02028394
 	adds r0, r4, #0
-	bl sub_020283D4
+	bl Sound_StopPlayer
 _02028394:
 	str r6, [r5, #4]
 	str r7, [r5]
@@ -34099,8 +34099,8 @@ _02028394:
 	movs r4, #1
 	strb r4, [r0]
 	adds r0, r5, #0
-	bl sub_020281C4
-	bl sub_020284A0
+	bl Sound_ResetPlayerParameters
+	bl Sound_FindFreeTrack
 	str r0, [r5, #8]
 	ldr r2, [r5, #4]
 	mov r3, sb
@@ -34109,7 +34109,7 @@ _02028394:
 	ldrh r1, [r1]
 	adds r2, r2, r1
 	adds r1, r5, #0
-	bl sub_020284C4
+	bl Sound_StartTrack
 	mov r0, r8
 	strb r4, [r0]
 	pop {r3, r4}
@@ -34121,8 +34121,8 @@ _02028394:
 	.align 2, 0
 _020283D0: .4byte 0x03001918
 
-	thumb_func_start sub_020283D4
-sub_020283D4: @ 0x020283D4
+	thumb_func_start Sound_StopPlayer
+Sound_StopPlayer: @ 0x020283D4
 	push {r4, r5, r6, r7, lr}
 	lsls r1, r0, #4
 	adds r1, r1, r0
@@ -34141,7 +34141,7 @@ sub_020283D4: @ 0x020283D4
 	movs r5, #9
 _020283F4:
 	ldr r0, [r4]
-	bl sub_020285B0
+	bl Sound_StopTrack
 	stm r4!, {r6}
 	subs r5, #1
 	cmp r5, #0
@@ -34155,8 +34155,8 @@ _02028406:
 	.align 2, 0
 _0202840C: .4byte 0x03001918
 
-	thumb_func_start sub_02028410
-sub_02028410: @ 0x02028410
+	thumb_func_start Sound_FadeOutPlayer
+Sound_FadeOutPlayer: @ 0x02028410
 	push {r4, lr}
 	adds r3, r1, #0
 	lsls r1, r0, #4
@@ -34186,8 +34186,8 @@ _0202843E:
 	.align 2, 0
 _02028444: .4byte 0x03001918
 
-	thumb_func_start sub_02028448
-sub_02028448: @ 0x02028448
+	thumb_func_start Sound_SetPlayerPaused
+Sound_SetPlayerPaused: @ 0x02028448
 	lsls r1, r1, #0x18
 	lsrs r1, r1, #0x18
 	ldr r3, _02028468 @ =0x03001918
@@ -34207,8 +34207,8 @@ sub_02028448: @ 0x02028448
 	.align 2, 0
 _02028468: .4byte 0x03001918
 
-	thumb_func_start sub_0202846C
-sub_0202846C: @ 0x0202846C
+	thumb_func_start Sound_GetPlayerStatus
+Sound_GetPlayerStatus: @ 0x0202846C
 	ldr r2, _0202847C @ =0x03001918
 	lsls r1, r0, #4
 	adds r1, r1, r0
@@ -34220,8 +34220,8 @@ sub_0202846C: @ 0x0202846C
 	.align 2, 0
 _0202847C: .4byte 0x03001918
 
-	thumb_func_start sub_02028480
-sub_02028480: @ 0x02028480
+	thumb_func_start Sound_InitTracks
+Sound_InitTracks: @ 0x02028480
 	ldr r0, _0202849C @ =0x03000B24
 	movs r1, #0
 	adds r0, #8
@@ -34239,8 +34239,8 @@ _02028488:
 	.align 2, 0
 _0202849C: .4byte 0x03000B24
 
-	thumb_func_start sub_020284A0
-sub_020284A0: @ 0x020284A0
+	thumb_func_start Sound_FindFreeTrack
+Sound_FindFreeTrack: @ 0x020284A0
 	ldr r1, _020284B0 @ =0x03000B24
 	ldr r0, _020284B4 @ =0x000004EC
 	adds r2, r1, r0
@@ -34262,8 +34262,8 @@ _020284C0:
 	bx lr
 	.align 2, 0
 
-	thumb_func_start sub_020284C4
-sub_020284C4: @ 0x020284C4
+	thumb_func_start Sound_StartTrack
+Sound_StartTrack: @ 0x020284C4
 	push {r4, r5, r6, r7, lr}
 	adds r5, r0, #0
 	adds r7, r1, #0
@@ -34274,7 +34274,7 @@ sub_020284C4: @ 0x020284C4
 	cmp r0, #0
 	beq _020284DC
 	adds r0, r5, #0
-	bl sub_020285B0
+	bl Sound_StopTrack
 _020284DC:
 	movs r4, #0
 	str r4, [r5, #0x34]
@@ -34288,7 +34288,7 @@ _020284DC:
 	str r4, [r5, #0xc]
 	adds r0, r5, #0
 	movs r1, #0
-	bl sub_02028A98
+	bl Sound_SetTrackBank
 	adds r1, r5, #0
 	adds r1, #0x4b
 	movs r0, #0x40
@@ -34361,8 +34361,8 @@ _0202857A:
 	pop {r0}
 	bx r0
 
-	thumb_func_start sub_02028580
-sub_02028580: @ 0x02028580
+	thumb_func_start Sound_ReleaseTrackChannels
+Sound_ReleaseTrackChannels: @ 0x02028580
 	push {r4, r5, r6, lr}
 	adds r4, r0, #0
 	cmp r4, #0
@@ -34378,7 +34378,7 @@ sub_02028580: @ 0x02028580
 	beq _020285A6
 _0202859A:
 	ldr r4, [r0, #0x78]
-	bl sub_02027B94
+	bl Sound_ReleaseChannel
 	adds r0, r4, #0
 	cmp r0, #0
 	bne _0202859A
@@ -34390,13 +34390,13 @@ _020285A8:
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_020285B0
-sub_020285B0: @ 0x020285B0
+	thumb_func_start Sound_StopTrack
+Sound_StopTrack: @ 0x020285B0
 	push {r4, lr}
 	adds r4, r0, #0
 	cmp r4, #0
 	beq _020285C0
-	bl sub_02028580
+	bl Sound_ReleaseTrackChannels
 	movs r0, #0
 	str r0, [r4, #8]
 _020285C0:
@@ -34405,8 +34405,8 @@ _020285C0:
 	bx r0
 	.align 2, 0
 
-	thumb_func_start sub_020285C8
-sub_020285C8: @ 0x020285C8
+	thumb_func_start Sound_UpdateTrack
+Sound_UpdateTrack: @ 0x020285C8
 	push {r4, r5, r6, r7, lr}
 	mov r7, r8
 	push {r7}
@@ -34432,11 +34432,11 @@ _020285E0:
 	b _02028A0C
 _020285F2:
 	adds r0, r5, #0
-	bl sub_02028580
+	bl Sound_ReleaseTrackChannels
 	b _02028A24
 _020285FA:
 	adds r0, r5, #0
-	bl sub_020285B0
+	bl Sound_StopTrack
 	movs r0, #2
 	b _02028A26
 _02028604:
@@ -34456,7 +34456,7 @@ _02028604:
 	b _02028646
 _02028620:
 	adds r0, r5, #0
-	bl sub_02028A74
+	bl Sound_ReadSequenceDuration
 	lsls r0, r0, #0x10
 	lsrs r4, r0, #0x10
 	adds r0, r5, #0
@@ -34500,7 +34500,7 @@ _02028674:
 	lsrs r3, r3, #0x10
 	adds r0, r5, #0
 	adds r1, r6, #0
-	bl sub_020279BC
+	bl Sound_PlayNote
 _02028680:
 	adds r0, r5, #0
 	adds r0, #0x53
@@ -34521,7 +34521,7 @@ _0202869A:
 	cmp r6, #0xc1
 	bne _020286BA
 	adds r0, r5, #0
-	bl sub_02028A74
+	bl Sound_ReadSequenceDuration
 	lsls r0, r0, #0x10
 	lsrs r4, r0, #0x10
 	adds r0, r5, #0
@@ -34713,7 +34713,7 @@ _02028876:
 	adds r0, #1
 	str r0, [r5]
 	adds r0, r5, #0
-	bl sub_02028A98
+	bl Sound_SetTrackBank
 	b _02028A0C
 _02028886:
 	ldr r0, [r5]
@@ -34766,7 +34766,7 @@ _020288CE:
 	b _02028922
 _020288DA:
 	adds r0, r5, #0
-	bl sub_02028580
+	bl Sound_ReleaseTrackChannels
 	movs r1, #0
 	cmp r6, #0xc5
 	bne _020288E8
@@ -34853,13 +34853,13 @@ _0202894E:
 	ldr r0, [r6]
 	cmp r0, #0
 	bne _02028982
-	bl sub_020284A0
+	bl Sound_FindFreeTrack
 	adds r4, r0, #0
 	str r4, [r6]
 	b _02028988
 _02028982:
 	adds r4, r0, #0
-	bl sub_020285B0
+	bl Sound_StopTrack
 _02028988:
 	mov r0, sp
 	ldrh r0, [r0]
@@ -34867,7 +34867,7 @@ _02028988:
 	ldr r2, [r1, #4]
 	adds r2, r2, r0
 	adds r0, r4, #0
-	bl sub_020284C4
+	bl Sound_StartTrack
 	ldr r0, [r5, #4]
 	str r0, [r4, #4]
 	adds r0, r5, #0
@@ -34952,8 +34952,8 @@ _02028A26:
 	bx r1
 	.align 2, 0
 
-	thumb_func_start sub_02028A34
-sub_02028A34: @ 0x02028A34
+	thumb_func_start Sound_AttachChannelToTrack
+Sound_AttachChannelToTrack: @ 0x02028A34
 	ldr r2, [r1, #4]
 	cmp r2, #0
 	bne _02028A4A
@@ -34968,8 +34968,8 @@ sub_02028A34: @ 0x02028A34
 _02028A4A:
 	bx lr
 
-	thumb_func_start sub_02028A4C
-sub_02028A4C: @ 0x02028A4C
+	thumb_func_start Sound_DetachChannelFromTrack
+Sound_DetachChannelFromTrack: @ 0x02028A4C
 	adds r3, r0, #0
 	ldr r0, [r1, #4]
 	cmp r0, #0
@@ -34994,8 +34994,8 @@ _02028A6E:
 _02028A72:
 	bx lr
 
-	thumb_func_start sub_02028A74
-sub_02028A74: @ 0x02028A74
+	thumb_func_start Sound_ReadSequenceDuration
+Sound_ReadSequenceDuration: @ 0x02028A74
 	adds r3, r0, #0
 	ldr r2, [r3]
 	ldrb r1, [r2]
@@ -35016,8 +35016,8 @@ _02028A94:
 	adds r0, r1, #0
 	bx lr
 
-	thumb_func_start sub_02028A98
-sub_02028A98: @ 0x02028A98
+	thumb_func_start Sound_SetTrackBank
+Sound_SetTrackBank: @ 0x02028A98
 	adds r3, r0, #0
 	adds r0, #0x40
 	movs r2, #0
@@ -35045,8 +35045,8 @@ sub_02028A98: @ 0x02028A98
 	.align 2, 0
 _02028AC8: .4byte 0x03000594
 
-	thumb_func_start sub_02028ACC
-sub_02028ACC: @ 0x02028ACC
+	thumb_func_start Sound_InitCommandQueue
+Sound_InitCommandQueue: @ 0x02028ACC
 	ldr r0, _02028AF0 @ =0x03000584
 	ldr r1, _02028AF4 @ =0x03000278
 	str r1, [r0]
@@ -35074,8 +35074,8 @@ _02028B00: .4byte 0x03000590
 _02028B04: .4byte 0x03000270
 _02028B08: .4byte 0x03000274
 
-	thumb_func_start sub_02028B0C
-sub_02028B0C: @ 0x02028B0C
+	thumb_func_start Sound_ReadCommand
+Sound_ReadCommand: @ 0x02028B0C
 	ldr r3, _02028B1C @ =0x03000584
 	ldr r2, [r3]
 	ldr r0, _02028B20 @ =0x0300058C
@@ -35105,8 +35105,8 @@ _02028B38:
 _02028B3C: .4byte 0x03000590
 _02028B40: .4byte 0x03000278
 
-	thumb_func_start sub_02028B44
-sub_02028B44: @ 0x02028B44
+	thumb_func_start Sound_CommitCommands
+Sound_CommitCommands: @ 0x02028B44
 	ldr r0, _02028B50 @ =0x0300058C
 	ldr r1, _02028B54 @ =0x03000588
 	ldr r1, [r1]
@@ -35116,8 +35116,8 @@ sub_02028B44: @ 0x02028B44
 _02028B50: .4byte 0x0300058C
 _02028B54: .4byte 0x03000588
 
-	thumb_func_start sub_02028B58
-sub_02028B58: @ 0x02028B58
+	thumb_func_start Sound_QueueStartMusic
+Sound_QueueStartMusic: @ 0x02028B58
 	push {r4, lr}
 	lsls r0, r0, #0x10
 	lsrs r0, r0, #0x10
@@ -35146,8 +35146,8 @@ _02028B84: .4byte 0x03000588
 _02028B88: .4byte 0x03000590
 _02028B8C: .4byte 0x03000278
 
-	thumb_func_start sub_02028B90
-sub_02028B90: @ 0x02028B90
+	thumb_func_start Sound_QueueStartEffect
+Sound_QueueStartEffect: @ 0x02028B90
 	push {r4, r5, lr}
 	lsls r1, r1, #0x10
 	lsrs r1, r1, #0x10
@@ -35178,8 +35178,8 @@ _02028BC0: .4byte 0x03000588
 _02028BC4: .4byte 0x03000590
 _02028BC8: .4byte 0x03000278
 
-	thumb_func_start sub_02028BCC
-sub_02028BCC: @ 0x02028BCC
+	thumb_func_start Sound_QueueFadeOutPlayer
+Sound_QueueFadeOutPlayer: @ 0x02028BCC
 	push {r4, lr}
 	lsls r0, r0, #0x10
 	lsrs r0, r0, #0x10
@@ -35208,8 +35208,8 @@ _02028BF8: .4byte 0x03000588
 _02028BFC: .4byte 0x03000590
 _02028C00: .4byte 0x03000278
 
-	thumb_func_start sub_02028C04
-sub_02028C04: @ 0x02028C04
+	thumb_func_start Sound_QueueSetPlayerPaused
+Sound_QueueSetPlayerPaused: @ 0x02028C04
 	push {r4, lr}
 	lsls r0, r0, #0x10
 	lsrs r0, r0, #0x10
@@ -35238,8 +35238,8 @@ _02028C30: .4byte 0x03000588
 _02028C34: .4byte 0x03000590
 _02028C38: .4byte 0x03000278
 
-	thumb_func_start sub_02028C3C
-sub_02028C3C: @ 0x02028C3C
+	thumb_func_start Sound_QueueSetPlayerTempoAdjust
+Sound_QueueSetPlayerTempoAdjust: @ 0x02028C3C
 	push {r4, lr}
 	lsls r0, r0, #0x10
 	lsrs r0, r0, #0x10
@@ -35268,8 +35268,8 @@ _02028C68: .4byte 0x03000588
 _02028C6C: .4byte 0x03000590
 _02028C70: .4byte 0x03000278
 
-	thumb_func_start sub_02028C74
-sub_02028C74: @ 0x02028C74
+	thumb_func_start Sound_QueueSetPlayerMasterVolume
+Sound_QueueSetPlayerMasterVolume: @ 0x02028C74
 	push {r4, lr}
 	lsls r0, r0, #0x10
 	lsrs r0, r0, #0x10
@@ -35298,8 +35298,8 @@ _02028CA0: .4byte 0x03000588
 _02028CA4: .4byte 0x03000590
 _02028CA8: .4byte 0x03000278
 
-	thumb_func_start sub_02028CAC
-sub_02028CAC: @ 0x02028CAC
+	thumb_func_start Sound_QueueSetPlayerTempoMode
+Sound_QueueSetPlayerTempoMode: @ 0x02028CAC
 	push {r4, lr}
 	lsls r0, r0, #0x10
 	lsrs r0, r0, #0x10
@@ -35328,8 +35328,8 @@ _02028CD8: .4byte 0x03000588
 _02028CDC: .4byte 0x03000590
 _02028CE0: .4byte 0x03000278
 
-	thumb_func_start sub_02028CE4
-sub_02028CE4: @ 0x02028CE4
+	thumb_func_start Sound_QueueSetTracksMuted
+Sound_QueueSetTracksMuted: @ 0x02028CE4
 	push {r4, r5, lr}
 	lsls r2, r2, #0x18
 	lsrs r2, r2, #0x18
@@ -35358,8 +35358,8 @@ _02028D10: .4byte 0x03000588
 _02028D14: .4byte 0x03000590
 _02028D18: .4byte 0x03000278
 
-	thumb_func_start sub_02028D1C
-sub_02028D1C: @ 0x02028D1C
+	thumb_func_start Sound_QueueSetTracksExpression
+Sound_QueueSetTracksExpression: @ 0x02028D1C
 	push {r4, r5, lr}
 	lsls r2, r2, #0x18
 	lsrs r2, r2, #0x18
@@ -35388,8 +35388,8 @@ _02028D48: .4byte 0x03000588
 _02028D4C: .4byte 0x03000590
 _02028D50: .4byte 0x03000278
 
-	thumb_func_start sub_02028D54
-sub_02028D54: @ 0x02028D54
+	thumb_func_start Sound_QueueSetTracksPan
+Sound_QueueSetTracksPan: @ 0x02028D54
 	push {r4, r5, lr}
 	lsls r2, r2, #0x18
 	lsrs r2, r2, #0x18
@@ -35418,8 +35418,8 @@ _02028D80: .4byte 0x03000588
 _02028D84: .4byte 0x03000590
 _02028D88: .4byte 0x03000278
 
-	thumb_func_start sub_02028D8C
-sub_02028D8C: @ 0x02028D8C
+	thumb_func_start Sound_QueueCommand10
+Sound_QueueCommand10: @ 0x02028D8C
 	lsls r0, r0, #0x18
 	lsrs r0, r0, #0x18
 	ldr r3, _02028DAC @ =0x03000588
@@ -35442,8 +35442,8 @@ _02028DAC: .4byte 0x03000588
 _02028DB0: .4byte 0x03000590
 _02028DB4: .4byte 0x03000278
 
-	thumb_func_start sub_02028DB8
-sub_02028DB8: @ 0x02028DB8
+	thumb_func_start Sound_QueueCallback
+Sound_QueueCallback: @ 0x02028DB8
 	push {r4, lr}
 	ldr r4, _02028DDC @ =0x03000588
 	ldr r2, [r4]
@@ -35468,8 +35468,8 @@ _02028DDC: .4byte 0x03000588
 _02028DE0: .4byte 0x03000590
 _02028DE4: .4byte 0x03000278
 
-	thumb_func_start sub_02028DE8
-sub_02028DE8: @ 0x02028DE8
+	thumb_func_start Sound_QueueSetControlCallback
+Sound_QueueSetControlCallback: @ 0x02028DE8
 	ldr r3, _02028E04 @ =0x03000588
 	ldr r2, [r3]
 	movs r1, #0xc
@@ -35490,8 +35490,8 @@ _02028E04: .4byte 0x03000588
 _02028E08: .4byte 0x03000590
 _02028E0C: .4byte 0x03000278
 
-	thumb_func_start sub_02028E10
-sub_02028E10: @ 0x02028E10
+	thumb_func_start Sound_QueueSetNoteCallback
+Sound_QueueSetNoteCallback: @ 0x02028E10
 	ldr r3, _02028E2C @ =0x03000588
 	ldr r2, [r3]
 	movs r1, #0xd
@@ -35512,8 +35512,8 @@ _02028E2C: .4byte 0x03000588
 _02028E30: .4byte 0x03000590
 _02028E34: .4byte 0x03000278
 
-	thumb_func_start sub_02028E38
-sub_02028E38: @ 0x02028E38
+	thumb_func_start Sound_ProcessCommands
+Sound_ProcessCommands: @ 0x02028E38
 	push {r4, lr}
 	b _02028FF2
 _02028E3C:
@@ -35547,7 +35547,7 @@ _02028E54: @ jump table
 _02028E8C:
 	ldr r0, [r3, #4]
 	ldr r1, [r3, #8]
-	bl sub_0202828C
+	bl Sound_StartMusic
 	b _02028FF2
 _02028E96:
 	ldr r1, [r3, #4]
@@ -35555,19 +35555,19 @@ _02028E96:
 	ldr r2, _02028EA8 @ =0x0000FFFF
 	ands r1, r2
 	ldr r2, [r3, #8]
-	bl sub_020282B4
+	bl Sound_StartEffect
 	b _02028FF2
 	.align 2, 0
 _02028EA8: .4byte 0x0000FFFF
 _02028EAC:
 	ldr r0, [r3, #4]
 	ldr r1, [r3, #8]
-	bl sub_02028410
+	bl Sound_FadeOutPlayer
 	b _02028FF2
 _02028EB6:
 	ldr r0, [r3, #4]
 	ldrb r1, [r3, #8]
-	bl sub_02028448
+	bl Sound_SetPlayerPaused
 	b _02028FF2
 _02028EC0:
 	ldr r2, _02028ED0 @ =0x03001918
@@ -35734,7 +35734,7 @@ _02028FEC:
 	ldrb r0, [r3, #4]
 	bl sub_02027370
 _02028FF2:
-	bl sub_02028B0C
+	bl Sound_ReadCommand
 	adds r3, r0, #0
 	cmp r3, #0
 	beq _02028FFE
