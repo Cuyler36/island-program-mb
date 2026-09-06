@@ -2,7 +2,7 @@
 #include "m_name_table.h"
 
 /* Original address: 0x0200F580 */
-extern u8 gMsgWindowTileData[2 * 0x480];
+extern u8 gMsgWindowTileData[2][0x480];
 /* Original address: 0x020147E0 */
 extern u8 gMsgThreeChoiceTileData[3][0xD80];
 
@@ -622,7 +622,7 @@ mMsg_CONTROL_CODE_PROC sMsgControlCodeHandlers[] = {
 
 /* Original address: 0x0202AAC8 */
 void *gMsgTwoChoiceHighlightTiles[2] = {
-    gMsgWindowTileData, gMsgWindowTileData + 0x480,
+    gMsgWindowTileData[0], gMsgWindowTileData[1],
 };
 
 /* Original address: 0x0202AAD0 */

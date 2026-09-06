@@ -758,7 +758,7 @@ extern u8 gMsgPromptTiles[0x1200];
 /* Original address: 0x0200E380 */
 extern u8 gMsgNoticeTiles[0x1200];
 /* Original address: 0x0200F580 */
-extern u8 gMsgWindowTileData[2 * 0x480];
+extern u8 gMsgWindowTileData[2][0x480];
 /* Original address: 0x020147E0 */
 extern u8 gMsgThreeChoiceTileData[3][0xD80];
 #define gMsgVram ((u8 *)(BG_VRAM + TILE_OFFSET_4BPP(0x100)))
@@ -1254,7 +1254,7 @@ s32 mMsg_ProcessText(mMsg_Window_c *msg, u8 *tile_data, s32 max_characters) {
                     if (character == 0x20) {
                         character = 0x80;
                     }
-                    mFont_DrawCharToTiles(destination, msg->text_x, 0, msg->tile_stride, character, palette, glyph_width - 1);
+                    mFont_DrawCharToTiles(destination, msg->text_x, 0, (u16)msg->tile_stride, character, palette, glyph_width - 1);
                     msg->text_x += glyph_width;
                 }
                 msg->text_offset += mFont_CodeSize_get(&msg->text[msg->text_offset]);
@@ -1273,15 +1273,17 @@ void mMsg_Init(void) {
     memcpy(init_data, gMsgChoiceTemplateParams, sizeof(init_data));
 
     for (i = 0; i < 2; i++) {
-        mMsg_Window_c* msg = &sMsgWindows[i];
+        u8 *codeBuf = gMsgCodeBuffers[i];
+        u8 *tileBuf = gMsgTileBuffers[i];
+        u8 *windowTileBuf = gMsgWindowTileData[i];
 
-        mMsg_InitWindow(msg, gMsgCodeBuffers[i], gMsgTileBuffers[i]);
+        mMsg_InitWindow(&sMsgWindows[i], gMsgCodeBuffers[i], gMsgTileBuffers[i]);
         sMsgWindows[i].text_x = sMsgWindows[i].text_start_x;
         sMsgWindows[i].text_row = 0;
         sMsgWindows[i].message_length = mMsg_LoadMessage(sMsgWindows[i].text, 0x18);
         sMsgWindows[i].text[5] = init_data[i * 2];
         sMsgWindows[i].text[0xF] = init_data[i * 2 + 1];
-        sMsgWindows[i].tile_data = gMsgWindowTileData + i * 0x480;
+        sMsgWindows[i].tile_data = gMsgWindowTileData[i];
         CpuFastFill(0x55555555, sMsgWindows[i].tile_data, 0x480);
 
         while (mMsg_ProcessText(&sMsgWindows[i], sMsgWindows[i].tile_data, 1) == 1) {
@@ -1290,9 +1292,11 @@ void mMsg_Init(void) {
 
     for (i = 0; i < ARRAY_COUNT(sMsgWindows); i++) {
         mMsg_Window_c* msg = &sMsgWindows[i];
+        u8 *codeBuf = gMsgCodeBuffers[i];
+        u8 *tileBuf = gMsgTileBuffers[i];
         u16 saved_text_offset;
 
-        mMsg_InitWindow(msg, gMsgCodeBuffers[i], gMsgTileBuffers[i]);
+        mMsg_InitWindow(msg, codeBuf, tileBuf);
         mMsg_ClearText(msg);
         sMsgWindows[i].message_id = sCachedMessageIds[i];
         sMsgWindows[i].message_length = mMsg_LoadMessage(sMsgWindows[i].text, sMsgWindows[i].message_id);
@@ -1300,7 +1304,7 @@ void mMsg_Init(void) {
 
         do {
             saved_text_offset = sMsgWindows[i].text_offset;
-        } while (mMsg_ProcessText(msg, sMsgWindows[i].tile_data, 1) == 1);
+        } while (mMsg_ProcessText(&sMsgWindows[i], sMsgWindows[i].tile_data, 1) == 1);
         sMsgWindows[i].text_offset = saved_text_offset;
     }
 }
