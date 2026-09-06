@@ -762,10 +762,16 @@ extern u8 gMsgWindowTileData[2][0x480];
 /* Original address: 0x020147E0 */
 extern u8 gMsgThreeChoiceTileData[3][0xD80];
 #define gMsgVram ((u8 *)(BG_VRAM + TILE_OFFSET_4BPP(0x100)))
+
+#if 0
 /* Original address: 0x02000000 */
 extern u16 gBgPaletteBuffer[256];
 /* Original address: 0x02000200 */
 extern u16 gObjPaletteBuffer[256];
+#else
+#define gBgPaletteBuffer ((u16*)0x02000000)
+#define gObjPaletteBuffer ((u16*)0x02000200)
+#endif
 
 /* These tables are indexed by the one-based mMsg_MODE_* values. */
 // #define gMsgModeSetupCallbacks ((mMsg_Callback*)0x0202AADC)
@@ -1352,6 +1358,7 @@ s32 mFont_DrawStringToTiles(u8 *tile_data, u16 *cursor, u16 y, u16 tile_stride, 
         if ((stop_at_newline == 1 && character == CHAR_NEW_LINE) || character == CHAR_CONTROL_CODE) {
             break;
         }
+        character++,character--; // Required to match
         if (fixed_width != 1) {
             character_width = mFont_GetGlyphWidth(character);
         } else {
@@ -1526,11 +1533,15 @@ void GetPaletteColor(u16 *palette, u8 x, u8 y, u8 *red, u8 *green, u8 *blue) {
 
 /* Original address: 0x02019BD8 */
 void SetPaletteColor(u8 palette, u8 bank, u8 color, u8 red, u8 green, u8 blue) {
-    u16 *buffer = gBgPaletteBuffer;
+    u16 *buffer;
     u16 packed_color;
 
     if (palette == 1) {
         buffer = gObjPaletteBuffer;
+        // buffer = (u16*)0x02000200;
+    } else {
+        buffer = gBgPaletteBuffer;
+        // buffer = (u16*)0x02000000;
     }
     packed_color = RGB(red, green, blue);
     buffer[(bank & 0xF) * 16 + (color & 0xF)] = packed_color;
@@ -2187,7 +2198,6 @@ void sub_02019F08(void) {
 /* Original address: 0x02019F0C */
 void InitializeIsland(void) {
     s32 i;
-    u32 *land_info;
 
     DmaCopy16(3, sBgPalettes, gBgPaletteBuffer, BG_PLTT_SIZE);
     DmaCopy16(3, sInitialObjPalette, gObjPaletteBuffer, OBJ_PLTT_SIZE);
@@ -2195,12 +2205,9 @@ void InitializeIsland(void) {
     gIslandTransferData = &gInitialIsland;
     gIslandData = &gIsland;
     CpuCopy32(&gInitialIsland, &gIsland, sizeof(gIsland));
-    i = 0;
-    land_info = (u32 *)&gIslandLandInfo;
-    do {
-        *land_info++ = ((u32 *)&gIslandTransferData->landinfo)[i];
-        i++;
-    } while (i < (s32)(sizeof(gIslandLandInfo) / sizeof(u32)));
+    for (i = 0; i < (s32)(sizeof(gIslandLandInfo) / sizeof(u32)); i++) {
+        ((u32 *)&gIslandLandInfo)[i] = ((u32 *)&gIslandTransferData->landinfo)[i];
+    }
     gGameState.game_time_frames = gIslandTransferData->renew_time.hour * 3600;
     gGameState.game_time_frames += gIslandTransferData->renew_time.min * 60;
     gGameState.game_time_frames = (gGameState.game_time_frames + gIslandTransferData->renew_time.sec) * 60;
@@ -2238,8 +2245,8 @@ void IslandProgram_Main(void) {
     for (;;) {
         GameState_ReadKeys();
         if (gGameState.sleep_mode_active == 1 && gGameState.sleep_ready == 1) {
-            u16 saved_interrupt_enable;
-            u16 saved_display_control;
+            vu16 saved_interrupt_enable;
+            vu16 saved_display_control;
 
             saved_interrupt_enable = REG_IE;
             /* The original reads DISPCNT here without restoring it directly. */
@@ -3264,7 +3271,7 @@ void IslandProgram_EnterTransferProgress(IslandProgramWork *work) {
         gIslandData->checksum = 0;
 
         // clear the land info? I don't know why they didn't use memset here.
-        for (i = 0; i < sizeof(gIslandData->landinfo) / sizeof(s32); i++) {
+        for (i = 0; i < (s32)(sizeof(gIslandData->landinfo) / sizeof(s32)); i++) {
             ((s32*)&gIslandData->landinfo)[i] = 0;
         }
         work->link_transfer_started = 1;
@@ -3364,7 +3371,7 @@ void IslandProgram_EnterTransferCleanup(IslandProgramWork *work) {
         gGameState.transfer_dialog_active = 0;
     } else if (mMsg_RequestAppear(&sMsgWindow_03002980, 18) == 1) {
         // Again, why not use memcpy here?
-        for (i = 0; i < sizeof(gIslandData->landinfo) / sizeof(s32); i++) {
+        for (i = 0; i < (s32)(sizeof(gIslandData->landinfo) / sizeof(s32)); i++) {
             ((s32*)&gIslandData->landinfo)[i] = ((s32*)&gIslandLandInfo)[i];
         }
         work->transfer_state = work->pending_transfer_state;
