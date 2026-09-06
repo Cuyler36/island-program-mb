@@ -2042,8 +2042,8 @@ s32 Item_IsWeed(mActor_name_t arg0);
 s32 Item_IsRock(mActor_name_t arg0);
 s32 Item_IsReserved(mActor_name_t arg0);
 s32 Item_GetTypeIndex(mActor_name_t arg0);
-mActor_name_t Item_GetItemFromTypeIndex(s32 idx);
-mActor_name_t Item_TypeToIslandItem(s32 idx);
+mActor_name_t Item_GetItemFromTypeIndex(u32 idx);
+mActor_name_t Item_TypeToIslandItem(u32 idx);
 void FallingFruit_Init(s32 arg0, u16 arg1, u8 arg2, u8 arg3);
 void sub_02024C00(void);
 void sub_02024C04(void);
@@ -6067,24 +6067,24 @@ s32 Islander_CanMoveInDirection(u8 direction) {
     s32 x = islander->x + gIslanderMoveCollisionOffsets[offset_idx];
     s32 y_offset = gIslanderMoveCollisionOffsets[offset_idx + 1] + 0x800;
     s32 y = islander->y + y_offset;
-    s32 row = (y >> 8) & ~0xF;
-    u8 tile = ((x >> 12) & 0xF) | row;
-    u32 tilemap;
+    u8 tile = (y >> 8) & ~0xF;
+    u16 *tilemap;
 
+    tile |= (x >> 12) & 0xF;
     if ((x & 0xFF0000) == 0) {
         islander->surrounding_item_types[0] = field->fg_tiles[0][tile];
-        tilemap = BG_SCREEN_ADDR(20);
+        tilemap = (u16 *)BG_SCREEN_ADDR(20);
     } else {
         islander->surrounding_item_types[0] = field->fg_tiles[1][tile];
-        tilemap = BG_SCREEN_ADDR(21);
+        tilemap = (u16 *)BG_SCREEN_ADDR(21);
     }
-    tilemap = (tile & 0xF0) * 8 + tilemap;
-    tilemap += (tile & 0xF) * 4;
-    islander->collision_tilemap = (u16 *)tilemap;
-    if (CheckSurroundingCollision(islander->surrounding_item_types[0], (u16 *)tilemap) == 0) {
-        return 1;
-    } else {
+    tilemap = (tile & 0xF0) * 4 + tilemap;
+    tilemap += (tile & 0xF) * 2;
+    islander->collision_tilemap = tilemap;
+    if (CheckSurroundingCollision(islander->surrounding_item_types[0], tilemap) != 0) {
         return 0;
+    } else {
+        return 1;
     }
 }
 
@@ -10243,7 +10243,7 @@ s32 Item_GetTypeIndex(mActor_name_t item) {
     return -1;
 }
 
-mActor_name_t Item_GetItemFromTypeIndex(s32 idx) {
+mActor_name_t Item_GetItemFromTypeIndex(u32 idx) {
     if (idx < ARRAY_COUNT(Item_TypeEntries)) {
         return Item_TypeEntries[idx].item;
     }
@@ -10252,7 +10252,7 @@ mActor_name_t Item_GetItemFromTypeIndex(s32 idx) {
 
 extern mActor_name_t gc_rsv_island_item_table[18];
 
-mActor_name_t Item_TypeToIslandItem(s32 idx) {
+mActor_name_t Item_TypeToIslandItem(u32 idx) {
     if (idx < ARRAY_COUNT(gc_rsv_island_item_table)) {
         return gc_rsv_island_item_table[idx];
     }
@@ -12907,7 +12907,7 @@ void Sound_InitPlayers(void) {
 
 /* Original address: 0x020281C4 */
 void Sound_ResetPlayerParameters(SoundPlayer *player) {
-    player->control.flags &= ~1;
+    player->control.bits.paused = 0;
     player->timing.values.tempo = 150;
     player->timing.values.tempo_adjust = 0;
     player->master_volume = 128;
