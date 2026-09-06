@@ -68,9 +68,9 @@ DATA_OBJECTS = (
     DataObject("sCachedMessageIds", 0x1248, 0x0024),
     DataObject("sMsgControlCodeHandlers", 0x126C, 0x01C4, "thumb_functions"),
     # Original address: 0x0202AAC8; mMsg_UpdateChoiceHighlight's two-choice initializer.
-    DataObject("gMsgTwoChoiceHighlightTiles", 0x1430, 0x0008),
+    DataObject("gMsgTwoChoiceHighlightTiles", 0x1430, 0x0008, "choice_tiles", True),
     # Original address: 0x0202AAD0; mMsg_UpdateChoiceHighlight's three-choice initializer.
-    DataObject("gMsgThreeChoiceHighlightTiles", 0x1438, 0x000C),
+    DataObject("gMsgThreeChoiceHighlightTiles", 0x1438, 0x000C, "choice_tiles", True),
     DataObject("gMsgWindowScrollOffsets", 0x148C, 0x0030),
     DataObject("sMsgControlCodeInfo", 0x14BC, 0x01C4),
     # Original address: 0x0202AD18
@@ -139,9 +139,9 @@ DATA_OBJECTS = (
     DataObject("sFieldObjectInitialTimers", 0x6A78, 0x13, global_symbol=True),
     # Original address: 0x02030123
     DataObject("sFieldObjectShakeFrames", 0x6A8B, 0x09, global_symbol=True),
-    DataObject("sIslanderOamData", 0x6A94, 0x2668),
-    DataObject("sIslanderAnimFrames", 0x90FC, 0x08E0, "islander_frames"),
-    DataObject("sIslanderAnimFrameLists", 0x99DC, 0x060C, "islander_frame_list"),
+    DataObject("sIslanderOamData", 0x6A94, 0x2668, global_symbol=True),
+    DataObject("sIslanderAnimFrames", 0x90FC, 0x08E0, "islander_frames", True),
+    DataObject("sIslanderAnimFrameLists", 0x99DC, 0x060C, "islander_frame_list", True),
     DataObject("gIslanderAnimData", 0x9FE8, 0x0188, "islander_anim_table", True),
     # Original address: 0x0203380C
     DataObject("IslanderMoveProcTable", 0xA174, 0x0054, "thumb_functions", True),
@@ -279,6 +279,140 @@ BSS_OBJECTS = (
 )
 
 
+# Additional boundaries recovered during the data.c consolidation.
+DATA_OBJECTS = tuple(sorted(DATA_OBJECTS + (
+    # Original address: 0x0202AADC
+    DataObject("gMsgModeSetupCallbacks", 0x1444, 0x24, "thumb_functions", global_symbol=True),
+    # Original address: 0x0202AB00
+    DataObject("sData_0202AB00", 0x1468, 0x24, global_symbol=True),
+    # Original address: 0x0202AFC0
+    DataObject("sData_0202AFC0", 0x1928, 0x4, global_symbol=True),
+    # Original address: 0x0202AFC8
+    DataObject("sData_0202AFC8", 0x1930, 0x4, global_symbol=True),
+    # Original address: 0x0202AFCC
+    DataObject("sIslandProgramNoticeEnterProcs", 0x1934, 0x10, "thumb_functions", global_symbol=True),
+    # Original address: 0x0202AFEC
+    DataObject("sIslandProgramSleepEnterProcs", 0x1954, 0x10, "thumb_functions", global_symbol=True),
+    # Original address: 0x0202B00C
+    DataObject("sNoticeResultMessages", 0x1974, 0x8, global_symbol=True),
+    # Original address: 0x0202B284
+    DataObject("sIslandProgramTransferEnterProcs", 0x1BEC, 0x1C, "thumb_functions", global_symbol=True),
+    # Original address: 0x0202B2EC
+    DataObject("sData_0202B2EC", 0x1C54, 0x10, global_symbol=True),
+    # Original address: 0x0202B330
+    DataObject("sData_0202B330", 0x1C98, 0x48, global_symbol=True),
+    # Original address: 0x0202B37C
+    DataObject("sData_0202B37C", 0x1CE4, 0x60, global_symbol=True),
+    # Original address: 0x0202B3E0
+    DataObject("sData_0202B3E0", 0x1D48, 0x1C, global_symbol=True),
+    # Original address: 0x0202FD15
+    DataObject("sData_0202FD15", 0x667D, 0x1, global_symbol=True),
+    # Original address: 0x0202FD38
+    DataObject("gIslandBuildingProcs", 0x66A0, 0x8, "thumb_functions", global_symbol=True),
+    # Original address: 0x0202FDB8
+    DataObject("sData_0202FDB8", 0x6720, 0xF8, global_symbol=True),
+    # Original address: 0x0202FECC
+    DataObject("gFieldObjectProcs", 0x6834, 0x14, "thumb_functions", global_symbol=True),
+    # Original address: 0x02033808
+    DataObject("sData_02033808", 0xA170, 0x4, global_symbol=True),
+    # Original address: 0x0203388C
+    DataObject("IslanderSubMoveAction_BuryProcTbl", 0xA1F4, 0x18, "thumb_functions", global_symbol=True),
+    # Original address: 0x020338A4
+    DataObject("sIslanderMoveAction20SubMoveProcs", 0xA20C, 0x14, "thumb_functions", global_symbol=True),
+    # Original address: 0x020338DA
+    DataObject("sData_020338DA", 0xA242, 0x2, global_symbol=True),
+    # Original address: 0x02033A6C
+    DataObject("gBuriedItemUpdateGroups", 0xA3D4, 0x18, global_symbol=True),
+    # Original address: 0x02033B26
+    DataObject("sData_02033B26", 0xA48E, 0x1, global_symbol=True),
+    # Original address: 0x02033F7C
+    DataObject("sData_02033F7C", 0xA8E4, 0x4, global_symbol=True),
+    # Original address: 0x02034062
+    DataObject("gBuriedItemRngTileGroups", 0xA9CA, 0x82, global_symbol=True),
+    # Original address: 0x020340E4
+    DataObject("gBuriedItemGeneratorIndices", 0xAA4C, 0x120, global_symbol=True),
+    # Original address: 0x02034204
+    DataObject("Item_TypeEntries", 0xAB6C, 0x2C0, "item_type_entries", global_symbol=True),
+    # Original address: 0x020344C4
+    DataObject("gc_rsv_island_item_table", 0xAE2C, 0x24, global_symbol=True),
+    # Original address: 0x02034720
+    DataObject("sData_02034720", 0xB088, 0xC0, global_symbol=True),
+    # Original address: 0x0203480C
+    DataObject("sData_0203480C", 0xB174, 0x418, global_symbol=True),
+    # Original address: 0x02034C94
+    DataObject("sData_02034C94", 0xB5FC, 0x4C, global_symbol=True),
+    # Original address: 0x02034D8C
+    DataObject("sData_02034D8C", 0xB6F4, 0x80, global_symbol=True),
+    # Original address: 0x02034E24
+    DataObject("sData_02034E24", 0xB78C, 0xB0, global_symbol=True),
+    # Original address: 0x02035776
+    DataObject("sData_02035776", 0xC0DE, 0x2, global_symbol=True),
+    # Original address: 0x02035BF4
+    DataObject("sData_02035BF4", 0xC55C, 0x1C, global_symbol=True),
+    # Original address: 0x02035CC0
+    DataObject("sData_02035CC0", 0xC628, 0x4, global_symbol=True),
+    # Original address: 0x02035CC9
+    DataObject("sData_02035CC9", 0xC631, 0x3, global_symbol=True),
+    # Original address: 0x02035CD1
+    DataObject("sData_02035CD1", 0xC639, 0x3, global_symbol=True),
+    # Original address: 0x02036128
+    DataObject("sData_02036128", 0xCA90, 0x3BFC, global_symbol=True),
+), key=lambda obj: obj.offset))
+
+# Additional boundaries recovered during the data.c consolidation.
+BSS_OBJECTS = tuple(sorted(BSS_OBJECTS + (
+    # Original address: 0x03000004
+    BssObject("sBssPadding_03000004", 0x3000004, 0xC, global_symbol=True),
+    # Original address: 0x0300001E
+    BssObject("sBssPadding_0300001E", 0x300001E, 0x2, global_symbol=True),
+    # Original address: 0x03000024
+    BssObject("sBssPadding_03000024", 0x3000024, 0x4, global_symbol=True),
+    # Original address: 0x03000032
+    BssObject("sBssPadding_03000032", 0x3000032, 0x6, global_symbol=True),
+    # Original address: 0x03000053
+    BssObject("sBssPadding_03000053", 0x3000053, 0x5, global_symbol=True),
+    # Original address: 0x03000060
+    BssObject("sBssPadding_03000060", 0x3000060, 0xA, global_symbol=True),
+    # Original address: 0x0300006B
+    BssObject("sBssPadding_0300006B", 0x300006B, 0x5, global_symbol=True),
+    # Original address: 0x03000264
+    BssObject("sBssPadding_03000264", 0x3000264, 0x4, global_symbol=True),
+    # Original address: 0x03000270
+    BssObject("sBssPadding_03000270", 0x3000270, 0x328, global_symbol=True),
+    # Original address: 0x0300059C
+    BssObject("sBssPadding_0300059C", 0x300059C, 0x2C8, global_symbol=True),
+    # Original address: 0x03001064
+    BssObject("sBssPadding_03001064", 0x3001064, 0x360, global_symbol=True),
+    # Original address: 0x03001B38
+    BssObject("sBssPadding_03001B38", 0x3001B38, 0x8, global_symbol=True),
+    # Original address: 0x03001B40
+    BssObject("gIslandData", 0x3001B40, 0x4, global_symbol=True),
+    # Original address: 0x03001B44
+    BssObject("sBssPadding_03001B44", 0x3001B44, 0xC, global_symbol=True),
+    # Original address: 0x030023B4
+    BssObject("sBssPadding_030023B4", 0x30023B4, 0x4C, global_symbol=True),
+    # Original address: 0x03002400
+    BssObject("gIslandLandInfo", 0x3002400, 0x10, global_symbol=True),
+    # Original address: 0x03002810
+    BssObject("sBssPadding_03002810", 0x3002810, 0x170, global_symbol=True),
+    # Original address: 0x03002980
+    BssObject("sMsgWindow_03002980", 0x3002980, 0xA0, global_symbol=True),
+    # Original address: 0x03002FC0
+    BssObject("sMsgWindow_03002fc0", 0x3002FC0, 0xA0, global_symbol=True),
+    # Original address: 0x03003060
+    BssObject("sMsgWindow_03003060", 0x3003060, 0xA0, global_symbol=True),
+    # Original address: 0x03003100
+    BssObject("sBssPadding_03003100", 0x3003100, 0x20, global_symbol=True),
+    # Original address: 0x03003160
+    BssObject("sBssPadding_03003160", 0x3003160, 0x5B0, global_symbol=True),
+    # Original address: 0x03003BD8
+    BssObject("sBssPadding_03003BD8", 0x3003BD8, 0x28, global_symbol=True),
+    # Original address: 0x03004788
+    BssObject("sBssPadding_03004788", 0x3004788, 0x8, global_symbol=True),
+    # Original address: 0x03004790
+    BssObject("g_EntityTable", 0x3004790, 0x3F0, global_symbol=True),
+), key=lambda obj: obj.address))
+
 def read_elf_sections(data: bytes) -> list[ElfSection]:
     if len(data) < ELF_HEADER_SIZE or data[:4] != b"\x7fELF":
         raise ValueError("text object is not an ELF file")
@@ -411,13 +545,16 @@ def generate_assembly(text_object: Path, data_path: Path) -> str:
             raise ValueError(f"invalid or overlapping data object {obj.name}")
         emit_incbin(lines, incbin_path, cursor, obj.offset - cursor)
         emit_symbol_header(lines, obj.name, obj.global_symbol)
-        if obj.relocation_kind == "thumb_functions":
+        if obj.relocation_kind in ("thumb_functions", "item_type_entries"):
+            stride = 8 if obj.relocation_kind == "item_type_entries" else 4
             if obj.size % 4:
                 raise ValueError(f"pointer table {obj.name} is not word-sized")
-            for pointer_offset in range(obj.offset, obj.offset + obj.size, 4):
+            for pointer_offset in range(obj.offset, obj.offset + obj.size, stride):
                 pointer = struct.unpack_from("<I", data, pointer_offset)[0]
                 if pointer == 0:
                     lines.append("    .4byte 0")
+                    if stride == 8:
+                        emit_incbin(lines, incbin_path, pointer_offset + 4, 4)
                     continue
                 try:
                     function_name = functions[pointer]
@@ -427,6 +564,14 @@ def generate_assembly(text_object: Path, data_path: Path) -> str:
                         f"at target address 0x{DATA_ADDRESS + pointer_offset:08X}"
                     ) from error
                 lines.append(f"    .4byte {function_name}")
+                if stride == 8:
+                    emit_incbin(lines, incbin_path, pointer_offset + 4, 4)
+        elif obj.relocation_kind == "choice_tiles":
+            address, symbol = ((0x0200F580, "gMsgWindowTileData") if obj.size == 8
+                               else (0x020147E0, "gMsgThreeChoiceTileData"))
+            for offset in range(obj.offset, obj.offset + obj.size, 4):
+                pointer = struct.unpack_from("<I", data, offset)[0]
+                lines.append(f"    .4byte {symbol} + 0x{pointer - address:X}")
         elif obj.relocation_kind == "islander_frames":
             if obj.size % 8:
                 raise ValueError(f"frame table {obj.name} is not record-sized")

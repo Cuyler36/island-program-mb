@@ -7,15 +7,22 @@ GNU as also emits R_ARM_V4BX marker relocations, which objdiff 3.7.1 does not
 understand.  This script creates a generated copy that removes those marker
 relocations without assigning function sizes.
 
-This operation does not change section contents, data bytes, or instructions.
+Known data/BSS addresses in ARM literal pools are represented as ABS32
+relocations. Resolving those relocations at the original addresses reproduces
+the input bytes exactly. Instructions and original assembly remain unchanged.
 """
 
 from __future__ import annotations
 
 import argparse
+import re
 import struct
+import sys
 from dataclasses import dataclass
 from pathlib import Path
+
+sys.dont_write_bytecode = True
+from generate_objdiff_sections import DATA_OBJECTS, BSS_OBJECTS, DATA_ADDRESS
 
 
 ELF_HEADER_SIZE = 52
@@ -25,6 +32,92 @@ EM_ARM = 40
 SHT_RELA = 4
 SHT_REL = 9
 R_ARM_V4BX = 40
+
+
+def known_data_addresses(linker_path: Path) -> dict[int, str]:
+    """Prefer owned objects over linker aliases for the same address."""
+    result = {DATA_ADDRESS + obj.offset: obj.name for obj in DATA_OBJECTS
+              if not obj.name.startswith("sData_")}
+    result.update({obj.address: obj.name for obj in BSS_OBJECTS
+                   if not obj.name.startswith("sBssPadding_")})
+    for name, address in re.findall(r"^(\w+)\s*=\s*(0x[0-9A-Fa-f]+);",
+                                    linker_path.read_text(), re.M):
+        result.setdefault(int(address, 16), name)
+    return result
+
+
+def symbolize_data_literals(data: bytearray, addresses: dict[int, str]) -> int:
+    """Add relocations only to aligned words in assembler-marked data ranges.
+
+    ARM $d/$t/$a mapping symbols distinguish pools from executable instructions.
+    Existing relocations are authoritative and are never replaced. New global
+    undefined symbols and tables are appended, preserving all existing symbol
+    indices and function sizes.
+    """
+    section_offset = struct.unpack_from("<I", data, 32)[0]
+    stride, count, names_index = struct.unpack_from("<HHH", data, 46)
+    sections = [struct.unpack_from("<10I", data, section_offset + i * stride)
+                for i in range(count)]
+
+    def contents(index):
+        section = sections[index]
+        return data[section[4]:section[4] + section[5]]
+
+    def string(table, offset):
+        return bytes(table[offset:table.index(0, offset)]).decode("ascii")
+
+    names = contents(names_index)
+    text_index = next(i for i, s in enumerate(sections) if string(names, s[0]) == ".text")
+    text = sections[text_index]
+    sym_index = next(i for i, s in enumerate(sections) if s[1] == 2)
+    str_index = sections[sym_index][6]
+    symbols, strings = contents(sym_index), contents(str_index)
+    if sections[sym_index][9] != 16:
+        raise ValueError("expected ELF32 symbol entries")
+    mappings = []
+    symbol_indices = {}
+    for offset in range(0, len(symbols), 16):
+        name, value, size, info, other, index = struct.unpack_from("<IIIBBH", symbols, offset)
+        name = string(strings, name)
+        if name:
+            symbol_indices[name] = offset // 16
+        if index == text_index and re.fullmatch(r"\$[dat](?:\..*)?", name):
+            mappings.append((value, name[1]))
+    rel_index = next(i for i, s in enumerate(sections)
+                     if s[1] == SHT_REL and s[7] == text_index)
+    if sections[rel_index][6] != sym_index or sections[rel_index][9] != 8:
+        raise ValueError("unexpected text relocation table")
+    relocations = contents(rel_index)
+    occupied = {struct.unpack_from("<I", relocations, i)[0]
+                for i in range(0, len(relocations), 8)}
+    mappings.sort()
+    mappings.append((text[5], "end"))
+    changed = 0
+    for (start, kind), (end, _) in zip(mappings, mappings[1:]):
+        if kind != "d":
+            continue
+        for offset in range((start + 3) & ~3, end - 3, 4):
+            if offset in occupied:
+                continue
+            value = struct.unpack_from("<I", data, text[4] + offset)[0]
+            if value not in addresses:
+                continue
+            name = addresses[value]
+            if name not in symbol_indices:
+                symbol_indices[name] = len(symbols) // 16
+                symbols.extend(struct.pack("<IIIBBH", len(strings), 0, 0, 0x11, 0, 0))
+                strings.extend(name.encode("ascii") + b"\0")
+            # ELF REL stores its addend in the relocated word; object bases
+            # have addend zero, not the already-linked original address.
+            struct.pack_into("<I", data, text[4] + offset, 0)
+            relocations.extend(struct.pack("<II", offset, symbol_indices[name] << 8 | 2))
+            changed += 1
+    if changed:
+        for index, table in ((str_index, strings), (sym_index, symbols), (rel_index, relocations)):
+            data.extend(b"\0" * (-len(data) % 4))
+            struct.pack_into("<II", data, section_offset + index * stride + 16, len(data), len(table))
+            data.extend(table)
+    return changed
 
 
 @dataclass(frozen=True, slots=True)
@@ -112,6 +205,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
         type=Path,
         default=Path("payload/build/objdiff/all.text.target.o"),
     )
+    parser.add_argument("--linker", type=Path, default=Path("payload/ld_script.txt"))
     return parser
 
 
@@ -120,11 +214,13 @@ def main() -> int:
     data = bytearray(args.input.read_bytes())
     sections = read_sections(data)
     removed_relocations = remove_v4bx_relocations(data, sections)
+    added_relocations = symbolize_data_literals(data, known_data_addresses(args.linker))
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_bytes(data)
     print(
         f"Prepared {args.output}: preserved function sizes for objdiff inference; "
-        f"removed {removed_relocations} R_ARM_V4BX marker relocations"
+        f"removed {removed_relocations} R_ARM_V4BX marker relocations; "
+        f"added {added_relocations} data/BSS literal relocations"
     )
     return 0
 

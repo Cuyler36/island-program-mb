@@ -1217,6 +1217,8 @@ _02018AD4: .4byte 0x03000014
 _02018AD8: .4byte 0x0300001D
 
 	thumb_func_start mMsg_CheckAdvanceInput
+	@ Private helper: resolve same-section calls as in the C translation unit.
+	.local mMsg_CheckAdvanceInput
 mMsg_CheckAdvanceInput: @ 0x02018ADC
 	ldr r0, _02018AEC @ =0x03001B50
 	ldr r1, _02018AF0 @ =0x0000081A

@@ -50,7 +50,7 @@ ASM_SRCS := $(foreach subdir,$(ASM_SUBDIRS),$(wildcard $(subdir)/*.s))
 ASM_OBJS := $(ASM_SRCS:%.s=$(OBJ_DIR)/%.o)
 C_SRCS := $(foreach subdir,$(C_SUBDIRS),$(wildcard $(subdir)/*.c))
 C_OBJS := $(C_SRCS:%.c=$(OBJ_DIR)/%.o)
-DATA_ASM_SRCS := $(wildcard data/*.s sound/*.s sound/*/*.s)
+DATA_ASM_SRCS := $(filter-out data/data.s,$(wildcard data/*.s sound/*.s sound/*/*.s))
 DATA_ASM_OBJS := $(DATA_ASM_SRCS:%.s=$(OBJ_DIR)/%.o)
 MID_SUBDIR := sound/songs/midi
 MID_ASM_MIDS := $(wildcard $(MID_SUBDIR)/*.mid)
@@ -74,7 +74,7 @@ SUBDIRS := $(ASM_SUBDIRS) $(C_SUBDIRS) data sound sound/songs $(MID_SUBDIR)
 
 ALL_OBJS := $(ASM_OBJS) $(C_OBJS) $(DATA_ASM_OBJS) $(MID_ASM_OBJS)
 
-TOOLDIRS := $(filter-out ../tools/agbcc ../tools/binutils,$(wildcard ../tools/*))
+TOOLDIRS := $(filter-out ../tools/agbcc ../tools/binutils,$(patsubst %/Makefile,%,$(wildcard ../tools/*/Makefile)))
 
 infoshell = $(foreach line, $(shell $1 | sed "s/ /__SPACE__/g"), $(info $(subst __SPACE__, ,$(line))))
 
@@ -134,7 +134,7 @@ $(OBJ_DIR)/src/libc/memcpy.o $(OBJ_DIR)/src/libc/memset.o: CPPFLAGS += $(LIBC_CP
 $(OBJ_DIR)/src/libc/memcpy.o $(OBJ_DIR)/src/libc/memset.o: CFLAGS := -O2 -fno-builtin
 
 # The initial m2c reconstructions intentionally retain provisional pointer types.
-$(OBJ_DIR)/src/all.o: CFLAGS := $(filter-out -Werror,$(CFLAGS))
+$(OBJ_DIR)/src/all.o $(OBJ_DIR)/src/data.o: CFLAGS := $(filter-out -Werror,$(CFLAGS))
 $(OBJ_DIR)/src/all.o: asm/all_arm.inc asm/gflib/syscalls.inc
 
 $(ASM_OBJS): $(OBJ_DIR)/%.o: %.s $$(asm_dep)

@@ -54,41 +54,9 @@ gPcmResampleMixer = 0x030005A0;
 gSoundPcmBuffers = 0x030005A4;
 /* Original address: 0x03001064 */
 gSoundMixerCode = 0x03001064;
-/* Original address: 0x03000058 */
-gPcmOutputBuffers = 0x03000058;
-/* Original address: 0x0300006A */
-gPcmOutputBufferIndex = 0x0300006A;
-/* Original address: 0x03000070 */
-gSoundChannelLists = 0x03000070;
-/* Original address: 0x03000268 */
-sSoundKeySampleInstrument = 0x03000268;
-/* Original address: 0x03000598 */
-gPcmOutputMixer = 0x03000598;
-/* Original address: 0x03000864 */
-gPcmMixBuffer = 0x03000864;
-/* Original address: 0x030013C4 */
-gPcmChannels = 0x030013C4;
-/* Original address: 0x03000B24 */
-gSoundTracks = 0x03000B24;
-/* Original address: 0x03001728 */
-gPsgChannels = 0x03001728;
-/* Original address: 0x03000028 */
-sCurrentSoundEffects = 0x03000028;
-/* Original address: 0x03000038 */
-sSoundEffectStates = 0x03000038;
-/* Original address: 0x03000050 */
-sCurrentMusic = 0x03000050;
-/* Original address: 0x03000052 */
-sMusicEmotion = 0x03000052;
-/* Original address: 0x03001918 */
-gSoundPlayers = 0x03001918;
-/* Original address: 0x03004260 */
-gFallingFruit = 0x03004260;
 /* Original address: 0x03003BF0 */
 gAnimatedFieldObjects = 0x03003BF0;
 gGlobalStructure = 0x03000010;
-/* Original address: 0x03000020 */
-sFloatingItemIndex = 0x03000020;
 gIntrTable = 0x030023C0;
 /* Original address: 0x03003100 */
 gMsgGlyph = 0x03003100;
@@ -121,7 +89,6 @@ SECTIONS {
     {
         asm/crt0.o(.text);
         src/all.o(.text);
-        asm/all.o(.text);
         asm/libgcc/_call_via_rX.o(.text);
         asm/libgcc/_divsi3.o(.text);
         asm/libgcc/_dvmd_tls.o(.text);
@@ -132,12 +99,30 @@ SECTIONS {
         src/libc/memset.o(.text);
     } =0
 
-    .rodata :
+    /* Raw tables retain pointers into this original data image. */
+    . = 0x02029698;
+    .data :
     ALIGN(4)
     {
-		src/all.o(.rodata);
-		data/data.o(.data);
+        src/data.o(.data);
     } =0
+
+    /* Compiler-generated constants have no independently recovered object. */
+    .rodata : ALIGN(4)
+    {
+        src/all.o(.rodata);
+        src/data.o(.rodata);
+    } =0
+
+    . = 0x03000000;
+    .bss (NOLOAD) :
+    ALIGN(4)
+    {
+        src/data.o(.bss);
+    } =0
+
+    ASSERT(SIZEOF(.data) == 0x1068C, "payload data image size changed")
+    ASSERT(SIZEOF(.bss) == 0x4BAC, "payload IWRAM image size changed")
 
     . = 0x02040000; /* Limit EWRAM size */
 

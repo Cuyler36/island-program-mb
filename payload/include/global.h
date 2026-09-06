@@ -1348,7 +1348,7 @@ typedef void (*IslandProgramModeProc)(IslandProgramWork *work);
 
 /* Dispatch table indexed by IslandProgramWork.pending_mode; NULL entries are skipped. */
 /* Original address: 0x0202B2BC */
-extern IslandProgramModeProc const sIslandProgramModeEnterProcs[6];
+extern IslandProgramModeProc sIslandProgramModeEnterProcs[6];
 
 /* OAM layout used by the islander animation data. */
 typedef struct islander_oam_data_s {
@@ -1541,7 +1541,7 @@ typedef void (*Islander_SUB_MOVE_PROC)(void);
 typedef struct IslanderFoodPreference {
     u8 preferences[18][9];
     u8 layout[9];
-} IslanderFoodPreference;
+} __attribute__((packed, aligned(2))) IslanderFoodPreference;
 
 typedef struct IslanderDirectionSector {
     u16 max_angle;
@@ -1583,7 +1583,9 @@ extern u16 sFloatingItemBaseIndices[18 * 7];
 extern u8 sIslanderRewardAdjust[18];
 /* Original address: 0x03000020 */
 extern s32 sFloatingItemIndex;
+/* Original address: 0x02033FA4 */
 extern u8 gIslanderFavoriteHours[18];
+/* Original address: 0x02033FB6 */
 extern IslanderFoodPreference ISLANDER_FOOD_PREFERENCES;
 /* Original address: 0x020338DC */
 extern IslanderDirectionSector gIslanderDirectionSectors[8];
@@ -1771,10 +1773,6 @@ extern u16 time_of_day_palette_buffer1[16];
 extern u16 time_of_day_palette_buffer2[16];
 /* Original address: 0x020001C0 */
 extern u16 time_of_day_palette_buffer3[16];
-/* Original address: 0x0202B014 */
-extern const u16 sTimeOfDayPalette2Table[24][8];
-/* Original address: 0x0202B194 */
-extern const u16 sTimeOfDayPalette3Table[24][5];
 /* Original address: 0x02034EE4 */
 extern u16 time_of_day_palettes[24 * 4];
 extern u64 gUnk_30008D0[0x80];
