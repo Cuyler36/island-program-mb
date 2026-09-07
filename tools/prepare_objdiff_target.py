@@ -33,9 +33,13 @@ SHT_RELA = 4
 SHT_REL = 9
 R_ARM_V4BX = 40
 
-# Confirmed field pointers, rather than arbitrary values inside an object.
-# Original address: 0x030000F0, SoundChannelLists.active_tail at offset 0x80.
-DATA_FIELD_ADDRESSES = {0x030000F0: ("gSoundChannelLists", 0x80)}
+# Confirmed field/element pointers, rather than arbitrary interior addresses.
+DATA_FIELD_ADDRESSES = {
+    # Original address: 0x030000F0, SoundChannelLists.active_tail at offset 0x80.
+    0x030000F0: ("gSoundChannelLists", 0x80),
+    # Original address: 0x03003BC4, gIslandBuildings[ISLAND_BUILDING_ISLANDER_HOUSE].
+    0x03003BC4: ("gIslandBuildings", 0x14),
+}
 
 
 def known_data_addresses(linker_path: Path) -> dict[int, str]:

@@ -8110,6 +8110,7 @@ void Islander_MoveAction11_State0(void) {
     }
 }
 
+/* Original address: 0x020224D8 */
 void Islander_MoveAction11_State1(void) {
     IslandFieldWork *field = &gIslandFieldWork;
     Islander_AGB *islander = &gIslander;
@@ -8118,7 +8119,11 @@ void Islander_MoveAction11_State1(void) {
     EntitySpawnParams *spawn_params;
     u16 *tiles;
     s32 spawn_idx;
-    u16 tile;
+    s32 random;
+    s32 entity_tile_idx;
+    s32 map_tile_offset;
+    s32 tile_marker;
+    u32 tile;
 
     if (Islander_PlayAnim(1) != 0) {
         if ((field_object->hits_remaining == 0) || (field_object->hits_remaining & 0x80)) {
@@ -8176,7 +8181,6 @@ void Islander_MoveAction11_State1(void) {
     field_object->hits_remaining--;
     Sound_PlayEffect0(0);
 }
-
 void Islander_MoveAction11_State2(void) {
     Islander_AGB *islander = &gIslander;
     u16 next_timer;
@@ -8790,6 +8794,7 @@ void Islander_BuryItem_State3(void) {
     }
 }
 
+/* Original address: 0x020234B0 */
 void Islander_BuryItem_State4(void) {
     Islander_AGB *islander = &gIslander;
     u8 tile_idx = islander->interaction_tile;
@@ -10753,6 +10758,10 @@ void Entity_DrawSprite(s32 entity_index) {
     }
 }
 
+static inline u16 PlayerHand_GetTerrainTile(u16 *tilemap, u32 tile_mask) {
+    return *tilemap & tile_mask;
+}
+
 /* Original address: 0x020259C8 */
 s32 PlayerHand_IsItemPlacementBlocked(void) {
     Player *player = &gPlayer;
@@ -11177,13 +11186,12 @@ void Field_RestoreNeighborTreeTile(u16 tile_idx, s32 x, u8 neighbor_tile, u8 acr
 /* Original address: 0x020262DC */
 void Field_RestoreAdjacentTreeTiles(u16 tile_idx, s32 x) {
     Player *player = &gPlayer;
-    u8 left = (tile_idx & 0xF) - 1;
-    u8 right = (tile_idx & 0xF) + 1;
-    u8 row = tile_idx & 0xF0;
-    left &= 0xF;
-    right &= 0xF;
-    player->left_neighbor_tile_idx = left | row;
-    player->right_neighbor_tile_idx = right | row;
+    player->left_neighbor_tile_idx = (tile_idx & 0xF) - 1;
+    player->right_neighbor_tile_idx = (tile_idx & 0xF) + 1;
+    player->left_neighbor_tile_idx &= 0xF;
+    player->right_neighbor_tile_idx &= 0xF;
+    player->left_neighbor_tile_idx |= tile_idx & 0xF0;
+    player->right_neighbor_tile_idx |= tile_idx & 0xF0;
     if (!(player->x & 0xFF0000)) {
         Field_RestoreNeighborTreeTile(tile_idx, x, player->left_neighbor_tile_idx, 0, 0);
         if (!(player->right_neighbor_tile_idx & 0xF)) {
@@ -11392,6 +11400,7 @@ void PlayerHand_Update(void) {
 /* Original address: 0x02026830 */
 void PlayerHand_Draw(void) {
     Player *player = &gPlayer;
+    IslandFieldWork *field = &gIslandFieldWork;
     IslanderOamData *sprite;
     IslanderOamData *oam;
     u32 i;
@@ -11399,13 +11408,10 @@ void PlayerHand_Draw(void) {
     player->work_y = player->y >> 8;
     player->work_x = player->x >> 8;
     sprite = sPlayerHandAnimations[player->anim_id][player->anim_frame]->sprite_gfx_p;
-    gIslandFieldWork.entity_active[0] = 0;
-    gIslandFieldWork.entity_active[1] = 0;
+    field->entity_active[0] = 0;
+    field->entity_active[1] = 0;
     i = 0;
-    if (sprite->affine_param == 0xFFFF) {
-        return;
-    }
-    do {
+    while (sprite->affine_param != 0xFFFF) {
         oam = &((IslanderOamData *)gUnk3002410)[gGameState.oam_count];
         oam->obj_mode = sprite->obj_mode;
         oam->bpp = sprite->bpp;
@@ -11419,9 +11425,9 @@ void PlayerHand_Draw(void) {
         oam->mosaic = 1;
         oam->priority = 0;
         oam->palette_num = sprite->palette_num;
-        gIslandFieldWork.entity_active[i] = 1;
+        field->entity_active[i] = 1;
         gGameState.oam_count++;
         i++;
         sprite++;
-    } while (sprite->affine_param != 0xFFFF);
+    }
 }
