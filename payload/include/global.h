@@ -1757,10 +1757,10 @@ extern Player gPlayer;
 /* Original address: 0x03004790 */
 extern Entity g_EntityTable[12];
 extern ItemGroupStruct g_ItemDefinitions[ITEM_TYPE_COUNT];
-/* Original address: 0x02000100 */
-extern u16 current_time_of_day_palette0[16];
-/* Original address: 0x02000120 */
-extern u16 current_time_of_day_palette1[16];
+/* Original address: 0x02000102 */
+extern u16 current_time_of_day_palette0[4];
+/* Original address: 0x02000122 */
+extern u16 current_time_of_day_palette1[4];
 
 /* Original address: 0x02000190 */
 extern u16 current_time_of_day_palette2[8];

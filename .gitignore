@@ -16,5 +16,8 @@ payload/payload.bin
 compile_commands.json
 .vscode/
 
+# test
+/tools/tests/
+
 # Locally supplied debug art and island fixtures.
 /assets/debug/*.bin

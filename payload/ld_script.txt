@@ -70,9 +70,14 @@ gIslandLinkWork = 0x030036D0;
 gIslandTransferData = 0x03002970;
 /* Original address: 0x0203E9A0 */
 gIslandDataReceived = 0x0203E9A0;
-/* Original addresses: 0x02000100, 0x02000120 */
-current_time_of_day_palette0 = 0x02000100;
-current_time_of_day_palette1 = 0x02000120;
+/* Original address: 0x02000102 */
+current_time_of_day_palette0 = 0x02000102;
+/* Original address: 0x02000122 */
+current_time_of_day_palette1 = 0x02000122;
+/* Original address: 0x02000100 */
+time_of_day_palette_buffer0 = 0x02000100;
+/* Original address: 0x02000120 */
+time_of_day_palette_buffer1 = 0x02000120;
 /* Original addresses: 0x02000180, 0x02000190, 0x020001C0, and 0x020001D6 */
 time_of_day_palette_buffer2 = 0x02000180;
 current_time_of_day_palette2 = 0x02000190;

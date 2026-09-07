@@ -3109,16 +3109,11 @@ void IslandProgram_UpdateTimeOfDayPalette(IslandProgramWork *work) {
         CpuFastCopy(time_of_day_palette_buffer3, (void *)(BG_PLTT + 0x1C0), PLTT_SIZE_4BPP);
 
         palette = &time_of_day_palettes[time_of_day * 4];
-#ifdef DEBUG_TESTING
         /* Update only lighting colors; preserve the building material colors. */
-        CpuCopy16(palette, current_time_of_day_palette0 + 1, 4 * sizeof(*palette));
-        CpuCopy16(palette, current_time_of_day_palette1 + 1, 4 * sizeof(*palette));
-#else
-        CpuCopy16(palette, current_time_of_day_palette0, sizeof(current_time_of_day_palette0));
-        CpuCopy16(palette, current_time_of_day_palette1, sizeof(current_time_of_day_palette1));
-#endif
-        CpuFastCopy(current_time_of_day_palette0, (void *)(BG_PLTT + 0x100), PLTT_SIZE_4BPP);
-        CpuFastCopy(current_time_of_day_palette1, (void *)(BG_PLTT + 0x120), PLTT_SIZE_4BPP);
+        CpuCopy16(palette, current_time_of_day_palette0, 4 * sizeof(*palette));
+        CpuCopy16(palette, current_time_of_day_palette1, 4 * sizeof(*palette));
+        CpuFastCopy(time_of_day_palette_buffer0, (void *)(BG_PLTT + 0x100), PLTT_SIZE_4BPP);
+        CpuFastCopy(time_of_day_palette_buffer1, (void *)(BG_PLTT + 0x120), PLTT_SIZE_4BPP);
         work->time_of_day = time_of_day;
     }
     gGameState.bldcnt = 0x2441;
@@ -4533,8 +4528,8 @@ void UpdateHourlyPalette(void) {
     hour = gGameState.game_time_frames / (60 * 60 * 60);
     if (field->last_palette_hour != hour) {
         do { i = 0; } while (0);
-        palette0 = current_time_of_day_palette0 + 1;
-        palette1 = current_time_of_day_palette1 + 1;
+        palette0 = current_time_of_day_palette0;
+        palette1 = current_time_of_day_palette1;
         do {
             palette_index = (hour << 2) + i;
             color = time_of_day_palettes[palette_index];
@@ -4599,8 +4594,8 @@ void InitIslandField(void) {
         
         
             i = 0;
-            palette0 = current_time_of_day_palette0 + 1;
-            palette1 = current_time_of_day_palette1 + 1;
+            palette0 = current_time_of_day_palette0;
+            palette1 = current_time_of_day_palette1;
             do {
                 palette_index = (hour << 2) + i;
                 color = time_of_day_palettes[palette_index];
@@ -10314,11 +10309,13 @@ void FallingFruit_UpdateFall(s32 fruit_index) {
             do {
                 u16 *tilemap;
                 if (fruit->acre == 0) {
-                    tilemap = (u16 *)((0xFF0 & fruit->tile_idx) * 8 + BG_SCREEN_ADDR(24) + row_offset +
-                                     (0xF & fruit->tile_idx) * 4);
+                    tilemap = (u16 *)((0xFF0 & fruit->tile_idx) * 8 + BG_SCREEN_ADDR(24));
+                    tilemap = (u16 *)((u8 *)tilemap + row_offset);
+                    tilemap += (0xF & fruit->tile_idx) * 2;
                 } else {
-                    tilemap = (u16 *)((0xFF0 & fruit->tile_idx) * 8 + BG_SCREEN_ADDR(25) + row_offset +
-                                     (0xF & fruit->tile_idx) * 4);
+                    tilemap = (u16 *)((0xFF0 & fruit->tile_idx) * 8 + BG_SCREEN_ADDR(25));
+                    tilemap = (u16 *)((u8 *)tilemap + row_offset);
+                    tilemap += (0xF & fruit->tile_idx) * 2;
                 }
                 tilemap[0] = tile_offset + profile->ground_tile;
                 tilemap[1] = tile_offset + profile->ground_tile + 1;
@@ -10326,10 +10323,10 @@ void FallingFruit_UpdateFall(s32 fruit_index) {
                 tile_offset = 2;
             } while (row_offset < 80);
             if (fruit->acre == 0) {
-                gIslandData->fgblock[0][0].items[(fruit->tile_idx >> 4) & 0xF][fruit->tile_idx & 0xF] = profile->item;
+                gIslandData->fgblock[0][0].items[(fruit->tile_idx >> 4) % 16][fruit->tile_idx & 0xF] = profile->item;
                 field->fg_tiles[0][fruit->tile_idx] = profile->field_tile;
             } else {
-                gIslandData->fgblock[0][1].items[(fruit->tile_idx >> 4) & 0xF][fruit->tile_idx & 0xF] = profile->item;
+                gIslandData->fgblock[0][1].items[(fruit->tile_idx >> 4) % 16][fruit->tile_idx & 0xF] = profile->item;
                 field->fg_tiles[1][fruit->tile_idx] = profile->field_tile;
             }
         }
@@ -10352,7 +10349,7 @@ void FallingFruit_Draw(s32 fruit_index) {
     IslanderOamData *oam = &((IslanderOamData *)gUnk3002410)[game->oam_count];
 
     oam->shape = (profile->oam_attributes >> 14) & 3;
-    oam->size = profile->oam_attributes >> 30;
+    oam->size = (profile->oam_attributes >> 30) & 0xF;
     oam->tile_num = profile->sprite_tile;
     oam->mosaic = 1;
     oam->h_flip = fruit->anim_frame;
@@ -11060,30 +11057,13 @@ void PlayerHand_ResetToIdle(void) {
     player->action_state = 1;
 }
 
-static inline s32 PlayerHand_IsTileBuried(Player *player) {
-    if (!(player->work_x & 0xFF00)) {
-        if ((gIslandData->deposit[0][player->tile_idx >> 4] >> (player->tile_idx & 0xF)) & 1) {
-            return 1;
-        }
-    } else {
-        if ((gIslandData->deposit[1][player->tile_idx >> 4] >> (player->tile_idx & 0xF)) & 1) {
-            return 1;
-        }
-    }
-    return 0;
-}
-
 /* Original address: 0x02025F90 */
 void PlayerHand_UpdateIdle(void) {
     Player *player = &gPlayer;
     IslandFieldWork *field = &gIslandFieldWork;
     u16 item_type;
     ItemGroupStruct *definition;
-    ItemGroupStruct *definitions;
-    Island_agb_c *island;
-    s32 column, row;
     mActor_name_t item;
-    mActor_name_t *tile;
     AnimFrameData *frame;
 
     if ((player->interaction_cooldown_timer == 0 || --player->interaction_cooldown_timer == 0) && (gGameState.keys.buttons.pressed & 1)) {
@@ -11095,35 +11075,34 @@ void PlayerHand_UpdateIdle(void) {
         } else {
             item_type = field->fg_tiles[1][player->tile_idx];
         }
-        definitions = g_ItemDefinitions;
-        definition = &definitions[item_type];
+        definition = &g_ItemDefinitions[item_type];
         if (item_type == 0xFFF || item_type == 0x7777 || item_type == 0x3333 ||
             definition->interaction_type == 0xFFF) {
             player->interaction_attempt_active = 1;
         } else {
-            if (PlayerHand_IsTileBuried(player)) {
-                player->interaction_attempt_active = 1;
+            s32 buried = 0;
+            if (!(player->work_x & 0xFF00)) {
+                if ((gIslandData->deposit[0][player->tile_idx >> 4] >> (player->tile_idx & 0xF)) & 1) {
+                    buried = 1;
+                }
             } else {
+                if ((gIslandData->deposit[1][player->tile_idx >> 4] >> (player->tile_idx & 0xF)) & 1) {
+                    buried = 1;
+                }
+            }
+            if (!buried) {
                 item_type &= 0xFFF;
-                definition = &definitions[item_type];
+                definition = &g_ItemDefinitions[item_type];
                 if (definition->held_item_oam_attr2 != 0xFFF) {
                     if (!((player->x >> 8) & 0xFF00)) {
                         field->fg_tiles[0][player->tile_idx] = 0x7777;
-                        island = gIslandData;
-                        column = player->tile_idx & 0xF;
-                        row = player->tile_idx >> 4;
-                        tile = &island->fgblock[0][0].items[row][column];
-                        item = *tile;
-                        *tile = 0;
+                        item = gIslandData->fgblock[0][0].items[player->tile_idx >> 4][player->tile_idx & 0xF];
+                        gIslandData->fgblock[0][0].items[player->tile_idx >> 4][player->tile_idx & 0xF] = 0;
                         player->held_item_layer = 0;
                     } else {
                         field->fg_tiles[1][player->tile_idx] = 0x7777;
-                        island = gIslandData;
-                        column = player->tile_idx & 0xF;
-                        row = player->tile_idx >> 4;
-                        tile = &island->fgblock[0][1].items[row][column];
-                        item = *tile;
-                        *tile = 0;
+                        item = gIslandData->fgblock[0][1].items[player->tile_idx >> 4][player->tile_idx & 0xF];
+                        gIslandData->fgblock[0][1].items[player->tile_idx >> 4][player->tile_idx & 0xF] = 0;
                         player->held_item_layer = 1;
                     }
                     player->held_item_tile_idx = player->tile_idx;
@@ -11135,8 +11114,8 @@ void PlayerHand_UpdateIdle(void) {
                     PlayerHand_BeginCarrying();
                     return;
                 }
-                player->interaction_attempt_active = 1;
             }
+            player->interaction_attempt_active = 1;
         }
     }
     if (player->interaction_attempt_active == 0) {
