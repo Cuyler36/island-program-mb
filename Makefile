@@ -4,6 +4,8 @@ DEVKITARM := /c/devkitPro/devkitARM
 endif
 TOOLCHAIN := $(DEVKITARM)
 COMPARE ?= 0
+DEBUG_TEST ?= 0
+DEBUG_TESTING ?= $(DEBUG_TEST)
 
 ifeq ($(CC),)
 HOSTCC := gcc
@@ -53,6 +55,8 @@ SYM = $(ROM:.gba=.sym)
 
 PAYLOAD   := payload/payload.gba
 PAYLOADLZ := $(PAYLOAD).lz
+DEBUG_TEST_ISLAND_GC := assets/debug/test_island_gc_fmt.bin
+DEBUG_TEST_ISLAND_AGB := assets/debug/test_island_agb_fmt.bin
 
 OBJ_DIR := build/$(NAME)
 
@@ -67,6 +71,10 @@ CC1 := tools/agbcc/bin/agbcc
 CPPFLAGS := -I tools/agbcc/include -iquote include -nostdinc -undef
 CFLAGS := -O3 -g3 -mthumb-interwork -fhex-asm -Wimplicit -Werror -ffix-debug-line
 ASFLAGS := -mcpu=arm7tdmi
+ifeq (1,$(DEBUG_TESTING))
+CPPFLAGS += -DDEBUG_TESTING
+ASFLAGS += --defsym DEBUG_TESTING=1
+endif
 LIBS := -L../../tools/agbcc/lib -lgcc -lc
 
 SUBDIRS := asm src data
@@ -142,6 +150,21 @@ $(C_OBJS): $(OBJ_DIR)/%.o: %.c $$(c_dep)
 $(DATA_ASM_OBJS): $(OBJ_DIR)/%.o: %.s $$(data_dep)
 	$(PREPROC) $< charmap.txt | $(CPP) $(CPPFLAGS) | $(AS) $(ASFLAGS) -o $@
 
+.PHONY: FORCE_DEBUG_GRAPHICS
+FORCE_DEBUG_GRAPHICS:
+
+# Always preprocess this small wrapper so switching debug modes removes assets.
+$(OBJ_DIR)/data/debug_graphics.o: data_dep :=
+$(OBJ_DIR)/data/debug_graphics.o: FORCE_DEBUG_GRAPHICS
+ifeq (1,$(DEBUG_TESTING))
+$(OBJ_DIR)/data/debug_graphics.o: assets/debug/debug_bg_tiles.bin assets/debug/debug_obj_tiles.bin
+$(OBJ_DIR)/data/debug_graphics.o: $(addprefix assets/debug/debug_bg,0_tilemap.bin 1_tilemap.bin 2_tilemap.bin 3_tilemap.bin)
+endif
+$(OBJ_DIR)/asm/crt0.o: FORCE_DEBUG_GRAPHICS
+
+# Keep direct `make rom` builds current even when include scanning is disabled.
+$(OBJ_DIR)/data/payload.o: $(PAYLOADLZ)
+
 $(OBJ_DIR)/ld_script.ld: ld_script.txt
 	cd $(OBJ_DIR) && sed "s#tools/#../../tools/#g" ../../$< > ld_script.ld
 
@@ -156,13 +179,26 @@ $(ROM): $(ELF)
 %.lz: %
 	$(GBAGFX) $< $@
 
+ifeq (1,$(DEBUG_TEST))
+payload: $(DEBUG_TEST_ISLAND_AGB)
+endif
+
+$(DEBUG_TEST_ISLAND_AGB): $(DEBUG_TEST_ISLAND_GC) tools/convert_gc_island_fixture.py
+	$(PYTHON) tools/convert_gc_island_fixture.py $< $@
+
 payload:
-	@$(MAKE) -C payload COMPARE=$(COMPARE) NONMATCHING=$(NONMATCHING)
+	@$(MAKE) -C payload COMPARE=$(COMPARE) NONMATCHING=$(NONMATCHING) DEBUG_TEST=$(DEBUG_TEST) DEBUG_TESTING=$(DEBUG_TESTING) PYTHON=$(PYTHON)
 
 # objdiff passes the configured base object path to make. Forward that path to
 # the payload build and force a compile so header-only edits are reflected too.
 payload/build/payload/src/all.o:
 	@$(MAKE) -B -C payload DEVKITPRO=$(if $(wildcard /c/devkitPro),/c/devkitPro,$(DEVKITPRO)) DEVKITARM=$(if $(wildcard /c/devkitPro/devkitARM),/c/devkitPro/devkitARM,$(DEVKITARM)) build/payload/src/all.o
+
+payload/build/payload/src/sound.o: payload/src/sound.c payload/include/sound.h payload/include/global.h payload/asm/all_arm.inc payload/Makefile
+	@$(MAKE) -B -C payload DEVKITPRO=$(if $(wildcard /c/devkitPro),/c/devkitPro,$(DEVKITPRO)) DEVKITARM=$(if $(wildcard /c/devkitPro/devkitARM),/c/devkitPro/devkitARM,$(DEVKITARM)) build/payload/src/sound.o
+
+payload/build/payload/asm/gflib/syscalls.o: payload/asm/gflib/syscalls.s payload/asm/gflib/syscalls.inc payload/Makefile
+	@$(MAKE) -C payload DEVKITPRO=$(if $(wildcard /c/devkitPro),/c/devkitPro,$(DEVKITPRO)) DEVKITARM=$(if $(wildcard /c/devkitPro/devkitARM),/c/devkitPro/devkitARM,$(DEVKITARM)) build/payload/asm/gflib/syscalls.o
 
 payload/build/payload/src/islander_anim.o: payload/src/islander_anim.c payload/include/global.h payload/Makefile
 	@$(MAKE) -B -C payload DEVKITPRO=$(if $(wildcard /c/devkitPro),/c/devkitPro,$(DEVKITPRO)) DEVKITARM=$(if $(wildcard /c/devkitPro/devkitARM),/c/devkitPro/devkitARM,$(DEVKITARM)) build/payload/src/islander_anim.o
@@ -182,10 +218,13 @@ payload/build/payload/src/libc/%.o: payload/src/libc/%.c payload/Makefile
 # expensive byte-level data comparison during normal text matching.
 OBJDIFF_DIR := payload/build/objdiff
 OBJDIFF_TEXT_OBJ := payload/build/payload/asm/all.o
-OBJDIFF_TEXT_TARGET := $(OBJDIFF_DIR)/all.text.target.o
+OBJDIFF_TEXT_UNITS := all sound syscalls
+OBJDIFF_TEXT_ASM := $(addprefix $(OBJDIFF_DIR)/,$(addsuffix .text.target.s,$(OBJDIFF_TEXT_UNITS)))
+OBJDIFF_TEXT_RAW := $(addprefix $(OBJDIFF_DIR)/,$(addsuffix .text.raw.o,$(OBJDIFF_TEXT_UNITS)))
+OBJDIFF_TEXT_TARGETS := $(addprefix $(OBJDIFF_DIR)/,$(addsuffix .text.target.o,$(OBJDIFF_TEXT_UNITS)))
 OBJDIFF_DATA_ASM := $(OBJDIFF_DIR)/all.data.target.s
 OBJDIFF_DATA_TARGET := $(OBJDIFF_DIR)/all.data.target.o
-OBJDIFF_COMPILED_BASE := payload/build/payload/src/all.o
+OBJDIFF_COMPILED_BASE := payload/build/payload/src/all.o payload/build/payload/src/sound.o payload/build/payload/asm/gflib/syscalls.o
 OBJDIFF_COMPILED_DATA_BASE := payload/build/payload/src/data.o
 OBJDIFF_BASE := $(OBJDIFF_DIR)/all.base.o
 OBJDIFF_TEXT_DEPS := payload/asm/all.s asm/macros/function.inc constants/gba_constants.inc
@@ -197,7 +236,13 @@ OBJDIFF_LIBC_TARGETS := $(addprefix $(OBJDIFF_DIR)/libc/,$(addsuffix .o,$(OBJDIF
 $(OBJDIFF_TEXT_OBJ): $(OBJDIFF_TEXT_DEPS)
 	@$(MAKE) -C payload DEVKITPRO=$(if $(wildcard /c/devkitPro),/c/devkitPro,$(DEVKITPRO)) DEVKITARM=$(if $(wildcard /c/devkitPro/devkitARM),/c/devkitPro/devkitARM,$(DEVKITARM)) build/payload/asm/all.o
 
-$(OBJDIFF_TEXT_TARGET): $(OBJDIFF_TEXT_OBJ) tools/prepare_objdiff_target.py tools/generate_objdiff_sections.py payload/ld_script.txt
+$(OBJDIFF_TEXT_ASM): $(OBJDIFF_DIR)/%.text.target.s: payload/asm/all.s tools/generate_objdiff_text.py
+	@$(PYTHON) tools/generate_objdiff_text.py --unit $* --output $@
+
+$(OBJDIFF_TEXT_RAW): $(OBJDIFF_DIR)/%.text.raw.o: $(OBJDIFF_DIR)/%.text.target.s $(OBJDIFF_TEXT_DEPS)
+	@cd payload && $(AS) $(ASFLAGS) -o build/objdiff/$*.text.raw.o build/objdiff/$*.text.target.s
+
+$(OBJDIFF_TEXT_TARGETS): $(OBJDIFF_DIR)/%.text.target.o: $(OBJDIFF_DIR)/%.text.raw.o tools/prepare_objdiff_target.py tools/generate_objdiff_sections.py payload/ld_script.txt Makefile
 	@$(PYTHON) tools/prepare_objdiff_target.py $< $@
 
 $(OBJDIFF_DATA_ASM): tools/generate_objdiff_sections.py payload/data/data.bin $(OBJDIFF_TEXT_OBJ)
@@ -218,8 +263,9 @@ $(OBJDIFF_LIBC_TARGETS): $(OBJDIFF_DIR)/libc/%.o: tools/agbcc/lib/libc.a
 
 # agbcc emits tentative globals such as gGameState as COMMON.  Assign them to
 # BSS in an objdiff-only relocatable link so they participate in data matching.
+# Each individual object retains DWARF; agbcc debug units cannot be merged.
 $(OBJDIFF_BASE): $(OBJDIFF_COMPILED_BASE) $(OBJDIFF_COMPILED_DATA_BASE)
-	$(LD) -r -d -o $@ $^
+	$(LD) -r -d -S -o $@ $^
 
 .PHONY: check-payload-data
 check-payload-data: $(OBJDIFF_COMPILED_DATA_BASE) $(OBJDIFF_TEXT_OBJ)

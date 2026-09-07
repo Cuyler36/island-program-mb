@@ -1,5 +1,8 @@
 TOOLCHAIN := $(DEVKITARM)
 COMPARE ?= 0
+DEBUG_TEST ?= 0
+DEBUG_TESTING ?= $(DEBUG_TEST)
+.DEFAULT_GOAL := all
 
 ifeq ($(CC),)
 HOSTCC := gcc
@@ -32,6 +35,7 @@ PREPROC := ../tools/preproc/preproc
 SCANINC := ../tools/scaninc/scaninc
 GFX := ../tools/gbagfx/gbagfx
 PERL := perl
+PYTHON ?= python3
 
 NAME := payload
 ROM := $(NAME).gba
@@ -40,6 +44,7 @@ ELF := $(NAME).elf
 SYM = $(ROM:.gba=.sym)
 
 OBJ_DIR := build/$(NAME)
+BUILD_MODE_FILE := $(OBJ_DIR)/.build_mode
 
 SHELL := /bin/bash -o pipefail
 
@@ -93,6 +98,19 @@ CPPFLAGS += -DNONMATCHING
 ASFLAGS  += --defsym NONMATCHING=1
 endif
 
+ifeq (1,$(DEBUG_TESTING))
+CPPFLAGS += -DDEBUG_TESTING
+endif
+
+ifeq (1,$(DEBUG_TEST))
+CPPFLAGS += -DDEBUG_TEST
+DEBUG_TEST_ISLAND := ../assets/debug/test_island_agb_fmt.bin
+$(OBJ_DIR)/data/debug_test_island.o: $(DEBUG_TEST_ISLAND)
+
+$(DEBUG_TEST_ISLAND): ../assets/debug/test_island_gc_fmt.bin ../tools/convert_gc_island_fixture.py
+	$(PYTHON) ../tools/convert_gc_island_fixture.py $< $@
+endif
+
 $(shell mkdir -p $(SUBDIRS:%=$(OBJ_DIR)/%))
 
 .SUFFIXES:
@@ -100,7 +118,7 @@ $(shell mkdir -p $(SUBDIRS:%=$(OBJ_DIR)/%))
 .DELETE_ON_ERROR:
 .SECONDEXPANSION:
 
-.PHONY: all rom clean compare tools cleantools mostlyclean
+.PHONY: all rom clean compare tools cleantools mostlyclean FORCE
 
 all: rom
 	@:
@@ -120,6 +138,17 @@ clean: mostlyclean
 tools:
 	@$(foreach tool,$(TOOLDIRS),$(MAKE) -C $(tool);)
 
+# Compiler flags are not represented in object timestamps.  Track the active
+# fixture mode so switching DEBUG_TEST on or off rebuilds the affected objects.
+FORCE:
+
+$(BUILD_MODE_FILE): FORCE
+	@printf '%s\n' 'DEBUG_TEST=$(DEBUG_TEST) DEBUG_TESTING=$(DEBUG_TESTING)' > $@.tmp
+	@cmp -s $@.tmp $@ || mv $@.tmp $@
+	@$(RM) $@.tmp
+
+$(OBJ_DIR)/src/all.o $(OBJ_DIR)/data/debug_test_island.o: $(BUILD_MODE_FILE)
+
 ifeq ($(NODEP),1)
 $(OBJ_DIR)/asm/%.o: asm_dep :=
 $(OBJ_DIR)/src/%.o: c_dep :=
@@ -132,10 +161,14 @@ endif
 
 $(OBJ_DIR)/src/libc/memcpy.o $(OBJ_DIR)/src/libc/memset.o: CPPFLAGS += $(LIBC_CPPFLAGS)
 $(OBJ_DIR)/src/libc/memcpy.o $(OBJ_DIR)/src/libc/memset.o: CFLAGS := -O2 -fno-builtin
+$(OBJ_DIR)/data/debug_test_island.o: data_dep :=
 
 # The initial m2c reconstructions intentionally retain provisional pointer types.
 $(OBJ_DIR)/src/all.o $(OBJ_DIR)/src/data.o: CFLAGS := $(filter-out -Werror,$(CFLAGS))
-$(OBJ_DIR)/src/all.o: asm/all_arm.inc asm/gflib/syscalls.inc
+$(OBJ_DIR)/src/all.o $(OBJ_DIR)/src/sound.o: include/sound.h
+$(OBJ_DIR)/src/sound.o: CFLAGS += -fprologue-bugfix
+$(OBJ_DIR)/src/sound.o: asm/all_arm.inc
+$(OBJ_DIR)/asm/gflib/syscalls.o: asm/gflib/syscalls.inc
 
 $(ASM_OBJS): $(OBJ_DIR)/%.o: %.s $$(asm_dep)
 	$(AS) $(ASFLAGS) -o $@ $<

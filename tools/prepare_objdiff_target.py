@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prepare the monolithic ARM text object for objdiff.
+"""Prepare an original ARM text object for objdiff.
 
 The hand-written target assembly leaves most functions zero-sized so objdiff
 can infer their extents and trim trailing ARM/Thumb alignment padding.  Modern
@@ -33,6 +33,10 @@ SHT_RELA = 4
 SHT_REL = 9
 R_ARM_V4BX = 40
 
+# Confirmed field pointers, rather than arbitrary values inside an object.
+# Original address: 0x030000F0, SoundChannelLists.active_tail at offset 0x80.
+DATA_FIELD_ADDRESSES = {0x030000F0: ("gSoundChannelLists", 0x80)}
+
 
 def known_data_addresses(linker_path: Path) -> dict[int, str]:
     """Prefer owned objects over linker aliases for the same address."""
@@ -46,13 +50,16 @@ def known_data_addresses(linker_path: Path) -> dict[int, str]:
     return result
 
 
-def symbolize_data_literals(data: bytearray, addresses: dict[int, str]) -> int:
+def symbolize_data_literals(
+        data: bytearray, addresses: dict[int, str],
+        field_addresses: dict[int, tuple[str, int]] | None = None) -> int:
     """Add relocations only to aligned words in assembler-marked data ranges.
 
     ARM $d/$t/$a mapping symbols distinguish pools from executable instructions.
     Existing relocations are authoritative and are never replaced. New global
     undefined symbols and tables are appended, preserving all existing symbol
-    indices and function sizes.
+    indices and function sizes. Explicit field pointers retain their byte
+    offsets as REL addends; other interior addresses are not guessed.
     """
     section_offset = struct.unpack_from("<I", data, 32)[0]
     stride, count, names_index = struct.unpack_from("<HHH", data, 46)
@@ -83,11 +90,12 @@ def symbolize_data_literals(data: bytearray, addresses: dict[int, str]) -> int:
             symbol_indices[name] = offset // 16
         if index == text_index and re.fullmatch(r"\$[dat](?:\..*)?", name):
             mappings.append((value, name[1]))
-    rel_index = next(i for i, s in enumerate(sections)
-                     if s[1] == SHT_REL and s[7] == text_index)
-    if sections[rel_index][6] != sym_index or sections[rel_index][9] != 8:
+    rel_index = next((i for i, s in enumerate(sections)
+                      if s[1] == SHT_REL and s[7] == text_index), None)
+    if rel_index is not None and (sections[rel_index][6] != sym_index
+                                  or sections[rel_index][9] != 8):
         raise ValueError("unexpected text relocation table")
-    relocations = contents(rel_index)
+    relocations = contents(rel_index) if rel_index is not None else bytearray()
     occupied = {struct.unpack_from("<I", relocations, i)[0]
                 for i in range(0, len(relocations), 8)}
     mappings.sort()
@@ -100,20 +108,41 @@ def symbolize_data_literals(data: bytearray, addresses: dict[int, str]) -> int:
             if offset in occupied:
                 continue
             value = struct.unpack_from("<I", data, text[4] + offset)[0]
-            if value not in addresses:
+            if field_addresses and value in field_addresses:
+                name, addend = field_addresses[value]
+                if addresses.get(value - addend) != name:
+                    raise ValueError(f"unknown base for field pointer {value:#010x}")
+            elif value in addresses:
+                name, addend = addresses[value], 0
+            else:
                 continue
-            name = addresses[value]
             if name not in symbol_indices:
                 symbol_indices[name] = len(symbols) // 16
                 symbols.extend(struct.pack("<IIIBBH", len(strings), 0, 0, 0x11, 0, 0))
                 strings.extend(name.encode("ascii") + b"\0")
             # ELF REL stores its addend in the relocated word; object bases
-            # have addend zero, not the already-linked original address.
-            struct.pack_into("<I", data, text[4] + offset, 0)
+            # have addend zero; fields retain their offset from the base.
+            struct.pack_into("<I", data, text[4] + offset, addend)
             relocations.extend(struct.pack("<II", offset, symbol_indices[name] << 8 | 2))
             changed += 1
     if changed:
-        for index, table in ((str_index, strings), (sym_index, symbols), (rel_index, relocations)):
+        tables = [(str_index, strings), (sym_index, symbols)]
+        if rel_index is None:
+            # A split TU may not have had any relocations before symbolization.
+            rel_index = count
+            old_headers = data[section_offset:section_offset + count * stride]
+            data.extend(b"\0" * (-len(data) % 4))
+            section_offset = len(data)
+            data.extend(old_headers)
+            data.extend(struct.pack("<10I", len(names), SHT_REL, 0, 0, 0, 0,
+                                    sym_index, text_index, 4, 8))
+            data.extend(b"\0" * (stride - 40))
+            struct.pack_into("<I", data, 32, section_offset)
+            struct.pack_into("<H", data, 48, count + 1)
+            names.extend(b".rel.text\0")
+            tables.append((names_index, names))
+        tables.append((rel_index, relocations))
+        for index, table in tables:
             data.extend(b"\0" * (-len(data) % 4))
             struct.pack_into("<II", data, section_offset + index * stride + 16, len(data), len(table))
             data.extend(table)
@@ -197,7 +226,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
         "input",
         nargs="?",
         type=Path,
-        default=Path("payload/build/payload/asm/all.o"),
+        default=Path("payload/build/objdiff/all.text.raw.o"),
     )
     parser.add_argument(
         "output",
@@ -214,7 +243,8 @@ def main() -> int:
     data = bytearray(args.input.read_bytes())
     sections = read_sections(data)
     removed_relocations = remove_v4bx_relocations(data, sections)
-    added_relocations = symbolize_data_literals(data, known_data_addresses(args.linker))
+    added_relocations = symbolize_data_literals(
+        data, known_data_addresses(args.linker), DATA_FIELD_ADDRESSES)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_bytes(data)
     print(

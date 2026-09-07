@@ -15,3 +15,6 @@ payload/payload.bin
 .cache/
 compile_commands.json
 .vscode/
+
+# Locally supplied debug art and island fixtures.
+/assets/debug/*.bin

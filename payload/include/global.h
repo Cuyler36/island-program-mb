@@ -1881,15 +1881,6 @@ void InitializeHardware(void);
 
 m_msg_sprite_c* mMsg_CreateSprite(u8 type, s32 x, s32 y, s32 param);
 void mMsg_DeactivateSprite(m_msg_sprite_c* sprite);
-void sub_020269C8(void);
-void sub_020269E0(void);
-void Sound_PlayEffect0(u16 value);
-void Sound_PlayEffect2(u16 value);
-void Sound_StopEffect2(u16 value);
-void Sound_PlayMusic(u16 value);
-void Sound_StopMusic(u16 value);
-void sub_02026F0C(void);
-void sub_02026F18(void);
 extern u32 gIntrTable[];
 void _start(void);
 void _intr(void);

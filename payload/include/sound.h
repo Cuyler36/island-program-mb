@@ -1,0 +1,98 @@
+#ifndef GUARD_SOUND_H
+#define GUARD_SOUND_H
+
+#include "gba/types.h"
+
+void Audio_Init(void);
+void Audio_Update(void);
+void Sound_InitEffects(void);
+void sub_02026A34(void);
+void Sound_PlayEffect0(u16 value);
+void Sound_PlayEffect1(u16 arg0);
+void Sound_StopEffect1(u8 arg0);
+void Sound_PlayEffect2(u16 value);
+void Sound_StopEffect2(u16 value);
+void Sound_InitMusic(void);
+void sub_02026C0C(void);
+void Sound_PlayMusic(u16 value);
+void Sound_StopMusic(u16 value);
+void ChangeEmotion(u8 arg0);
+typedef struct SoundTrack SoundTrack;
+void Sound_PlayEmotionNote(SoundTrack *arg0, u8 arg1, u8 arg2, u16 arg3);
+void Sound_ApplyEmotionTrackDelay(SoundTrack *arg0, u8 arg1);
+typedef struct SoundBank SoundBank;
+void SoundDriver_Init(const SoundBank *bank);
+void SoundDriver_VBlank(void);
+void SoundDriver_Update(void);
+void SoundDriver_InitPcmBuffers(s8 *buffers);
+void SoundDriver_SwapPcmBuffers(void);
+void SoundDriver_DisablePcm(void);
+void SoundDriver_EnablePcm(void);
+void SoundDriver_InitChannelLists(void);
+typedef struct SoundChannel SoundChannel;
+void Sound_UnlinkChannel(SoundChannel *channel);
+
+void Sound_InsertPcmChannelByPriority(SoundChannel *arg0);
+s32 Sound_NoteToPitch(SoundChannel *arg0, u8 arg1, u8 arg2);
+u8 Sound_NoteToNoiseControl(u16 arg0);
+s32 Sound_UpdateChannelEnvelope(SoundChannel *arg0);
+void sub_02027370(u8 arg0);
+u32 Sound_UpdatePcmChannelVolume(SoundChannel *arg0);
+u8 Sound_GetPsgEnvelopeControl(SoundChannel *arg0, u8 arg1);
+u32 Sound_UpdateChannelPitch(SoundChannel *arg0);
+void Sound_UpdatePcmChannels(void);
+void Sound_UpdatePsgChannels(void);
+void Sound_PlayNote(SoundTrack *track, u8 key, u8 velocity, u16 duration);
+void Sound_ReleaseChannel(SoundChannel *channel);
+void Sound_StopChannel(SoundChannel *channel);
+void Sound_StartPsgChannel(SoundChannel *channel, u8 envelope);
+SoundChannel *Sound_AllocateChannel(u8 type, SoundTrack *track, u8 priority);
+u8 Sound_MixPcmChannel(SoundChannel *channel, u32 volume, u32 pitch, u8 pan);
+void Sound_InitKeySampleInstrument(void);
+typedef struct SoundInstrumentResult SoundInstrumentResult;
+typedef struct SoundPlayer SoundPlayer;
+void Sound_ResolveInstrument(SoundTrack *track, u8 key, SoundInstrumentResult *result);
+void Sound_InitPlayers(void);
+void Sound_ResetPlayerParameters(SoundPlayer *player);
+void Sound_UpdatePlayers(void);
+void Sound_StartMusic(s32 player, u32 music);
+void Sound_StartEffect(s32 player, u32 group, u32 effect);
+void Sound_StartMusicSequence(s32 index, const u8 *sequence, const u16 *bank);
+void Sound_StartEffectSequence(s32 index, const u8 *sequence, const u16 *bank, u32 effect);
+void Sound_StopPlayer(s32 arg0);
+void Sound_FadeOutPlayer(s32 index, s32 frames);
+void Sound_SetPlayerPaused(s32 arg0, u8 arg1);
+u32 Sound_GetPlayerStatus(s32 arg0);
+void Sound_InitTracks(void);
+SoundTrack *Sound_FindFreeTrack(void);
+void Sound_StartTrack(SoundTrack *track, SoundPlayer *player, const u8 *sequence);
+void Sound_ReleaseTrackChannels(SoundTrack *track);
+void Sound_StopTrack(SoundTrack *track);
+s32 Sound_UpdateTrack(SoundTrack *track);
+void Sound_AttachChannelToTrack(SoundTrack *track, SoundChannel *channel);
+void Sound_DetachChannelFromTrack(SoundTrack *track, SoundChannel *channel);
+u16 Sound_ReadSequenceDuration(SoundTrack *track);
+void Sound_SetTrackBank(SoundTrack *track, u32 bank);
+typedef struct SoundCommand SoundCommand;
+typedef void (*SoundNoteCallback)(SoundTrack *track, u8 key, u8 velocity, u16 duration);
+typedef void (*SoundControlCallback)(SoundTrack *track, u8 code);
+void Sound_InitCommandQueue(void);
+SoundCommand *Sound_ReadCommand(void);
+void Sound_CommitCommands(void);
+void Sound_QueueStartMusic(u16 player, u16 music);
+void Sound_QueueStartEffect(u32 player, u16 group, u16 effect);
+void Sound_QueueFadeOutPlayer(u16 player, u16 frames);
+void Sound_QueueSetPlayerPaused(u16 player, u8 paused);
+void Sound_QueueSetPlayerTempoAdjust(u16 player, s16 adjustment);
+void Sound_QueueSetPlayerMasterVolume(u16 player, u8 volume);
+void Sound_QueueSetPlayerTempoMode(u16 player, u8 mode);
+void Sound_QueueSetTracksMuted(u32 player, u32 tracks, u8 muted);
+void Sound_QueueSetTracksExpression(u32 player, u32 tracks, u8 expression);
+void Sound_QueueSetTracksPan(u32 player, u32 tracks, u8 pan);
+void Sound_QueueCommand10(u8 value);
+void Sound_QueueCallback(void (*callback)(u32), u32 argument);
+void Sound_QueueSetControlCallback(SoundControlCallback callback);
+void Sound_QueueSetNoteCallback(SoundNoteCallback callback);
+void Sound_ProcessCommands(void);
+
+#endif /* GUARD_SOUND_H */

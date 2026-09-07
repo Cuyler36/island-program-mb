@@ -83,12 +83,21 @@ current_time_of_day_palette3 = 0x020001D6;
 
 
 SECTIONS {
+    /* Debug cartridge addresses, matching the outer ROM's .debug_graphics. */
+    PROVIDE(sDebugObjTiles = 0x08040000);
+    PROVIDE(sDebugBgTiles = 0x08048000);
+    PROVIDE(sDebugBg3Tilemap = 0x08050000);
+    PROVIDE(sDebugBg2Tilemap = 0x08052000);
+    PROVIDE(sDebugBg1Tilemap = 0x08054000);
+    PROVIDE(sDebugBg0Tilemap = 0x08056000);
     . = 0x02018000;
     .text :
     ALIGN(4)
     {
         asm/crt0.o(.text);
         src/all.o(.text);
+        src/sound.o(.text);
+        asm/gflib/syscalls.o(.text);
         asm/libgcc/_call_via_rX.o(.text);
         asm/libgcc/_divsi3.o(.text);
         asm/libgcc/_dvmd_tls.o(.text);
@@ -111,7 +120,14 @@ SECTIONS {
     .rodata : ALIGN(4)
     {
         src/all.o(.rodata);
+        src/sound.o(.rodata);
         src/data.o(.rodata);
+    } =0
+
+    /* Optional converted GameCube save fixture for DEBUG_TEST builds. */
+    .debug_test_island 0x0203B000 :
+    {
+        data/debug_test_island.o(.debug_test_island);
     } =0
 
     . = 0x03000000;
@@ -123,6 +139,8 @@ SECTIONS {
 
     ASSERT(SIZEOF(.data) == 0x1068C, "payload data image size changed")
     ASSERT(SIZEOF(.bss) == 0x4BAC, "payload IWRAM image size changed")
+    ASSERT(SIZEOF(.debug_test_island) == 0 || SIZEOF(.debug_test_island) == 0x3980,
+           "debug island fixture has the wrong size")
 
     . = 0x02040000; /* Limit EWRAM size */
 

@@ -83,7 +83,12 @@ loc_8000140:                            @ CODE XREF: ROM:loc_8000140j
                 BNE             loc_8000140
 
 real_init:                              @ CODE XREF: ROM:_initj
+.ifdef DEBUG_TESTING
+                @ Debug graphics require cartridge boot; Image is linked in EWRAM.
+                LDR             R0, =Image + 0x06000000
+.else
                 LDR             R0, =Image
+.endif
                 LDR             R1, =0x2018000 @ payload destination
                 SVC             0x110000 @ LZ77UnCompReadNormalWrite8bit
                 LDR             LR, =0x2018000

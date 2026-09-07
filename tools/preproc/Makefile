@@ -2,6 +2,10 @@ CXX := g++
 
 CXXFLAGS := -std=c++11 -O2 -Wall -Wno-switch -Werror
 
+ifeq ($(OS),Windows_NT)
+LDFLAGS += -static
+endif
+
 SRCS := asm_file.cpp c_file.cpp charmap.cpp preproc.cpp string_parser.cpp \
 	utf8.cpp
 
