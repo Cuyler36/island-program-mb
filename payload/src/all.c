@@ -8115,6 +8115,7 @@ void Islander_MoveAction11_State0(void) {
     }
 }
 
+/* Original address: 0x020224D8 */
 void Islander_MoveAction11_State1(void) {
     IslandFieldWork *field = &gIslandFieldWork;
     Islander_AGB *islander = &gIslander;
@@ -8126,6 +8127,8 @@ void Islander_MoveAction11_State1(void) {
     s32 random;
     s32 entity_tile_idx;
     s32 map_tile_offset;
+    s32 tile_marker;
+    u32 tile;
 
     if (Islander_PlayAnim(1) != 0) {
         if ((field_object->hits_remaining == 0) || (field_object->hits_remaining & 0x80)) {
@@ -8146,17 +8149,11 @@ void Islander_MoveAction11_State1(void) {
         (field->last_palette_hour == gIslanderFavoriteHours[islander->islander_npc_idx]) &&
         ((rand_u16(&gGameState) % 101) <= 24)) {
         if (field_object->layer == 0) {
-            map_tile_offset = field_object->tile_idx;
-            map_tile_offset += 0x10;
-            map_tile_offset *= sizeof(u16);
-            tiles = field->fg_tiles[0];
+            tile = field->fg_tiles[0][field_object->tile_idx + 0x10];
         } else {
-            map_tile_offset = field_object->tile_idx;
-            map_tile_offset += 0x10;
-            map_tile_offset *= sizeof(u16);
-            tiles = field->fg_tiles[1];
+            tile = field->fg_tiles[1][field_object->tile_idx + 0x10];
         }
-        if (*(u16 *)((u8 *)tiles + map_tile_offset) == 0xFFF) {
+        if (tile == 0xFFF) {
             islander->item_work.held_item.type_idx = 1;
             spawn_idx = 0;
             if ((islander->equipped_tool_state & 0xF) == 6) {
@@ -8169,21 +8166,15 @@ void Islander_MoveAction11_State1(void) {
             spawn_idx = SpawnEntity(0, 2, spawn_params->type, spawn_params->param);
             if (spawn_idx != 0) {
                 if (field_object->layer == 0) {
-                    map_tile_offset = islander->tile_idx;
-                    map_tile_offset *= sizeof(u16);
-                    tiles = field->fg_tiles[0];
+                    field->fg_tiles[0][islander->tile_idx] = 0x3333;
                 } else {
-                    map_tile_offset = islander->tile_idx;
-                    map_tile_offset *= sizeof(u16);
-                    tiles = field->fg_tiles[1];
+                    field->fg_tiles[1][islander->tile_idx] = 0x3333;
                 }
-                *(u16 *)((u8 *)tiles + map_tile_offset) = 0x3333;
                 entity = &g_EntityTable[spawn_idx];
                 entity->base_y = (entity->y + 0x20) << 8;
-                entity_tile_idx = field_object->tile_idx + 0x10;
-                entity->landing_tile = entity_tile_idx;
+                entity->landing_tile = field_object->tile_idx + 0x10;
                 if (field_object->layer != 0) {
-                    entity->landing_tile = entity_tile_idx | 0x1000;
+                    entity->landing_tile |= 0x1000;
                 }
                 entity->landing_delay_timer = 0x35;
                 entity->y -= 0x20;
@@ -8196,7 +8187,6 @@ void Islander_MoveAction11_State1(void) {
     field_object->hits_remaining--;
     Sound_PlayEffect0(0);
 }
-
 void Islander_MoveAction11_State2(void) {
     Islander_AGB *islander = &gIslander;
     u16 next_timer;
@@ -8810,16 +8800,16 @@ void Islander_BuryItem_State3(void) {
     }
 }
 
+/* Original address: 0x020234B0 */
 void Islander_BuryItem_State4(void) {
     Islander_AGB *islander = &gIslander;
-    u16 world_state = islander->interaction_tile;
-    u8 tile_idx = world_state;
+    u8 tile_idx = islander->interaction_tile;
     u8 *tilemap_vram;
 
     if (islander->anim_timer == 0) {
         if (islander->anim_frame == 0xE) {
-            tilemap_vram = (0x8000 & world_state) ?
-                (u8 *)BG_SCREEN_ADDR(25) : (u8 *)BG_SCREEN_ADDR(24);
+            tilemap_vram = (islander->interaction_tile & 0x8000) == 0 ?
+                (u8 *)BG_SCREEN_ADDR(24) : (u8 *)BG_SCREEN_ADDR(25);
             tilemap_vram += (tile_idx & 0xF0) * 8;
             tilemap_vram += (tile_idx & 0xF) * 4;
             WriteItemTileToVRAM((u16*)tilemap_vram, 0x200);
@@ -8842,8 +8832,8 @@ void Islander_BuryItem_State4(void) {
         islander->dig_target_layer = 0;
         islander->dig_target_tile_idx = 0;
 
-        tilemap_vram = (0x8000 & islander->interaction_tile) ?
-            (u8 *)BG_SCREEN_ADDR(25) : (u8 *)BG_SCREEN_ADDR(24);
+        tilemap_vram = (islander->interaction_tile & 0x8000) == 0 ?
+            (u8 *)BG_SCREEN_ADDR(24) : (u8 *)BG_SCREEN_ADDR(25);
         tilemap_vram += (tile_idx & 0xF0) * 8;
         tilemap_vram += (tile_idx & 0xF) * 4;
         WriteItemTileToVRAM((u16*)tilemap_vram, islander->buried_item_tile_base);
@@ -10767,6 +10757,10 @@ void Entity_DrawSprite(s32 entity_index) {
     }
 }
 
+static inline u16 PlayerHand_GetTerrainTile(u16 *tilemap, u32 tile_mask) {
+    return *tilemap & tile_mask;
+}
+
 /* Original address: 0x020259C8 */
 s32 PlayerHand_IsItemPlacementBlocked(void) {
     Player *player = &gPlayer;
@@ -10775,6 +10769,7 @@ s32 PlayerHand_IsItemPlacementBlocked(void) {
     u16 *tilemap = NULL;
     u16 item = 0;
     u16 terrain;
+    u32 terrain_mask;
 
     player->tile_idx = (player->work_y & ~0xF) | ((player->work_x & 0xF0) >> 4);
     if (!(player->work_x & 0xFF00)) {
@@ -10810,8 +10805,9 @@ s32 PlayerHand_IsItemPlacementBlocked(void) {
             tilemap += (player->tile_idx & 0xF) * 2;
         }
     }
+    terrain_mask = 0x3FF;
     if (CheckSurroundingCollision(item, tilemap) == 0) {
-        terrain = Islander_GetTerrainTile(tilemap);
+        terrain = PlayerHand_GetTerrainTile(tilemap, terrain_mask);
         if ((terrain > 5 && (u16)(terrain - 0x10) > 5 && terrain != 0x82 && terrain <= 0xAF) ||
             (*tilemap & 0x3FF) == 0x13) {
             IslandBuilding *building = &gIslandBuildings[1];
@@ -10829,7 +10825,7 @@ s32 PlayerHand_IsItemPlacementBlocked(void) {
             }
         }
     } else {
-        terrain = Islander_GetTerrainTile(tilemap);
+        terrain = PlayerHand_GetTerrainTile(tilemap, terrain_mask);
         if ((u16)(terrain - 0xBC) <= 3 || (u16)(terrain - 0xC6) <= 5) {
             return 0;
         }
@@ -11187,13 +11183,12 @@ void Field_RestoreNeighborTreeTile(u16 tile_idx, s32 x, u8 neighbor_tile, u8 acr
 /* Original address: 0x020262DC */
 void Field_RestoreAdjacentTreeTiles(u16 tile_idx, s32 x) {
     Player *player = &gPlayer;
-    u8 left = (tile_idx & 0xF) - 1;
-    u8 right = (tile_idx & 0xF) + 1;
-    u8 row = tile_idx & 0xF0;
-    left &= 0xF;
-    right &= 0xF;
-    player->left_neighbor_tile_idx = left | row;
-    player->right_neighbor_tile_idx = right | row;
+    player->left_neighbor_tile_idx = (tile_idx & 0xF) - 1;
+    player->right_neighbor_tile_idx = (tile_idx & 0xF) + 1;
+    player->left_neighbor_tile_idx &= 0xF;
+    player->right_neighbor_tile_idx &= 0xF;
+    player->left_neighbor_tile_idx |= tile_idx & 0xF0;
+    player->right_neighbor_tile_idx |= tile_idx & 0xF0;
     if (!(player->x & 0xFF0000)) {
         Field_RestoreNeighborTreeTile(tile_idx, x, player->left_neighbor_tile_idx, 0, 0);
         if (!(player->right_neighbor_tile_idx & 0xF)) {
@@ -11402,6 +11397,7 @@ void PlayerHand_Update(void) {
 /* Original address: 0x02026830 */
 void PlayerHand_Draw(void) {
     Player *player = &gPlayer;
+    IslandFieldWork *field = &gIslandFieldWork;
     IslanderOamData *sprite;
     IslanderOamData *oam;
     u32 i;
@@ -11409,13 +11405,10 @@ void PlayerHand_Draw(void) {
     player->work_y = player->y >> 8;
     player->work_x = player->x >> 8;
     sprite = sPlayerHandAnimations[player->anim_id][player->anim_frame]->sprite_gfx_p;
-    gIslandFieldWork.entity_active[0] = 0;
-    gIslandFieldWork.entity_active[1] = 0;
+    field->entity_active[0] = 0;
+    field->entity_active[1] = 0;
     i = 0;
-    if (sprite->affine_param == 0xFFFF) {
-        return;
-    }
-    do {
+    while (sprite->affine_param != 0xFFFF) {
         oam = &((IslanderOamData *)gUnk3002410)[gGameState.oam_count];
         oam->obj_mode = sprite->obj_mode;
         oam->bpp = sprite->bpp;
@@ -11429,9 +11422,9 @@ void PlayerHand_Draw(void) {
         oam->mosaic = 1;
         oam->priority = 0;
         oam->palette_num = sprite->palette_num;
-        gIslandFieldWork.entity_active[i] = 1;
+        field->entity_active[i] = 1;
         gGameState.oam_count++;
         i++;
         sprite++;
-    } while (sprite->affine_param != 0xFFFF);
+    }
 }
