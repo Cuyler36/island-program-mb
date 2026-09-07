@@ -3,16 +3,24 @@
 #include "m_name_table.h"
 #include <string.h>
 
+typedef struct {
+    void *tiles[2];
+} mMsg_TwoChoiceHighlights;
+
+typedef struct {
+    void *tiles[3];
+} mMsg_ThreeChoiceHighlights;
+
 /* Original address: 0x0202AAC8 */
-extern void *gMsgTwoChoiceHighlightTiles[2];
+extern mMsg_TwoChoiceHighlights gMsgTwoChoiceHighlightTiles;
 /* Original address: 0x0202AAD0 */
-extern void *gMsgThreeChoiceHighlightTiles[3];
+extern mMsg_ThreeChoiceHighlights gMsgThreeChoiceHighlightTiles;
 /* Original address: 0x0202AFBC */
 extern u32 sJoybootGbaHandshake;
 /* Original address: 0x0202AFC4 */
 extern u32 sJoybootGameCubeHandshake;
 /* Original address: 0x0202B00C */
-extern s32 sNoticeResultMessages[2];
+extern IslandProgramNoticeResultMessages sNoticeResultMessages;
 
 /* Original address: 0x0202B014 */
 extern const u16 sTimeOfDayPalette2Table[24][8];
@@ -857,26 +865,24 @@ void mMsg_UpdateChoiceCursorPosition(mMsg_Window_c *msg) {
 
 /* Original address: 0x02018DE8 */
 void mMsg_UpdateChoiceHighlight(mMsg_Window_c *msg) {
-    void *two_choice_tiles[2];
-    void *three_choice_tiles[3];
+    mMsg_TwoChoiceHighlights two_choice_tiles = gMsgTwoChoiceHighlightTiles;
+    mMsg_ThreeChoiceHighlights three_choice_tiles = gMsgThreeChoiceHighlightTiles;
     u16 first_choice_tile;
 
-    memcpy(two_choice_tiles, gMsgTwoChoiceHighlightTiles, sizeof(two_choice_tiles));
-    memcpy(three_choice_tiles, gMsgThreeChoiceHighlightTiles, sizeof(three_choice_tiles));
     first_choice_tile = msg->tile_stride * msg->choices[0].line;
 
     if (msg->message_id == 0x19) {
-        CpuFastSet(three_choice_tiles[msg->choice_index],
+        CpuFastSet(three_choice_tiles.tiles[msg->choice_index],
                    (void *)(BG_VRAM + TILE_OFFSET_4BPP(first_choice_tile + 0x100)),
                    (msg->tile_stride * 0x30) & 0x1FFFFF);
-        CpuFastSet(three_choice_tiles[msg->choice_index],
+        CpuFastSet(three_choice_tiles.tiles[msg->choice_index],
                    msg->tile_data + TILE_OFFSET_4BPP(first_choice_tile),
                    (msg->tile_stride * 0x30) & 0x1FFFFF);
     } else {
-        CpuFastSet(two_choice_tiles[msg->choice_index],
+        CpuFastSet(two_choice_tiles.tiles[msg->choice_index],
                    (void *)(BG_VRAM + TILE_OFFSET_4BPP(first_choice_tile + 0x100)),
                    (msg->tile_stride * 0x10) & 0x1FFFFF);
-        CpuFastSet(two_choice_tiles[msg->choice_index],
+        CpuFastSet(two_choice_tiles.tiles[msg->choice_index],
                    msg->tile_data + TILE_OFFSET_4BPP(first_choice_tile),
                    (msg->tile_stride * 0x10) & 0x1FFFFF);
     }
@@ -1437,10 +1443,8 @@ void mFont_BlitGlyphToTiles(mFont_GlyphDraw_c *glyph, s32 width) {
                 packed_pixels = glyph->tile_data[byte_offset];
 
                 if (x & 1) {
-                    // packed_pixels &= 0xF;
                     packed_pixels = (packed_pixels & 0xF) | ((glyph->palette & 0xF) << 4);
                 } else {
-                    // packed_pixels &= 0xF0;
                     packed_pixels = (packed_pixels & 0xF0) | (glyph->palette & 0xF);
                 }
                 glyph->tile_data[byte_offset] = packed_pixels;
@@ -2822,9 +2826,7 @@ void IslandProgram_UpdateNoticeTransfer(IslandProgramWork *work) {
 
 /* Original address: 0x0201AF48 */
 void IslandProgram_EnterNoticeResult(IslandProgramWork *work) {
-    s32 sp[2];
-
-    memcpy(sp, sNoticeResultMessages, sizeof(sp));
+    IslandProgramNoticeResultMessages result_messages = sNoticeResultMessages;
 
     if (work->notice_send_active == 1) {
         gGameState.joybus_notice_requested = 0;
@@ -2842,7 +2844,7 @@ void IslandProgram_EnterNoticeResult(IslandProgramWork *work) {
         work->notice_state = work->pending_notice_state;
         work->notice_result_state = 0;
     } else {
-        if ((mMsg_ChangeMsgData(work->current_window, sp[work->joybus_result - 1]) == 1) && ((mMsg_RequestCursor(work->current_window)) != 0)) {
+        if ((mMsg_ChangeMsgData(work->current_window, result_messages.message_ids[work->joybus_result - 1]) == 1) && ((mMsg_RequestCursor(work->current_window)) != 0)) {
             GameAudio_PlayEffect0(work->joybus_result == 1 ? 0x27 : 0x28);
             gGameState.joybus_notice_requested = 0;
             gGameState.joybus_notice_active = 0;
@@ -5794,7 +5796,7 @@ extern int collision_check_offsets[4];
 s32 Islander_CanDigHere(void) {
     Islander_AGB *islander = &gIslander;
     u8 *tilemap;
-    u8 tile_idx;
+    u32 row_address;
     s32 i;
 
     Islander_UpdateCollisionTiles(islander->direction);
@@ -5804,12 +5806,17 @@ s32 Islander_CanDigHere(void) {
         }
         if ((islander->x & 0xFF0000) == 0) {
             tilemap = (u8 *)BG_SCREEN_ADDR(20);
+            row_address = (islander->tile_idx & 0xF0) * 8;
+            row_address += (u32)tilemap;
+            tilemap = (u8 *)row_address;
+            tilemap += (islander->tile_idx & 0xF) * 4;
         } else {
             tilemap = (u8 *)BG_SCREEN_ADDR(21);
+            row_address = (islander->tile_idx & 0xF0) * 8;
+            row_address += (u32)tilemap;
+            tilemap = (u8 *)row_address;
+            tilemap += (islander->tile_idx & 0xF) * 4;
         }
-        tile_idx = islander->tile_idx;
-        tilemap = (0xF0 & tile_idx) * 8 + tilemap;
-        tilemap += (0xF & tile_idx) * 4;
         if ((u16)((*(u16 *)(tilemap + collision_check_offsets[i]) & 0x3FF) - 0x20) > 0x5E) {
             return 0;
         }
@@ -5823,8 +5830,10 @@ static inline IslanderDirectionSector *Islander_GetDirectionSector(u16 angle) {
     if (angle < sectors->max_angle) {
         sector_idx = 0;
         sectors -= 7;
-        while (sector_idx <= 6 && angle > sectors[sector_idx].max_angle) {
-            sector_idx++;
+        for (sector_idx = 0; sector_idx < 7; sector_idx++) {
+            if (angle <= sectors[sector_idx].max_angle) {
+                break;
+            }
         }
     } else {
         sector_idx = 0;
@@ -5908,6 +5917,7 @@ void Islander_UpdateCollisionTiles(u8 direction) {
     u8 tile_idx;
     s32 terrain_tile_idx;
     u16 *tilemap;
+    u32 row_address;
 
     /* The direction argument is unused in the original routine. */
     tile_idx = y;
@@ -5934,10 +5944,18 @@ void Islander_UpdateCollisionTiles(u8 direction) {
     islander->terrain_tile_idx = terrain_tile_idx;
     if ((islander->work_x & 0xFF0000) == 0) {
         tilemap = (u16 *)BG_SCREEN_ADDR(20);
+        row_address = (terrain_tile_idx & 0xF0) * 8;
+        row_address += (u32)tilemap;
+        tilemap = (u16 *)row_address;
+        tilemap += (terrain_tile_idx & 0xF) * 2;
     } else {
         tilemap = (u16 *)BG_SCREEN_ADDR(21);
+        row_address = (terrain_tile_idx & 0xF0) * 8;
+        row_address += (u32)tilemap;
+        tilemap = (u16 *)row_address;
+        tilemap += (terrain_tile_idx & 0xF) * 2;
     }
-    islander->collision_tilemap = (terrain_tile_idx & 0xF0) * 4 + tilemap + (terrain_tile_idx & 0xF) * 2;
+    islander->collision_tilemap = tilemap;
 }
 
 /* Original address: 0x0201F660 */
@@ -6034,12 +6052,13 @@ extern s32 gIslanderMoveCollisionOffsets[16];
 s32 Islander_CanMoveInDirection(u8 direction) {
     Islander_AGB *islander = &gIslander;
     IslandFieldWork *field = &gIslandFieldWork;
-    s32 offset_idx = direction * 2;
-    s32 x = islander->x + gIslanderMoveCollisionOffsets[offset_idx];
+    s32 offset_idx;
+    s32 x = islander->x + gIslanderMoveCollisionOffsets[offset_idx = direction * 2];
     s32 y_offset = gIslanderMoveCollisionOffsets[offset_idx + 1] + 0x800;
     s32 y = islander->y + y_offset;
     u8 tile = (y >> 8) & ~0xF;
     u16 *tilemap;
+    u32 row_address;
 
     tile |= (x >> 12) & 0xF;
     if ((x & 0xFF0000) == 0) {
@@ -6049,7 +6068,9 @@ s32 Islander_CanMoveInDirection(u8 direction) {
         islander->surrounding_item_types[0] = field->fg_tiles[1][tile];
         tilemap = (u16 *)BG_SCREEN_ADDR(21);
     }
-    tilemap = (tile & 0xF0) * 4 + tilemap;
+    row_address = (tile & 0xF0) * 8;
+    row_address += (u32)tilemap;
+    tilemap = (u16 *)row_address;
     tilemap += (tile & 0xF) * 2;
     islander->collision_tilemap = tilemap;
     if (CheckSurroundingCollision(islander->surrounding_item_types[0], tilemap) != 0) {
@@ -6066,11 +6087,7 @@ void Islander_BuryRandomItem(s32 item_type) {
     BuriedItemUpdateGroup *buried_item_update;
     ItemGeneratorDef *generator_def;
     ItemGroupStruct *item_definition;
-    Island_agb_c *island_data;
-    u16 *deposit;
     mActor_name_t buried_item;
-    s32 update_idx;
-    u8 generator_idx;
     u8 tile_idx = islander->interaction_tile;
     s32 group_idx;
 
@@ -6094,11 +6111,11 @@ void Islander_BuryRandomItem(s32 item_type) {
         item_type = 0;
     }
 
-    generator_idx = gBuriedItemGeneratorIndices[item_type];
-    generator_def = &gItemGeneratorDefs[generator_idx];
+    item_type = gBuriedItemGeneratorIndices[item_type];
+    generator_def = &gItemGeneratorDefs[item_type];
     item_definition = &g_ItemDefinitions[generator_def->item_type];
 
-    if ((item_definition->default_generator_idx == 0xFFF) || (generator_idx == 0xD)) {
+    if ((item_definition->default_generator_idx == 0xFFF) || (item_type == 0xD)) {
         islander->item_work.held_item.type_idx = ITEM_TYPE_TRASH;
         return;
     }
@@ -6111,8 +6128,8 @@ void Islander_BuryRandomItem(s32 item_type) {
             islander->buried_item_tile_base = 0x3268;
         }
 
-        for (update_idx = 0; update_idx < 6; update_idx++) {
-            buried_item_update = &gBuriedItemUpdateGroups[update_idx];
+        for (group_idx = 0; group_idx < 6; group_idx++) {
+            buried_item_update = &gBuriedItemUpdateGroups[group_idx];
             if (buried_item_update->item_type == generator_def->item_type) {
                 break;
             }
@@ -6737,7 +6754,6 @@ s32 Islander_FindNearbyTree(void) {
 /* Original address: 0x020208BC */
 s32 Islander_TryInteractWithBuriedItem(u8 layer) {
     Islander_AGB *islander = &gIslander;
-    u8 *tile_idx = &islander->tile_idx;
     IslandFieldWork *field = &gIslandFieldWork;
     Island_agb_c *island = gIslandData;
     u32 tile;
@@ -6746,13 +6762,13 @@ s32 Islander_TryInteractWithBuriedItem(u8 layer) {
     s32 chance;
     s32 state;
 
-    if ((island->deposit[layer][*tile_idx >> 4] >> (0xF & *tile_idx)) & 1) {
+    if ((island->deposit[layer][islander->tile_idx >> 4] >> (0xF & islander->tile_idx)) & 1) {
         if (islander->digging_cooldown_timer == 0 &&
             ((state = 0xF & islander->equipped_tool_state) == 3 || state == 7)) {
             if (!(islander->x & 0xFF0000)) {
-                tile = field->fg_tiles[0][*tile_idx];
+                tile = field->fg_tiles[0][islander->tile_idx];
             } else {
-                tile = field->fg_tiles[1][*tile_idx];
+                tile = field->fg_tiles[1][islander->tile_idx];
             }
             definition = &g_ItemDefinitions[tile];
             if (tile != 0xFFF) {
@@ -6760,8 +6776,10 @@ s32 Islander_TryInteractWithBuriedItem(u8 layer) {
                 if (special_tile == 0 && tile != 0x3333 && tile != 0x7777 &&
                     definition->interaction_type != 0xFFF) {
                     chance = 50;
-                    if (islander->reward_adjust == 1) {
+                    switch (islander->reward_adjust) {
+                    case 1:
                         chance = 25;
+                        break;
                     }
                     if (chance >= (s32)rand_u16(&gGameState) % 101 &&
                         (u16)Islander_SetupDigApproach(0xF1) != 0) {
@@ -7979,19 +7997,19 @@ void Islander_UpdateEmotionAnimation(void) {
 void Islander_StartClickReaction(void) {
     Islander_AGB *islander = &gIslander;
     IslandFieldWork *field = &gIslandFieldWork;
-    u16 tile_id;
+    s32 index;
     u16 angle;
-    s32 sector_idx;
+    IslanderDirectionSector* sector;
 
     if (islander->interaction_target_is_islander == 0) {
         if ((islander->target_x & 0xFF0000) == 0) {
-            tile_id = field->fg_tiles[0][islander->player_interaction_tile_idx];
+            index = field->fg_tiles[0][islander->player_interaction_tile_idx];
         } else {
-            tile_id = field->fg_tiles[1][islander->player_interaction_tile_idx];
+            index = field->fg_tiles[1][islander->player_interaction_tile_idx];
         }
 
-        if ((tile_id == 0xFFF) || (tile_id == 0x3333) || (tile_id == 0x7777) ||
-            ((&g_ItemDefinitions[tile_id])->held_item_oam_attr2 == 0xFFF)) {
+        if (((u16)index == 0xFFF) || (index == 0x3333) || (index == 0x7777) ||
+            ((&g_ItemDefinitions[index])->held_item_oam_attr2 == 0xFFF)) {
             islander->move_action = ActionOutside;
             Islander_StartWandering();
             return;
@@ -8005,17 +8023,20 @@ void Islander_StartClickReaction(void) {
     islander->work_y = (islander->target_y - islander->y) >> 8;
     angle = ArcTan2((s16)islander->work_x, (s16)islander->work_y);
 
-    if (angle < (&gIslanderDirectionSectors[7])->max_angle) {
-        for (sector_idx = 0; sector_idx < 7; sector_idx++) {
-            if (angle <= gIslanderDirectionSectors[sector_idx].max_angle) {
-                break;
+    /* Preserve agbcc's loop weighting for the r6/r7 allocation. */
+    do {
+        if (angle < (&gIslanderDirectionSectors[7])->max_angle) {
+            for (index = 0; index < 7; index++) {
+                if (angle <= gIslanderDirectionSectors[index].max_angle) {
+                    break;
+                }
             }
+        } else {
+            index = 0;
         }
-    } else {
-        sector_idx = 0;
-    }
+    } while (0);
 
-    islander->direction = gIslanderDirectionSectors[sector_idx].direction;
+    islander->direction = gIslanderDirectionSectors[index].direction;
     islander->anim_frame = 0;
     islander->anim_timer = 0;
     Islander_AdjustAnimForTool();

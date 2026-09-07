@@ -882,7 +882,7 @@ IslandProgramModeProc sIslandProgramPromptUpdateProcs[4] = {
 };
 
 /* Original address: 0x0202B00C */
-s32 sNoticeResultMessages[2] = { 13, 20 };
+IslandProgramNoticeResultMessages sNoticeResultMessages = { { 13, 20 } };
 
 /* Original address: 0x0202B014 */
 u8 sTimeOfDayPalette2Table[384] = {

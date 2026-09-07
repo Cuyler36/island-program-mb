@@ -230,13 +230,13 @@ def build_argument_parser() -> argparse.ArgumentParser:
         "input",
         nargs="?",
         type=Path,
-        default=Path("payload/build/objdiff/all.text.raw.o"),
+        default=Path("payload/build/objdiff/all.c.text.raw.o"),
     )
     parser.add_argument(
         "output",
         nargs="?",
         type=Path,
-        default=Path("payload/build/objdiff/all.text.target.o"),
+        default=Path("payload/build/objdiff/all.c.text.target.o"),
     )
     parser.add_argument("--linker", type=Path, default=Path("payload/ld_script.txt"))
     return parser

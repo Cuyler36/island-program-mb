@@ -1288,6 +1288,11 @@ typedef struct JoybusTransferWork {
     /* 0x2B */ u8 _2B[0x15];
 } JoybusTransferWork;
 
+/* Result message IDs indexed by joybus_result - 1. sizeof == 8. */
+typedef struct {
+    s32 message_ids[2];
+} IslandProgramNoticeResultMessages;
+
 /* Main menu/message state used by the island program. */
 /* sizeof(IslandProgramWork) == 0x80 */
 typedef struct IslandProgramWork {

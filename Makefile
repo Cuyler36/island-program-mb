@@ -218,7 +218,7 @@ payload/build/payload/src/libc/%.o: payload/src/libc/%.c payload/Makefile
 # expensive byte-level data comparison during normal text matching.
 OBJDIFF_DIR := payload/build/objdiff
 OBJDIFF_TEXT_OBJ := payload/build/payload/asm/all.o
-OBJDIFF_TEXT_UNITS := all sound syscalls
+OBJDIFF_TEXT_UNITS := all.c sound syscalls
 OBJDIFF_TEXT_ASM := $(addprefix $(OBJDIFF_DIR)/,$(addsuffix .text.target.s,$(OBJDIFF_TEXT_UNITS)))
 OBJDIFF_TEXT_RAW := $(addprefix $(OBJDIFF_DIR)/,$(addsuffix .text.raw.o,$(OBJDIFF_TEXT_UNITS)))
 OBJDIFF_TEXT_TARGETS := $(addprefix $(OBJDIFF_DIR)/,$(addsuffix .text.target.o,$(OBJDIFF_TEXT_UNITS)))

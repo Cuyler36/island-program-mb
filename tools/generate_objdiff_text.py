@@ -15,7 +15,7 @@ from pathlib import Path
 
 # Boundaries include the ARM mixers in sound.c and keep the BIOS wrappers in
 # their own object, matching the order in payload/ld_script.txt.
-UNIT_STARTS = (("all", "AgbMain"), ("sound", "Audio_Init"), ("syscalls", "ArcTan2"))
+UNIT_STARTS = (("all.c", "AgbMain"), ("sound", "Audio_Init"), ("syscalls", "ArcTan2"))
 FUNCTION_START = re.compile(
     r"^[ \t]*(?:thumb|arm|non_word_aligned_thumb)_func_start[ \t]+(\w+)[ \t]*$",
     re.MULTILINE,
