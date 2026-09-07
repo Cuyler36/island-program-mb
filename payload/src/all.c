@@ -7027,8 +7027,8 @@ void Islander_StepFlyingItem(void) {
         params++;
         items = &balloon->item_ids[1];
         tile_ids = &balloon->item_type_indices[1];
-        i = 3;
-        do {
+        i = 0;
+        while (i < 4) {
             tile = params->type;
             item = params->param;
             if (item == 4) {
@@ -7040,9 +7040,9 @@ void Islander_StepFlyingItem(void) {
             *items = item;
             items++;
             tile_ids++;
-            i--;
+            i++;
             params++;
-        } while (i >= 0);
+        }
     } else if (islander->move_action == 3) {
         if (islander->stored_item_type_plus_one[4] != 0) {
             islander->floating_balloon_target_entity_id = 0;
@@ -7979,7 +7979,6 @@ void Islander_UpdateEmotionAnimation(void) {
 void Islander_StartClickReaction(void) {
     Islander_AGB *islander = &gIslander;
     IslandFieldWork *field = &gIslandFieldWork;
-    IslanderDirectionSector *sector;
     u16 tile_id;
     u16 angle;
     s32 sector_idx;
@@ -7992,7 +7991,7 @@ void Islander_StartClickReaction(void) {
         }
 
         if ((tile_id == 0xFFF) || (tile_id == 0x3333) || (tile_id == 0x7777) ||
-            ((g_ItemDefinitions + tile_id)->held_item_oam_attr2 == 0xFFF)) {
+            ((&g_ItemDefinitions[tile_id])->held_item_oam_attr2 == 0xFFF)) {
             islander->move_action = ActionOutside;
             Islander_StartWandering();
             return;
@@ -8006,15 +8005,11 @@ void Islander_StartClickReaction(void) {
     islander->work_y = (islander->target_y - islander->y) >> 8;
     angle = ArcTan2((s16)islander->work_x, (s16)islander->work_y);
 
-    sector = &gIslanderDirectionSectors[7];
-    if (angle < sector->max_angle) {
-        sector_idx = 0;
-        sector -= 7;
-        if (angle > sector->max_angle) {
-            do {
-                sector_idx++;
-                sector++;
-            } while ((sector_idx <= 6) && (angle > sector->max_angle));
+    if (angle < (&gIslanderDirectionSectors[7])->max_angle) {
+        for (sector_idx = 0; sector_idx < 7; sector_idx++) {
+            if (angle <= gIslanderDirectionSectors[sector_idx].max_angle) {
+                break;
+            }
         }
     } else {
         sector_idx = 0;
@@ -8123,9 +8118,7 @@ void Islander_MoveAction11_State1(void) {
     EntitySpawnParams *spawn_params;
     u16 *tiles;
     s32 spawn_idx;
-    s32 random;
-    s32 entity_tile_idx;
-    s32 map_tile_offset;
+    u16 tile;
 
     if (Islander_PlayAnim(1) != 0) {
         if ((field_object->hits_remaining == 0) || (field_object->hits_remaining & 0x80)) {
@@ -8146,44 +8139,31 @@ void Islander_MoveAction11_State1(void) {
         (field->last_palette_hour == gIslanderFavoriteHours[islander->islander_npc_idx]) &&
         ((rand_u16(&gGameState) % 101) <= 24)) {
         if (field_object->layer == 0) {
-            map_tile_offset = field_object->tile_idx;
-            map_tile_offset += 0x10;
-            map_tile_offset *= sizeof(u16);
-            tiles = field->fg_tiles[0];
+            tile = field->fg_tiles[0][field_object->tile_idx + 0x10];
         } else {
-            map_tile_offset = field_object->tile_idx;
-            map_tile_offset += 0x10;
-            map_tile_offset *= sizeof(u16);
-            tiles = field->fg_tiles[1];
+            tile = field->fg_tiles[1][field_object->tile_idx + 0x10];
         }
-        if (*(u16 *)((u8 *)tiles + map_tile_offset) == 0xFFF) {
+        if (tile == 0xFFF) {
             islander->item_work.held_item.type_idx = 1;
             spawn_idx = 0;
             if ((islander->equipped_tool_state & 0xF) == 6) {
                 spawn_idx = 0x14;
             }
             spawn_idx += gMoveAction11EmotionSpawnOffsets[islander->emotion];
-            random = rand_u16(&gGameState);
-            spawn_idx += random % 4;
+            spawn_idx += rand_u16(&gGameState) % 4;
             spawn_params = &gMoveAction11EntitySpawnParams[spawn_idx];
             spawn_idx = SpawnEntity(0, 2, spawn_params->type, spawn_params->param);
             if (spawn_idx != 0) {
                 if (field_object->layer == 0) {
-                    map_tile_offset = islander->tile_idx;
-                    map_tile_offset *= sizeof(u16);
-                    tiles = field->fg_tiles[0];
+                    field->fg_tiles[0][islander->tile_idx] = 0x3333;
                 } else {
-                    map_tile_offset = islander->tile_idx;
-                    map_tile_offset *= sizeof(u16);
-                    tiles = field->fg_tiles[1];
+                    field->fg_tiles[1][islander->tile_idx] = 0x3333;
                 }
-                *(u16 *)((u8 *)tiles + map_tile_offset) = 0x3333;
                 entity = &g_EntityTable[spawn_idx];
                 entity->base_y = (entity->y + 0x20) << 8;
-                entity_tile_idx = field_object->tile_idx + 0x10;
-                entity->landing_tile = entity_tile_idx;
+                entity->landing_tile = field_object->tile_idx + 0x10;
                 if (field_object->layer != 0) {
-                    entity->landing_tile = entity_tile_idx | 0x1000;
+                    entity->landing_tile |= 0x1000;
                 }
                 entity->landing_delay_timer = 0x35;
                 entity->y -= 0x20;
@@ -8812,14 +8792,17 @@ void Islander_BuryItem_State3(void) {
 
 void Islander_BuryItem_State4(void) {
     Islander_AGB *islander = &gIslander;
-    u16 world_state = islander->interaction_tile;
-    u8 tile_idx = world_state;
+    u8 tile_idx = islander->interaction_tile;
     u8 *tilemap_vram;
 
     if (islander->anim_timer == 0) {
         if (islander->anim_frame == 0xE) {
-            tilemap_vram = (0x8000 & world_state) ?
-                (u8 *)BG_SCREEN_ADDR(25) : (u8 *)BG_SCREEN_ADDR(24);
+            if (!(islander->interaction_tile & 0x8000)) {
+                tilemap_vram = (u8 *)BG_SCREEN_ADDR(24);
+            } else {
+                
+                tilemap_vram = (u8 *)BG_SCREEN_ADDR(25);
+            }
             tilemap_vram += (tile_idx & 0xF0) * 8;
             tilemap_vram += (tile_idx & 0xF) * 4;
             WriteItemTileToVRAM((u16*)tilemap_vram, 0x200);
@@ -8841,9 +8824,12 @@ void Islander_BuryItem_State4(void) {
         islander->held_item_sprite = 0;
         islander->dig_target_layer = 0;
         islander->dig_target_tile_idx = 0;
-
-        tilemap_vram = (0x8000 & islander->interaction_tile) ?
-            (u8 *)BG_SCREEN_ADDR(25) : (u8 *)BG_SCREEN_ADDR(24);
+        if (!(islander->interaction_tile & 0x8000)) {
+            tilemap_vram = (u8 *)BG_SCREEN_ADDR(24);
+        } else {
+            
+            tilemap_vram = (u8 *)BG_SCREEN_ADDR(25);
+        }
         tilemap_vram += (tile_idx & 0xF0) * 8;
         tilemap_vram += (tile_idx & 0xF) * 4;
         WriteItemTileToVRAM((u16*)tilemap_vram, islander->buried_item_tile_base);
@@ -10775,6 +10761,7 @@ s32 PlayerHand_IsItemPlacementBlocked(void) {
     u16 *tilemap = NULL;
     u16 item = 0;
     u16 terrain;
+    u16 tmp;
 
     player->tile_idx = (player->work_y & ~0xF) | ((player->work_x & 0xF0) >> 4);
     if (!(player->work_x & 0xFF00)) {
@@ -10810,10 +10797,10 @@ s32 PlayerHand_IsItemPlacementBlocked(void) {
             tilemap += (player->tile_idx & 0xF) * 2;
         }
     }
+    tmp = 0x3FF;
     if (CheckSurroundingCollision(item, tilemap) == 0) {
-        terrain = Islander_GetTerrainTile(tilemap);
-        if ((terrain > 5 && (u16)(terrain - 0x10) > 5 && terrain != 0x82 && terrain <= 0xAF) ||
-            (*tilemap & 0x3FF) == 0x13) {
+        if (((*tilemap & tmp) > 5 && ((*tilemap & tmp) > 0x15 || (*tilemap & tmp) < 0x10) && (*tilemap & tmp) != 0x82 && (*tilemap & tmp) <= 0xAF) ||
+            ((*tilemap & 0x3FF) == 0x13)) {
             IslandBuilding *building = &gIslandBuildings[1];
             s32 cursor_x = (player->x >> 8) - 8;
             player->work_x = building->interaction_x - cursor_x;
@@ -10830,7 +10817,10 @@ s32 PlayerHand_IsItemPlacementBlocked(void) {
         }
     } else {
         terrain = Islander_GetTerrainTile(tilemap);
-        if ((u16)(terrain - 0xBC) <= 3 || (u16)(terrain - 0xC6) <= 5) {
+        if (terrain >= 0xBC && terrain <= 0xBF) {
+            return 0;
+        }
+        if (terrain >= 0xC6 && terrain <= 0xCB) {
             return 0;
         }
     }
