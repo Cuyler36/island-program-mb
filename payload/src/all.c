@@ -176,26 +176,8 @@ extern IslandLinkWork gIslandLinkWork;
 extern Island_agb_c* gIslandTransferData;
 
 /* Word access also includes the adjacent multiplayer send register. */
-#define ISLAND_SERIAL_WORD (*(vu32*)REG_ADDR_SIOCNT)
+#define ISLAND_SERIAL_STATUS (*(struct SioMultiCnt*)REG_ADDR_SIOCNT)
 #define ISLAND_LINK_HALFWORDS 0x1CC0
-
-typedef union IslandSerialStatus {
-    u32 word;
-    struct {
-        u32 baud_rate : 2;
-        u32 slave : 1;
-        u32 ready : 1;
-        u32 player_id : 2;
-        u32 error : 1;
-        u32 busy : 1;
-        u32 _08 : 4;
-        u32 mode : 2;
-        u32 irq_enable : 1;
-        u32 _0F : 17;
-    } bits;
-} IslandSerialStatus;
-
-#define ISLAND_SERIAL_STATUS (*(volatile IslandSerialStatus*)REG_ADDR_SIOCNT)
 
 void IslandProgram_Main();                                   /* extern */
 
@@ -3937,65 +3919,61 @@ void mMsg_ChoiceCursorDraw(m_msg_sprite_c* sprite) {
 
 /* Original address: 0x0201C7E0 */
 void InitIslandLinkTransfer(s32 unused) {
-    u32 zero;
-
     REG_IME = 0;
-    REG_IE &= 0xFF3F;
+    REG_IE &= ~(INTR_FLAG_TIMER3 | INTR_FLAG_SERIAL);
     REG_IME = 1;
     REG_RCNT = 0;
-    ISLAND_SERIAL_WORD = 0x2000;
-    REG_SIOCNT |= 0x4003;
-    zero = 0;
-    CpuSet(&zero, &gIslandLinkWork, 0x05000000 | (sizeof(gIslandLinkWork) / 4));
+    *(vu32 *)REG_ADDR_SIOCNT = SIO_MULTI_MODE;
+    REG_SIOCNT |= SIO_115200_BPS | SIO_INTR_ENABLE;
+    CpuFill32(0, &gIslandLinkWork, sizeof(gIslandLinkWork));
     gIslandLinkWork.send_packet_index = -1;
     gIslandLinkWork.receive_packet_index = -1;
     REG_IME = 0;
-    REG_IE |= 0x80;
+    REG_IE |= INTR_FLAG_SERIAL;
     REG_IME = 1;
 }
 
 /* Original address: 0x0201C870 */
 void StopIslandLinkTransfer(void) {
     REG_IME = 0;
-    REG_IE &= 0xFF3F;
+    REG_IE &= ~(INTR_FLAG_TIMER3 | INTR_FLAG_SERIAL);
     REG_IME = 1;
     REG_RCNT = 0;
-    REG_SIOCNT = 0x2003;
-    REG_TM3CNT = 0xA4FB;
-    REG_IF = 0xC0;
+    REG_SIOCNT = SIO_MULTI_MODE | SIO_115200_BPS;
+    REG_TM3CNT = (0xA4 << 8) | 0xFB; // Did they mean ~0xFB?
+    REG_IF = INTR_FLAG_TIMER3 | INTR_FLAG_SERIAL;
 }
 
 /* Original address: 0x0201C8C0 */
 s32 UpdateIslandLinkTransfer(void) {
-    IslandSerialStatus serial;
+    struct SioMultiCnt serial;
     s32 result;
 
-    serial.word = ISLAND_SERIAL_WORD;
+    serial = ISLAND_SERIAL_STATUS;
     result = -1;
     switch (gIslandLinkWork.state) {
     case 0:
         if (gIslandLinkWork.timeout > 600) {
-            u32 connection = serial.word & 0x88;
-
-            result = 16;
-            if (connection != 8) {
+            if (!serial.sd || serial.enable) {
                 result = 8;
+            } else {
+                result = 16;
             }
-        } else if ((u8)(serial.word & 0x88) == 8) {
+        } else if (serial.sd && !serial.enable) {
             u16* data;
             s32 remaining;
             u16 checksum;
 
-            if ((u8)(serial.word & 4) == 0) {
+            if (serial.si == 0) {
                 REG_IME = 0;
-                REG_IE &= 0xFF7F;
-                REG_IE |= 0x40;
+                REG_IE &= ~INTR_FLAG_SERIAL;
+                REG_IE |= INTR_FLAG_TIMER3;
                 REG_IME = 1;
-                ISLAND_SERIAL_STATUS.bits.irq_enable = 0;
-                REG_IF = 0xC0;
-                REG_TM3CNT = 0xA4FB;
+                ISLAND_SERIAL_STATUS.intrEnable = 0;
+                REG_IF = INTR_FLAG_TIMER3 | INTR_FLAG_SERIAL;
+                REG_TM3CNT = (0xA4 << 8) | 0xFB; // Did they mean ~0xFB?
                 gIslandLinkWork.master = 8;
-                ISLAND_SERIAL_STATUS.bits.busy = 1;
+                ISLAND_SERIAL_STATUS.enable = 1;
             }
             data = (u16*)gIslandData;
             gIslandLinkWork.send_data = data;
@@ -4017,7 +3995,7 @@ s32 UpdateIslandLinkTransfer(void) {
         if (gIslandLinkWork.serial_error != 0) {
             result = 8;
         } else if ((gIslandLinkWork.connected_players & 1) && (gIslandLinkWork.connected_players & 0xE)) {
-            if ((u32)serial.bits.player_id > 1) {
+            if (serial.id > 1) {
                 result = 8;
             } else {
                 result = 7;
@@ -4027,7 +4005,7 @@ s32 UpdateIslandLinkTransfer(void) {
             }
         } else if (gIslandLinkWork.timeout > 600) {
             result = 16;
-        } else if (!((gIslandLinkWork.connected_players >> serial.bits.player_id) & 1)) {
+        } else if (!((gIslandLinkWork.connected_players >> serial.id) & 1)) {
             if (gIslandLinkWork.handshake_delay <= 7) {
                 gIslandLinkWork.handshake_delay++;
             } else {
@@ -4085,9 +4063,10 @@ s32 UpdateIslandLinkTransfer(void) {
         u16 sound;
 
         GameAudio_StopEffect2(0x29);
-        sound = 0x28;
         if (result == 9) {
             sound = 0x27;
+        } else {
+            sound = 0x28;
         }
         GameAudio_PlayEffect0(sound);
         StopIslandLinkTransfer();
@@ -4097,100 +4076,81 @@ s32 UpdateIslandLinkTransfer(void) {
 
 /* Original address: 0x0201CB50 */
 void IslandLinkSerialInterrupt(void) {
-    union {
-        u64 all;
-        u16 halfwords[4];
-    } received;
+    u16 received[4];
     IslandLinkWork *work;
-    IslandSerialStatus serial;
+    struct SioMultiCnt serial;
     s32 player;
     u16 *data;
-    u16 result0;
-    u16 result1;
-    u16 response;
 
-    received.all = REG_SIOMLT_RECV;
+    *(u64*)received = REG_SIOMLT_RECV;
     work = &gIslandLinkWork;
-    serial.word = ISLAND_SERIAL_WORD;
-    work->serial_error = serial.bits.error;
-    if (work->receive_packet_index < 0) {
-        player = 0;
-        data = received.halfwords;
-        do {
-            if (*data == 0xFEFE) {
-                work->connected_players |= 1 << player;
+    serial = ISLAND_SERIAL_STATUS;
+    work->serial_error = serial.error;
+    if (gIslandLinkWork.receive_packet_index < 0) {
+        for (player = 0; player < 4; player++) {
+            if (received[player] == 0xFEFE) {
+                gIslandLinkWork.connected_players |= 1 << player;
             }
-            data++;
-            player++;
-        } while (player <= 3);
-        if ((work->connected_players & 3) == 3) {
-            work->send_packet_index++;
-            work->receive_packet_index++;
-            work->send_packet_checksum = 0;
-            work->receive_packet_checksum = 0;
         }
-    } else if (work->receive_packet_index <= 0x1DAD) {
-        work->receive_packet_checksum += received.halfwords[serial.bits.player_id ^ 1];
-        if ((work->receive_packet_index & 31) == 31) {
-            if ((s16)work->receive_packet_checksum != -1) {
-                work->packet_error |= 1;
+        if ((gIslandLinkWork.connected_players & 3) == 3) {
+            gIslandLinkWork.send_packet_index++;
+            gIslandLinkWork.receive_packet_index++;
+            gIslandLinkWork.send_packet_checksum = 0;
+            gIslandLinkWork.receive_packet_checksum = 0;
+        }
+    } else if (gIslandLinkWork.receive_packet_index <= 0x1DAD) {
+        gIslandLinkWork.receive_packet_checksum += received[serial.id ^ 1];
+        if ((gIslandLinkWork.receive_packet_index & 31) == 31) {
+            if ((s16)gIslandLinkWork.receive_packet_checksum != -1) {
+                gIslandLinkWork.packet_error |= 1;
             }
-            work->receive_packet_checksum = 0;
+            gIslandLinkWork.receive_packet_checksum = 0;
         } else {
-            s32 index = work->receive_index;
-            if (index < ISLAND_LINK_HALFWORDS) {
-                work->receive_data[index] = received.halfwords[serial.bits.player_id ^ 1];
-                work->receive_index = index + 1;
+            if (gIslandLinkWork.receive_index < ISLAND_LINK_HALFWORDS) {
+                gIslandLinkWork.receive_data[gIslandLinkWork.receive_index] = received[serial.id ^ 1];
+                gIslandLinkWork.receive_index++;
             }
         }
-        work->receive_packet_index++;
-    } else if (work->receive_packet_index == 0x1DAE) {
-        work->received_checksum = received.halfwords[1 ^ serial.bits.player_id];
-        work->receive_packet_index = work->receive_packet_index + 1;
-        work->receive_index++;
+        gIslandLinkWork.receive_packet_index++;
+    } else if (gIslandLinkWork.receive_packet_index == 0x1DAE) {
+        gIslandLinkWork.received_checksum = received[1 ^ serial.id];
+        gIslandLinkWork.receive_packet_index = gIslandLinkWork.receive_packet_index + 1;
+        gIslandLinkWork.receive_index++;
     } else {
-        result0 = received.halfwords[0];
-        if (result0 >= 0xFEFC && result0 <= 0xFEFD) {
-            result1 = received.halfwords[1];
-            if (result1 >= 0xFEFC && result1 <= 0xFEFD) {
-                if (result0 == 0xFEFD && result1 == result0) {
-                    work->result = 1;
+        if (received[0] >= 0xFEFC && received[0] <= 0xFEFD) {
+            if (received[1] >= 0xFEFC && received[1] <= 0xFEFD) {
+                if (received[0] == 0xFEFD && received[1] == received[0]) {
+                    gIslandLinkWork.result = 1;
                 } else {
-                    work->result = -1;
+                    gIslandLinkWork.result = -1;
                 }
             }
         }
     }
-    if (work->send_packet_index < 0) {
-        if (work->send_handshake) {
-            REG_SIOMLT_SEND = 0xFEFE;
+    if (gIslandLinkWork.send_packet_index < 0) {
+        if (gIslandLinkWork.send_handshake) {
+            ISLAND_SERIAL_STATUS.data = 0xFEFE;
         }
-        work->send_packet_checksum = 0;
-    } else if (work->send_packet_index <= 0x1DAD) {
-        if ((work->send_packet_index & 31) == 31) {
-            REG_SIOMLT_SEND = ~work->send_packet_checksum;
-            work->send_packet_checksum = 0;
+        gIslandLinkWork.send_packet_checksum = 0;
+    } else if (gIslandLinkWork.send_packet_index <= 0x1DAD) {
+        if ((gIslandLinkWork.send_packet_index & 31) == 31) {
+            ISLAND_SERIAL_STATUS.data = ~gIslandLinkWork.send_packet_checksum;
+            gIslandLinkWork.send_packet_checksum = 0;
         } else {
-            s32 index = work->send_index;
-            u16 *send = &work->send_data[index];
-            REG_SIOMLT_SEND = *send;
-            work->send_packet_checksum += *send;
-            work->send_index = index + 1;
+            ISLAND_SERIAL_STATUS.data = gIslandLinkWork.send_data[gIslandLinkWork.send_index];
+            gIslandLinkWork.send_packet_checksum += gIslandLinkWork.send_data[gIslandLinkWork.send_index];
+            gIslandLinkWork.send_index++;
         }
-        work->send_packet_index++;
-    } else if (work->send_packet_index == 0x1DAE) {
-        REG_SIOMLT_SEND = work->send_checksum;
-        work->send_packet_index = work->send_packet_index + 1;
-    } else if (work->send_packet_index > 0x1DAE && (work->checksum_ok || work->checksum_bad)) {
-        response = 0xFEFC;
-        if (work->checksum_ok) {
-            response = 0xFEFD;
-        }
-        REG_SIOMLT_SEND = response;
+        gIslandLinkWork.send_packet_index++;
+    } else if (gIslandLinkWork.send_packet_index == 0x1DAE) {
+        ISLAND_SERIAL_STATUS.data = gIslandLinkWork.send_checksum;
+        gIslandLinkWork.send_packet_index++;
+    } else if (gIslandLinkWork.send_packet_index > 0x1DAE && (gIslandLinkWork.checksum_ok || gIslandLinkWork.checksum_bad)) {
+        ISLAND_SERIAL_STATUS.data = (gIslandLinkWork.checksum_ok) ? 0xFEFD : 0xFEFC;
     }
-    if (work->master == 8) {
+    if (gIslandLinkWork.master == 8) {
         REG_TM3CNT_H = 0;
-        REG_SIOCNT |= 0x80;
+        REG_SIOCNT |= SIO_ENABLE;
         REG_TM3CNT_H = 0xC0;
     }
 }
