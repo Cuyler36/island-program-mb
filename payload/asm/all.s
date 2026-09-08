@@ -11429,8 +11429,8 @@ _0201D946:
 	pop {r1}
 	bx r1
 
-	thumb_func_start GameStateUpdateFunc_Normal
-GameStateUpdateFunc_Normal: @ 0x0201D94C
+	thumb_func_start IslandField_UpdateNormal
+IslandField_UpdateNormal: @ 0x0201D94C
 	push {r4, r5, r6, r7, lr}
 	mov r7, sb
 	mov r6, r8
@@ -11506,7 +11506,7 @@ _0201D9D2:
 	adds r0, #1
 	lsls r0, r0, #0x18
 	lsrs r0, r0, #0x18
-	bl ChangeEmotion
+	bl Sound_SetEmotion
 	ldrh r1, [r4]
 	ldr r0, _0201DA1C @ =0x00000844
 	add r0, r8
@@ -17792,7 +17792,7 @@ Islander_OnMoodChanged: @ 0x020209E0
 	adds r0, #1
 	lsls r0, r0, #0x18
 	lsrs r0, r0, #0x18
-	bl ChangeEmotion
+	bl Sound_SetEmotion
 	pop {r0}
 	bx r0
 	.align 2, 0
@@ -18181,7 +18181,7 @@ _02020CCA:
 	adds r0, #1
 	lsls r0, r0, #0x18
 	lsrs r0, r0, #0x18
-	bl ChangeEmotion
+	bl Sound_SetEmotion
 	bl Sound_InitMusic
 	movs r0, #0xfe
 	strb r0, [r6]
@@ -20594,7 +20594,7 @@ _02021F08:
 	movs r0, #1
 	strb r0, [r1]
 	movs r0, #2
-	bl ChangeEmotion
+	bl Sound_SetEmotion
 _02021F30:
 	adds r1, r4, #0
 	adds r1, #0x6e
@@ -20725,7 +20725,7 @@ _0202202E:
 	adds r0, #1
 	lsls r0, r0, #0x18
 	lsrs r0, r0, #0x18
-	bl ChangeEmotion
+	bl Sound_SetEmotion
 	ldrh r0, [r5, #4]
 	adds r1, r4, #0
 	adds r1, #0x8a
@@ -30986,7 +30986,7 @@ _02026C28:
 	bne _02026C50
 	ldr r0, _02026C4C @ =0x03000052
 	ldrb r0, [r0]
-	bl ChangeEmotion
+	bl Sound_SetEmotion
 	b _02026C5A
 	.align 2, 0
 _02026C44: .4byte 0x03000050
@@ -31019,8 +31019,8 @@ Sound_StopMusic: @ 0x02026C68
 	bx r0
 	.align 2, 0
 
-	thumb_func_start ChangeEmotion
-ChangeEmotion: @ 0x02026C7C
+	thumb_func_start Sound_SetEmotion
+Sound_SetEmotion: @ 0x02026C7C
 	push {r4, r5, r6, r7, lr}
 	lsls r0, r0, #0x18
 	lsrs r4, r0, #0x18

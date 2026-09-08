@@ -147,7 +147,7 @@ $(BUILD_MODE_FILE): FORCE
 	@cmp -s $@.tmp $@ || mv $@.tmp $@
 	@$(RM) $@.tmp
 
-$(OBJ_DIR)/src/all.o $(OBJ_DIR)/data/debug_test_island.o: $(BUILD_MODE_FILE)
+$(OBJ_DIR)/src/game.o $(OBJ_DIR)/data/debug_test_island.o: $(BUILD_MODE_FILE)
 
 ifeq ($(NODEP),1)
 $(OBJ_DIR)/asm/%.o: asm_dep :=
@@ -164,8 +164,7 @@ $(OBJ_DIR)/src/libc/memcpy.o $(OBJ_DIR)/src/libc/memset.o: CFLAGS := -O2 -fno-bu
 $(OBJ_DIR)/data/debug_test_island.o: data_dep :=
 
 # The initial m2c reconstructions intentionally retain provisional pointer types.
-$(OBJ_DIR)/src/all.o $(OBJ_DIR)/src/data.o: CFLAGS := $(filter-out -Werror,$(CFLAGS))
-$(OBJ_DIR)/src/all.o $(OBJ_DIR)/src/sound.o: include/sound.h
+$(OBJ_DIR)/src/data.o: CFLAGS := $(filter-out -Werror,$(CFLAGS))
 $(OBJ_DIR)/src/sound.o: CFLAGS += -fprologue-bugfix
 $(OBJ_DIR)/src/sound.o: asm/all_arm.inc
 $(OBJ_DIR)/asm/gflib/syscalls.o: asm/gflib/syscalls.inc

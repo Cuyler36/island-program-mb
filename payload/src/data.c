@@ -1,5 +1,10 @@
 #include "global.h"
+#include "islander.h"
+#include "sound.h"
 #include "m_name_table.h"
+#include "game.h"
+#include "lib.h"
+#include "m_msg.h"
 
 /* Original address: 0x0200F580 */
 extern u8 gMsgWindowTileData[2][0x480];
@@ -201,7 +206,7 @@ extern void Entity_UpdateReactionEffect();
 extern void Entity_UpdateToppleEffect();
 extern void FallingFruit_BeginFall();
 extern void FallingFruit_UpdateFall();
-extern void GameStateUpdateFunc_Normal();
+extern void IslandField_UpdateNormal();
 extern void IslandField_UpdateJoybusExit();
 extern void IslandField_UpdateOverviewExit();
 extern void IslandField_UpdateSleepExit();
@@ -359,13 +364,13 @@ u8 gUnk3002410[0x400] IWRAM_BSS = {0};
 u8 sBssPadding_03002810[0x170] IWRAM_BSS = {0};
 
 /* Original address: 0x03002980 */
-mMsg_Window_c sMsgWindow_03002980 IWRAM_BSS = {0};
+mMsg_Window_c gMsgWindowNotice IWRAM_BSS = {0};
 /* Original address: 0x03002A20 */
 mMsg_Window_c sMsgWindows[9] IWRAM_BSS = {0};
 /* Original address: 0x03002FC0 */
-mMsg_Window_c sMsgWindow_03002fc0 IWRAM_BSS = {0};
+mMsg_Window_c gMsgWindowMain IWRAM_BSS = {0};
 /* Original address: 0x03003060 */
-mMsg_Window_c sMsgWindow_03003060 IWRAM_BSS = {0};
+mMsg_Window_c gMsgWindowPrompt IWRAM_BSS = {0};
 /* Original address: 0x03003100 */
 u8 sBssPadding_03003100[0x20] IWRAM_BSS = {0};
 
@@ -658,119 +663,119 @@ int gMsgWindowScrollOffsets[12] = {
 
 /* Original address: 0x0202AB54 */
 mFont_ControlCodeInfo_c sMsgControlCodeInfo[] = {
-    {2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_LAST
-    {2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_CONTINUE
-    {2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_CLEAR
-    {3, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_CURSOR_SET_TIME
-    {2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_BUTTON
-    {5, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_COLOR
-    {2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_ABLE_CANCEL
-    {2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_UNABLE_CANCEL
-    {5, 0x01, 0x00, 0x00}, // mFont_CONT_CODE_SET_DEMO_ORDER_PLAYER
-    {5, 0x01, 0x00, 0x00}, // mFont_CONT_CODE_SET_DEMO_ORDER_NPC0
-    {5, 0x01, 0x00, 0x00}, // mFont_CONT_CODE_SET_DEMO_ORDER_NPC1
-    {5, 0x01, 0x00, 0x00}, // mFont_CONT_CODE_SET_DEMO_ORDER_NPC2
-    {5, 0x01, 0x00, 0x00}, // mFont_CONT_CODE_SET_DEMO_ORDER_QUEST
-    {2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_SELECT_WINDOW
-    {4, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_NEXT_MESSAGE_F
-    {4, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_NEXT_MESSAGE_0
-    {4, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_NEXT_MESSAGE_1
-    {4, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_NEXT_MESSAGE_2
-    {4, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_NEXT_MESSAGE_3
-    {6, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_NEXT_MESSAGE_RANDOM_2
-    {8, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_NEXT_MESSAGE_RANDOM_3
+    { 2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_LAST
+    { 2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_CONTINUE
+    { 2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_CLEAR
+    { 3, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_CURSOR_SET_TIME
+    { 2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_BUTTON
+    { 5, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_COLOR
+    { 2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_ABLE_CANCEL
+    { 2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_UNABLE_CANCEL
+    { 5, 0x01, 0x00, 0x00}, // mFont_CONT_CODE_SET_DEMO_ORDER_PLAYER
+    { 5, 0x01, 0x00, 0x00}, // mFont_CONT_CODE_SET_DEMO_ORDER_NPC0
+    { 5, 0x01, 0x00, 0x00}, // mFont_CONT_CODE_SET_DEMO_ORDER_NPC1
+    { 5, 0x01, 0x00, 0x00}, // mFont_CONT_CODE_SET_DEMO_ORDER_NPC2
+    { 5, 0x01, 0x00, 0x00}, // mFont_CONT_CODE_SET_DEMO_ORDER_QUEST
+    { 2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_SELECT_WINDOW
+    { 4, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_NEXT_MESSAGE_F
+    { 4, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_NEXT_MESSAGE_0
+    { 4, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_NEXT_MESSAGE_1
+    { 4, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_NEXT_MESSAGE_2
+    { 4, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_NEXT_MESSAGE_3
+    { 6, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_NEXT_MESSAGE_RANDOM_2
+    { 8, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_NEXT_MESSAGE_RANDOM_3
     {10, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_NEXT_MESSAGE_RANDOM_4
-    {6, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_SELECT_STRING_2
-    {8, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_SELECT_STRING_3
+    { 6, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_SELECT_STRING_2
+    { 8, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_SELECT_STRING_3
     {10, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_SELECT_STRING_4
-    {2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_FORCE_NEXT
-    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_PLAYER_NAME
-    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_TALK_NAME
-    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_TAIL
-    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_YEAR
-    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_MONTH
-    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_WEEK
-    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_DAY
-    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_HOUR
-    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_MIN
-    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_SEC
-    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE0
-    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE1
-    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE2
-    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE3
-    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE4
-    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE5
-    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE6
-    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE7
-    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE8
-    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE9
-    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_DETERMINATION
-    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_COUNTRY_NAME
-    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_RANDOM_NUMBER_2
-    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_ITEM0
-    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_ITEM1
-    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_ITEM2
-    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_ITEM3
-    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_ITEM4
-    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE10
-    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE11
-    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE12
-    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE13
-    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE14
-    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE15
-    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE16
-    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE17
-    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE18
-    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE19
-    {2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_MAIL
-    {2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_PLAYER_DESTINY0
-    {2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_PLAYER_DESTINY1
-    {2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_PLAYER_DESTINY2
-    {2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_PLAYER_DESTINY3
-    {2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_PLAYER_DESTINY4
-    {2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_PLAYER_DESTINY5
-    {2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_PLAYER_DESTINY6
-    {2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_PLAYER_DESTINY7
-    {2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_PLAYER_DESTINY8
-    {2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_PLAYER_DESTINY9
-    {2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_MESSAGE_CONTENTS_NORMAL
-    {2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_MESSAGE_CONTENTS_ANGRY
-    {2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_MESSAGE_CONTENTS_SAD
-    {2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_MESSAGE_CONTENTS_FUN
-    {2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_MESSAGE_CONTENTS_SLEEPY
-    {6, 0x05, 0x00, 0x00}, // mFont_CONT_CODE_SET_COLOR_CHAR
-    {3, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SOUND_CUT
-    {3, 0x04, 0x00, 0x00}, // mFont_CONT_CODE_SET_LINE_OFFSET
-    {3, 0x04, 0x00, 0x00}, // mFont_CONT_CODE_SET_LINE_TYPE
-    {3, 0x05, 0x00, 0x00}, // mFont_CONT_CODE_SET_CHAR_SCALE
-    {2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_BUTTON2
-    {4, 0x06, 0x00, 0x00}, // mFont_CONT_CODE_BGM_MAKE
-    {4, 0x06, 0x00, 0x00}, // mFont_CONT_CODE_BGM_DELETE
-    {3, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_MSG_TIME_END
-    {3, 0x07, 0x00, 0x00}, // mFont_CONT_CODE_SOUND_TRG_SYS
-    {3, 0x04, 0x00, 0x00}, // mFont_CONT_CODE_SET_LINE_SCALE
-    {2, 0x07, 0x00, 0x00}, // mFont_CONT_CODE_SOUND_NO_PAGE
-    {2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_VOICE_TRUE
-    {2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_VOICE_FALSE
-    {2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SELECT_NO_B
-    {2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_GIVE_OPEN
-    {2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_GIVE_CLOSE
-    {2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_MESSAGE_CONTENTS_GLOOMY
-    {2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SELECT_NO_B_CLOSE
-    {6, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_NEXT_MESSAGE_RANDOM_SECTION
-    {3, 0x08, 0x00, 0x00}, // mFont_CONT_CODE_UNKNOWN_100
-    {3, 0x08, 0x00, 0x00}, // mFont_CONT_CODE_UNKNOWN_101
-    {4, 0x08, 0x00, 0x00}, // mFont_CONT_CODE_SET_TEMPORARY_COLOR
-    {3, 0x04, 0x00, 0x00}, // mFont_CONT_CODE_SPACE
-    {2, 0x08, 0x00, 0x00}, // mFont_CONT_CODE_MOVE_DOWN
-    {2, 0x08, 0x00, 0x00}, // mFont_CONT_CODE_RESTORE_CACHED_MESSAGE
-    {6, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_MALE_FEMALE_CHECK
-    {2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_CHOICE_COUNT_2
-    {2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_CHOICE_COUNT_3
-    {3, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_CHOICE_TEXT_0
-    {3, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_CHOICE_TEXT_1
-    {3, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_CHOICE_TEXT_2
-    {3, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_CHECK_CHOICE
+    { 2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_FORCE_NEXT
+    { 2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_PLAYER_NAME
+    { 2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_TALK_NAME
+    { 2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_TAIL
+    { 2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_YEAR
+    { 2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_MONTH
+    { 2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_WEEK
+    { 2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_DAY
+    { 2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_HOUR
+    { 2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_MIN
+    { 2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_SEC
+    { 2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE0
+    { 2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE1
+    { 2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE2
+    { 2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE3
+    { 2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE4
+    { 2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE5
+    { 2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE6
+    { 2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE7
+    { 2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE8
+    { 2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE9
+    { 2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_DETERMINATION
+    { 2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_COUNTRY_NAME
+    { 2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_RANDOM_NUMBER_2
+    { 2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_ITEM0
+    { 2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_ITEM1
+    { 2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_ITEM2
+    { 2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_ITEM3
+    { 2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_ITEM4
+    { 2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE10
+    { 2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE11
+    { 2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE12
+    { 2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE13
+    { 2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE14
+    { 2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE15
+    { 2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE16
+    { 2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE17
+    { 2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE18
+    { 2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_FREE19
+    { 2, 0x02, 0x00, 0x00}, // mFont_CONT_CODE_PUT_STRING_MAIL
+    { 2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_PLAYER_DESTINY0
+    { 2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_PLAYER_DESTINY1
+    { 2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_PLAYER_DESTINY2
+    { 2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_PLAYER_DESTINY3
+    { 2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_PLAYER_DESTINY4
+    { 2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_PLAYER_DESTINY5
+    { 2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_PLAYER_DESTINY6
+    { 2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_PLAYER_DESTINY7
+    { 2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_PLAYER_DESTINY8
+    { 2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_PLAYER_DESTINY9
+    { 2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_MESSAGE_CONTENTS_NORMAL
+    { 2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_MESSAGE_CONTENTS_ANGRY
+    { 2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_MESSAGE_CONTENTS_SAD
+    { 2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_MESSAGE_CONTENTS_FUN
+    { 2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_MESSAGE_CONTENTS_SLEEPY
+    { 6, 0x05, 0x00, 0x00}, // mFont_CONT_CODE_SET_COLOR_CHAR
+    { 3, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SOUND_CUT
+    { 3, 0x04, 0x00, 0x00}, // mFont_CONT_CODE_SET_LINE_OFFSET
+    { 3, 0x04, 0x00, 0x00}, // mFont_CONT_CODE_SET_LINE_TYPE
+    { 3, 0x05, 0x00, 0x00}, // mFont_CONT_CODE_SET_CHAR_SCALE
+    { 2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_BUTTON2
+    { 4, 0x06, 0x00, 0x00}, // mFont_CONT_CODE_BGM_MAKE
+    { 4, 0x06, 0x00, 0x00}, // mFont_CONT_CODE_BGM_DELETE
+    { 3, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_MSG_TIME_END
+    { 3, 0x07, 0x00, 0x00}, // mFont_CONT_CODE_SOUND_TRG_SYS
+    { 3, 0x04, 0x00, 0x00}, // mFont_CONT_CODE_SET_LINE_SCALE
+    { 2, 0x07, 0x00, 0x00}, // mFont_CONT_CODE_SOUND_NO_PAGE
+    { 2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_VOICE_TRUE
+    { 2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_VOICE_FALSE
+    { 2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SELECT_NO_B
+    { 2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_GIVE_OPEN
+    { 2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_GIVE_CLOSE
+    { 2, 0x03, 0x00, 0x00}, // mFont_CONT_CODE_SET_MESSAGE_CONTENTS_GLOOMY
+    { 2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SELECT_NO_B_CLOSE
+    { 6, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_NEXT_MESSAGE_RANDOM_SECTION
+    { 3, 0x08, 0x00, 0x00}, // mFont_CONT_CODE_UNKNOWN_100
+    { 3, 0x08, 0x00, 0x00}, // mFont_CONT_CODE_UNKNOWN_101
+    { 4, 0x08, 0x00, 0x00}, // mFont_CONT_CODE_SET_TEMPORARY_COLOR
+    { 3, 0x04, 0x00, 0x00}, // mFont_CONT_CODE_SPACE
+    { 2, 0x08, 0x00, 0x00}, // mFont_CONT_CODE_MOVE_DOWN
+    { 2, 0x08, 0x00, 0x00}, // mFont_CONT_CODE_RESTORE_CACHED_MESSAGE
+    { 6, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_MALE_FEMALE_CHECK
+    { 2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_CHOICE_COUNT_2
+    { 2, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_CHOICE_COUNT_3
+    { 3, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_CHOICE_TEXT_0
+    { 3, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_CHOICE_TEXT_1
+    { 3, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_SET_CHOICE_TEXT_2
+    { 3, 0x00, 0x00, 0x00}, // mFont_CONT_CODE_CHECK_CHOICE
 };
 
 /* Original address: 0x0202AD18 */
@@ -1008,7 +1013,7 @@ mMsg_SpriteProfile mMsg_continue_prompt_sprite_profile = {
 };
 
 /* Original address: 0x0202B340 */
-IslanderOamData sContinuePromptAnimOamData[5] = {
+OAMData sContinuePromptAnimOamData[5] = {
     ISLANDER_OAM(0x0000, 0x0000, 0x7339, 0x0000),
     ISLANDER_OAM(0x0000, 0x01F8, 0x7338, 0x0000),
     ISLANDER_OAM(0x00F8, 0x0000, 0x7319, 0x0000),
@@ -1051,7 +1056,7 @@ mMsg_SpriteProfile mMsg_choice_cursor_sprite_profile = {
 };
 
 /* Original address: 0x0202B3A4 */
-IslanderOamData sMsgChoiceCursorAnimOamData[5] = {
+OAMData sMsgChoiceCursorAnimOamData[5] = {
     ISLANDER_OAM(0x0000, 0x0000, 0x72F9, 0x0000),
     ISLANDER_OAM(0x0000, 0x01F8, 0x72F8, 0x0000),
     ISLANDER_OAM(0x00F8, 0x0000, 0x72D9, 0x0000),
@@ -2315,7 +2320,7 @@ u8 sFieldEntityBaseTiles[18] = {
 
 /* Original address: 0x0202FD28 */
 void (*sIslandFieldUpdateProcs[4])(void) = {
-    GameStateUpdateFunc_Normal,
+    IslandField_UpdateNormal,
     IslandField_UpdateJoybusExit,
     IslandField_UpdateSleepExit,
     IslandField_UpdateOverviewExit,
@@ -2438,7 +2443,7 @@ u8 sFieldObjectShakeFrames[9] = {
 };
 
 /* Original address: 0x0203012C */
-IslanderOamData sIslanderOamData[ISLANDER_OAM_DATA_COUNT] = {
+OAMData sOAMData[ISLANDER_OAM_DATA_COUNT] = {
     ISLANDER_OAM(0x00EF, 0x41F8, 0x1040, 0x0000), /* 0x0203012C */
     ISLANDER_OAM(0x00F9, 0x61F6, 0x2106, 0x0000), /* 0x02030134 */
     ISLANDER_OAM(0x00F8, 0x41F8, 0x104E, 0x0000), /* 0x0203013C */
@@ -3672,290 +3677,290 @@ IslanderOamData sIslanderOamData[ISLANDER_OAM_DATA_COUNT] = {
 
 /* Original address: 0x02032794 */
 AnimFrameData sIslanderAnimFrames[ISLANDER_ANIM_FRAME_COUNT] = {
-    { &sIslanderOamData[204], 0x0006, 0, 0x00 }, /* 0x02032794 */
-    { &sIslanderOamData[207], 0x000A, 0, 0x00 }, /* 0x0203279C */
-    { &sIslanderOamData[210], 0x000A, 0, 0x00 }, /* 0x020327A4 */
-    { &sIslanderOamData[213], 0x0006, 0, 0x00 }, /* 0x020327AC */
-    { &sIslanderOamData[216], 0x000A, 0, 0x00 }, /* 0x020327B4 */
-    { &sIslanderOamData[219], 0x000A, 0, 0x00 }, /* 0x020327BC */
-    { &sIslanderOamData[222], 0x0006, 0, 0x00 }, /* 0x020327C4 */
-    { &sIslanderOamData[225], 0x000A, 0, 0x00 }, /* 0x020327CC */
-    { &sIslanderOamData[228], 0x000A, 0, 0x00 }, /* 0x020327D4 */
-    { &sIslanderOamData[231], 0x0006, 0, 0x00 }, /* 0x020327DC */
-    { &sIslanderOamData[234], 0x000A, 0, 0x00 }, /* 0x020327E4 */
-    { &sIslanderOamData[237], 0x000A, 0, 0x00 }, /* 0x020327EC */
-    { &sIslanderOamData[0], 0x0006, 0, 0x00 }, /* 0x020327F4 */
-    { &sIslanderOamData[4], 0x000A, 0, 0x00 }, /* 0x020327FC */
-    { &sIslanderOamData[8], 0x000A, 0, 0x00 }, /* 0x02032804 */
-    { &sIslanderOamData[12], 0x0006, 0, 0x00 }, /* 0x0203280C */
-    { &sIslanderOamData[16], 0x000A, 0, 0x00 }, /* 0x02032814 */
-    { &sIslanderOamData[20], 0x000A, 0, 0x00 }, /* 0x0203281C */
-    { &sIslanderOamData[24], 0x0006, 0, 0x00 }, /* 0x02032824 */
-    { &sIslanderOamData[28], 0x000A, 0, 0x00 }, /* 0x0203282C */
-    { &sIslanderOamData[32], 0x000A, 0, 0x00 }, /* 0x02032834 */
-    { &sIslanderOamData[36], 0x0006, 0, 0x00 }, /* 0x0203283C */
-    { &sIslanderOamData[40], 0x000A, 0, 0x00 }, /* 0x02032844 */
-    { &sIslanderOamData[44], 0x000A, 0, 0x00 }, /* 0x0203284C */
-    { &sIslanderOamData[48], 0x0006, 0, 0x00 }, /* 0x02032854 */
-    { &sIslanderOamData[53], 0x000A, 0, 0x00 }, /* 0x0203285C */
-    { &sIslanderOamData[58], 0x000A, 0, 0x00 }, /* 0x02032864 */
-    { &sIslanderOamData[63], 0x0006, 0, 0x00 }, /* 0x0203286C */
-    { &sIslanderOamData[68], 0x000A, 0, 0x00 }, /* 0x02032874 */
-    { &sIslanderOamData[73], 0x000A, 0, 0x00 }, /* 0x0203287C */
-    { &sIslanderOamData[78], 0x0006, 0, 0x00 }, /* 0x02032884 */
-    { &sIslanderOamData[83], 0x000A, 0, 0x00 }, /* 0x0203288C */
-    { &sIslanderOamData[88], 0x000A, 0, 0x00 }, /* 0x02032894 */
-    { &sIslanderOamData[93], 0x0006, 0, 0x00 }, /* 0x0203289C */
-    { &sIslanderOamData[98], 0x000A, 0, 0x00 }, /* 0x020328A4 */
-    { &sIslanderOamData[103], 0x000A, 0, 0x00 }, /* 0x020328AC */
-    { &sIslanderOamData[108], 0x0006, 0, 0x00 }, /* 0x020328B4 */
-    { &sIslanderOamData[112], 0x000A, 0, 0x00 }, /* 0x020328BC */
-    { &sIslanderOamData[116], 0x000A, 0, 0x00 }, /* 0x020328C4 */
-    { &sIslanderOamData[120], 0x0006, 0, 0x00 }, /* 0x020328CC */
-    { &sIslanderOamData[124], 0x000A, 0, 0x00 }, /* 0x020328D4 */
-    { &sIslanderOamData[128], 0x000A, 0, 0x00 }, /* 0x020328DC */
-    { &sIslanderOamData[132], 0x0006, 0, 0x00 }, /* 0x020328E4 */
-    { &sIslanderOamData[136], 0x000A, 0, 0x00 }, /* 0x020328EC */
-    { &sIslanderOamData[140], 0x000A, 0, 0x00 }, /* 0x020328F4 */
-    { &sIslanderOamData[144], 0x0006, 0, 0x00 }, /* 0x020328FC */
-    { &sIslanderOamData[148], 0x000A, 0, 0x00 }, /* 0x02032904 */
-    { &sIslanderOamData[152], 0x000A, 0, 0x00 }, /* 0x0203290C */
-    { &sIslanderOamData[156], 0x0006, 0, 0x00 }, /* 0x02032914 */
-    { &sIslanderOamData[160], 0x000A, 0, 0x00 }, /* 0x0203291C */
-    { &sIslanderOamData[164], 0x000A, 0, 0x00 }, /* 0x02032924 */
-    { &sIslanderOamData[168], 0x0006, 0, 0x00 }, /* 0x0203292C */
-    { &sIslanderOamData[172], 0x000A, 0, 0x00 }, /* 0x02032934 */
-    { &sIslanderOamData[176], 0x000A, 0, 0x00 }, /* 0x0203293C */
-    { &sIslanderOamData[180], 0x0006, 0, 0x00 }, /* 0x02032944 */
-    { &sIslanderOamData[184], 0x000A, 0, 0x00 }, /* 0x0203294C */
-    { &sIslanderOamData[188], 0x000A, 0, 0x00 }, /* 0x02032954 */
-    { &sIslanderOamData[192], 0x0006, 0, 0x00 }, /* 0x0203295C */
-    { &sIslanderOamData[196], 0x000A, 0, 0x00 }, /* 0x02032964 */
-    { &sIslanderOamData[200], 0x000A, 0, 0x00 }, /* 0x0203296C */
-    { &sIslanderOamData[240], 0x0002, 0, 0x00 }, /* 0x02032974 */
-    { &sIslanderOamData[244], 0x000A, 0, 0x00 }, /* 0x0203297C */
-    { &sIslanderOamData[248], 0x0001, 0, 0x00 }, /* 0x02032984 */
-    { &sIslanderOamData[252], 0x0001, 0, 0x00 }, /* 0x0203298C */
-    { &sIslanderOamData[257], 0x0001, 0, 0x00 }, /* 0x02032994 */
-    { &sIslanderOamData[257], 0x0004, 0, 0x00 }, /* 0x0203299C */
-    { &sIslanderOamData[262], 0x0001, 0, 0x00 }, /* 0x020329A4 */
-    { &sIslanderOamData[267], 0x0001, 0, 0x00 }, /* 0x020329AC */
-    { &sIslanderOamData[272], 0x0001, 0, 0x00 }, /* 0x020329B4 */
-    { &sIslanderOamData[276], 0x0001, 0, 0x00 }, /* 0x020329BC */
-    { &sIslanderOamData[281], 0x0001, 0, 0x00 }, /* 0x020329C4 */
-    { &sIslanderOamData[286], 0x0001, 0, 0x00 }, /* 0x020329CC */
-    { &sIslanderOamData[291], 0x0001, 0, 0x00 }, /* 0x020329D4 */
-    { &sIslanderOamData[296], 0x0001, 0, 0x00 }, /* 0x020329DC */
-    { &sIslanderOamData[301], 0x0001, 0, 0x00 }, /* 0x020329E4 */
-    { &sIslanderOamData[306], 0x0001, 0, 0x00 }, /* 0x020329EC */
-    { &sIslanderOamData[311], 0x0002, 0, 0x00 }, /* 0x020329F4 */
-    { &sIslanderOamData[315], 0x0002, 0, 0x00 }, /* 0x020329FC */
-    { &sIslanderOamData[319], 0x0002, 0, 0x00 }, /* 0x02032A04 */
-    { &sIslanderOamData[323], 0x0002, 0, 0x00 }, /* 0x02032A0C */
-    { &sIslanderOamData[327], 0x0006, 0, 0x00 }, /* 0x02032A14 */
-    { &sIslanderOamData[332], 0x0002, 0, 0x00 }, /* 0x02032A1C */
-    { &sIslanderOamData[336], 0x0012, 0, 0x00 }, /* 0x02032A24 */
-    { &sIslanderOamData[341], 0x0001, 0, 0x00 }, /* 0x02032A2C */
-    { &sIslanderOamData[346], 0x0001, 0, 0x00 }, /* 0x02032A34 */
-    { &sIslanderOamData[351], 0x0001, 0, 0x00 }, /* 0x02032A3C */
-    { &sIslanderOamData[356], 0x0001, 0, 0x00 }, /* 0x02032A44 */
-    { &sIslanderOamData[361], 0x000A, 0, 0x00 }, /* 0x02032A4C */
-    { &sIslanderOamData[365], 0x0001, 0, 0x00 }, /* 0x02032A54 */
-    { &sIslanderOamData[370], 0x0002, 0, 0x00 }, /* 0x02032A5C */
-    { &sIslanderOamData[375], 0x0002, 0, 0x00 }, /* 0x02032A64 */
-    { &sIslanderOamData[380], 0x0006, 0, 0x00 }, /* 0x02032A6C */
-    { &sIslanderOamData[385], 0x0001, 0, 0x00 }, /* 0x02032A74 */
-    { &sIslanderOamData[390], 0x0008, 0, 0x00 }, /* 0x02032A7C */
-    { &sIslanderOamData[395], 0x0001, 0, 0x00 }, /* 0x02032A84 */
-    { &sIslanderOamData[400], 0x0001, 0, 0x00 }, /* 0x02032A8C */
-    { &sIslanderOamData[405], 0x0001, 0, 0x00 }, /* 0x02032A94 */
-    { &sIslanderOamData[410], 0x0001, 0, 0x00 }, /* 0x02032A9C */
-    { &sIslanderOamData[415], 0x0002, 0, 0x00 }, /* 0x02032AA4 */
-    { &sIslanderOamData[420], 0x000A, 0, 0x00 }, /* 0x02032AAC */
-    { &sIslanderOamData[424], 0x0002, 0, 0x00 }, /* 0x02032AB4 */
-    { &sIslanderOamData[428], 0x0001, 0, 0x00 }, /* 0x02032ABC */
-    { &sIslanderOamData[434], 0x0001, 0, 0x00 }, /* 0x02032AC4 */
-    { &sIslanderOamData[440], 0x0001, 0, 0x00 }, /* 0x02032ACC */
-    { &sIslanderOamData[446], 0x000A, 0, 0x00 }, /* 0x02032AD4 */
-    { &sIslanderOamData[446], 0x001E, 0, 0x00 }, /* 0x02032ADC */
-    { &sIslanderOamData[451], 0x0002, 0, 0x00 }, /* 0x02032AE4 */
-    { &sIslanderOamData[456], 0x000A, 0, 0x00 }, /* 0x02032AEC */
-    { &sIslanderOamData[456], 0x0002, 0, 0x00 }, /* 0x02032AF4 */
-    { &sIslanderOamData[461], 0x0008, 0, 0x00 }, /* 0x02032AFC */
-    { &sIslanderOamData[465], 0x000A, 0, 0x00 }, /* 0x02032B04 */
-    { &sIslanderOamData[469], 0x0002, 0, 0x00 }, /* 0x02032B0C */
-    { &sIslanderOamData[473], 0x0008, 0, 0x00 }, /* 0x02032B14 */
-    { &sIslanderOamData[477], 0x0008, 0, 0x00 }, /* 0x02032B1C */
-    { &sIslanderOamData[481], 0x0002, 0, 0x00 }, /* 0x02032B24 */
-    { &sIslanderOamData[486], 0x0008, 0, 0x00 }, /* 0x02032B2C */
-    { &sIslanderOamData[492], 0x0014, 0, 0x00 }, /* 0x02032B34 */
-    { &sIslanderOamData[492], 0x001E, 0, 0x00 }, /* 0x02032B3C */
-    { &sIslanderOamData[502], 0x0002, 0, 0x00 }, /* 0x02032B44 */
-    { &sIslanderOamData[507], 0x0003, 0, 0x00 }, /* 0x02032B4C */
-    { &sIslanderOamData[512], 0x0001, 0, 0x00 }, /* 0x02032B54 */
-    { &sIslanderOamData[517], 0x0001, 0, 0x00 }, /* 0x02032B5C */
-    { &sIslanderOamData[522], 0x0001, 0, 0x00 }, /* 0x02032B64 */
-    { &sIslanderOamData[527], 0x0001, 0, 0x00 }, /* 0x02032B6C */
-    { &sIslanderOamData[532], 0x0001, 0, 0x00 }, /* 0x02032B74 */
-    { &sIslanderOamData[537], 0x0014, 0, 0x00 }, /* 0x02032B7C */
-    { &sIslanderOamData[537], 0x0004, 0, 0x00 }, /* 0x02032B84 */
-    { &sIslanderOamData[542], 0x0004, 0, 0x00 }, /* 0x02032B8C */
-    { &sIslanderOamData[547], 0x0002, 0, 0x00 }, /* 0x02032B94 */
-    { &sIslanderOamData[552], 0x0002, 0, 0x00 }, /* 0x02032B9C */
-    { &sIslanderOamData[557], 0x0001, 0, 0x00 }, /* 0x02032BA4 */
-    { &sIslanderOamData[562], 0x0001, 0, 0x00 }, /* 0x02032BAC */
-    { &sIslanderOamData[568], 0x0001, 0, 0x00 }, /* 0x02032BB4 */
-    { &sIslanderOamData[574], 0x000A, 0, 0x00 }, /* 0x02032BBC */
-    { &sIslanderOamData[574], 0x0001, 0, 0x00 }, /* 0x02032BC4 */
-    { &sIslanderOamData[579], 0x0002, 0, 0x00 }, /* 0x02032BCC */
-    { &sIslanderOamData[584], 0x000A, 0, 0x00 }, /* 0x02032BD4 */
-    { &sIslanderOamData[589], 0x0008, 0, 0x00 }, /* 0x02032BDC */
-    { &sIslanderOamData[594], 0x000A, 0, 0x00 }, /* 0x02032BE4 */
-    { &sIslanderOamData[599], 0x0002, 0, 0x00 }, /* 0x02032BEC */
-    { &sIslanderOamData[604], 0x0008, 0, 0x00 }, /* 0x02032BF4 */
-    { &sIslanderOamData[609], 0x0001, 0, 0x00 }, /* 0x02032BFC */
-    { &sIslanderOamData[615], 0x0001, 0, 0x00 }, /* 0x02032C04 */
-    { &sIslanderOamData[621], 0x0001, 0, 0x00 }, /* 0x02032C0C */
-    { &sIslanderOamData[627], 0x0001, 0, 0x00 }, /* 0x02032C14 */
-    { &sIslanderOamData[633], 0x0001, 0, 0x00 }, /* 0x02032C1C */
-    { &sIslanderOamData[639], 0x0002, 0, 0x00 }, /* 0x02032C24 */
-    { &sIslanderOamData[645], 0x0002, 0, 0x00 }, /* 0x02032C2C */
-    { &sIslanderOamData[651], 0x0002, 0, 0x00 }, /* 0x02032C34 */
-    { &sIslanderOamData[657], 0x0002, 0, 0x00 }, /* 0x02032C3C */
-    { &sIslanderOamData[663], 0x0002, 0, 0x00 }, /* 0x02032C44 */
-    { &sIslanderOamData[669], 0x0007, 0, 0x00 }, /* 0x02032C4C */
-    { &sIslanderOamData[674], 0x0001, 0, 0x00 }, /* 0x02032C54 */
-    { &sIslanderOamData[679], 0x0001, 0, 0x00 }, /* 0x02032C5C */
-    { &sIslanderOamData[684], 0x0001, 0, 0x00 }, /* 0x02032C64 */
-    { &sIslanderOamData[689], 0x0001, 0, 0x00 }, /* 0x02032C6C */
-    { &sIslanderOamData[694], 0x0001, 0, 0x00 }, /* 0x02032C74 */
-    { &sIslanderOamData[699], 0x0002, 0, 0x00 }, /* 0x02032C7C */
-    { &sIslanderOamData[704], 0x0002, 0, 0x00 }, /* 0x02032C84 */
-    { &sIslanderOamData[709], 0x0002, 0, 0x00 }, /* 0x02032C8C */
-    { &sIslanderOamData[714], 0x000C, 0, 0x00 }, /* 0x02032C94 */
-    { &sIslanderOamData[718], 0x0002, 0, 0x00 }, /* 0x02032C9C */
-    { &sIslanderOamData[723], 0x0002, 0, 0x00 }, /* 0x02032CA4 */
-    { &sIslanderOamData[728], 0x0002, 0, 0x00 }, /* 0x02032CAC */
-    { &sIslanderOamData[733], 0x0002, 0, 0x00 }, /* 0x02032CB4 */
-    { &sIslanderOamData[738], 0x0002, 0, 0x00 }, /* 0x02032CBC */
-    { &sIslanderOamData[743], 0x0002, 0, 0x00 }, /* 0x02032CC4 */
-    { &sIslanderOamData[748], 0x0001, 0, 0x00 }, /* 0x02032CCC */
-    { &sIslanderOamData[754], 0x0001, 0, 0x00 }, /* 0x02032CD4 */
-    { &sIslanderOamData[760], 0x0001, 0, 0x00 }, /* 0x02032CDC */
-    { &sIslanderOamData[766], 0x0001, 0, 0x00 }, /* 0x02032CE4 */
-    { &sIslanderOamData[772], 0x0001, 0, 0x00 }, /* 0x02032CEC */
-    { &sIslanderOamData[778], 0x0003, 0, 0x00 }, /* 0x02032CF4 */
-    { &sIslanderOamData[784], 0x0004, 0, 0x00 }, /* 0x02032CFC */
-    { &sIslanderOamData[790], 0x0002, 0, 0x00 }, /* 0x02032D04 */
-    { &sIslanderOamData[795], 0x0008, 0, 0x00 }, /* 0x02032D0C */
-    { &sIslanderOamData[801], 0x0014, 0, 0x00 }, /* 0x02032D14 */
-    { &sIslanderOamData[806], 0x001E, 0, 0x00 }, /* 0x02032D1C */
-    { &sIslanderOamData[811], 0x0002, 0, 0x00 }, /* 0x02032D24 */
-    { &sIslanderOamData[815], 0x000C, 0, 0x00 }, /* 0x02032D2C */
-    { &sIslanderOamData[819], 0x0001, 0, 0x00 }, /* 0x02032D34 */
-    { &sIslanderOamData[823], 0x0001, 0, 0x00 }, /* 0x02032D3C */
-    { &sIslanderOamData[827], 0x0001, 0, 0x00 }, /* 0x02032D44 */
-    { &sIslanderOamData[831], 0x000C, 0, 0x00 }, /* 0x02032D4C */
-    { &sIslanderOamData[835], 0x0002, 0, 0x00 }, /* 0x02032D54 */
-    { &sIslanderOamData[839], 0x0004, 0, 0x00 }, /* 0x02032D5C */
-    { &sIslanderOamData[843], 0x0004, 0, 0x00 }, /* 0x02032D64 */
-    { &sIslanderOamData[847], 0x0001, 0, 0x00 }, /* 0x02032D6C */
-    { &sIslanderOamData[852], 0x0001, 0, 0x00 }, /* 0x02032D74 */
-    { &sIslanderOamData[857], 0x000A, 0, 0x00 }, /* 0x02032D7C */
-    { &sIslanderOamData[857], 0x001E, 0, 0x00 }, /* 0x02032D84 */
-    { &sIslanderOamData[862], 0x0002, 0, 0x00 }, /* 0x02032D8C */
-    { &sIslanderOamData[867], 0x0002, 0, 0x00 }, /* 0x02032D94 */
-    { &sIslanderOamData[872], 0x0008, 0, 0x00 }, /* 0x02032D9C */
-    { &sIslanderOamData[876], 0x0008, 0, 0x00 }, /* 0x02032DA4 */
-    { &sIslanderOamData[880], 0x0002, 0, 0x00 }, /* 0x02032DAC */
-    { &sIslanderOamData[888], 0x0002, 0, 0x00 }, /* 0x02032DB4 */
-    { &sIslanderOamData[893], 0x0008, 0, 0x00 }, /* 0x02032DBC */
-    { &sIslanderOamData[899], 0x0014, 0, 0x00 }, /* 0x02032DC4 */
-    { &sIslanderOamData[904], 0x001E, 0, 0x00 }, /* 0x02032DCC */
-    { &sIslanderOamData[909], 0x0002, 0, 0x00 }, /* 0x02032DD4 */
-    { &sIslanderOamData[913], 0x000A, 0, 0x00 }, /* 0x02032DDC */
-    { &sIslanderOamData[917], 0x0001, 0, 0x00 }, /* 0x02032DE4 */
-    { &sIslanderOamData[921], 0x0001, 0, 0x00 }, /* 0x02032DEC */
-    { &sIslanderOamData[921], 0x0003, 0, 0x00 }, /* 0x02032DF4 */
-    { &sIslanderOamData[925], 0x0001, 0, 0x00 }, /* 0x02032DFC */
-    { &sIslanderOamData[925], 0x0002, 0, 0x00 }, /* 0x02032E04 */
-    { &sIslanderOamData[925], 0x0006, 0, 0x00 }, /* 0x02032E0C */
-    { &sIslanderOamData[929], 0x0004, 0, 0x00 }, /* 0x02032E14 */
-    { &sIslanderOamData[933], 0x0001, 0, 0x00 }, /* 0x02032E1C */
-    { &sIslanderOamData[937], 0x0008, 0, 0x00 }, /* 0x02032E24 */
-    { &sIslanderOamData[941], 0x0002, 0, 0x00 }, /* 0x02032E2C */
-    { &sIslanderOamData[945], 0x001E, 0, 0x00 }, /* 0x02032E34 */
-    { &sIslanderOamData[949], 0x0004, 0, 0x00 }, /* 0x02032E3C */
-    { &sIslanderOamData[953], 0x0008, 0, 0x00 }, /* 0x02032E44 */
-    { &sIslanderOamData[957], 0x0004, 0, 0x00 }, /* 0x02032E4C */
-    { &sIslanderOamData[961], 0x0008, 0, 0x00 }, /* 0x02032E54 */
-    { &sIslanderOamData[965], 0x0004, 0, 0x00 }, /* 0x02032E5C */
-    { &sIslanderOamData[969], 0x000C, 0, 0x00 }, /* 0x02032E64 */
-    { &sIslanderOamData[972], 0x0002, 0, 0x00 }, /* 0x02032E6C */
-    { &sIslanderOamData[976], 0x0002, 0, 0x00 }, /* 0x02032E74 */
-    { &sIslanderOamData[980], 0x0008, 0, 0x00 }, /* 0x02032E7C */
-    { &sIslanderOamData[983], 0x0008, 0, 0x00 }, /* 0x02032E84 */
-    { &sIslanderOamData[986], 0x0002, 0, 0x00 }, /* 0x02032E8C */
-    { &sIslanderOamData[997], 0x0002, 0, 0x00 }, /* 0x02032E94 */
-    { &sIslanderOamData[1001], 0x0002, 0, 0x00 }, /* 0x02032E9C */
-    { &sIslanderOamData[1005], 0x0002, 0, 0x00 }, /* 0x02032EA4 */
-    { &sIslanderOamData[1009], 0x0004, 0, 0x00 }, /* 0x02032EAC */
-    { &sIslanderOamData[1013], 0x0014, 0, 0x00 }, /* 0x02032EB4 */
-    { &sIslanderOamData[1017], 0x0002, 0, 0x00 }, /* 0x02032EBC */
-    { &sIslanderOamData[1020], 0x0002, 0, 0x00 }, /* 0x02032EC4 */
-    { &sIslanderOamData[1024], 0x0006, 0, 0x00 }, /* 0x02032ECC */
-    { &sIslanderOamData[1028], 0x0014, 0, 0x00 }, /* 0x02032ED4 */
-    { &sIslanderOamData[1031], 0x0008, 0, 0x00 }, /* 0x02032EDC */
-    { &sIslanderOamData[1034], 0x0002, 0, 0x00 }, /* 0x02032EE4 */
-    { &sIslanderOamData[1038], 0x0014, 0, 0x00 }, /* 0x02032EEC */
-    { &sIslanderOamData[1042], 0x0002, 0, 0x00 }, /* 0x02032EF4 */
-    { &sIslanderOamData[1046], 0x0002, 0, 0x00 }, /* 0x02032EFC */
-    { &sIslanderOamData[1050], 0x0002, 0, 0x00 }, /* 0x02032F04 */
-    { &sIslanderOamData[1054], 0x0010, 0, 0x00 }, /* 0x02032F0C */
-    { &sIslanderOamData[1058], 0x0002, 0, 0x00 }, /* 0x02032F14 */
-    { &sIslanderOamData[1062], 0x0014, 0, 0x00 }, /* 0x02032F1C */
-    { &sIslanderOamData[1066], 0x000A, 0, 0x00 }, /* 0x02032F24 */
-    { &sIslanderOamData[1069], 0x0002, 0, 0x00 }, /* 0x02032F2C */
-    { &sIslanderOamData[1072], 0x0014, 0, 0x00 }, /* 0x02032F34 */
-    { &sIslanderOamData[1089], 0x0002, 0, 0x00 }, /* 0x02032F3C */
-    { &sIslanderOamData[1093], 0x0002, 0, 0x00 }, /* 0x02032F44 */
-    { &sIslanderOamData[1097], 0x0002, 0, 0x00 }, /* 0x02032F4C */
-    { &sIslanderOamData[1101], 0x0002, 0, 0x00 }, /* 0x02032F54 */
-    { &sIslanderOamData[1105], 0x0002, 0, 0x00 }, /* 0x02032F5C */
-    { &sIslanderOamData[1109], 0x0002, 0, 0x00 }, /* 0x02032F64 */
-    { &sIslanderOamData[1113], 0x0002, 0, 0x00 }, /* 0x02032F6C */
-    { &sIslanderOamData[1117], 0x0004, 0, 0x00 }, /* 0x02032F74 */
-    { &sIslanderOamData[1121], 0x0002, 0, 0x00 }, /* 0x02032F7C */
-    { &sIslanderOamData[1125], 0x0004, 0, 0x00 }, /* 0x02032F84 */
-    { &sIslanderOamData[1129], 0x0004, 0, 0x00 }, /* 0x02032F8C */
-    { &sIslanderOamData[1133], 0x0002, 0, 0x00 }, /* 0x02032F94 */
-    { &sIslanderOamData[1137], 0x0002, 0, 0x00 }, /* 0x02032F9C */
-    { &sIslanderOamData[1141], 0x0002, 0, 0x00 }, /* 0x02032FA4 */
-    { &sIslanderOamData[1145], 0x0002, 0, 0x00 }, /* 0x02032FAC */
-    { &sIslanderOamData[1149], 0x0002, 0, 0x00 }, /* 0x02032FB4 */
-    { &sIslanderOamData[1153], 0x0002, 0, 0x00 }, /* 0x02032FBC */
-    { &sIslanderOamData[1157], 0x0002, 0, 0x00 }, /* 0x02032FC4 */
-    { &sIslanderOamData[1161], 0x0002, 0, 0x00 }, /* 0x02032FCC */
-    { &sIslanderOamData[1165], 0x0004, 0, 0x00 }, /* 0x02032FD4 */
-    { &sIslanderOamData[1169], 0x0004, 0, 0x00 }, /* 0x02032FDC */
-    { &sIslanderOamData[1173], 0x0002, 0, 0x00 }, /* 0x02032FE4 */
-    { &sIslanderOamData[1177], 0x0002, 0, 0x00 }, /* 0x02032FEC */
-    { &sIslanderOamData[1177], 0x0004, 0, 0x00 }, /* 0x02032FF4 */
-    { &sIslanderOamData[1181], 0x0002, 0, 0x00 }, /* 0x02032FFC */
-    { &sIslanderOamData[1185], 0x0002, 0, 0x00 }, /* 0x02033004 */
-    { &sIslanderOamData[1189], 0x0002, 0, 0x00 }, /* 0x0203300C */
-    { &sIslanderOamData[1193], 0x0002, 0, 0x00 }, /* 0x02033014 */
-    { &sIslanderOamData[1197], 0x0002, 0, 0x00 }, /* 0x0203301C */
-    { &sIslanderOamData[1201], 0x0002, 0, 0x00 }, /* 0x02033024 */
-    { &sIslanderOamData[1205], 0x0002, 0, 0x00 }, /* 0x0203302C */
-    { &sIslanderOamData[1209], 0x0002, 0, 0x00 }, /* 0x02033034 */
-    { &sIslanderOamData[1213], 0x0002, 0, 0x00 }, /* 0x0203303C */
-    { &sIslanderOamData[1217], 0x0008, 0, 0x00 }, /* 0x02033044 */
-    { &sIslanderOamData[1217], 0x0002, 0, 0x00 }, /* 0x0203304C */
-    { &sIslanderOamData[1220], 0x0002, 0, 0x00 }, /* 0x02033054 */
-    { &sIslanderOamData[1223], 0x0002, 0, 0x00 }, /* 0x0203305C */
-    { &sIslanderOamData[1226], 0x0002, 0, 0x00 }, /* 0x02033064 */
-    { (IslanderOamData *)0x0000FFFF, 0xFFFF, -1, 0x00 }, /* 0x0203306C */
+    { &sOAMData[204], 0x0006, 0, 0x00 }, /* 0x02032794 */
+    { &sOAMData[207], 0x000A, 0, 0x00 }, /* 0x0203279C */
+    { &sOAMData[210], 0x000A, 0, 0x00 }, /* 0x020327A4 */
+    { &sOAMData[213], 0x0006, 0, 0x00 }, /* 0x020327AC */
+    { &sOAMData[216], 0x000A, 0, 0x00 }, /* 0x020327B4 */
+    { &sOAMData[219], 0x000A, 0, 0x00 }, /* 0x020327BC */
+    { &sOAMData[222], 0x0006, 0, 0x00 }, /* 0x020327C4 */
+    { &sOAMData[225], 0x000A, 0, 0x00 }, /* 0x020327CC */
+    { &sOAMData[228], 0x000A, 0, 0x00 }, /* 0x020327D4 */
+    { &sOAMData[231], 0x0006, 0, 0x00 }, /* 0x020327DC */
+    { &sOAMData[234], 0x000A, 0, 0x00 }, /* 0x020327E4 */
+    { &sOAMData[237], 0x000A, 0, 0x00 }, /* 0x020327EC */
+    { &sOAMData[0], 0x0006, 0, 0x00 }, /* 0x020327F4 */
+    { &sOAMData[4], 0x000A, 0, 0x00 }, /* 0x020327FC */
+    { &sOAMData[8], 0x000A, 0, 0x00 }, /* 0x02032804 */
+    { &sOAMData[12], 0x0006, 0, 0x00 }, /* 0x0203280C */
+    { &sOAMData[16], 0x000A, 0, 0x00 }, /* 0x02032814 */
+    { &sOAMData[20], 0x000A, 0, 0x00 }, /* 0x0203281C */
+    { &sOAMData[24], 0x0006, 0, 0x00 }, /* 0x02032824 */
+    { &sOAMData[28], 0x000A, 0, 0x00 }, /* 0x0203282C */
+    { &sOAMData[32], 0x000A, 0, 0x00 }, /* 0x02032834 */
+    { &sOAMData[36], 0x0006, 0, 0x00 }, /* 0x0203283C */
+    { &sOAMData[40], 0x000A, 0, 0x00 }, /* 0x02032844 */
+    { &sOAMData[44], 0x000A, 0, 0x00 }, /* 0x0203284C */
+    { &sOAMData[48], 0x0006, 0, 0x00 }, /* 0x02032854 */
+    { &sOAMData[53], 0x000A, 0, 0x00 }, /* 0x0203285C */
+    { &sOAMData[58], 0x000A, 0, 0x00 }, /* 0x02032864 */
+    { &sOAMData[63], 0x0006, 0, 0x00 }, /* 0x0203286C */
+    { &sOAMData[68], 0x000A, 0, 0x00 }, /* 0x02032874 */
+    { &sOAMData[73], 0x000A, 0, 0x00 }, /* 0x0203287C */
+    { &sOAMData[78], 0x0006, 0, 0x00 }, /* 0x02032884 */
+    { &sOAMData[83], 0x000A, 0, 0x00 }, /* 0x0203288C */
+    { &sOAMData[88], 0x000A, 0, 0x00 }, /* 0x02032894 */
+    { &sOAMData[93], 0x0006, 0, 0x00 }, /* 0x0203289C */
+    { &sOAMData[98], 0x000A, 0, 0x00 }, /* 0x020328A4 */
+    { &sOAMData[103], 0x000A, 0, 0x00 }, /* 0x020328AC */
+    { &sOAMData[108], 0x0006, 0, 0x00 }, /* 0x020328B4 */
+    { &sOAMData[112], 0x000A, 0, 0x00 }, /* 0x020328BC */
+    { &sOAMData[116], 0x000A, 0, 0x00 }, /* 0x020328C4 */
+    { &sOAMData[120], 0x0006, 0, 0x00 }, /* 0x020328CC */
+    { &sOAMData[124], 0x000A, 0, 0x00 }, /* 0x020328D4 */
+    { &sOAMData[128], 0x000A, 0, 0x00 }, /* 0x020328DC */
+    { &sOAMData[132], 0x0006, 0, 0x00 }, /* 0x020328E4 */
+    { &sOAMData[136], 0x000A, 0, 0x00 }, /* 0x020328EC */
+    { &sOAMData[140], 0x000A, 0, 0x00 }, /* 0x020328F4 */
+    { &sOAMData[144], 0x0006, 0, 0x00 }, /* 0x020328FC */
+    { &sOAMData[148], 0x000A, 0, 0x00 }, /* 0x02032904 */
+    { &sOAMData[152], 0x000A, 0, 0x00 }, /* 0x0203290C */
+    { &sOAMData[156], 0x0006, 0, 0x00 }, /* 0x02032914 */
+    { &sOAMData[160], 0x000A, 0, 0x00 }, /* 0x0203291C */
+    { &sOAMData[164], 0x000A, 0, 0x00 }, /* 0x02032924 */
+    { &sOAMData[168], 0x0006, 0, 0x00 }, /* 0x0203292C */
+    { &sOAMData[172], 0x000A, 0, 0x00 }, /* 0x02032934 */
+    { &sOAMData[176], 0x000A, 0, 0x00 }, /* 0x0203293C */
+    { &sOAMData[180], 0x0006, 0, 0x00 }, /* 0x02032944 */
+    { &sOAMData[184], 0x000A, 0, 0x00 }, /* 0x0203294C */
+    { &sOAMData[188], 0x000A, 0, 0x00 }, /* 0x02032954 */
+    { &sOAMData[192], 0x0006, 0, 0x00 }, /* 0x0203295C */
+    { &sOAMData[196], 0x000A, 0, 0x00 }, /* 0x02032964 */
+    { &sOAMData[200], 0x000A, 0, 0x00 }, /* 0x0203296C */
+    { &sOAMData[240], 0x0002, 0, 0x00 }, /* 0x02032974 */
+    { &sOAMData[244], 0x000A, 0, 0x00 }, /* 0x0203297C */
+    { &sOAMData[248], 0x0001, 0, 0x00 }, /* 0x02032984 */
+    { &sOAMData[252], 0x0001, 0, 0x00 }, /* 0x0203298C */
+    { &sOAMData[257], 0x0001, 0, 0x00 }, /* 0x02032994 */
+    { &sOAMData[257], 0x0004, 0, 0x00 }, /* 0x0203299C */
+    { &sOAMData[262], 0x0001, 0, 0x00 }, /* 0x020329A4 */
+    { &sOAMData[267], 0x0001, 0, 0x00 }, /* 0x020329AC */
+    { &sOAMData[272], 0x0001, 0, 0x00 }, /* 0x020329B4 */
+    { &sOAMData[276], 0x0001, 0, 0x00 }, /* 0x020329BC */
+    { &sOAMData[281], 0x0001, 0, 0x00 }, /* 0x020329C4 */
+    { &sOAMData[286], 0x0001, 0, 0x00 }, /* 0x020329CC */
+    { &sOAMData[291], 0x0001, 0, 0x00 }, /* 0x020329D4 */
+    { &sOAMData[296], 0x0001, 0, 0x00 }, /* 0x020329DC */
+    { &sOAMData[301], 0x0001, 0, 0x00 }, /* 0x020329E4 */
+    { &sOAMData[306], 0x0001, 0, 0x00 }, /* 0x020329EC */
+    { &sOAMData[311], 0x0002, 0, 0x00 }, /* 0x020329F4 */
+    { &sOAMData[315], 0x0002, 0, 0x00 }, /* 0x020329FC */
+    { &sOAMData[319], 0x0002, 0, 0x00 }, /* 0x02032A04 */
+    { &sOAMData[323], 0x0002, 0, 0x00 }, /* 0x02032A0C */
+    { &sOAMData[327], 0x0006, 0, 0x00 }, /* 0x02032A14 */
+    { &sOAMData[332], 0x0002, 0, 0x00 }, /* 0x02032A1C */
+    { &sOAMData[336], 0x0012, 0, 0x00 }, /* 0x02032A24 */
+    { &sOAMData[341], 0x0001, 0, 0x00 }, /* 0x02032A2C */
+    { &sOAMData[346], 0x0001, 0, 0x00 }, /* 0x02032A34 */
+    { &sOAMData[351], 0x0001, 0, 0x00 }, /* 0x02032A3C */
+    { &sOAMData[356], 0x0001, 0, 0x00 }, /* 0x02032A44 */
+    { &sOAMData[361], 0x000A, 0, 0x00 }, /* 0x02032A4C */
+    { &sOAMData[365], 0x0001, 0, 0x00 }, /* 0x02032A54 */
+    { &sOAMData[370], 0x0002, 0, 0x00 }, /* 0x02032A5C */
+    { &sOAMData[375], 0x0002, 0, 0x00 }, /* 0x02032A64 */
+    { &sOAMData[380], 0x0006, 0, 0x00 }, /* 0x02032A6C */
+    { &sOAMData[385], 0x0001, 0, 0x00 }, /* 0x02032A74 */
+    { &sOAMData[390], 0x0008, 0, 0x00 }, /* 0x02032A7C */
+    { &sOAMData[395], 0x0001, 0, 0x00 }, /* 0x02032A84 */
+    { &sOAMData[400], 0x0001, 0, 0x00 }, /* 0x02032A8C */
+    { &sOAMData[405], 0x0001, 0, 0x00 }, /* 0x02032A94 */
+    { &sOAMData[410], 0x0001, 0, 0x00 }, /* 0x02032A9C */
+    { &sOAMData[415], 0x0002, 0, 0x00 }, /* 0x02032AA4 */
+    { &sOAMData[420], 0x000A, 0, 0x00 }, /* 0x02032AAC */
+    { &sOAMData[424], 0x0002, 0, 0x00 }, /* 0x02032AB4 */
+    { &sOAMData[428], 0x0001, 0, 0x00 }, /* 0x02032ABC */
+    { &sOAMData[434], 0x0001, 0, 0x00 }, /* 0x02032AC4 */
+    { &sOAMData[440], 0x0001, 0, 0x00 }, /* 0x02032ACC */
+    { &sOAMData[446], 0x000A, 0, 0x00 }, /* 0x02032AD4 */
+    { &sOAMData[446], 0x001E, 0, 0x00 }, /* 0x02032ADC */
+    { &sOAMData[451], 0x0002, 0, 0x00 }, /* 0x02032AE4 */
+    { &sOAMData[456], 0x000A, 0, 0x00 }, /* 0x02032AEC */
+    { &sOAMData[456], 0x0002, 0, 0x00 }, /* 0x02032AF4 */
+    { &sOAMData[461], 0x0008, 0, 0x00 }, /* 0x02032AFC */
+    { &sOAMData[465], 0x000A, 0, 0x00 }, /* 0x02032B04 */
+    { &sOAMData[469], 0x0002, 0, 0x00 }, /* 0x02032B0C */
+    { &sOAMData[473], 0x0008, 0, 0x00 }, /* 0x02032B14 */
+    { &sOAMData[477], 0x0008, 0, 0x00 }, /* 0x02032B1C */
+    { &sOAMData[481], 0x0002, 0, 0x00 }, /* 0x02032B24 */
+    { &sOAMData[486], 0x0008, 0, 0x00 }, /* 0x02032B2C */
+    { &sOAMData[492], 0x0014, 0, 0x00 }, /* 0x02032B34 */
+    { &sOAMData[492], 0x001E, 0, 0x00 }, /* 0x02032B3C */
+    { &sOAMData[502], 0x0002, 0, 0x00 }, /* 0x02032B44 */
+    { &sOAMData[507], 0x0003, 0, 0x00 }, /* 0x02032B4C */
+    { &sOAMData[512], 0x0001, 0, 0x00 }, /* 0x02032B54 */
+    { &sOAMData[517], 0x0001, 0, 0x00 }, /* 0x02032B5C */
+    { &sOAMData[522], 0x0001, 0, 0x00 }, /* 0x02032B64 */
+    { &sOAMData[527], 0x0001, 0, 0x00 }, /* 0x02032B6C */
+    { &sOAMData[532], 0x0001, 0, 0x00 }, /* 0x02032B74 */
+    { &sOAMData[537], 0x0014, 0, 0x00 }, /* 0x02032B7C */
+    { &sOAMData[537], 0x0004, 0, 0x00 }, /* 0x02032B84 */
+    { &sOAMData[542], 0x0004, 0, 0x00 }, /* 0x02032B8C */
+    { &sOAMData[547], 0x0002, 0, 0x00 }, /* 0x02032B94 */
+    { &sOAMData[552], 0x0002, 0, 0x00 }, /* 0x02032B9C */
+    { &sOAMData[557], 0x0001, 0, 0x00 }, /* 0x02032BA4 */
+    { &sOAMData[562], 0x0001, 0, 0x00 }, /* 0x02032BAC */
+    { &sOAMData[568], 0x0001, 0, 0x00 }, /* 0x02032BB4 */
+    { &sOAMData[574], 0x000A, 0, 0x00 }, /* 0x02032BBC */
+    { &sOAMData[574], 0x0001, 0, 0x00 }, /* 0x02032BC4 */
+    { &sOAMData[579], 0x0002, 0, 0x00 }, /* 0x02032BCC */
+    { &sOAMData[584], 0x000A, 0, 0x00 }, /* 0x02032BD4 */
+    { &sOAMData[589], 0x0008, 0, 0x00 }, /* 0x02032BDC */
+    { &sOAMData[594], 0x000A, 0, 0x00 }, /* 0x02032BE4 */
+    { &sOAMData[599], 0x0002, 0, 0x00 }, /* 0x02032BEC */
+    { &sOAMData[604], 0x0008, 0, 0x00 }, /* 0x02032BF4 */
+    { &sOAMData[609], 0x0001, 0, 0x00 }, /* 0x02032BFC */
+    { &sOAMData[615], 0x0001, 0, 0x00 }, /* 0x02032C04 */
+    { &sOAMData[621], 0x0001, 0, 0x00 }, /* 0x02032C0C */
+    { &sOAMData[627], 0x0001, 0, 0x00 }, /* 0x02032C14 */
+    { &sOAMData[633], 0x0001, 0, 0x00 }, /* 0x02032C1C */
+    { &sOAMData[639], 0x0002, 0, 0x00 }, /* 0x02032C24 */
+    { &sOAMData[645], 0x0002, 0, 0x00 }, /* 0x02032C2C */
+    { &sOAMData[651], 0x0002, 0, 0x00 }, /* 0x02032C34 */
+    { &sOAMData[657], 0x0002, 0, 0x00 }, /* 0x02032C3C */
+    { &sOAMData[663], 0x0002, 0, 0x00 }, /* 0x02032C44 */
+    { &sOAMData[669], 0x0007, 0, 0x00 }, /* 0x02032C4C */
+    { &sOAMData[674], 0x0001, 0, 0x00 }, /* 0x02032C54 */
+    { &sOAMData[679], 0x0001, 0, 0x00 }, /* 0x02032C5C */
+    { &sOAMData[684], 0x0001, 0, 0x00 }, /* 0x02032C64 */
+    { &sOAMData[689], 0x0001, 0, 0x00 }, /* 0x02032C6C */
+    { &sOAMData[694], 0x0001, 0, 0x00 }, /* 0x02032C74 */
+    { &sOAMData[699], 0x0002, 0, 0x00 }, /* 0x02032C7C */
+    { &sOAMData[704], 0x0002, 0, 0x00 }, /* 0x02032C84 */
+    { &sOAMData[709], 0x0002, 0, 0x00 }, /* 0x02032C8C */
+    { &sOAMData[714], 0x000C, 0, 0x00 }, /* 0x02032C94 */
+    { &sOAMData[718], 0x0002, 0, 0x00 }, /* 0x02032C9C */
+    { &sOAMData[723], 0x0002, 0, 0x00 }, /* 0x02032CA4 */
+    { &sOAMData[728], 0x0002, 0, 0x00 }, /* 0x02032CAC */
+    { &sOAMData[733], 0x0002, 0, 0x00 }, /* 0x02032CB4 */
+    { &sOAMData[738], 0x0002, 0, 0x00 }, /* 0x02032CBC */
+    { &sOAMData[743], 0x0002, 0, 0x00 }, /* 0x02032CC4 */
+    { &sOAMData[748], 0x0001, 0, 0x00 }, /* 0x02032CCC */
+    { &sOAMData[754], 0x0001, 0, 0x00 }, /* 0x02032CD4 */
+    { &sOAMData[760], 0x0001, 0, 0x00 }, /* 0x02032CDC */
+    { &sOAMData[766], 0x0001, 0, 0x00 }, /* 0x02032CE4 */
+    { &sOAMData[772], 0x0001, 0, 0x00 }, /* 0x02032CEC */
+    { &sOAMData[778], 0x0003, 0, 0x00 }, /* 0x02032CF4 */
+    { &sOAMData[784], 0x0004, 0, 0x00 }, /* 0x02032CFC */
+    { &sOAMData[790], 0x0002, 0, 0x00 }, /* 0x02032D04 */
+    { &sOAMData[795], 0x0008, 0, 0x00 }, /* 0x02032D0C */
+    { &sOAMData[801], 0x0014, 0, 0x00 }, /* 0x02032D14 */
+    { &sOAMData[806], 0x001E, 0, 0x00 }, /* 0x02032D1C */
+    { &sOAMData[811], 0x0002, 0, 0x00 }, /* 0x02032D24 */
+    { &sOAMData[815], 0x000C, 0, 0x00 }, /* 0x02032D2C */
+    { &sOAMData[819], 0x0001, 0, 0x00 }, /* 0x02032D34 */
+    { &sOAMData[823], 0x0001, 0, 0x00 }, /* 0x02032D3C */
+    { &sOAMData[827], 0x0001, 0, 0x00 }, /* 0x02032D44 */
+    { &sOAMData[831], 0x000C, 0, 0x00 }, /* 0x02032D4C */
+    { &sOAMData[835], 0x0002, 0, 0x00 }, /* 0x02032D54 */
+    { &sOAMData[839], 0x0004, 0, 0x00 }, /* 0x02032D5C */
+    { &sOAMData[843], 0x0004, 0, 0x00 }, /* 0x02032D64 */
+    { &sOAMData[847], 0x0001, 0, 0x00 }, /* 0x02032D6C */
+    { &sOAMData[852], 0x0001, 0, 0x00 }, /* 0x02032D74 */
+    { &sOAMData[857], 0x000A, 0, 0x00 }, /* 0x02032D7C */
+    { &sOAMData[857], 0x001E, 0, 0x00 }, /* 0x02032D84 */
+    { &sOAMData[862], 0x0002, 0, 0x00 }, /* 0x02032D8C */
+    { &sOAMData[867], 0x0002, 0, 0x00 }, /* 0x02032D94 */
+    { &sOAMData[872], 0x0008, 0, 0x00 }, /* 0x02032D9C */
+    { &sOAMData[876], 0x0008, 0, 0x00 }, /* 0x02032DA4 */
+    { &sOAMData[880], 0x0002, 0, 0x00 }, /* 0x02032DAC */
+    { &sOAMData[888], 0x0002, 0, 0x00 }, /* 0x02032DB4 */
+    { &sOAMData[893], 0x0008, 0, 0x00 }, /* 0x02032DBC */
+    { &sOAMData[899], 0x0014, 0, 0x00 }, /* 0x02032DC4 */
+    { &sOAMData[904], 0x001E, 0, 0x00 }, /* 0x02032DCC */
+    { &sOAMData[909], 0x0002, 0, 0x00 }, /* 0x02032DD4 */
+    { &sOAMData[913], 0x000A, 0, 0x00 }, /* 0x02032DDC */
+    { &sOAMData[917], 0x0001, 0, 0x00 }, /* 0x02032DE4 */
+    { &sOAMData[921], 0x0001, 0, 0x00 }, /* 0x02032DEC */
+    { &sOAMData[921], 0x0003, 0, 0x00 }, /* 0x02032DF4 */
+    { &sOAMData[925], 0x0001, 0, 0x00 }, /* 0x02032DFC */
+    { &sOAMData[925], 0x0002, 0, 0x00 }, /* 0x02032E04 */
+    { &sOAMData[925], 0x0006, 0, 0x00 }, /* 0x02032E0C */
+    { &sOAMData[929], 0x0004, 0, 0x00 }, /* 0x02032E14 */
+    { &sOAMData[933], 0x0001, 0, 0x00 }, /* 0x02032E1C */
+    { &sOAMData[937], 0x0008, 0, 0x00 }, /* 0x02032E24 */
+    { &sOAMData[941], 0x0002, 0, 0x00 }, /* 0x02032E2C */
+    { &sOAMData[945], 0x001E, 0, 0x00 }, /* 0x02032E34 */
+    { &sOAMData[949], 0x0004, 0, 0x00 }, /* 0x02032E3C */
+    { &sOAMData[953], 0x0008, 0, 0x00 }, /* 0x02032E44 */
+    { &sOAMData[957], 0x0004, 0, 0x00 }, /* 0x02032E4C */
+    { &sOAMData[961], 0x0008, 0, 0x00 }, /* 0x02032E54 */
+    { &sOAMData[965], 0x0004, 0, 0x00 }, /* 0x02032E5C */
+    { &sOAMData[969], 0x000C, 0, 0x00 }, /* 0x02032E64 */
+    { &sOAMData[972], 0x0002, 0, 0x00 }, /* 0x02032E6C */
+    { &sOAMData[976], 0x0002, 0, 0x00 }, /* 0x02032E74 */
+    { &sOAMData[980], 0x0008, 0, 0x00 }, /* 0x02032E7C */
+    { &sOAMData[983], 0x0008, 0, 0x00 }, /* 0x02032E84 */
+    { &sOAMData[986], 0x0002, 0, 0x00 }, /* 0x02032E8C */
+    { &sOAMData[997], 0x0002, 0, 0x00 }, /* 0x02032E94 */
+    { &sOAMData[1001], 0x0002, 0, 0x00 }, /* 0x02032E9C */
+    { &sOAMData[1005], 0x0002, 0, 0x00 }, /* 0x02032EA4 */
+    { &sOAMData[1009], 0x0004, 0, 0x00 }, /* 0x02032EAC */
+    { &sOAMData[1013], 0x0014, 0, 0x00 }, /* 0x02032EB4 */
+    { &sOAMData[1017], 0x0002, 0, 0x00 }, /* 0x02032EBC */
+    { &sOAMData[1020], 0x0002, 0, 0x00 }, /* 0x02032EC4 */
+    { &sOAMData[1024], 0x0006, 0, 0x00 }, /* 0x02032ECC */
+    { &sOAMData[1028], 0x0014, 0, 0x00 }, /* 0x02032ED4 */
+    { &sOAMData[1031], 0x0008, 0, 0x00 }, /* 0x02032EDC */
+    { &sOAMData[1034], 0x0002, 0, 0x00 }, /* 0x02032EE4 */
+    { &sOAMData[1038], 0x0014, 0, 0x00 }, /* 0x02032EEC */
+    { &sOAMData[1042], 0x0002, 0, 0x00 }, /* 0x02032EF4 */
+    { &sOAMData[1046], 0x0002, 0, 0x00 }, /* 0x02032EFC */
+    { &sOAMData[1050], 0x0002, 0, 0x00 }, /* 0x02032F04 */
+    { &sOAMData[1054], 0x0010, 0, 0x00 }, /* 0x02032F0C */
+    { &sOAMData[1058], 0x0002, 0, 0x00 }, /* 0x02032F14 */
+    { &sOAMData[1062], 0x0014, 0, 0x00 }, /* 0x02032F1C */
+    { &sOAMData[1066], 0x000A, 0, 0x00 }, /* 0x02032F24 */
+    { &sOAMData[1069], 0x0002, 0, 0x00 }, /* 0x02032F2C */
+    { &sOAMData[1072], 0x0014, 0, 0x00 }, /* 0x02032F34 */
+    { &sOAMData[1089], 0x0002, 0, 0x00 }, /* 0x02032F3C */
+    { &sOAMData[1093], 0x0002, 0, 0x00 }, /* 0x02032F44 */
+    { &sOAMData[1097], 0x0002, 0, 0x00 }, /* 0x02032F4C */
+    { &sOAMData[1101], 0x0002, 0, 0x00 }, /* 0x02032F54 */
+    { &sOAMData[1105], 0x0002, 0, 0x00 }, /* 0x02032F5C */
+    { &sOAMData[1109], 0x0002, 0, 0x00 }, /* 0x02032F64 */
+    { &sOAMData[1113], 0x0002, 0, 0x00 }, /* 0x02032F6C */
+    { &sOAMData[1117], 0x0004, 0, 0x00 }, /* 0x02032F74 */
+    { &sOAMData[1121], 0x0002, 0, 0x00 }, /* 0x02032F7C */
+    { &sOAMData[1125], 0x0004, 0, 0x00 }, /* 0x02032F84 */
+    { &sOAMData[1129], 0x0004, 0, 0x00 }, /* 0x02032F8C */
+    { &sOAMData[1133], 0x0002, 0, 0x00 }, /* 0x02032F94 */
+    { &sOAMData[1137], 0x0002, 0, 0x00 }, /* 0x02032F9C */
+    { &sOAMData[1141], 0x0002, 0, 0x00 }, /* 0x02032FA4 */
+    { &sOAMData[1145], 0x0002, 0, 0x00 }, /* 0x02032FAC */
+    { &sOAMData[1149], 0x0002, 0, 0x00 }, /* 0x02032FB4 */
+    { &sOAMData[1153], 0x0002, 0, 0x00 }, /* 0x02032FBC */
+    { &sOAMData[1157], 0x0002, 0, 0x00 }, /* 0x02032FC4 */
+    { &sOAMData[1161], 0x0002, 0, 0x00 }, /* 0x02032FCC */
+    { &sOAMData[1165], 0x0004, 0, 0x00 }, /* 0x02032FD4 */
+    { &sOAMData[1169], 0x0004, 0, 0x00 }, /* 0x02032FDC */
+    { &sOAMData[1173], 0x0002, 0, 0x00 }, /* 0x02032FE4 */
+    { &sOAMData[1177], 0x0002, 0, 0x00 }, /* 0x02032FEC */
+    { &sOAMData[1177], 0x0004, 0, 0x00 }, /* 0x02032FF4 */
+    { &sOAMData[1181], 0x0002, 0, 0x00 }, /* 0x02032FFC */
+    { &sOAMData[1185], 0x0002, 0, 0x00 }, /* 0x02033004 */
+    { &sOAMData[1189], 0x0002, 0, 0x00 }, /* 0x0203300C */
+    { &sOAMData[1193], 0x0002, 0, 0x00 }, /* 0x02033014 */
+    { &sOAMData[1197], 0x0002, 0, 0x00 }, /* 0x0203301C */
+    { &sOAMData[1201], 0x0002, 0, 0x00 }, /* 0x02033024 */
+    { &sOAMData[1205], 0x0002, 0, 0x00 }, /* 0x0203302C */
+    { &sOAMData[1209], 0x0002, 0, 0x00 }, /* 0x02033034 */
+    { &sOAMData[1213], 0x0002, 0, 0x00 }, /* 0x0203303C */
+    { &sOAMData[1217], 0x0008, 0, 0x00 }, /* 0x02033044 */
+    { &sOAMData[1217], 0x0002, 0, 0x00 }, /* 0x0203304C */
+    { &sOAMData[1220], 0x0002, 0, 0x00 }, /* 0x02033054 */
+    { &sOAMData[1223], 0x0002, 0, 0x00 }, /* 0x0203305C */
+    { &sOAMData[1226], 0x0002, 0, 0x00 }, /* 0x02033064 */
+    { (OAMData *)0x0000FFFF, 0xFFFF, -1, 0x00 }, /* 0x0203306C */
 };
 
 /* Original address: 0x02033074 */
@@ -5321,7 +5326,7 @@ ItemGeneratorDef gItemGeneratorDefs[38] = {
 };
 
 /* Original address: 0x02034D8C */
-IslanderOamData sPlayerHandOamData[8][2] = {
+OAMData sPlayerHandOamData[8][2] = {
     { ISLANDER_OAM(0x00F6, 0x41FE, 0x72DA, 0), ISLANDER_OAM(0, 0, 0, 0xFFFF) },
     { ISLANDER_OAM(0x00F6, 0x41FE, 0x72DC, 0), ISLANDER_OAM(0, 0, 0, 0xFFFF) },
     { ISLANDER_OAM(0x00F6, 0x41FE, 0x72DE, 0), ISLANDER_OAM(0, 0, 0, 0xFFFF) },
@@ -5354,7 +5359,7 @@ AnimFrameData sPlayerHandAnimFrames[11] = {
     { sPlayerHandOamData[6], 1, 0, 0 },
     { sPlayerHandOamData[6], 60, 0, 0 },
     { sPlayerHandOamData[7], 20, 0, 0 },
-    { (IslanderOamData *)0x0000FFFF, 0xFFFF, -1, 0 },
+    { (OAMData *)0x0000FFFF, 0xFFFF, -1, 0 },
 };
 
 /* Original address: 0x02034E7C */

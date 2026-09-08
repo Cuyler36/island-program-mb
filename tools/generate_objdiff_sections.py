@@ -139,7 +139,7 @@ DATA_OBJECTS = (
     DataObject("sFieldObjectInitialTimers", 0x6A78, 0x13, global_symbol=True),
     # Original address: 0x02030123
     DataObject("sFieldObjectShakeFrames", 0x6A8B, 0x09, global_symbol=True),
-    DataObject("sIslanderOamData", 0x6A94, 0x2668, global_symbol=True),
+    DataObject("sOAMData", 0x6A94, 0x2668, global_symbol=True),
     DataObject("sIslanderAnimFrames", 0x90FC, 0x08E0, "islander_frames", True),
     DataObject("sIslanderAnimFrameLists", 0x99DC, 0x060C, "islander_frame_list", True),
     # Original address: 0x02033680
@@ -416,11 +416,11 @@ BSS_OBJECTS = tuple(sorted(BSS_OBJECTS + (
     # Original address: 0x03002810
     BssObject("sBssPadding_03002810", 0x3002810, 0x170, global_symbol=True),
     # Original address: 0x03002980
-    BssObject("sMsgWindow_03002980", 0x3002980, 0xA0, global_symbol=True),
+    BssObject("gMsgWindowNotice", 0x3002980, 0xA0, global_symbol=True),
     # Original address: 0x03002FC0
-    BssObject("sMsgWindow_03002fc0", 0x3002FC0, 0xA0, global_symbol=True),
+    BssObject("gMsgWindowMain", 0x3002FC0, 0xA0, global_symbol=True),
     # Original address: 0x03003060
-    BssObject("sMsgWindow_03003060", 0x3003060, 0xA0, global_symbol=True),
+    BssObject("gMsgWindowPrompt", 0x3003060, 0xA0, global_symbol=True),
     # Original address: 0x03003100
     BssObject("sBssPadding_03003100", 0x3003100, 0x20, global_symbol=True),
     # Original address: 0x03003160
@@ -626,7 +626,7 @@ def generate_assembly(text_object: Path, data_path: Path) -> str:
                         pointer,
                         ISLANDER_OAM_ADDRESS,
                         ISLANDER_OAM_SIZE,
-                        "sIslanderOamData",
+                        "sOAMData",
                     )
                 emit_incbin(lines, incbin_path, pointer_offset + 4, 4)
         elif obj.relocation_kind == "islander_frame_list":

@@ -1,12 +1,16 @@
 #ifndef M_NAME_TABLE_H
 #define M_NAME_TABLE_H
 
+#include "gba/types.h"
+
 /*
  * Item-name constants used by the JoyBoot payload.  The names and values are
  * shared with ac-decomp's m_name_table.h.  The 0xFEA1-0xFEB2 entries are the
  * Animal Island random-item placeholders; ac-decomp currently uses their raw
  * values in m_shop.c, so they are named here for the role that code assigns.
  */
+
+typedef u16 mActor_name_t;
 
 enum {
     NAME_TYPE_ITEM0,

@@ -100,7 +100,26 @@ SECTIONS {
     ALIGN(4)
     {
         asm/crt0.o(.text);
-        src/all.o(.text);
+        src/main.o(.text);
+        src/interrupt.o(.text);
+        src/m_msg.o(.text);
+        src/lib.o(.text);
+        src/audio.o(.text);
+        src/m_msg_util.o(.text);
+        src/game.o(.text);
+        src/joyboot.o(.text);
+        src/island_program.o(.text);
+        src/m_msg_sprite.o(.text);
+        src/multisio.o(.text);
+        src/island_field.o(.text);
+        src/building.o(.text);
+        src/animated_field_obj.o(.text);
+        src/field_obj.o(.text);
+        src/islander.o(.text);
+        src/item.o(.text);
+        src/falling_fruit.o(.text);
+        src/entity.o(.text);
+        src/player_hand.o(.text);
         src/sound.o(.text);
         asm/gflib/syscalls.o(.text);
         asm/libgcc/_call_via_rX.o(.text);
@@ -124,7 +143,26 @@ SECTIONS {
     /* Compiler-generated constants have no independently recovered object. */
     .rodata : ALIGN(4)
     {
-        src/all.o(.rodata);
+        src/main.o(.rodata);
+        src/interrupt.o(.rodata);
+        src/m_msg.o(.rodata);
+        src/lib.o(.rodata);
+        src/audio.o(.rodata);
+        src/m_msg_util.o(.rodata);
+        src/game.o(.rodata);
+        src/joyboot.o(.rodata);
+        src/island_program.o(.rodata);
+        src/m_msg_sprite.o(.rodata);
+        src/multisio.o(.rodata);
+        src/island_field.o(.rodata);
+        src/building.o(.rodata);
+        src/animated_field_obj.o(.rodata);
+        src/field_obj.o(.rodata);
+        src/islander.o(.rodata);
+        src/item.o(.rodata);
+        src/falling_fruit.o(.rodata);
+        src/entity.o(.rodata);
+        src/player_hand.o(.rodata);
         src/sound.o(.rodata);
         src/data.o(.rodata);
     } =0

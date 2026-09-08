@@ -13,9 +13,38 @@ import re
 from pathlib import Path
 
 
-# Boundaries include the ARM mixers in sound.c and keep the BIOS wrappers in
-# their own object, matching the order in payload/ld_script.txt.
-UNIT_STARTS = (("all.c", "AgbMain"), ("sound", "Audio_Init"), ("syscalls", "ArcTan2"))
+# Keep this in the same order as the .text inputs in payload/ld_script.txt.
+UNIT_STARTS = (
+    ("main", "AgbMain"),
+    ("interrupt", "UnusedInterruptHandler"),
+    ("m_msg", "mFont_GetGlyphRows"),
+    ("lib", "FixedMul8"),
+    ("audio", "GameAudio_VBlank"),
+    ("m_msg_util", "mMsg_ReplaceChar"),
+    ("game", "InitializeHardware"),
+    ("joyboot", "Swap32"),
+    ("island_program", "IslandProgram_Restart"),
+    ("m_msg_sprite", "mMsg_InitSprites"),
+    ("multisio", "InitIslandLinkTransfer"),
+    ("island_field", "LoadIslandBuildingTiles"),
+    ("building", "InitIslandBuilding"),
+    ("animated_field_obj", "AnimatedFieldObject_Init"),
+    ("field_obj", "FieldObject_AttachEntity"),
+    ("islander", "Islander_StoreItem"),
+    ("item", "Item_IsFossil"),
+    ("falling_fruit", "FallingFruit_Init"),
+    ("entity", "Entity_Reset"),
+    ("player_hand", "PlayerHand_IsItemPlacementBlocked"),
+    ("sound", "Audio_Init"),
+    ("syscalls", "ArcTan2"),
+)
+
+# These two functions were intentionally renamed when game.c was extracted.
+# Rename target symbols and references only in generated objdiff assembly.
+SYMBOL_RENAMES = {
+    "IslandProgram_UpdateFrame": "Game_Update",
+    "IslandProgram_Main": "Game_Main",
+}
 FUNCTION_START = re.compile(
     r"^[ \t]*(?:thumb|arm|non_word_aligned_thumb)_func_start[ \t]+(\w+)[ \t]*$",
     re.MULTILINE,
@@ -43,6 +72,12 @@ def split_text(source: str) -> tuple[str, dict[str, str]]:
     return source[:boundaries[0]], bodies
 
 
+def apply_symbol_renames(source: str) -> str:
+    for old, new in SYMBOL_RENAMES.items():
+        source = re.sub(rf"\b{re.escape(old)}\b", new, source)
+    return source
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--assembly", type=Path, default=Path("payload/asm/all.s"))
@@ -51,7 +86,7 @@ def main() -> None:
     args = parser.parse_args()
     preamble, bodies = split_text(args.assembly.read_text())
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(preamble + bodies[args.unit])
+    args.output.write_text(apply_symbol_renames(preamble + bodies[args.unit]))
     print(f"Generated {args.output}: {args.unit} translation unit")
 
 

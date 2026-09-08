@@ -40,7 +40,7 @@ SCANINC := tools/scaninc/scaninc
 GBAFIX := tools/gbafix/gbafix
 GBAGFX := tools/gbagfx/gbagfx
 ifeq ($(OS),Windows_NT)
-WINDOWS_LOCALAPPDATA := $(subst \,/,$(LOCALAPPDATA))
+WINDOWS_LOCALAPPDATA := /$(subst :,,$(subst \,/,$(LOCALAPPDATA)))
 WINDOWS_PYTHON := $(lastword $(sort $(wildcard $(WINDOWS_LOCALAPPDATA)/Programs/Python/Python*/python.exe)))
 PYTHON := $(if $(WINDOWS_PYTHON),$(WINDOWS_PYTHON),python3)
 else
@@ -106,7 +106,7 @@ $(shell mkdir -p $(SUBDIRS:%=$(OBJ_DIR)/%))
 .DELETE_ON_ERROR:
 .SECONDEXPANSION:
 
-.PHONY: all rom clean compare tools cleantools mostlyclean payload payload/build/payload/src/all.o
+.PHONY: all rom clean compare tools cleantools mostlyclean payload
 
 ALL_ROMS := needle-loader-mb.gba
 
@@ -189,22 +189,17 @@ $(DEBUG_TEST_ISLAND_AGB): $(DEBUG_TEST_ISLAND_GC) tools/convert_gc_island_fixtur
 payload:
 	@$(MAKE) -C payload COMPARE=$(COMPARE) NONMATCHING=$(NONMATCHING) DEBUG_TEST=$(DEBUG_TEST) DEBUG_TESTING=$(DEBUG_TESTING) PYTHON=$(PYTHON)
 
-# objdiff passes the configured base object path to make. Forward that path to
-# the payload build and force a compile so header-only edits are reflected too.
-payload/build/payload/src/all.o:
-	@$(MAKE) -B -C payload DEVKITPRO=$(if $(wildcard /c/devkitPro),/c/devkitPro,$(DEVKITPRO)) DEVKITARM=$(if $(wildcard /c/devkitPro/devkitARM),/c/devkitPro/devkitARM,$(DEVKITARM)) build/payload/src/all.o
+# objdiff passes the configured base object path to make. Forward every split
+# source object to the payload build and always recompile it, so header-only
+# edits are reflected even though dependency scanning is disabled for this goal.
+.PHONY: FORCE_OBJDIFF_BASE
+FORCE_OBJDIFF_BASE:
 
-payload/build/payload/src/sound.o: payload/src/sound.c payload/include/sound.h payload/include/global.h payload/asm/all_arm.inc payload/Makefile
-	@$(MAKE) -B -C payload DEVKITPRO=$(if $(wildcard /c/devkitPro),/c/devkitPro,$(DEVKITPRO)) DEVKITARM=$(if $(wildcard /c/devkitPro/devkitARM),/c/devkitPro/devkitARM,$(DEVKITARM)) build/payload/src/sound.o
+payload/build/payload/src/%.o: payload/src/%.c payload/Makefile FORCE_OBJDIFF_BASE
+	@$(MAKE) -B -C payload DEVKITPRO=$(if $(wildcard /c/devkitPro),/c/devkitPro,$(DEVKITPRO)) DEVKITARM=$(if $(wildcard /c/devkitPro/devkitARM),/c/devkitPro/devkitARM,$(DEVKITARM)) build/payload/src/$*.o
 
 payload/build/payload/asm/gflib/syscalls.o: payload/asm/gflib/syscalls.s payload/asm/gflib/syscalls.inc payload/Makefile
 	@$(MAKE) -C payload DEVKITPRO=$(if $(wildcard /c/devkitPro),/c/devkitPro,$(DEVKITPRO)) DEVKITARM=$(if $(wildcard /c/devkitPro/devkitARM),/c/devkitPro/devkitARM,$(DEVKITARM)) build/payload/asm/gflib/syscalls.o
-
-payload/build/payload/src/islander_anim.o: payload/src/islander_anim.c payload/include/global.h payload/Makefile
-	@$(MAKE) -B -C payload DEVKITPRO=$(if $(wildcard /c/devkitPro),/c/devkitPro,$(DEVKITPRO)) DEVKITARM=$(if $(wildcard /c/devkitPro/devkitARM),/c/devkitPro/devkitARM,$(DEVKITARM)) build/payload/src/islander_anim.o
-
-payload/build/payload/src/data.o: payload/src/data.c payload/include/global.h payload/Makefile
-	@$(MAKE) -B -C payload DEVKITPRO=$(if $(wildcard /c/devkitPro),/c/devkitPro,$(DEVKITPRO)) DEVKITARM=$(if $(wildcard /c/devkitPro/devkitARM),/c/devkitPro/devkitARM,$(DEVKITARM)) build/payload/src/data.o
 
 # Forward the recovered archive-member source objects to the payload build.
 payload/build/payload/asm/libgcc/%.o: payload/asm/libgcc/%.s payload/Makefile asm/macros/function.inc
@@ -218,13 +213,17 @@ payload/build/payload/src/libc/%.o: payload/src/libc/%.c payload/Makefile
 # expensive byte-level data comparison during normal text matching.
 OBJDIFF_DIR := payload/build/objdiff
 OBJDIFF_TEXT_OBJ := payload/build/payload/asm/all.o
-OBJDIFF_TEXT_UNITS := all.c sound syscalls
+OBJDIFF_C_UNITS := main interrupt m_msg lib audio m_msg_util game joyboot \
+	island_program m_msg_sprite multisio island_field building \
+	animated_field_obj field_obj islander item falling_fruit entity player_hand \
+	sound
+OBJDIFF_TEXT_UNITS := $(OBJDIFF_C_UNITS) syscalls
 OBJDIFF_TEXT_ASM := $(addprefix $(OBJDIFF_DIR)/,$(addsuffix .text.target.s,$(OBJDIFF_TEXT_UNITS)))
 OBJDIFF_TEXT_RAW := $(addprefix $(OBJDIFF_DIR)/,$(addsuffix .text.raw.o,$(OBJDIFF_TEXT_UNITS)))
 OBJDIFF_TEXT_TARGETS := $(addprefix $(OBJDIFF_DIR)/,$(addsuffix .text.target.o,$(OBJDIFF_TEXT_UNITS)))
 OBJDIFF_DATA_ASM := $(OBJDIFF_DIR)/all.data.target.s
 OBJDIFF_DATA_TARGET := $(OBJDIFF_DIR)/all.data.target.o
-OBJDIFF_COMPILED_BASE := payload/build/payload/src/all.o payload/build/payload/src/sound.o payload/build/payload/asm/gflib/syscalls.o
+OBJDIFF_COMPILED_BASE := $(addprefix payload/build/payload/src/,$(addsuffix .o,$(OBJDIFF_C_UNITS))) payload/build/payload/asm/gflib/syscalls.o
 OBJDIFF_COMPILED_DATA_BASE := payload/build/payload/src/data.o
 OBJDIFF_BASE := $(OBJDIFF_DIR)/all.base.o
 OBJDIFF_TEXT_DEPS := payload/asm/all.s asm/macros/function.inc constants/gba_constants.inc
