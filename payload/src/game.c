@@ -5,9 +5,7 @@
 #include "joyboot.h"
 #include "lib.h"
 #include "global.h"
-
-/* Original address: 0x02029698 */
-extern const u32 sInitialIntrTable[14];
+#include "interrupt.h"
 
 /* Original address: 0x02019E88 */
 void InitializeHardware(void) {
@@ -77,6 +75,7 @@ extern const u32 sDebugBg2Tilemap[0x800];
 extern const u32 sDebugBg3Tilemap[0x800];
 
 /* Reproduce the loader's base graphics uploads for standalone debug boots. */
+static void DebugTesting_SetupGraphics(void) __attribute__((section(".debug_text")));
 static void DebugTesting_SetupGraphics(void) {
     DmaCopy32(3, sDebugObjTiles, (void *)OBJ_VRAM0, sizeof(sDebugObjTiles));
     DmaCopy32(3, sDebugBgTiles, (void *)BG_VRAM, sizeof(sDebugBgTiles));
@@ -94,9 +93,10 @@ void Game_Main(void) {
     EnableVBlankInterrupt();
     gGameState.frame_committed = 1;
     gGameState.current_music_id = 0xFFFF;
-    sub_02019F08();
 #ifdef DEBUG_TESTING
     DebugTesting_SetupGraphics();
+#else
+    sub_02019F08();
 #endif
     InitializeIsland();
     for (;;) {

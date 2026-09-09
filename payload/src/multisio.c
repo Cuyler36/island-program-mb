@@ -3,6 +3,9 @@
 #include "audio.h"
 #include "global.h"
 
+/* Original address: 0x0202B3E0 */
+static char multi_sio_ver[] = "MultiSio4Sio32Load010918";
+
 /* Word access also includes the adjacent multiplayer send register. */
 #define ISLAND_SERIAL_STATUS (*(SioMultiCnt*)REG_ADDR_SIOCNT)
 #define ISLAND_LINK_HALFWORDS (int)((sizeof(Island_agb_c) + 1) >> 1)

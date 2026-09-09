@@ -5,20 +5,83 @@
 #include "entity.h"
 #include "falling_fruit.h"
 
+typedef void (*FieldObject_PROC)(int);
+
+/* Original address: 0x0202FECC */
+FieldObject_PROC gFieldObjectProcs[] = {
+    FieldObject_Idle,
+    FieldObject_HandleHit,
+    FieldObject_UpdateShake,
+    FieldObject_UpdateTopple,
+    FieldObject_Deactivate,
+};
+
 /* Original address: 0x0202FEE0 */
-extern u8 gFieldObjectSpriteFrameIndices[19 * 8];
+u8 gFieldObjectSpriteFrameIndices[19 * 8] = {
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0C, 0x0D, 0x0E, 0x0D, 0x0C, 0x0E, 0x0C, 0x0C,
+    0x0F, 0x10, 0x11, 0x10, 0x0F, 0x11, 0x0F, 0x0F, 0x12, 0x13, 0x14, 0x13, 0x12, 0x14, 0x12, 0x12,
+    0x15, 0x16, 0x17, 0x16, 0x15, 0x17, 0x15, 0x15, 0x15, 0x16, 0x17, 0x16, 0x15, 0x17, 0x15, 0x15,
+    0x15, 0x16, 0x17, 0x16, 0x15, 0x17, 0x15, 0x15, 0x15, 0x16, 0x17, 0x16, 0x15, 0x17, 0x15, 0x15,
+    0x15, 0x16, 0x17, 0x16, 0x15, 0x17, 0x15, 0x15, 0x15, 0x16, 0x17, 0x16, 0x15, 0x17, 0x15, 0x15,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x01, 0x02, 0x01, 0x00, 0x02, 0x00, 0x00, 0x03, 0x04, 0x05, 0x04, 0x03, 0x05, 0x03, 0x03,
+    0x06, 0x07, 0x08, 0x07, 0x06, 0x08, 0x06, 0x06, 0x09, 0x0A, 0x0B, 0x0A, 0x09, 0x0B, 0x09, 0x09,
+    0x09, 0x0A, 0x0B, 0x0A, 0x09, 0x0B, 0x09, 0x09,
+};
 
 /* Original address: 0x0202FF78 */
-extern FieldObjectSpriteFrame gFieldObjectSpriteFrames[24];
+FieldObjectSpriteFrame gFieldObjectSpriteFrames[24] = {
+    { 0x80000000, -24, -16, 0x01A9, 0x0000 },
+    { 0x80000000, -24, -15, 0x01A9, 0x0000 },
+    { 0x80000000, -24, -17, 0x01A9, 0x0000 },
+    { 0xC0000000, -64, -32, 0x0152, 0x0000 },
+    { 0xC0000000, -64, -31, 0x0152, 0x0000 },
+    { 0xC0000000, -64, -33, 0x0152, 0x0000 },
+    { 0xC0000000, -67, -32, 0x01D8, 0x0000 },
+    { 0xC0000000, -67, -31, 0x01D8, 0x0000 },
+    { 0xC0000000, -67, -33, 0x01D8, 0x0000 },
+    { 0xC0000000, -67, -32, 0x0286, 0x0000 },
+    { 0xC0000000, -67, -31, 0x0286, 0x0000 },
+    { 0xC0000000, -67, -33, 0x0286, 0x0000 },
+    { 0x40000000, -14, -8, 0x01C7, 0x0000 },
+    { 0x40000000, -14, -7, 0x01C7, 0x0000 },
+    { 0x40000000, -14, -9, 0x01C7, 0x0000 },
+    { 0x80000000, -32, -16, 0x0254, 0x0000 },
+    { 0x80000000, -32, -17, 0x0254, 0x0000 },
+    { 0x80000000, -32, -15, 0x0254, 0x0000 },
+    { 0xC0000000, -66, -32, 0x01CC, 0x0000 },
+    { 0xC0000000, -66, -31, 0x01CC, 0x0000 },
+    { 0xC0000000, -66, -33, 0x01CC, 0x0000 },
+    { 0xC0000000, -68, -32, 0x00CB, 0x0000 },
+    { 0xC0000000, -68, -31, 0x00CB, 0x0000 },
+    { 0xC0000000, -68, -33, 0x00CB, 0x0000 },
+};
 
 /* Original address: 0x020300F8 */
-extern u8 sFruitDropOffsetsX[3][4];
+u8 sFruitDropOffsetsX[3][4] = {
+    {0x0F, 0x0F, 0x0E, 0x0F},
+    {0x01, 0x01, 0x02, 0x01},
+    {0x00, 0x00, 0x0F, 0x01},
+};
+
 /* Original address: 0x02030104 */
-extern u8 sFruitDropOffsetsY[3][4];
+u8 sFruitDropOffsetsY[3][4] = {
+    {0x00, 0x0F, 0x00, 0x01},
+    {0x00, 0x0F, 0x00, 0x01},
+    {0x01, 0x02, 0x01, 0x01},
+};
+
 /* Original address: 0x02030110 */
-extern u8 sFieldObjectInitialTimers[19];
+u8 sFieldObjectInitialTimers[19] = {
+    0xFF, 0xFF, 0xFF, 0x01, 0x02, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0xFF, 0xFF, 0x01, 0x02,
+    0x03, 0x03, 0x03,
+};
+
 /* Original address: 0x02030123 */
-extern u8 sFieldObjectShakeFrames[9];
+u8 sFieldObjectShakeFrames[9] = {
+    0x01, 0x02, 0x01, 0x00, 0x02, 0x01, 0x02, 0x01, 0x03,
+};
 
 /* Original address: 0x0201E3DC */
 void FieldObject_AttachEntity(s32 object_index, s32 type) {
@@ -95,11 +158,6 @@ void FieldObject_Init(s32 object_index, u16 type, s32 tile, u8 layer) {
         object->favorite_hour_item_eligible = 1;
     }
 }
-
-typedef void (*FieldObject_PROC)(int);
-
-// Original address: 0x0202FECC
-extern FieldObject_PROC gFieldObjectProcs[];
 
 /* Original address: 0x0201E538 */
 void FieldObject_Update(s32 idx) {
@@ -211,19 +269,14 @@ void FieldObject_HandleHit(s32 object_index) {
     FieldObject *object = &gFieldObjects[object_index];
     IslandFieldWork *field = &gIslandFieldWork;
     s32 fruit_index;
-    s32 timer;
-    u32 x;
-    u32 y;
-    u16 tile_x;
-    u16 tile_y;
+    s32 hits_remaining;
     s32 candidate;
-    u16 tile;
-    u16 fg_tile;
+    u32 fg_tile = 0;
     u8 acre;
     FallingFruit *fruit;
 
-    timer = object->hits_remaining;
-    if (timer == 0 || (timer & 0x80)) {
+    hits_remaining = object->hits_remaining;
+    if (hits_remaining == 0 || (hits_remaining & 0x80)) {
         FieldObject_SpawnToppleEffect(object_index);
         object->anim_timer = 8;
         object->anim_counter = 0;
@@ -251,31 +304,27 @@ void FieldObject_HandleHit(s32 object_index) {
             return;
         }
         for (candidate = 0; candidate < 4; candidate++) {
-            tile = object->tile_idx;
-            y = (tile + sFruitDropOffsetsY[fruit_index][candidate] * 16) & 0xF0;
-            object->drop_tile_y = y;
-            x = ((tile & 0xF) + sFruitDropOffsetsX[fruit_index][candidate]) & 0xF;
-            object->drop_tile_x = x;
+            u32 tile = object->tile_idx;
+            object->drop_tile_y = (sFruitDropOffsetsY[fruit_index][candidate] * 16 + tile) & 0xF0;
+            object->drop_tile_x = (sFruitDropOffsetsX[fruit_index][candidate] + (tile & 0xF)) & 0xF;
             acre = 0;
             if (object->layer == 0) {
-                object->drop_existing_item = gIslandData->fgblock[0][0].items[y >> 4][object->drop_tile_x];
-                fg_tile = field->fg_tiles[0][x | y];
-                if (x <= 1) {
+                object->drop_existing_item = gIslandData->fgblock[0][0].items[object->drop_tile_y >> 4][object->drop_tile_x];
+                fg_tile = field->fg_tiles[0][(u8)(object->drop_tile_y + object->drop_tile_x)];
+                if (object->drop_tile_x <= 1) {
                     acre = 1;
-                    object->drop_existing_item = gIslandData->fgblock[0][1].items[y >> 4][object->drop_tile_x];
-                    fg_tile = field->fg_tiles[1][x | y];
+                    object->drop_existing_item = gIslandData->fgblock[0][1].items[object->drop_tile_y >> 4][object->drop_tile_x];
+                    fg_tile = field->fg_tiles[1][(u8)(object->drop_tile_y + object->drop_tile_x)];
                 }
             }
             if (object->layer != 0) {
                 acre = 1;
-                tile_x = object->drop_tile_x;
-                tile_y = object->drop_tile_y;
-                object->drop_existing_item = gIslandData->fgblock[0][1].items[tile_y >> 4][tile_x & 0xF];
-                fg_tile = field->fg_tiles[1][(u8)(tile_y + tile_x)];
-                if (tile_x > 13) {
+                object->drop_existing_item = gIslandData->fgblock[0][1].items[object->drop_tile_y >> 4][object->drop_tile_x & 0xF];
+                fg_tile = field->fg_tiles[1][(u8)(object->drop_tile_y + object->drop_tile_x)];
+                if (object->drop_tile_x > 13) {
                     acre = 0;
-                    object->drop_existing_item = gIslandData->fgblock[0][0].items[tile_y >> 4][tile_x & 0xF];
-                    fg_tile = field->fg_tiles[0][(u8)(tile_y + tile_x)];
+                    object->drop_existing_item = gIslandData->fgblock[0][0].items[object->drop_tile_y >> 4][object->drop_tile_x & 0xF];
+                    fg_tile = field->fg_tiles[0][(u8)(object->drop_tile_y + object->drop_tile_x)];
                 }
             }
             if (acre == 0) {
@@ -283,8 +332,8 @@ void FieldObject_HandleHit(s32 object_index) {
             } else {
                 object->drop_tilemap = (u16 *)BG_SCREEN_ADDR(21);
             }
-            object->drop_tilemap = object->drop_tilemap + ((object->drop_tile_y + object->drop_tile_x) & 0xF0) * 4 +
-                                   ((object->drop_tile_y + object->drop_tile_x) & 0xF) * 2;
+            object->drop_tilemap = object->drop_tilemap + ((u8)(object->drop_tile_y + object->drop_tile_x) & 0xF0) * 4 +
+                                   ((u8)(object->drop_tile_y + object->drop_tile_x) & 0xF) * 2;
             if ((object->drop_existing_item == 0 && fg_tile == 0xFFF &&
                  (u16)((*object->drop_tilemap & 0x3FF) - 0x20) <= 0x5E) || candidate == 3) {
                 field->entity_active[fruit_index + 21] = 1;
@@ -307,9 +356,9 @@ void FieldObject_HandleHit(s32 object_index) {
                     FallingFruit_Init(object_index, fruit_index, fruit_index + 20, acre);
                 }
                 if (acre == 0) {
-                    field->fg_tiles[0][(u8)(object->drop_tile_y + (u8)object->drop_tile_x)] = 0x7777;
+                    field->fg_tiles[0][(u8)(object->drop_tile_y + object->drop_tile_x)] = 0x7777;
                 } else {
-                    field->fg_tiles[1][(u8)(object->drop_tile_y + (u8)object->drop_tile_x)] = 0x7777;
+                    field->fg_tiles[1][(u8)(object->drop_tile_y + object->drop_tile_x)] = 0x7777;
                 }
                 fruit = &gFallingFruit[fruit_index];
                 fruit->landing_x = object->drop_tile_x * 16;
@@ -317,7 +366,7 @@ void FieldObject_HandleHit(s32 object_index) {
                     fruit->landing_x |= 0x100;
                 }
                 fruit->landing_y = object->drop_tile_y;
-                fruit->tile_idx = object->drop_tile_x + object->drop_tile_y;
+                fruit->tile_idx = object->drop_tile_y + object->drop_tile_x;
                 if (object->drop_existing_item == 0 && fg_tile == 0xFFF) {
                     fruit->can_land = 1;
                 }
@@ -467,7 +516,7 @@ void FieldObject_DrawSprite(FieldObjectSpriteFrame *frame, s32 object_index) {
     struct ObjAffineSrcData transform __attribute__((aligned(4)));
     struct { s16 pa, pb, pc, pd; } matrix;
     FieldObject *object = &gFieldObjects[object_index];
-    OAMData *oam = &((OAMData *)gUnk3002410)[gGameState.oam_count];
+    OAMData *oam = &GameOAMData[gGameState.oam_count];
 
     oam->shape = (frame->oam_attributes >> 14) & 3;
     oam->size = (frame->oam_attributes >> 30) & 0xF;
@@ -488,14 +537,14 @@ void FieldObject_DrawSprite(FieldObjectSpriteFrame *frame, s32 object_index) {
             transform.rotation = -object->rotation;
         }
         ObjAffineSet(&transform, &matrix, 1, 2);
-        oam = (OAMData *)gUnk3002410;
+        oam = (OAMData *)GameOAMData;
         oam->affine_param = matrix.pa;
         oam++;
         oam->affine_param = matrix.pb;
         oam++;
         oam->affine_param = matrix.pc;
         oam[1].affine_param = matrix.pd;
-        oam = &((OAMData *)gUnk3002410)[gGameState.oam_count];
+        oam = &GameOAMData[gGameState.oam_count];
     }
     if (object->x_flip == 0) {
         oam->x = frame->x_offset + (object->x - gGameState.bg2_hofs) + object->topple_x_offset + object->topple_extra_x_offset;

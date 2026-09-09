@@ -33,9 +33,7 @@ void Joybus_Reset(void);
 s32 Joybus_CheckTimeout(u8 arg0);
 
 /* Original address: 0x03003120 */
-extern JoybusTransferWork gTransmissionBuf_p;
-
-#define gTransWork gTransmissionBuf_p
+extern JoybusTransferWork gTransWork;
 
 #ifdef __cplusplus
 }

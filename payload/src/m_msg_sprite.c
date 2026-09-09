@@ -3,6 +3,106 @@
 #include "global.h"
 #include <string.h>
 
+// TODO: make this a real symbol
+extern m_msg_sprite_c gMsgSprites[12]; // @0x03003250
+
+/* Original address: 0x0202B2EC */
+mMsg_SpriteProfile mMsg_null_sprite_profile __attribute__((section(".data"))) = {
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+};
+
+
+/* Original address: 0x0202B2FC */
+mMsg_SpriteProfile* sMsgSpriteProfiles[13] = {
+    &mMsg_null_sprite_profile,
+    &mMsg_null_sprite_profile,
+    &mMsg_null_sprite_profile,
+    &mMsg_null_sprite_profile,
+    &mMsg_null_sprite_profile,
+    &mMsg_null_sprite_profile,
+    &mMsg_null_sprite_profile,
+    &mMsg_null_sprite_profile,
+    &mMsg_null_sprite_profile,
+    &mMsg_null_sprite_profile,
+    &mMsg_continue_prompt_sprite_profile,
+    &mMsg_choice_cursor_sprite_profile,
+    &mMsg_null_sprite_profile,
+};
+
+/* Original address: 0x0202B330 */
+mMsg_SpriteProfile mMsg_continue_prompt_sprite_profile = {
+    &mMsg_ContinuePromptInit,
+    &mMsg_ContinuePromptDestroy,
+    &mMsg_ContinuePromptUpdate,
+    &mMsg_ContinuePromptDraw,
+};
+
+/* Original address: 0x0202B340 */
+OAMData sContinuePromptAnimOamData[5] = {
+    OAM_ENTRY(0x0000, 0x0000, 0x7339, 0x0000),
+    OAM_ENTRY(0x0000, 0x01F8, 0x7338, 0x0000),
+    OAM_ENTRY(0x00F8, 0x0000, 0x7319, 0x0000),
+    OAM_ENTRY(0x00F8, 0x01F8, 0x7318, 0x0000),
+    OAM_ENTRY(0x0000, 0x0000, 0x0000, 0xFFFF),
+};
+
+/* Original address: 0x0202B368 */
+AnimFrameData sMsgContinuePromptAnimData[2] = {
+    { sContinuePromptAnimOamData, 1, 0, 0 },
+    { NULL, 0, 0, 0 },
+};
+
+/* Original address: 0x0202B378 */
+AnimFrameData* sMsgContinuePromptAnimations[1] = {
+    sMsgContinuePromptAnimData
+};
+
+/* Original address: 0x0202B37C */
+u8 sMsgContinuePromptRed[8] = {
+    0x00, 0x04, 0x0C, 0x04, 0x1A, 0x1A, 0x1A, 0x1A,
+};
+
+/* Original address: 0x0202B384 */
+u8 sMsgContinuePromptGreen[8] = {
+    0x00, 0x11, 0x16, 0x11, 0x1C, 0x1C, 0x1C, 0x1C,
+};
+
+/* Original address: 0x0202B38C */
+u8 sMsgContinuePromptBlue[8] = {
+    0x1F, 0x1F, 0x1F, 0x1F, 0x00, 0x1D, 0x12, 0x1D,
+};
+
+/* Original address: 0x0202B394 */
+mMsg_SpriteProfile mMsg_choice_cursor_sprite_profile = {
+    &mMsg_ChoiceCursorInit,
+    &mMsg_ChoiceCursorDestroy,
+    &mMsg_ChoiceCursorUpdate,
+    &mMsg_ChoiceCursorDraw,
+};
+
+/* Original address: 0x0202B3A4 */
+OAMData sMsgChoiceCursorAnimOamData[5] = {
+    OAM_ENTRY(0x0000, 0x0000, 0x72F9, 0x0000),
+    OAM_ENTRY(0x0000, 0x01F8, 0x72F8, 0x0000),
+    OAM_ENTRY(0x00F8, 0x0000, 0x72D9, 0x0000),
+    OAM_ENTRY(0x00F8, 0x01F8, 0x72D8, 0x0000),
+    OAM_ENTRY(0x0000, 0x0000, 0x0000, 0xFFFF),
+};
+
+/* Original address: 0x0202B3CC */
+AnimFrameData sMsgChoiceCursorAnimData[2] = {
+    { sMsgChoiceCursorAnimOamData, 1, 0, 0 },
+    { NULL, 0, 0, 0 },
+};
+
+/* Original address: 0x0202B3DC */
+AnimFrameData* sMsgChoiceCursorAnimations[1] = {
+    sMsgChoiceCursorAnimData
+};
+
 /* Original address: 0x0201C2E0 */
 void mMsg_InitSprites(void) {
     s32 sp0;
@@ -149,13 +249,6 @@ void sub_0201C5F8(m_msg_sprite_c *sprite) {
 
 }
 
-/* Original address: 0x0202B37C */
-extern const u8 sMsgContinuePromptRed[8];
-/* Original address: 0x0202B384 */
-extern const u8 sMsgContinuePromptGreen[8];
-/* Original address: 0x0202B38C */
-extern const u8 sMsgContinuePromptBlue[8];
-
 /* Original address: 0x0201C5FC */
 void mMsg_ContinuePromptSetColor(s32 arg0) {
     u8 red[8];
@@ -206,7 +299,7 @@ void mMsg_ContinuePromptDraw(m_msg_sprite_c* sprite) {
     OAMData* oam = sMsgContinuePromptAnimations[sprite->animation_index]->sprite_gfx_p;
 
     while (oam->affine_param != 0xFFFF) {
-        mMsg_CopySpriteOam(sprite, oam, (OAMData *)gUnk3002410 + gGameState.oam_count);
+        mMsg_CopySpriteOam(sprite, oam, (OAMData *)GameOAMData + gGameState.oam_count);
         gGameState.oam_count++;
         oam++;
     }
@@ -242,7 +335,7 @@ void mMsg_ChoiceCursorDraw(m_msg_sprite_c* sprite) {
     OAMData* oam = sMsgChoiceCursorAnimations[sprite->animation_index]->sprite_gfx_p;
 
     while (oam->affine_param != 0xFFFF) {
-        mMsg_CopySpriteOam(sprite, oam, (OAMData *)gUnk3002410 + gGameState.oam_count);
+        mMsg_CopySpriteOam(sprite, oam, (OAMData *)GameOAMData + gGameState.oam_count);
         gGameState.oam_count++;
         oam++;
     }

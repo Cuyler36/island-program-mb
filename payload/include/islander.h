@@ -281,6 +281,17 @@ typedef struct Islander_AGB {
     /* 0xB9 */ u8 reserved_B9[7];
 } Islander_AGB;
 
+/* Maps an item type and Islander emotion to a base in the buried-item RNG table. */
+typedef struct BuriedItemRngTileGroup {
+    u16 item_type;
+    u16 generator_table_offsets[4];
+} __attribute__((packed, aligned(2))) BuriedItemRngTileGroup;
+
+typedef struct BuriedItemUpdateGroup {
+    u16 item_type;
+    mActor_name_t buried_item;
+} BuriedItemUpdateGroup;
+
 extern AnimFrameData** gIslanderAnimData[ISLANDER_ANIM_NUM+1];
 extern u8 gIslanderAnimMirrorFlags[ISLANDER_ANIM_NUM+1];
 

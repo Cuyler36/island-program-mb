@@ -145,4 +145,6 @@ struct ObjAffineSrcData
     u16 rotation;
 };
 
+#define IWRAM_BSS __attribute__((section(".bss")))
+
 #endif // GUARD_GBA_TYPES_H

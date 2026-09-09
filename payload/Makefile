@@ -106,9 +106,6 @@ ifeq (1,$(DEBUG_TEST))
 CPPFLAGS += -DDEBUG_TEST
 DEBUG_TEST_ISLAND := ../assets/debug/test_island_agb_fmt.bin
 $(OBJ_DIR)/data/debug_test_island.o: $(DEBUG_TEST_ISLAND)
-
-$(DEBUG_TEST_ISLAND): ../assets/debug/test_island_gc_fmt.bin ../tools/convert_gc_island_fixture.py
-	$(PYTHON) ../tools/convert_gc_island_fixture.py $< $@
 endif
 
 $(shell mkdir -p $(SUBDIRS:%=$(OBJ_DIR)/%))

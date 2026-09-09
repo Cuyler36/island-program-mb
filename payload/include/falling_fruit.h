@@ -45,13 +45,13 @@ typedef struct FallingFruitProfile {
     /* 0x15 */ u8 pad_15[3];
 } FallingFruitProfile;
 
-void FallingFruit_Init(s32 arg0, u16 arg1, u8 arg2, u8 arg3);
-void sub_02024C00(void);
-void sub_02024C04(void);
-void FallingFruit_BeginFall(s32 arg0);
-void FallingFruit_UpdateFall(s32 arg0);
-void FallingFruit_Update(s32 arg0);
-void FallingFruit_Draw(s32 arg0);
+void FallingFruit_Init(s32 fruit_index, u16 arg1, u8 arg2, u8 arg3);
+void sub_02024C00(s32 fruit_index);
+void sub_02024C04(s32 fruit_index);
+void FallingFruit_BeginFall(s32 fruit_index);
+void FallingFruit_UpdateFall(s32 fruit_index);
+void FallingFruit_Update(s32 fruit_index);
+void FallingFruit_Draw(s32 fruit_index);
 
 #ifdef __cplusplus
 }

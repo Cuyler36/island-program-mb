@@ -4,6 +4,10 @@
 *.elf
 *.sav
 build/
+/build.ninja
+/.ninja_deps
+/.ninja_log
+__pycache__/
 payload/build
 tools/agbcc
 tools/binutils
@@ -12,6 +16,8 @@ tools/binutils
 *.dump
 .idea
 payload/payload.bin
+/payload/data/island_right_acre_tilemaps.bin
+/payload/data/island_left_acre_tilemaps.bin
 .cache/
 compile_commands.json
 .vscode/

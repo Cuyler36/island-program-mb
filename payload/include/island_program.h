@@ -73,10 +73,6 @@ typedef void (*IslandProgramModeProc)(IslandProgramWork *work);
 /* Original address: 0x030031D0 */
 extern IslandProgramWork gIslandProgramWork;
 
-/* Dispatch table indexed by IslandProgramWork.pending_mode; NULL entries are skipped. */
-/* Original address: 0x0202B2BC */
-extern IslandProgramModeProc sIslandProgramModeEnterProcs[6];
-
 /* Original address: 0x0202B00C */
 extern IslandProgramNoticeResultMessages sNoticeResultMessages;
 

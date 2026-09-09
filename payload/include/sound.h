@@ -408,4 +408,6 @@ void Sound_QueueSetControlCallback(SoundControlCallback callback);
 void Sound_QueueSetNoteCallback(SoundNoteCallback callback);
 void Sound_ProcessCommands(void);
 
+extern u8 sound_data[];
+
 #endif /* GUARD_SOUND_H */

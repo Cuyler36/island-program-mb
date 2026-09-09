@@ -2,9 +2,77 @@
 #include "game.h"
 #include "islander.h"
 
+typedef void (*IslandBuilding_PROC)(void);
+
+/* Original address: 0x0202FD38 */
+IslandBuilding_PROC gIslandBuildingProcs[2] = {
+    sub_0201E030,
+    sub_0201E034,
+};
 
 /* Original address: 0x0202FD40 */
-extern IslandBuildingSprite sIslandBuildingSprites[6];
+IslandBuildingSprite sIslandBuildingSprites[] = {
+    {
+        0x80000000,
+        -40,
+        -7,
+        0x146,
+        3,
+        0,
+        1,
+        { 0, 0, 0 },
+    },
+    {
+        0x80000000,
+        -40,
+        -31,
+        0x146,
+        3,
+        1,
+        1,
+        { 0, 0, 0 },
+    },
+    {
+        0x40004000,
+        -48,
+        -19,
+        0x374,
+        3,
+        0,
+        0,
+        { 0, 0, 0 },
+    },
+    {
+        0x80008000,
+        -44,
+        8,
+        0x208,
+        3,
+        0,
+        0,
+        { 0, 0, 0 },
+    },
+    {
+        0x80000000,
+        -44,
+        -24,
+        0x206,
+        3,
+        1,
+        0,
+        { 0, 0, 0 },
+    },
+    {
+        0x80008000,
+        -16,
+        -8,
+        0x22A,
+        3,
+        0,
+        0,
+        { 0, 0, 0 },
+    },
+};
 
 /* Original address: 0x0201DF9C */
 void InitIslandBuilding(s32 index, u8 type, s32 tile, u8 acre) {
@@ -40,11 +108,6 @@ void sub_0201E034(void) {
 
 }
 
-typedef void (*IslandBuilding_PROC)(void);
-
-// Original address: 0x0202FD38
-extern IslandBuilding_PROC gIslandBuildingProcs[2];
-
 /* Original address: 0x0201E038 */
 void IslandBuilding_Update(u8 arg0, u8 arg1) {
     IslandBuilding *building = &gIslandBuildings[1];
@@ -57,7 +120,7 @@ void IslandBuilding_Update(u8 arg0, u8 arg1) {
 /* Original address: 0x0201E060 */
 void IslandBuilding_DrawSprite(IslandBuildingSprite *sprite, s32 building_index, u8 sprite_index) {
     IslandBuilding *building = &gIslandBuildings[building_index];
-    OAMData *oam = &((OAMData *)gUnk3002410)[gGameState.oam_count];
+    OAMData *oam = &GameOAMData[gGameState.oam_count];
 
     if (sprite_index != 5 || building->state == 1) {
         oam->shape = (sprite->oam_attributes >> 14) & 3;

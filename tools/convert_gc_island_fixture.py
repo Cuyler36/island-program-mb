@@ -6,9 +6,10 @@ The input is the 0x1900-byte Island_c stored in the GameCube save. The output
 is the 0x3980-byte little-endian structure consumed by the GBA island program.
 
 The original converter obtains the earth texture, islander texture, and
-islander palette from separate GameCube resources. This standalone converter
-leaves those regions zero-filled, which is sufficient for basic loading and
-tilemap tests.
+islander palette from separate GameCube resources. By default this standalone
+converter leaves those regions zero-filled. Pass --resources-from with an
+existing AGB-sized fixture whose resource regions contain the unswapped
+GameCube bytes to reproduce mISL_int/mISL_short for those resources.
 """
 
 from __future__ import annotations
@@ -22,6 +23,11 @@ AGB_ISLAND_SIZE = 0x3980
 AGB_LANDINFO_START = 0x0014
 AGB_LANDINFO_END = 0x0024
 AGB_CHECKSUM_OFFSET = 0x397F
+AGB_EARTH_TEX_OFFSET = 0x1948
+AGB_NPC_TEX_OFFSET = 0x2948
+AGB_NPC_PAL_OFFSET = 0x3948
+AGB_TEXTURE_SIZE = 0x1000
+AGB_NPC_PAL_SIZE = 0x20
 
 # Special field actors rewritten by mISL_gc_to_agb_fg2.
 FG_ACTOR_REMAP = {
@@ -79,6 +85,20 @@ def copy_u16s(src: bytes, src_offset: int, dst: bytearray, dst_offset: int, coun
 def copy_u32s(src: bytes, src_offset: int, dst: bytearray, dst_offset: int, count: int) -> None:
     for index in range(count):
         write_le(dst, dst_offset + index * 4, read_be32(src, src_offset + index * 4), 4)
+
+
+def copy_swapped_elements(
+    src: bytes,
+    src_offset: int,
+    dst: bytearray,
+    dst_offset: int,
+    size: int,
+    element_size: int,
+) -> None:
+    """Copy fixed-width elements while reversing the bytes in each element."""
+    for offset in range(0, size, element_size):
+        element = src[src_offset + offset : src_offset + offset + element_size]
+        dst[dst_offset + offset : dst_offset + offset + element_size] = reversed(element)
 
 
 def copy_u64(src: bytes, src_offset: int, dst: bytearray, dst_offset: int) -> None:
@@ -215,7 +235,9 @@ def update_checksum(data: bytearray) -> None:
     data[AGB_CHECKSUM_OFFSET] = (-checked_sum) & 0xFF
 
 
-def convert_island(source: bytes, *, weather: int = 0) -> bytes:
+def convert_island(
+    source: bytes, *, weather: int = 0, resources_from: bytes | None = None
+) -> bytes:
     if len(source) != GC_ISLAND_SIZE:
         raise ValueError(
             f"expected a 0x{GC_ISLAND_SIZE:X}-byte GameCube Island_c, "
@@ -223,6 +245,11 @@ def convert_island(source: bytes, *, weather: int = 0) -> bytes:
         )
     if weather not in (0, 1):
         raise ValueError("weather must be 0 (clear) or 1 (rain)")
+    if resources_from is not None and len(resources_from) != AGB_ISLAND_SIZE:
+        raise ValueError(
+            f"expected a 0x{AGB_ISLAND_SIZE:X}-byte AGB resource fixture, "
+            f"got 0x{len(resources_from):X} bytes"
+        )
 
     result = bytearray(AGB_ISLAND_SIZE)
 
@@ -249,7 +276,34 @@ def convert_island(source: bytes, *, weather: int = 0) -> bytes:
     npc_id = read_be16(source, 0x0F00)
     write_le(result, 0x1944, ISLANDER_INDEX_BY_NPC_ID.get(npc_id, 0), 4)
 
-    # 0x1948..0x3968 stays zero: textures and palette come from GC resources.
+    if resources_from is not None:
+        # mISL_get_earth_tex and mISL_get_npc_tex apply mISL_int; the palette
+        # path applies mISL_short. The donor stores the pre-swap resource bytes.
+        copy_swapped_elements(
+            resources_from,
+            AGB_EARTH_TEX_OFFSET,
+            result,
+            AGB_EARTH_TEX_OFFSET,
+            AGB_TEXTURE_SIZE,
+            4,
+        )
+        copy_swapped_elements(
+            resources_from,
+            AGB_NPC_TEX_OFFSET,
+            result,
+            AGB_NPC_TEX_OFFSET,
+            AGB_TEXTURE_SIZE,
+            4,
+        )
+        copy_swapped_elements(
+            resources_from,
+            AGB_NPC_PAL_OFFSET,
+            result,
+            AGB_NPC_PAL_OFFSET,
+            AGB_NPC_PAL_SIZE,
+            2,
+        )
+
     result[0x397D] = source[0x18E1]
     result[0x397E] = source[0x18E2]
     update_checksum(result)
@@ -266,12 +320,27 @@ def parse_args() -> argparse.Namespace:
         default="clear",
         help="weather is external to Island_c in the original converter (default: clear)",
     )
+    parser.add_argument(
+        "--resources-from",
+        type=Path,
+        help=(
+            "AGB-sized fixture containing unswapped earth_tex, npc_tex, and "
+            "npc_pal resource bytes"
+        ),
+    )
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
-    converted = convert_island(args.input.read_bytes(), weather=args.weather == "rain")
+    resources_from = (
+        args.resources_from.read_bytes() if args.resources_from is not None else None
+    )
+    converted = convert_island(
+        args.input.read_bytes(),
+        weather=args.weather == "rain",
+        resources_from=resources_from,
+    )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_bytes(converted)
     print(

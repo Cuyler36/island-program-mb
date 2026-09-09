@@ -39,7 +39,7 @@ ADDRESS_SYMBOLS = {
     "0x0200F580": "gMsgWindowTileData",
     "0x03001B50": "gGameState",
     "0x030023C0": "gIntrTable",
-    "0x03002410": "gUnk3002410",
+    "0x03002410": "GameOAMData",
     "0x03002A20": "sMsgWindows",
     "0x03002A70": "sMsgWindows + 0x50",
     "0x03002A74": "sMsgWindows + 0x54",

@@ -6,17 +6,213 @@
 #include "island_field.h"
 #include "islander.h"
 
-/* Original address: 0x02034C24 */
-extern AnimFrameData *sEntityToppleFrames[8];
-/* Original address: 0x02034C44 */
-extern AnimFrameData *sEntityLeafFrames[20];
-/* Original address: 0x02034CE0 */
-extern AnimFrameData **sEntityReactionAnimations[5];
+/* Original address: 0x02034720 */
+OAMData sEntityReactionOamData[12][2] = {
+    { OAM_ENTRY(0x00E9, 0x01FD, 0x7359, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x00E8, 0x01FD, 0x7359, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x00EA, 0x01FC, 0x735A, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x00E9, 0x01FC, 0x735A, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x00E8, 0x01FC, 0x735A, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x00EC, 0x01F5, 0x735B, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x00EC, 0x01F5, 0x735B, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x00EB, 0x01FC, 0x735C, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x00EA, 0x01FB, 0x735C, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x00E9, 0x01FB, 0x735C, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x00E8, 0x01FC, 0x735C, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x00E3, 0x41EC, 0x72D6, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+};
 
 /* Original address: 0x020347E0 */
-extern void (*sEntityUpdateProcs[11])(s32);
-/* Original address: 0x0202AD34 */
-extern const s16 sSineTable[320];
+void (*sEntityUpdateProcs[11])(s32) = {
+    Entity_UpdateLifetime,
+    Entity_BeginToppleEffect,
+    Entity_UpdateToppleEffect,
+    Entity_BeginLeafEffect,
+    Entity_UpdateLeafEffect,
+    Entity_BeginReactionEffect,
+    Entity_UpdateReactionEffect,
+    Entity_BeginItemDrop,
+    Entity_UpdateItemDrop,
+    Entity_BeginFloatingItem,
+    Entity_UpdateFloatingItem,
+};
+
+/* Original address: 0x0203480C */
+OAMData sEntityToppleOamData[8][6] = {
+    { OAM_ENTRY(0x00F8, 0x11FE, 0x01C6, 0), OAM_ENTRY(0x00FA, 0x01F9, 0x01C6, 0), OAM_ENTRY(0x0000, 0x21F7, 0x01E6, 0), OAM_ENTRY(0x0003, 0x31FC, 0x01C6, 0), OAM_ENTRY(0x00FE, 0x3000, 0x01E6, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x0004, 0x31FE, 0x01C6, 0), OAM_ENTRY(0x00F8, 0x01F7, 0x01C6, 0), OAM_ENTRY(0x00F5, 0x11FF, 0x01C6, 0), OAM_ENTRY(0x0001, 0x21F4, 0x01E6, 0), OAM_ENTRY(0x00FF, 0x3003, 0x01E6, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x0005, 0x3000, 0x01E6, 0), OAM_ENTRY(0x0000, 0x3006, 0x01E6, 0), OAM_ENTRY(0x0001, 0x21F1, 0x01E6, 0), OAM_ENTRY(0x00F6, 0x01F5, 0x01C6, 0), OAM_ENTRY(0x00F2, 0x1000, 0x01C6, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x0005, 0x1001, 0x01E6, 0), OAM_ENTRY(0x0000, 0x01EF, 0x01E6, 0), OAM_ENTRY(0x00F4, 0x01F4, 0x01C6, 0), OAM_ENTRY(0x00EF, 0x1000, 0x01C6, 0), OAM_ENTRY(0x0000, 0x1008, 0x01E6, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x00F2, 0x01F3, 0x01C6, 0), OAM_ENTRY(0x00FF, 0x01EE, 0x01E6, 0), OAM_ENTRY(0x00ED, 0x1000, 0x01C6, 0), OAM_ENTRY(0x0004, 0x1002, 0x01C6, 0), OAM_ENTRY(0x00FF, 0x100A, 0x01E6, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x00FE, 0x100B, 0x01C6, 0), OAM_ENTRY(0x00FE, 0x01ED, 0x01C6, 0), OAM_ENTRY(0x00F1, 0x01F3, 0x01C6, 0), OAM_ENTRY(0x00EC, 0x0000, 0x01C6, 0), OAM_ENTRY(0x0003, 0x1003, 0x01C6, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x00FD, 0x01ED, 0x01C6, 0), OAM_ENTRY(0x00FD, 0x100C, 0x01C6, 0), OAM_ENTRY(0x00EB, 0x0000, 0x01C6, 0), OAM_ENTRY(0x00F0, 0x01F2, 0x01C6, 0), OAM_ENTRY(0x0002, 0x0004, 0x01C6, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x00EF, 0x01F3, 0x01C6, 0), OAM_ENTRY(0x00EB, 0x01FF, 0x01C6, 0), OAM_ENTRY(0x00FD, 0x01ED, 0x01C6, 0), OAM_ENTRY(0x00FC, 0x000D, 0x01C6, 0), OAM_ENTRY(0x0002, 0x0003, 0x01E6, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+};
+
+/* Original address: 0x0203498C */
+OAMData sEntityLeafOamData[20][2] = {
+    { OAM_ENTRY(0x00FC, 0x01FC, 0x01C6, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x00FE, 0x01FD, 0x01C6, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x00FF, 0x01FF, 0x01C6, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x0000, 0x0001, 0x01E6, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x0000, 0x1002, 0x01E6, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x0001, 0x1001, 0x01C6, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x0002, 0x11FF, 0x01C6, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x0003, 0x11FC, 0x01E6, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x0004, 0x11F8, 0x01E6, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x0004, 0x01F6, 0x01E6, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x0004, 0x01F5, 0x01E6, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x0005, 0x01F5, 0x01C6, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x0006, 0x01F6, 0x01C6, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x0008, 0x01F8, 0x01C6, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x000A, 0x01FB, 0x01E6, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x000B, 0x01FF, 0x01E6, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x000C, 0x0004, 0x01E6, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x000C, 0x0007, 0x01E6, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x000C, 0x1009, 0x01E6, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x000B, 0x100A, 0x01E6, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+};
+
+/* Original address: 0x02034ACC */
+AnimFrameData sEntityMainAnimFrames[28] = {
+    { sEntityToppleOamData[0], 2, 0, 0 }, { sEntityToppleOamData[1], 2, 0, 0 },
+    { sEntityToppleOamData[2], 2, 0, 0 }, { sEntityToppleOamData[3], 2, 0, 0 },
+    { sEntityToppleOamData[4], 2, 0, 0 }, { sEntityToppleOamData[5], 2, 0, 0 },
+    { sEntityToppleOamData[6], 2, 0, 0 }, { sEntityToppleOamData[7], 2, 0, 0 },
+    { sEntityLeafOamData[0], 2, 0, 0 }, { sEntityLeafOamData[1], 2, 0, 0 },
+    { sEntityLeafOamData[2], 2, 0, 0 }, { sEntityLeafOamData[3], 3, 0, 0 },
+    { sEntityLeafOamData[4], 5, 0, 0 }, { sEntityLeafOamData[5], 2, 0, 0 },
+    { sEntityLeafOamData[6], 2, 0, 0 }, { sEntityLeafOamData[7], 2, 0, 0 },
+    { sEntityLeafOamData[8], 2, 0, 0 }, { sEntityLeafOamData[9], 3, 0, 0 },
+    { sEntityLeafOamData[10], 5, 0, 0 }, { sEntityLeafOamData[11], 2, 0, 0 },
+    { sEntityLeafOamData[12], 2, 0, 0 }, { sEntityLeafOamData[13], 2, 0, 0 },
+    { sEntityLeafOamData[14], 2, 0, 0 }, { sEntityLeafOamData[15], 2, 0, 0 },
+    { sEntityLeafOamData[16], 2, 0, 0 }, { sEntityLeafOamData[17], 2, 0, 0 },
+    { sEntityLeafOamData[18], 2, 0, 0 }, { sEntityLeafOamData[19], 2, 0, 0 },
+};
+
+/* Original address: 0x02034BAC */
+AnimFrameData sEntityReactionAnimFrames[15] = {
+    { sEntityReactionOamData[0], 2, 0, 0 },
+    { sEntityReactionOamData[1], 2, 0, 0 },
+    { sEntityReactionOamData[0], 4, 0, 0 },
+    { sEntityReactionOamData[1], 22, 0, 0 },
+    { sEntityReactionOamData[2], 2, 0, 0 },
+    { sEntityReactionOamData[3], 2, 0, 0 },
+    { sEntityReactionOamData[4], 24, 0, 0 },
+    { sEntityReactionOamData[5], 2, 0, 0 },
+    { sEntityReactionOamData[6], 28, 0, 0 },
+    { sEntityReactionOamData[7], 2, 0, 0 },
+    { sEntityReactionOamData[8], 2, 0, 0 },
+    { sEntityReactionOamData[9], 4, 0, 0 },
+    { sEntityReactionOamData[10], 24, 0, 0 },
+    { sEntityReactionOamData[11], 20, 0, 0 },
+    { (OAMData *)0x0000FFFF, 0xFFFF, -1, 0 },
+};
+
+/* Original address: 0x02034C24 */
+AnimFrameData *sEntityToppleFrames[8] = {
+    &sEntityMainAnimFrames[0], &sEntityMainAnimFrames[1],
+    &sEntityMainAnimFrames[2], &sEntityMainAnimFrames[3],
+    &sEntityMainAnimFrames[4], &sEntityMainAnimFrames[5],
+    &sEntityMainAnimFrames[6], &sEntityMainAnimFrames[7],
+};
+
+/* Original address: 0x02034C44 */
+AnimFrameData *sEntityLeafFrames[20] = {
+    &sEntityMainAnimFrames[8], &sEntityMainAnimFrames[9],
+    &sEntityMainAnimFrames[10], &sEntityMainAnimFrames[11],
+    &sEntityMainAnimFrames[12], &sEntityMainAnimFrames[13],
+    &sEntityMainAnimFrames[14], &sEntityMainAnimFrames[15],
+    &sEntityMainAnimFrames[16], &sEntityMainAnimFrames[17],
+    &sEntityMainAnimFrames[18], &sEntityMainAnimFrames[19],
+    &sEntityMainAnimFrames[20], &sEntityMainAnimFrames[21],
+    &sEntityMainAnimFrames[22], &sEntityMainAnimFrames[23],
+    &sEntityMainAnimFrames[24], &sEntityMainAnimFrames[25],
+    &sEntityMainAnimFrames[26], &sEntityMainAnimFrames[27],
+};
+
+/* Original address: 0x02034C94 */
+AnimFrameData *sEntityReactionAnimation0[5] = {
+    &sEntityReactionAnimFrames[0], &sEntityReactionAnimFrames[1],
+    &sEntityReactionAnimFrames[2], &sEntityReactionAnimFrames[3],
+    &sEntityReactionAnimFrames[14],
+};
+
+/* Original address: 0x02034CA8 */
+AnimFrameData *sEntityReactionAnimation1[4] = {
+    &sEntityReactionAnimFrames[4], &sEntityReactionAnimFrames[5],
+    &sEntityReactionAnimFrames[6], &sEntityReactionAnimFrames[14],
+};
+
+/* Original address: 0x02034CB8 */
+AnimFrameData *sEntityReactionAnimation2[3] = {
+    &sEntityReactionAnimFrames[7], &sEntityReactionAnimFrames[8],
+    &sEntityReactionAnimFrames[14],
+};
+
+/* Original address: 0x02034CC4 */
+AnimFrameData *sEntityReactionAnimation3[5] = {
+    &sEntityReactionAnimFrames[9], &sEntityReactionAnimFrames[10],
+    &sEntityReactionAnimFrames[11], &sEntityReactionAnimFrames[12],
+    &sEntityReactionAnimFrames[14],
+};
+
+/* Original address: 0x02034CD8 */
+AnimFrameData *sEntityReactionAnimation4[2] = {
+    &sEntityReactionAnimFrames[13], &sEntityReactionAnimFrames[14],
+};
+
+/* Original address: 0x02034CE0 */
+AnimFrameData **sEntityReactionAnimations[5] = {
+    sEntityReactionAnimation0,
+    sEntityReactionAnimation1,
+    sEntityReactionAnimation2,
+    sEntityReactionAnimation3,
+    sEntityReactionAnimation4,
+};
+
+/* Original address: 0x02034CF4 */
+ItemGeneratorDef gItemGeneratorDefs[38] = {
+    { ITM_FOOD_APPLE,      ITEM_TYPE_APPLE, 0 },
+    { ITM_FOOD_ORANGE,     ITEM_TYPE_ORANGE, 0 },
+    { ITM_FOOD_PEACH,      ITEM_TYPE_PEACH, 0 },
+    { ITM_FOOD_PEAR,       ITEM_TYPE_PEAR, 0 },
+    { ITM_FOOD_CHERRY,     ITEM_TYPE_CHERRY, 0 },
+    { ITM_FOOD_COCONUT,    ITEM_TYPE_COCONUT, 0 },
+    { ITM_FOOD_MUSHROOM,   ITEM_TYPE_MUSHROOM, 0 },
+    { ITM_FOOD_CANDY,      ITEM_TYPE_CANDY, 0 },
+    { ITM_MONEY_100,       ITEM_TYPE_100_BELLS, 0 },
+    { ITM_MONEY_1000,      ITEM_TYPE_1K_BELLS, 0 },
+    { ITM_MONEY_10000,     ITEM_TYPE_10K_BELLS, 0 },
+    { ITM_MONEY_30000,     ITEM_TYPE_30K_BELLS, 0 },
+    { ITM_PITFALL,         ITEM_TYPE_PITFALL, 0 },
+    { FLOWER_COSMOS1,      ITEM_TYPE_FLOWER_BAG, 0 },
+    { FLOWER_COSMOS2,      ITEM_TYPE_FLOWER_BAG, 0 },
+    { FLOWER_COSMOS0,      ITEM_TYPE_FLOWER_BAG, 0 },
+    { FLOWER_TULIP0,       ITEM_TYPE_FLOWER_BAG, 0 },
+    { FLOWER_TULIP1,       ITEM_TYPE_FLOWER_BAG, 0 },
+    { FLOWER_TULIP2,       ITEM_TYPE_FLOWER_BAG, 0 },
+    { FLOWER_PANSIES0,     ITEM_TYPE_FLOWER_BAG, 0 },
+    { FLOWER_PANSIES1,     ITEM_TYPE_FLOWER_BAG, 0 },
+    { FLOWER_PANSIES2,     ITEM_TYPE_FLOWER_BAG, 0 },
+    { 0x0000,              ITEM_TYPE_FURNITURE, 1 },
+    { 0x0001,              ITEM_TYPE_FURNITURE, 1 },
+    { 0x0002,              ITEM_TYPE_FURNITURE, 1 },
+    { 0x0003,              ITEM_TYPE_FURNITURE, 1 },
+    { 0x0009,              ITEM_TYPE_CARPET, 1 },
+    { 0x000A,              ITEM_TYPE_CARPET, 1 },
+    { 0x000B,              ITEM_TYPE_WALLPAPER, 1 },
+    { 0x000C,              ITEM_TYPE_WALLPAPER, 1 },
+    { 0x000D,              ITEM_TYPE_SHIRT, 1 },
+    { 0x000E,              ITEM_TYPE_SHIRT, 1 },
+    { 0x0005,              ITEM_TYPE_FOSSIL, 1 },
+    { 0x0007,              ITEM_TYPE_GYROID, 1 },
+    { 0x0008,              ITEM_TYPE_UMBRELLA, 1 },
+    { 0x0006,              ITEM_TYPE_AIR_CHECK, 1 },
+    { 0x0004,              ITEM_TYPE_NES, 1 },
+    { 0x0011,              ITEM_TYPE_TRASH, 1 },
+};
 
 /* Original address: 0x02024F08 */
 void Entity_Reset(s32 entity_index) {
@@ -316,7 +512,7 @@ void Entity_UpdateFloatingItem(s32 entity_index) {
         }
         entity->anim_timer--;
     }
-    wave = sSineTable[entity->bob_phase];
+    wave = gSineTable[entity->bob_phase];
     entity->vertical_acceleration_or_bob_velocity = wave >> 2;
     if (wave & 0x8000) {
         entity->vertical_acceleration_or_bob_velocity |= 0xFFFF0000;
@@ -340,7 +536,7 @@ void Entity_DrawFloatingItemShadow(s32 entity_index) {
 
     if (entity->update_type == 10) {
         GameState *game = &gGameState;
-        OAMData *oam = &((OAMData *)gUnk3002410)[game->oam_count];
+        OAMData *oam = &GameOAMData[game->oam_count];
         s32 camera_x;
 
         oam->y = (entity->base_y >> 8) + (entity->height_offset >> 8) - (u8)game->bg2_vofs;
@@ -380,7 +576,7 @@ void Entity_DrawSprite(s32 entity_index) {
     if (entity->anim_id != 0) {
         sprite = frame->sprite_gfx_p;
         for (i = 0; i < 12 && sprite->affine_param != 0xFFFF; i++, sprite++) {
-            oam = &((OAMData *)gUnk3002410)[gGameState.oam_count];
+            oam = &GameOAMData[gGameState.oam_count];
             oam->y = sprite->y + entity->y - (u8)gGameState.bg2_vofs;
             oam->obj_mode = sprite->obj_mode;
             oam->bpp = sprite->bpp;
@@ -399,7 +595,7 @@ void Entity_DrawSprite(s32 entity_index) {
             gGameState.oam_count++;
         }
     } else {
-        oam = &((OAMData *)gUnk3002410)[gGameState.oam_count];
+        oam = &GameOAMData[gGameState.oam_count];
         oam->y = entity->y - (u8)gGameState.bg2_vofs;
         oam->x = entity->x - gGameState.bg2_hofs;
         oam->shape = 0;
@@ -417,10 +613,10 @@ void Entity_DrawSprite(s32 entity_index) {
             transform.yScale = entity->affine_scale;
             transform.rotation = entity->rotation;
             ObjAffineSet(&transform, &matrix, 1, 2);
-            ((OAMData *)gUnk3002410)[4].affine_param = matrix.pa;
-            ((OAMData *)gUnk3002410)[5].affine_param = matrix.pb;
-            ((OAMData *)gUnk3002410)[6].affine_param = matrix.pc;
-            ((OAMData *)gUnk3002410)[7].affine_param = matrix.pd;
+            GameOAMData[4].affine_param = matrix.pa;
+            GameOAMData[5].affine_param = matrix.pb;
+            GameOAMData[6].affine_param = matrix.pc;
+            GameOAMData[7].affine_param = matrix.pd;
         }
     }
 }

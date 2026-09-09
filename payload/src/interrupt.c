@@ -5,6 +5,7 @@
 #include "sound.h"
 #include "audio.h"
 #include "game.h"
+#include "joyboot.h"
 
 /* Original address: 0x02018228 */
 void UnusedInterruptHandler(void) {
@@ -23,7 +24,7 @@ void VBlankInterruptHandler(void) {
     }
     temp_r5 = gGameState.frame_committed;
     if (temp_r5 == 0) {
-        CpuFastCopy(gUnk3002410, (void*)OAM, sizeof(gUnk3002410));
+        CpuFastCopy(GameOAMData, (void*)OAM, sizeof(GameOAMData));
         REG_DISPCNT = gGameState.dispcnt;
         REG_BG0HOFS = gGameState.bg0_hofs;
         REG_BG0VOFS = gGameState.bg0_vofs;
@@ -63,3 +64,21 @@ void HBlankInterruptHandler(void) {
 void VCountInterruptHandler(void) {
     // nothing
 }
+
+/* Original address: 0x02029698 */
+INTERRUPT_HANDLER_PROC sInitialIntrTable[14] = {
+    JoybootHandler,
+    VBlankInterruptHandler,
+    HBlankInterruptHandler,
+    VCountInterruptHandler,
+    UnusedInterruptHandler,
+    UnusedInterruptHandler,
+    UnusedInterruptHandler,
+    UnusedInterruptHandler,
+    UnusedInterruptHandler,
+    UnusedInterruptHandler,
+    UnusedInterruptHandler,
+    UnusedInterruptHandler,
+    UnusedInterruptHandler,
+    UnusedInterruptHandler,
+};

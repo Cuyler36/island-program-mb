@@ -6,8 +6,55 @@
 /* Original address: 0x03003BF0 */
 extern AnimatedFieldObject gAnimatedFieldObjects[];
 
+/* Original address: 0x0202FDB8 */
+OAMData sFieldAnimOAMData[] = {
+    OAM_ENTRY(0x80D9, 0x1008, 0x7317, 0x0000),
+    OAM_ENTRY(0x80D7, 0x2000, 0x7316, 0x0000),
+    OAM_ENTRY(0x80D8, 0x41F8, 0x00D7, 0x0000),
+    OAM_ENTRY(0x0000, 0x0000, 0x0000, 0xFFFF),
+    OAM_ENTRY(0x80D9, 0x1008, 0x7317, 0x0000),
+    OAM_ENTRY(0x80D7, 0x1000, 0x7316, 0x0000),
+    OAM_ENTRY(0x80D8, 0x41F8, 0x00D7, 0x0000),
+    OAM_ENTRY(0x0000, 0x0000, 0x0000, 0xFFFF),
+    OAM_ENTRY(0x80D7, 0x0000, 0x7317, 0x0000),
+    OAM_ENTRY(0x80D7, 0x2008, 0x7316, 0x0000),
+    OAM_ENTRY(0x80D8, 0x41F8, 0x00D7, 0x0000),
+    OAM_ENTRY(0x0000, 0x0000, 0x0000, 0xFFFF),
+    OAM_ENTRY(0x80D7, 0x0000, 0x7316, 0x0000),
+    OAM_ENTRY(0x80D7, 0x1008, 0x7316, 0x0000),
+    OAM_ENTRY(0x80D8, 0x41F8, 0x00D7, 0x0000),
+    OAM_ENTRY(0x0000, 0x0000, 0x0000, 0xFFFF),
+    OAM_ENTRY(0x80D7, 0x3000, 0x7316, 0x0000),
+    OAM_ENTRY(0x80D6, 0x1008, 0x7316, 0x0000),
+    OAM_ENTRY(0x80D8, 0x41F8, 0x00D7, 0x0000),
+    OAM_ENTRY(0x0000, 0x0000, 0x0000, 0xFFFF),
+    OAM_ENTRY(0x80D9, 0x0000, 0x7317, 0x0000),
+    OAM_ENTRY(0x80D6, 0x3008, 0x7316, 0x0000),
+    OAM_ENTRY(0x80D8, 0x41F8, 0x00D7, 0x0000),
+    OAM_ENTRY(0x0000, 0x0000, 0x0000, 0xFFFF),
+};
+
+/* Original Address: 0x0202FE78 */
+AnimFrameData sFieldAnimations[] =  {
+    { &sFieldAnimOAMData[0], 3, 0, 0 },
+    { &sFieldAnimOAMData[4], 3, 0, 0 },
+    { &sFieldAnimOAMData[8], 3, 0, 0 },
+    { &sFieldAnimOAMData[12], 3, 0, 0 },
+    { &sFieldAnimOAMData[16], 3, 0, 0 },
+    { &sFieldAnimOAMData[20], 3, 0, 0 },
+    { (OAMData *)0x0000FFFF, 0xFFFF, -1, 0 },
+};
+
 /* Original address: 0x0202FEB0 */
-extern AnimFrameData *sFieldAnimationFrames[7];
+AnimFrameData* sFieldAnimationFrames[] = {
+    &sFieldAnimations[0],
+    &sFieldAnimations[1],
+    &sFieldAnimations[2],
+    &sFieldAnimations[3],
+    &sFieldAnimations[4],
+    &sFieldAnimations[5],
+    &sFieldAnimations[6],
+};
 
 /* Original address: 0x0201E1E0 */
 void AnimatedFieldObject_Init(s32 index, s32 tile, u8 acre) {
@@ -44,7 +91,7 @@ void AnimatedFieldObject_Draw(s32 index) {
     OAMData *source = sFieldAnimationFrames[object->anim_frame]->sprite_gfx_p;
 
     while (source->affine_param != 0xFFFF) {
-        OAMData *oam = &((OAMData *)gUnk3002410)[gGameState.oam_count];
+        OAMData *oam = &GameOAMData[gGameState.oam_count];
 
         oam->y = source->y + object->y - (u8)gGameState.bg2_vofs;
         oam->obj_mode = source->obj_mode;

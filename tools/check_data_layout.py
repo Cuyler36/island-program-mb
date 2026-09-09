@@ -60,12 +60,29 @@ def check(args):
             offset = entry.offset if section == ".data" else entry.address - base
             addresses[entry.name] = base + offset
             symbol = obj.named.get(entry.name)
-            if not symbol or (symbol[1], symbol[2], obj.section_names[symbol[3]]) != (
-                    offset, entry.size, section):
+            # agbcc gives block-scope static objects a numeric suffix and does
+            # not emit their ELF size.  The recovered next boundary still
+            # verifies the table's extent.
+            block_static = False
+            if not symbol and entry.name == "sMsgControlCodeHandlers":
+                symbol = next((candidate for candidate in obj.symbols
+                               if candidate[0].startswith(entry.name + ".")), None)
+                block_static = symbol is not None
+            size_matches = symbol and (symbol[2] == entry.size or
+                                       (block_static and symbol[2] == 0))
+            if not symbol or (symbol[1], obj.section_names[symbol[3]]) != (
+                    offset, section) or not size_matches:
                 errors.append(f"{entry.name}: expected {section}+0x{offset:X}, size 0x{entry.size:X}")
             if linked:
                 symbol = linked.named.get(entry.name)
-                if not symbol or (symbol[1], symbol[2]) != (base + offset, entry.size):
+                block_static = False
+                if not symbol and entry.name == "sMsgControlCodeHandlers":
+                    symbol = next((candidate for candidate in linked.symbols
+                                   if candidate[0].startswith(entry.name + ".")), None)
+                    block_static = symbol is not None
+                size_matches = symbol and (symbol[2] == entry.size or
+                                           (block_static and symbol[2] == 0))
+                if not symbol or symbol[1] != base + offset or not size_matches:
                     errors.append(f"{entry.name}: incorrect linked address or size")
     for name, address in re.findall(r"^(\w+)\s*=\s*(0x[0-9A-Fa-f]+);",
                                     Path(args.linker).read_text(), re.M):
@@ -98,7 +115,21 @@ def check(args):
         errors.append(f"data size: 0x{len(data):X}, target 0x{len(target):X}")
     differences = [i for i, (a, b) in enumerate(zip(data, target)) if a != b]
     if differences:
-        errors.append(f"{len(differences)} data bytes differ; first at 0x{DATA_ADDRESS + differences[0]:08X}")
+        ranges = []
+        start = previous = differences[0]
+        for offset in differences[1:]:
+            if offset != previous + 1:
+                ranges.append((start, previous))
+                start = offset
+            previous = offset
+        ranges.append((start, previous))
+        details = ", ".join(
+            f"0x{DATA_ADDRESS + start:08X}-0x{DATA_ADDRESS + end:08X}"
+            for start, end in ranges[:8]
+        )
+        if len(ranges) > 8:
+            details += f", and {len(ranges) - 8} more ranges"
+        errors.append(f"{len(differences)} data bytes differ: {details}")
     bss = obj.sections[obj.section_names.index(".bss")]
     expected_bss = max(e.address + e.size for e in BSS_OBJECTS) - IWRAM_ADDRESS
     if bss[1] != 8 or bss[5] != expected_bss:
@@ -115,7 +146,7 @@ def check(args):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--object", default="payload/build/payload/src/data.o")
+    parser.add_argument("--object", default="payload/build/objdiff/all.base.o")
     parser.add_argument("--text-object", default="payload/build/payload/asm/all.o")
     parser.add_argument("--data", default="payload/data/data.bin")
     parser.add_argument("--linker", default="payload/ld_script.txt")

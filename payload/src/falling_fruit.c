@@ -5,9 +5,39 @@
 #include "field_obj.h"
 
 /* Original address: 0x020344E8 */
-extern void (*sFallingFruitUpdateProcs[4])(s32);
+void (*sFallingFruitUpdateProcs[4])(s32) = {
+    sub_02024C00,
+    sub_02024C04,
+    FallingFruit_BeginFall,
+    FallingFruit_UpdateFall,
+};
+
 /* Original address: 0x020344F8 */
-extern FallingFruitProfile sFallingFruitProfiles[23];
+FallingFruitProfile sFallingFruitProfiles[23] = {
+    { 0x80004000, -31, -16, 0x0242, 0x427C, 0x2807, 4, 0, 30, { 0, 0, 0 } },
+    { 0x40000000, -32, -13, 0x00C8, 0x427C, 0x2807, 4, 0, 30, { 0, 0, 0 } },
+    { 0x40000000, -33, -3, 0x00C8, 0x427C, 0x2807, 4, 1, 30, { 0, 0, 0 } },
+    { 0x80000000, -49, -16, 0x00D8, 0x4204, 0x2800, 4, 0, 3, { 0, 0, 0 } },
+    { 0x40000000, -34, -18, 0x0080, 0x4204, 0x2800, 4, 0, 3, { 0, 0, 0 } },
+    { 0x40000000, -34, 2, 0x0080, 0x4204, 0x2800, 4, 0, 3, { 0, 0, 0 } },
+    { 0x40000000, -48, -8, 0x0080, 0x4204, 0x2800, 4, 0, 3, { 0, 0, 0 } },
+    { 0x80000000, -49, -16, 0x00DC, 0x6208, 0x2804, 6, 0, 4, { 0, 0, 0 } },
+    { 0x40000000, -34, -18, 0x0082, 0x6208, 0x2804, 6, 0, 4, { 0, 0, 0 } },
+    { 0x40000000, -34, 2, 0x0082, 0x6208, 0x2804, 6, 0, 4, { 0, 0, 0 } },
+    { 0x40000000, -48, -8, 0x0082, 0x6208, 0x2804, 6, 0, 4, { 0, 0, 0 } },
+    { 0x80000000, -49, -16, 0x015A, 0x420C, 0x2803, 4, 0, 5, { 0, 0, 0 } },
+    { 0x40000000, -34, -18, 0x0084, 0x420C, 0x2803, 4, 0, 5, { 0, 0, 0 } },
+    { 0x40000000, -34, 2, 0x0084, 0x420C, 0x2803, 4, 0, 5, { 0, 0, 0 } },
+    { 0x40000000, -48, -8, 0x0084, 0x420C, 0x2803, 4, 0, 5, { 0, 0, 0 } },
+    { 0x80000000, -49, -16, 0x0280, 0x4210, 0x2802, 4, 0, 6, { 0, 0, 0 } },
+    { 0x40000000, -34, -18, 0x0086, 0x4210, 0x2802, 4, 0, 6, { 0, 0, 0 } },
+    { 0x40000000, -34, 2, 0x0086, 0x4210, 0x2802, 4, 0, 6, { 0, 0, 0 } },
+    { 0x40000000, -48, -8, 0x0086, 0x4210, 0x2802, 4, 0, 6, { 0, 0, 0 } },
+    { 0x80000000, -49, -16, 0x0300, 0x4214, 0x2801, 4, 0, 7, { 0, 0, 0 } },
+    { 0x40000000, -34, -18, 0x0088, 0x4214, 0x2801, 4, 0, 7, { 0, 0, 0 } },
+    { 0x40000000, -34, 2, 0x0088, 0x4214, 0x2801, 4, 0, 7, { 0, 0, 0 } },
+    { 0x40000000, -48, -8, 0x0088, 0x4214, 0x2801, 4, 0, 7, { 0, 0, 0 } },
+};
 
 /* Original address: 0x02024B08 */
 void FallingFruit_Init(s32 object_index, u16 fruit_index, u8 type, u8 acre) {
@@ -44,11 +74,11 @@ void FallingFruit_Init(s32 object_index, u16 fruit_index, u8 type, u8 acre) {
     }
 }
 
-void sub_02024C00(void) {
+void sub_02024C00(s32 fruit_index) {
 
 }
 
-void sub_02024C04(void) {
+void sub_02024C04(s32 fruit_index) {
 
 }
 
@@ -125,7 +155,7 @@ void FallingFruit_Draw(s32 fruit_index) {
     FallingFruit *fruit = &gFallingFruit[fruit_index];
     FallingFruitProfile *profile = &sFallingFruitProfiles[fruit->type];
     GameState *game = &gGameState;
-    OAMData *oam = &((OAMData *)gUnk3002410)[game->oam_count];
+    OAMData *oam = &GameOAMData[game->oam_count];
 
     oam->shape = (profile->oam_attributes >> 14) & 3;
     oam->size = (profile->oam_attributes >> 30) & 0xF;

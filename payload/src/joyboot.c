@@ -4,9 +4,10 @@
 #include "global.h"
 
 /* Original address: 0x0202AFBC */
-extern u32 sJoybootGbaHandshake;
+char sJoybootGbaHandshake[] = "AAFJ";
+
 /* Original address: 0x0202AFC4 */
-extern u32 sJoybootGameCubeHandshake;
+char sJoybootGameCubeHandshake[] = "GAFJ";
 
 s32 Swap32(u32 *arg0) {
     u8 bytes[4];
@@ -46,7 +47,7 @@ void JoybootHandler(void) {
     if (joycnt & 1) {
         if (!gTransWork.connected) {
             received = REG_JOY_RECV;
-            REG_JOY_TRANS = sJoybootGbaHandshake;
+            REG_JOY_TRANS = *(s32 *)sJoybootGbaHandshake;
             gTransWork.connected = FALSE;
         } else {
             joycnt |= 2;
@@ -172,7 +173,7 @@ void JoybootHandler(void) {
                 }
                 break;
             }
-        } else if (Swap32(&received) == sJoybootGameCubeHandshake) {
+        } else if (Swap32(&received) == *(s32 *)sJoybootGameCubeHandshake) {
             gTransWork.connected = TRUE;
         }
     }

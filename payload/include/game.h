@@ -3,6 +3,7 @@
 
 #include "gba/types.h"
 #include "global.h"
+#include "interrupt.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -60,6 +61,7 @@ typedef struct GameState {
     /* 0x85C */ u8 reserved_85C[3];
     /* 0x85F */ u8 frame_committed;
     /* 0x860 */ u8 oam_count;
+    /* 0x861 */ u8 _861[0x870-0x861];
 } GameState;
 
 void InitializeHardware(void);
@@ -86,6 +88,8 @@ extern u32 gFontGlyphBlitterCode[0x58];
 
 /* Original address: 0x03001B50 */
 extern GameState gGameState;
+
+extern INTERRUPT_HANDLER_PROC gIntrTable[];
 
 /* Original address: 0x03002400 */
 extern mISL_landinfo_agb_c gIslandLandInfo;

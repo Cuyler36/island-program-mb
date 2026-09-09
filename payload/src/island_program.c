@@ -11,10 +11,129 @@
 /* Original address: 0x0203E9A0 */
 extern u16 gIslandDataReceived;
 
+/* Original address: 0x0202AFCC */
+IslandProgramModeProc sIslandProgramNoticeEnterProcs[] = {
+    NULL,
+    IslandProgram_EnterNoticeTransfer,
+    IslandProgram_EnterNoticeResult,
+    IslandProgram_EnterNoticeRestart,
+};
+
+/* Original address: 0x0202AFDC */
+IslandProgramModeProc sIslandProgramNoticeUpdateProcs[4] = {
+    NULL,
+    IslandProgram_UpdateNoticeTransfer,
+    IslandProgram_UpdateNoticeResult,
+    IslandProgram_UpdateNoticeRestart,
+};
+
+/* Original address: 0x0202AFEC */
+IslandProgramModeProc sIslandProgramSleepEnterProcs[] = {
+        NULL,
+        IslandProgram_EnterSleepPrompt,
+        IslandProgram_EnterSleepMode,
+        IslandProgram_EnterSleepCleanup,
+    };
+
+/* Original address: 0x0202AFFC */
+IslandProgramModeProc sIslandProgramPromptUpdateProcs[4] = {
+    NULL,
+    IslandProgram_UpdateSleepPrompt,
+    IslandProgram_UpdateSleepMode,
+    IslandProgram_UpdateSleepCleanup,
+};
+
+/* Original address: 0x0202B00C */
+IslandProgramNoticeResultMessages sNoticeResultMessages = { { 13, 20 } };
+
 /* Original address: 0x0202B014 */
-extern const u16 sTimeOfDayPalette2Table[24][8];
+u16 sTimeOfDayPalette2Table[24][8] = {
+    0x5FBD, 0x5E0B, 0x3527, 0x3527, 0x3527, 0x3527, 0x3527, 0x3527,
+    0x5FBD, 0x5E0B, 0x3527, 0x3527, 0x3527, 0x3527, 0x3527, 0x3527,
+    0x5FBD, 0x5E0B, 0x3527, 0x3527, 0x3527, 0x3527, 0x3527, 0x3527,
+    0x5FBD, 0x5E0B, 0x3527, 0x3527, 0x3527, 0x3527, 0x3527, 0x3527,
+    0x5F37, 0x5E2B, 0x498A, 0x4DCB, 0x520C, 0x49EC, 0x45AB, 0x4569,
+    0x62D2, 0x624C, 0x5A4D, 0x5A70, 0x5EB3, 0x5652, 0x4A0F, 0x5A2B,
+    0x666D, 0x666D, 0x6690, 0x66D3, 0x6B17, 0x5ED6, 0x5694, 0x666D,
+    0x662B, 0x662B, 0x666E, 0x66B2, 0x6B17, 0x5ED5, 0x5693, 0x662B,
+    0x65E9, 0x65E9, 0x664D, 0x6691, 0x6B17, 0x5ED5, 0x5693, 0x65E9,
+    0x69C7, 0x69C7, 0x6A2C, 0x6A91, 0x6B17, 0x62D5, 0x5A93, 0x69C7,
+    0x69C7, 0x69C7, 0x6A2C, 0x6A91, 0x6B17, 0x62D5, 0x5A93, 0x69C7,
+    0x69C7, 0x69C7, 0x6A2C, 0x6A91, 0x6B17, 0x62D5, 0x5A93, 0x69C7,
+    0x69C7, 0x69C7, 0x6A2C, 0x6A91, 0x6B17, 0x62D5, 0x5A93, 0x69C7,
+    0x69AB, 0x69AB, 0x662F, 0x6293, 0x6318, 0x5ED5, 0x5A93, 0x69AB,
+    0x69AF, 0x69AF, 0x6232, 0x5E95, 0x5B19, 0x5AD5, 0x5A94, 0x69AF,
+    0x69B3, 0x69B3, 0x6235, 0x5AB7, 0x533A, 0x5AD6, 0x5A95, 0x69B3,
+    0x4196, 0x4196, 0x4A16, 0x4EB8, 0x4B3B, 0x5AB6, 0x5A74, 0x4196,
+    0x2997, 0x2997, 0x3618, 0x42BA, 0x475C, 0x5AB6, 0x5A53, 0x2997,
+    0x39B3, 0x39B3, 0x35B2, 0x3E33, 0x3E95, 0x4E32, 0x4DCF, 0x2D71,
+    0x5AF5, 0x49CF, 0x356C, 0x39AD, 0x3DF0, 0x3DCE, 0x39AC, 0x356A,
+    0x5FBD, 0x5E0B, 0x3527, 0x3527, 0x3527, 0x3527, 0x3527, 0x3527,
+    0x5FBD, 0x5E0B, 0x3527, 0x3527, 0x3527, 0x3527, 0x3527, 0x3527,
+    0x5FBD, 0x5E0B, 0x3527, 0x3527, 0x3527, 0x3527, 0x3527, 0x3527,
+    0x5FBD, 0x5E0B, 0x3527, 0x3527, 0x3527, 0x3527, 0x3527, 0x3527,
+};
+
 /* Original address: 0x0202B194 */
-extern const u16 sTimeOfDayPalette3Table[24][5];
+u16 sTimeOfDayPalette3Table[24][5] = {
+    0x575B, 0x3527, 0x6246, 0x59C5, 0x5565, 0x575B, 0x3527, 0x6246,
+    0x59C5, 0x5565, 0x575B, 0x3527, 0x6246, 0x59C5, 0x5565, 0x575B,
+    0x3527, 0x6246, 0x59C5, 0x5565, 0x5B3A, 0x4569, 0x5E27, 0x59A6,
+    0x5545, 0x6339, 0x5A2B, 0x5E09, 0x5588, 0x5146, 0x6B38, 0x666D,
+    0x5E0B, 0x59A9, 0x5547, 0x6B38, 0x662B, 0x5DC9, 0x5988, 0x5546,
+    0x6B38, 0x65E9, 0x5DA8, 0x5967, 0x5526, 0x6B38, 0x69C7, 0x6186,
+    0x5D66, 0x5525, 0x6B38, 0x69C7, 0x6186, 0x5D66, 0x5525, 0x6B38,
+    0x69C7, 0x6186, 0x5D66, 0x5525, 0x6B38, 0x69C7, 0x6186, 0x5D66,
+    0x5525, 0x6318, 0x69AB, 0x6169, 0x5D48, 0x5526, 0x5B19, 0x69AF,
+    0x616C, 0x5D4A, 0x5527, 0x4F1B, 0x69B3, 0x61F5, 0x598F, 0x554A,
+    0x4B1B, 0x4196, 0x3DF7, 0x4191, 0x494B, 0x4B1C, 0x1D97, 0x1DF8,
+    0x2DD3, 0x3D4D, 0x4B1B, 0x2D71, 0x31F2, 0x398D, 0x4549, 0x4F1B,
+    0x314C, 0x4A2C, 0x49C9, 0x4D67, 0x575B, 0x3527, 0x6246, 0x59C5,
+    0x5565, 0x575B, 0x3527, 0x6246, 0x59C5, 0x5565, 0x575B, 0x3527,
+    0x6246, 0x59C5, 0x5565, 0x575B, 0x3527, 0x6246, 0x59C5, 0x5565,
+};
+
+/* Original address: 0x0202B284 */
+static IslandProgramModeProc sIslandProgramTransferEnterProcs[] = {
+    NULL,
+    IslandProgram_EnterTransferPrompt,
+    IslandProgram_EnterTransferProgress,
+    IslandProgram_EnterTransferRetry,
+    IslandProgram_EnterTransferComplete,
+    IslandProgram_EnterTransferCleanup,
+    IslandProgram_EnterTransferRestart,
+};
+
+/* Original address: 0x0202B2A0 */
+static IslandProgramModeProc sIslandProgramTransferUpdateProcs[7] = {
+    NULL,
+    IslandProgram_UpdateTransferPrompt,
+    IslandProgram_UpdateTransferProgress,
+    IslandProgram_UpdateTransferRetry,
+    IslandProgram_UpdateTransferComplete,
+    IslandProgram_UpdateTransferCleanup,
+    IslandProgram_UpdateTransferRestart,
+};
+
+/* Original address: 0x0202B2BC */
+static IslandProgramModeProc sIslandProgramModeEnterProcs[6] = {
+    NULL,
+    IslandProgram_EnterNormalMode,
+    IslandProgram_EnterFieldLoadMode,
+    IslandProgram_EnterMosaicRevealMode,
+    IslandProgram_EnterMosaicCoverMode,
+    IslandProgram_EnterMessageMode,
+};
+
+/* Original address: 0x0202B2D4 */
+static IslandProgramModeProc sIslandProgramModeUpdateProcs[6] = {
+    NULL,
+    IslandProgram_UpdateNormalMode,
+    IslandProgram_UpdateFieldLoadMode,
+    IslandProgram_UpdateMosaicRevealMode,
+    IslandProgram_UpdateMosaicCoverMode,
+    IslandProgram_UpdateMessageMode,
+};
 
 /* Interworking trampoline used to enter the ARM startup code. */
 /* Original address: 0x02029308 */
@@ -346,8 +465,6 @@ s32 IslandProgram_RequestNoticeRestart(IslandProgramWork *work) {
 
 /* Original address: 0x0201AE0C */
 void IslandProgram_ApplyPendingNoticeState(IslandProgramWork *work) {
-    extern const IslandProgramModeProc sIslandProgramNoticeEnterProcs[];
-
     IslandProgramModeProc proc;
 
     if ((u8)work->pending_notice_state <= 3) {
@@ -522,7 +639,6 @@ s32 IslandProgram_RequestSleepCleanup(IslandProgramWork *work) {
 
 /* Original address: 0x0201B1B8 */
 void IslandProgram_ApplyPendingSleepState(IslandProgramWork *work) {
-    extern const IslandProgramModeProc sIslandProgramSleepEnterProcs[];
     IslandProgramModeProc proc;
 
     if ((u8)work->pending_sleep_state <= 3) {
@@ -748,8 +864,6 @@ void IslandProgram_ApplyPendingTransferState(IslandProgramWork *work) {
     IslandProgramModeProc proc;
 
     if ((u8)work->pending_transfer_state <= 6) {
-        extern const IslandProgramModeProc sIslandProgramTransferEnterProcs[];
-
         proc = sIslandProgramTransferEnterProcs[work->pending_transfer_state];
         if (proc != NULL) {
             proc(work);
@@ -764,7 +878,7 @@ void IslandProgram_EnterTransferPrompt(IslandProgramWork *work) {
         IslandProgram_SetupDialogDisplay(work, 4U);
         InitIslandLinkTransfer(0);
         StopIslandLinkTransfer();
-        *gIntrTable = (u32) IslandLinkSerialInterrupt;
+        gIntrTable[0] = IslandLinkSerialInterrupt;
         work->transfer_state = work->pending_transfer_state;
         work->current_window = &gMsgWindowNotice;
     }
@@ -942,7 +1056,7 @@ void IslandProgram_UpdateTransferCleanup(IslandProgramWork *work) {
         }
         work->link_transfer_started = 0;
         work->input_idle_timer = 0;
-        *gIntrTable = (u32)JoybootHandler;
+        gIntrTable[0] = JoybootHandler;
         Joybus_Init();
     }
 }
@@ -1148,17 +1262,6 @@ void IslandProgram_InitWork(void) {
     IslandProgram_UpdateTimeOfDayPalette(&gIslandProgramWork);
 }
 
-/* Original address: 0x0202AFDC */
-extern IslandProgramModeProc const sIslandProgramNoticeUpdateProcs[4];
-
-/* Original address: 0x0202AFFC */
-extern IslandProgramModeProc const sIslandProgramPromptUpdateProcs[4];
-
-/* Original address: 0x0202B2A0 */
-extern IslandProgramModeProc const sIslandProgramTransferUpdateProcs[7];
-
-/* Original address: 0x0202B2D4 */
-extern IslandProgramModeProc const sIslandProgramModeUpdateProcs[6];
 
 /* Original address: 0x0201BF58 */
 void IslandProgram_Update(void) {

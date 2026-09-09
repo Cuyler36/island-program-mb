@@ -8,16 +8,16 @@
 // global.h from pokemon ruby
 
 // IDE support
-#if defined(__APPLE__) || defined(__CYGWIN__)
+#if __INTELLISENSE__
 #define _(x) x
 #define __(x) x
 #define INCBIN(x) {0}
-#define INCBIN_U8 INCBIN
-#define INCBIN_U16 INCBIN
-#define INCBIN_U32 INCBIN
-#define INCBIN_S8 INCBIN
-#define INCBIN_S16 INCBIN
-#define INCBIN_S32 INCBIN
+#define INCBIN_U8(x) INCBIN(x)
+#define INCBIN_U16(x) INCBIN(x)
+#define INCBIN_U32(x) INCBIN(x)
+#define INCBIN_S8(x) INCBIN(x)
+#define INCBIN_S16(x) INCBIN(x)
+#define INCBIN_S32(x) INCBIN(x)
 #endif
 
 #define TRUE 1
@@ -93,6 +93,15 @@ enum
 #define COLOR_R(color) (color & 0x1F)
 #define COLOR_G(color) ((color >> 5) & 0x1F)
 #define COLOR_B(color) ((color >> 10) & 0x1F)
+
+#define OAM_ENTRY(attr0, attr1, attr2, affine_param) \
+{ \
+    (attr0) & 0xFF, ((attr0) >> 8) & 3, ((attr0) >> 10) & 3, \
+    ((attr0) >> 12) & 1, ((attr0) >> 13) & 1, ((attr0) >> 14) & 3, \
+    (attr1) & 0x1FF, ((attr1) >> 9) & 7, ((attr1) >> 12) & 1, \
+    ((attr1) >> 13) & 1, ((attr1) >> 14) & 3, (attr2) & 0x3FF, \
+    ((attr2) >> 10) & 3, ((attr2) >> 12) & 0xF, (affine_param) \
+}
 
 #define mISL_ISLAND_NAME_LEN 8
 
@@ -497,12 +506,10 @@ extern u16 time_of_day_palette_buffer3[16];
 extern u16 time_of_day_palettes[24 * 4];
 
 /* Original address: 0x03002410 */
-extern u8 gUnk3002410[0x400]; // OAM
+extern OAMData GameOAMData[128]; // OAM
 
 /* Original address: 0x03002970 */
 extern Island_agb_c* gIslandTransferData;
-
-extern u32 gIntrTable[];
 
 /* Original address: 0x020357F4 */
 extern u16 sBgPalettes[16][16];

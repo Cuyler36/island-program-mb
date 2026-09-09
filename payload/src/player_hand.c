@@ -7,8 +7,78 @@
 #include "islander.h"
 #include "entity.h"
 
+/* Original address: 0x02034D8C */
+OAMData sPlayerHandOamData[8][2] = {
+    { OAM_ENTRY(0x00F6, 0x41FE, 0x72DA, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x00F6, 0x41FE, 0x72DC, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x00F6, 0x41FE, 0x72DE, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x00F6, 0x41FB, 0x731C, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x00F6, 0x41F9, 0x731C, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x00F5, 0x41F8, 0x731E, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x00F4, 0x41F8, 0x731E, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+    { OAM_ENTRY(0x00F4, 0x41F8, 0x731A, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
+};
+
+/* Original address: 0x02034E0C */
+void (*sPlayerHandUpdateProcs[6])(void) = {
+    PlayerHand_ResetToIdle,
+    PlayerHand_UpdateIdle,
+    PlayerHand_BeginCarrying,
+    PlayerHand_UpdateCarrying,
+    PlayerHand_BeginPlacing,
+    PlayerHand_UpdatePlacing,
+};
+
+/* Original address: 0x02034E24 */
+AnimFrameData sPlayerHandAnimFrames[11] = {
+    { sPlayerHandOamData[0], 2, 0, 0 },
+    { sPlayerHandOamData[1], 2, 0, 0 },
+    { sPlayerHandOamData[2], 4, 0, 0 },
+    { sPlayerHandOamData[2], 1, 0, 0 },
+    { sPlayerHandOamData[3], 1, 0, 0 },
+    { sPlayerHandOamData[4], 1, 0, 0 },
+    { sPlayerHandOamData[5], 1, 0, 0 },
+    { sPlayerHandOamData[6], 1, 0, 0 },
+    { sPlayerHandOamData[6], 60, 0, 0 },
+    { sPlayerHandOamData[7], 20, 0, 0 },
+    { (OAMData *)0x0000FFFF, 0xFFFF, -1, 0 },
+};
+
+/* Original address: 0x02034E7C */
+AnimFrameData* sPlayerHandIdleAnimation[8] = {
+    &sPlayerHandAnimFrames[2], &sPlayerHandAnimFrames[0],
+    &sPlayerHandAnimFrames[1], &sPlayerHandAnimFrames[2],
+    &sPlayerHandAnimFrames[0], &sPlayerHandAnimFrames[1],
+    &sPlayerHandAnimFrames[2], &sPlayerHandAnimFrames[10],
+};
+
+/* Original address: 0x02034E9C */
+AnimFrameData* sPlayerHandCarryingAnimation[6] = {
+    &sPlayerHandAnimFrames[3], &sPlayerHandAnimFrames[4],
+    &sPlayerHandAnimFrames[5], &sPlayerHandAnimFrames[6],
+    &sPlayerHandAnimFrames[7], &sPlayerHandAnimFrames[10],
+};
+
+/* Original address: 0x02034EB4 */
+AnimFrameData* sPlayerHandPlacingAnimation[5] = {
+    &sPlayerHandAnimFrames[7], &sPlayerHandAnimFrames[5],
+    &sPlayerHandAnimFrames[4], &sPlayerHandAnimFrames[3],
+    &sPlayerHandAnimFrames[10],
+};
+
+/* Original address: 0x02034EC8 */
+AnimFrameData* sPlayerHandBlockedAnimation[3] = {
+    &sPlayerHandAnimFrames[9], &sPlayerHandAnimFrames[8],
+    &sPlayerHandAnimFrames[10],
+};
+
 /* Original address: 0x02034ED4 */
-extern AnimFrameData** sPlayerHandAnimations[4];
+AnimFrameData** sPlayerHandAnimations[4] = {
+    sPlayerHandIdleAnimation,
+    sPlayerHandCarryingAnimation,
+    sPlayerHandPlacingAnimation,
+    sPlayerHandBlockedAnimation,
+};
 
 static inline u16 PlayerHand_GetTerrainTile(u16 *tilemap) {
     return *tilemap & 0x3FF;
@@ -637,9 +707,6 @@ void PlayerHand_UpdatePlacing(void) {
     PlayerHand_ResetToIdle();
 }
 
-/* Original address: 0x02034E0C */
-extern void (*sPlayerHandUpdateProcs[6])(void);
-
 /* Original address: 0x020267D0 */
 void PlayerHand_Update(void) {
     Player *player = &gPlayer;
@@ -667,7 +734,7 @@ void PlayerHand_Draw(void) {
     field->entity_active[1] = 0;
     i = 0;
     while (sprite->affine_param != 0xFFFF) {
-        oam = &((OAMData *)gUnk3002410)[gGameState.oam_count];
+        oam = &GameOAMData[gGameState.oam_count];
         oam->obj_mode = sprite->obj_mode;
         oam->bpp = sprite->bpp;
         oam->shape = sprite->shape;

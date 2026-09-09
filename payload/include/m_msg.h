@@ -345,29 +345,6 @@ extern mMsg_Window_c sMsgWindows[9]; // @0x03002A20
 extern mMsg_Window_c gMsgWindowMain; // @0x03002FC0
 extern mMsg_Window_c gMsgWindowPrompt; // @0x03003060
 
-/* Original address: 0x0202AAC8 */
-extern mMsg_TwoChoiceHighlights gMsgTwoChoiceHighlightTiles;
-/* Original address: 0x0202AAD0 */
-extern mMsg_ThreeChoiceHighlights gMsgThreeChoiceHighlightTiles;
-
-/* Original address: 0x03003250 */
-extern m_msg_sprite_c gMsgSprites[12];
-/* Original address: 0x0202B2FC */
-extern mMsg_SpriteProfile* sMsgSpriteProfiles[13];
-
-extern mMsg_SpriteProfile mMsg_continue_prompt_sprite_profile;
-/* Original address: 0x0202B378 */
-extern AnimFrameData* sMsgContinuePromptAnimations[1];
-/* Original address: 0x0202B394 */
-extern mMsg_SpriteProfile mMsg_choice_cursor_sprite_profile;
-/* Original address: 0x0202B3A4 */
-extern OAMData sMsgChoiceCursorAnimOamData[5];
-/* Original address: 0x0202B3CC */
-extern AnimFrameData sMsgChoiceCursorAnimData[2];
-/* Original address: 0x0202B3DC */
-extern AnimFrameData* sMsgChoiceCursorAnimations[1];
-/* Original address: 0x03003100 */
-extern mFont_GlyphDraw_c gMsgGlyph;
 /* Original address: 0x02000400 */
 extern u8 gMsgCodeBuffers[9][0x220];
 /* Original address: 0x02001D80 */
@@ -390,15 +367,6 @@ extern u8 gMsgWindowTileData[2][0x480];
 extern u8 gMsgThreeChoiceTileData[3][0xD80];
 #define gMsgVram ((u8 *)(BG_VRAM + TILE_OFFSET_4BPP(0x100)))
 
-/* Original address: 0x0202AB00 */
-extern mMsg_Callback gMsgModeCallbacks[9];
-/* Original address: 0x0202AD18 */
-extern const u8 gMsgChoiceTemplateParams[4];
-/* Original address: 0x0202AD1C */
-extern void *const sFontTileBufferVramDestinations[3];
-/* Original address: 0x0202AD28 */
-extern const u32 sFontTileBufferSizes[3];
-
 // @0x0202AADC
 extern mMsg_SETUP_PROC gMsgModeSetupCallbacks[];
 
@@ -414,8 +382,9 @@ extern u8 gMsgTextData[2002];
 /* Original address: 0x02035778; big-endian message end offsets. */
 extern u32 sMsgOffsets[31];
 
-// @0x0202AB54
-extern mFont_ControlCodeInfo_c sMsgControlCodeInfo[];
+extern mMsg_SpriteProfile mMsg_null_sprite_profile;
+extern mMsg_SpriteProfile mMsg_continue_prompt_sprite_profile;
+extern mMsg_SpriteProfile mMsg_choice_cursor_sprite_profile;
 
 #ifdef __cplusplus
 }

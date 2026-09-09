@@ -508,4 +508,9 @@ sSoundVibratoWave:
     .incbin "data/data.bin", 0xC990, 0x100
 .size sSoundVibratoWave, . - sSoundVibratoWave
 
-.incbin "data/data.bin", 0xCA90, 0x3BFC
+/* Original address: 0x02036128 */
+.global sound_data
+.type sound_data, %object
+sound_data:
+    .incbin "data/data.bin", 0xCA90, 0x3BFC
+.size sound_data, . - sound_data

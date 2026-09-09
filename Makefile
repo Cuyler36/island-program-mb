@@ -55,7 +55,6 @@ SYM = $(ROM:.gba=.sym)
 
 PAYLOAD   := payload/payload.gba
 PAYLOADLZ := $(PAYLOAD).lz
-DEBUG_TEST_ISLAND_GC := assets/debug/test_island_gc_fmt.bin
 DEBUG_TEST_ISLAND_AGB := assets/debug/test_island_agb_fmt.bin
 
 OBJ_DIR := build/$(NAME)
@@ -183,9 +182,6 @@ ifeq (1,$(DEBUG_TEST))
 payload: $(DEBUG_TEST_ISLAND_AGB)
 endif
 
-$(DEBUG_TEST_ISLAND_AGB): $(DEBUG_TEST_ISLAND_GC) tools/convert_gc_island_fixture.py
-	$(PYTHON) tools/convert_gc_island_fixture.py $< $@
-
 payload:
 	@$(MAKE) -C payload COMPARE=$(COMPARE) NONMATCHING=$(NONMATCHING) DEBUG_TEST=$(DEBUG_TEST) DEBUG_TESTING=$(DEBUG_TESTING) PYTHON=$(PYTHON)
 
@@ -208,23 +204,34 @@ payload/build/payload/asm/libgcc/%.o: payload/asm/libgcc/%.s payload/Makefile as
 payload/build/payload/src/libc/%.o: payload/src/libc/%.c payload/Makefile
 	@$(MAKE) -C payload DEVKITPRO=$(if $(wildcard /c/devkitPro),/c/devkitPro,$(DEVKITPRO)) DEVKITARM=$(if $(wildcard /c/devkitPro/devkitARM),/c/devkitPro/devkitARM,$(DEVKITARM)) build/payload/src/libc/$*.o
 
-# Build separate objdiff targets for the original text and the complete raw
-# data/BSS.  Keeping the sections in separate units avoids running objdiff's
-# expensive byte-level data comparison during normal text matching.
+# Build split objdiff targets for each original translation unit.  Recovered
+# data/BSS is attached to the source object that owns it; the all.data target is
+# retained as an aggregate layout check.
 OBJDIFF_DIR := payload/build/objdiff
 OBJDIFF_TEXT_OBJ := payload/build/payload/asm/all.o
 OBJDIFF_C_UNITS := main interrupt m_msg lib audio m_msg_util game joyboot \
 	island_program m_msg_sprite multisio island_field building \
 	animated_field_obj field_obj islander item falling_fruit entity player_hand \
 	sound
+OBJDIFF_DATA_UNITS := time_palette msg_data world_pal sound_data
+OBJDIFF_SECTION_CODE_UNITS := main interrupt m_msg lib joyboot island_program \
+	m_msg_sprite multisio island_field building animated_field_obj field_obj \
+	islander item falling_fruit entity player_hand sound
+OBJDIFF_SECTION_UNITS := $(OBJDIFF_SECTION_CODE_UNITS) $(OBJDIFF_DATA_UNITS) data
 OBJDIFF_TEXT_UNITS := $(OBJDIFF_C_UNITS) syscalls
 OBJDIFF_TEXT_ASM := $(addprefix $(OBJDIFF_DIR)/,$(addsuffix .text.target.s,$(OBJDIFF_TEXT_UNITS)))
 OBJDIFF_TEXT_RAW := $(addprefix $(OBJDIFF_DIR)/,$(addsuffix .text.raw.o,$(OBJDIFF_TEXT_UNITS)))
 OBJDIFF_TEXT_TARGETS := $(addprefix $(OBJDIFF_DIR)/,$(addsuffix .text.target.o,$(OBJDIFF_TEXT_UNITS)))
 OBJDIFF_DATA_ASM := $(OBJDIFF_DIR)/all.data.target.s
 OBJDIFF_DATA_TARGET := $(OBJDIFF_DIR)/all.data.target.o
+OBJDIFF_UNIT_DATA_ASM := $(addprefix $(OBJDIFF_DIR)/,$(addsuffix .data.target.s,$(OBJDIFF_SECTION_UNITS)))
+OBJDIFF_CODE_DATA_TARGETS := $(addprefix $(OBJDIFF_DIR)/,$(addsuffix .data.target.o,$(OBJDIFF_SECTION_CODE_UNITS)))
+OBJDIFF_COMBINED_TARGETS := $(addprefix $(OBJDIFF_DIR)/,$(addsuffix .target.o,$(OBJDIFF_SECTION_CODE_UNITS)))
+OBJDIFF_DATA_ONLY_TARGETS := $(addprefix $(OBJDIFF_DIR)/,$(addsuffix .target.o,$(OBJDIFF_DATA_UNITS)))
+OBJDIFF_DATA_COMMON_TARGET := $(OBJDIFF_DIR)/data.target.o
+OBJDIFF_DATA_COMMON_BASE := $(OBJDIFF_DIR)/data.base.o
 OBJDIFF_COMPILED_BASE := $(addprefix payload/build/payload/src/,$(addsuffix .o,$(OBJDIFF_C_UNITS))) payload/build/payload/asm/gflib/syscalls.o
-OBJDIFF_COMPILED_DATA_BASE := payload/build/payload/src/data.o
+OBJDIFF_COMPILED_DATA_BASE := $(addprefix payload/build/payload/src/,$(addsuffix .o,$(OBJDIFF_DATA_UNITS))) payload/build/payload/src/data.o
 OBJDIFF_BASE := $(OBJDIFF_DIR)/all.base.o
 OBJDIFF_TEXT_DEPS := payload/asm/all.s asm/macros/function.inc constants/gba_constants.inc
 OBJDIFF_LIBGCC_NAMES := _call_via_rX _divsi3 _dvmd_tls _modsi3 _udivsi3 _umodsi3
@@ -243,6 +250,24 @@ $(OBJDIFF_TEXT_RAW): $(OBJDIFF_DIR)/%.text.raw.o: $(OBJDIFF_DIR)/%.text.target.s
 
 $(OBJDIFF_TEXT_TARGETS): $(OBJDIFF_DIR)/%.text.target.o: $(OBJDIFF_DIR)/%.text.raw.o tools/prepare_objdiff_target.py tools/generate_objdiff_sections.py payload/ld_script.txt Makefile
 	@$(PYTHON) tools/prepare_objdiff_target.py $< $@
+
+$(OBJDIFF_UNIT_DATA_ASM): $(OBJDIFF_DIR)/%.data.target.s: tools/generate_objdiff_sections.py payload/data/data.bin $(OBJDIFF_TEXT_OBJ)
+	@$(PYTHON) tools/generate_objdiff_sections.py --text-object $(OBJDIFF_TEXT_OBJ) --data payload/data/data.bin --unit $* --output $@
+
+$(OBJDIFF_CODE_DATA_TARGETS): $(OBJDIFF_DIR)/%.data.target.o: $(OBJDIFF_DIR)/%.data.target.s
+	$(AS) $(ASFLAGS) -o $@ $<
+
+$(OBJDIFF_COMBINED_TARGETS): $(OBJDIFF_DIR)/%.target.o: $(OBJDIFF_DIR)/%.text.target.o $(OBJDIFF_DIR)/%.data.target.o
+	$(LD) -r -S -o $@ $^
+
+$(OBJDIFF_DATA_ONLY_TARGETS): $(OBJDIFF_DIR)/%.target.o: $(OBJDIFF_DIR)/%.data.target.s
+	$(AS) $(ASFLAGS) -o $@ $<
+
+$(OBJDIFF_DATA_COMMON_TARGET): $(OBJDIFF_DIR)/data.data.target.s
+	$(AS) $(ASFLAGS) -o $@ $<
+
+$(OBJDIFF_DATA_COMMON_BASE): payload/build/payload/src/data.o payload/objdiff_data_common.ld
+	$(LD) -r -d -S -T payload/objdiff_data_common.ld -o $@ $<
 
 $(OBJDIFF_DATA_ASM): tools/generate_objdiff_sections.py payload/data/data.bin $(OBJDIFF_TEXT_OBJ)
 	@$(PYTHON) tools/generate_objdiff_sections.py --text-object $(OBJDIFF_TEXT_OBJ) --data payload/data/data.bin --output $@
@@ -263,11 +288,11 @@ $(OBJDIFF_LIBC_TARGETS): $(OBJDIFF_DIR)/libc/%.o: tools/agbcc/lib/libc.a
 # agbcc emits tentative globals such as gGameState as COMMON.  Assign them to
 # BSS in an objdiff-only relocatable link so they participate in data matching.
 # Each individual object retains DWARF; agbcc debug units cannot be merged.
-$(OBJDIFF_BASE): $(OBJDIFF_COMPILED_BASE) $(OBJDIFF_COMPILED_DATA_BASE)
-	$(LD) -r -d -S -o $@ $^
+$(OBJDIFF_BASE): $(OBJDIFF_COMPILED_BASE) $(OBJDIFF_COMPILED_DATA_BASE) payload/objdiff_sections.ld
+	$(LD) -r -d -S -T payload/objdiff_sections.ld -o $@ $(OBJDIFF_COMPILED_BASE) $(OBJDIFF_COMPILED_DATA_BASE)
 
 .PHONY: check-payload-data
-check-payload-data: $(OBJDIFF_COMPILED_DATA_BASE) $(OBJDIFF_TEXT_OBJ)
+check-payload-data: $(OBJDIFF_BASE) $(OBJDIFF_TEXT_OBJ)
 	$(PYTHON) tools/check_data_layout.py
 
 $(PAYLOADLZ): payload
