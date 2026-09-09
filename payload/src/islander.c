@@ -883,23 +883,20 @@ s32 Islander_SetupTreeApproach(FieldObject *object) {
     u32 tilemap_addresses[2];
     Islander_AGB *islander = &gIslander;
     IslandFieldWork *field = &gIslandFieldWork;
-    u32 tile_idx = object->tile_idx;
-    s32 column = 0xF & tile_idx;
-    s32 right_column = column + 1;
     s32 side;
 
-    islander->tree_approach_eval[0] = right_column;
+    islander->tree_approach_eval[0] = (0xF & object->tile_idx) + 1;
     islander->tree_approach_x[0] = islander->tree_approach_eval[0] << 12;
     if (object->layer == 0) {
         tilemap_addresses[0] = BG_SCREEN_ADDR(20);
-        tile_ids[0] = field->fg_tiles[0][(0xF0 & tile_idx) + islander->tree_approach_eval[0]];
+        tile_ids[0] = field->fg_tiles[0][(0xF0 & object->tile_idx) + islander->tree_approach_eval[0]];
         if (islander->tree_approach_eval[0] == 0x10) {
             islander->tree_approach_eval[0] = 0;
             tilemap_addresses[0] = BG_SCREEN_ADDR(21);
-            tile_ids[0] = field->fg_tiles[1][0xF0 & tile_idx];
+            tile_ids[0] = field->fg_tiles[1][0xF0 & object->tile_idx];
             islander->tree_approach_x[0] = 0x10000;
         }
-        islander->tree_approach_eval[0] = (0xF0 & tile_idx) + islander->tree_approach_eval[0];
+        islander->tree_approach_eval[0] = (0xF0 & object->tile_idx) + islander->tree_approach_eval[0];
         islander->tree_approach_eval[1] = (0xF & object->tile_idx) - 1;
         islander->tree_approach_x[1] = islander->tree_approach_eval[1] << 12;
         tilemap_addresses[1] = BG_SCREEN_ADDR(20);
@@ -909,20 +906,20 @@ s32 Islander_SetupTreeApproach(FieldObject *object) {
         islander->tree_approach_x[0] |= 0x10000;
         islander->tree_approach_x[1] = 0x10000;
         tilemap_addresses[0] = BG_SCREEN_ADDR(21);
-        tile_ids[0] = field->fg_tiles[1][(tile_idx & 0xF0) + islander->tree_approach_eval[0]];
-        islander->tree_approach_eval[0] = (tile_idx & 0xF0) + islander->tree_approach_eval[0];
-        islander->tree_approach_eval[1] = column - 1;
+        tile_ids[0] = field->fg_tiles[1][(object->tile_idx & 0xF0) + islander->tree_approach_eval[0]];
+        islander->tree_approach_eval[0] = (object->tile_idx & 0xF0) + islander->tree_approach_eval[0];
+        islander->tree_approach_eval[1] = (0xF & object->tile_idx) - 1;
         islander->tree_approach_x[1] = (islander->tree_approach_eval[1] << 12) | 0x10000;
         tilemap_addresses[1] = BG_SCREEN_ADDR(21);
-        tile_ids[1] = field->fg_tiles[1][(tile_idx & 0xF0) + islander->tree_approach_eval[1]];
+        tile_ids[1] = field->fg_tiles[1][(object->tile_idx & 0xF0) + islander->tree_approach_eval[1]];
         if ((islander->tree_approach_eval[1] & 0xFF) == 0xFF) {
             islander->tree_approach_eval[1] = 0xF;
             islander->tree_approach_x[1] = 0;
             tilemap_addresses[1] = BG_SCREEN_ADDR(20);
-            tile_ids[1] = field->fg_tiles[0][(0xF0 & tile_idx) + islander->tree_approach_eval[1]];
+            tile_ids[1] = field->fg_tiles[0][(0xF0 & object->tile_idx) + islander->tree_approach_eval[1]];
             islander->tree_approach_x[1] = islander->tree_approach_eval[1] << 12;
         }
-        islander->tree_approach_eval[1] += tile_idx & 0xF0;
+        islander->tree_approach_eval[1] += object->tile_idx & 0xF0;
     }
     for (side = 0; side < 2; side++) {
         tilemap_addresses[side] += (islander->tree_approach_eval[side] & 0xF0) * 8;

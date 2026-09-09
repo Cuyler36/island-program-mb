@@ -61,7 +61,7 @@ void IslandBuilding_DrawSprite(IslandBuildingSprite *sprite, s32 building_index,
 
     if (sprite_index != 5 || building->state == 1) {
         oam->shape = (sprite->oam_attributes >> 14) & 3;
-        oam->size = sprite->oam_attributes >> 30;
+        oam->size = (sprite->oam_attributes >> 30) & 0xF;
         oam->h_flip = sprite->h_flip;
         oam->v_flip = sprite->v_flip;
         oam->palette_num = sprite->palette_num;

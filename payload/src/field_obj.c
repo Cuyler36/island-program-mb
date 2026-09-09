@@ -32,7 +32,9 @@ void FieldObject_AttachEntity(s32 object_index, s32 type) {
         if (field->entity_active[slot + 24] == 0) {
             field->entity_active[slot + 24] = 1;
             FallingFruit_Init(object_index, slot, type, object->layer);
+            do {
             object->falling_fruit_id = slot + 1;
+            } while(0);
             break;
         }
     }
@@ -468,7 +470,7 @@ void FieldObject_DrawSprite(FieldObjectSpriteFrame *frame, s32 object_index) {
     OAMData *oam = &((OAMData *)gUnk3002410)[gGameState.oam_count];
 
     oam->shape = (frame->oam_attributes >> 14) & 3;
-    oam->size = frame->oam_attributes >> 30;
+    oam->size = (frame->oam_attributes >> 30) & 0xF;
     oam->tile_num = frame->tile_num;
     oam->h_flip = 0;
     oam->priority = 1;
