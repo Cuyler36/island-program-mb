@@ -718,77 +718,74 @@ static inline void DrawIslanderBehindFieldObjects(Islander_AGB *islander) {
 void DrawIslandField(void) {
     Islander_AGB *islander = &gIslander;
     IslandFieldWork *field = &gIslandFieldWork;
+    FieldObject *object = gFieldObjects;
     s32 i;
     s32 house_drawn;
     s32 islander_drawn;
-    s32 distance_y;
-    s32 distance_x;
-    s32 islander_y;
     s32 entity;
     s32 cabana_drawn;
-    u32 entity_id;
 
     gGameState.oam_count = 0;
     if (field->entity_active[2] == 1) {
         Entity_DrawSprite(2);
     }
-    DrawIslanderBehindFieldObjects(islander);
+    if (islander->move_action == 0x14) {
+        if (islander->carry_state == 2) {
+            Islander_Draw();
+        }
+    }
     i = 0;
-    do {
+    while (i <= 1) {
         if (field->entity_active[i] == 1) {
             PlayerHand_Draw();
         }
         i += 1;
-    } while (i <= 1);
+    }
     i = 3;
-    do {
+    while (i <= 0xB) {
         if (field->entity_active[i + 3] == 1) {
             Entity_DrawSprite(i);
         }
         i += 1;
-    } while (i <= 0xB);
+    }
     AnimatedFieldObject_Draw(0x54);
     cabana_drawn = 0;
     house_drawn = 0;
     islander_drawn = 0;
     for (i = 0x1E; i >= 0; i--) {
         if (field->entity_active[i + 54] == 1) {
-            FieldObject *object = &gFieldObjects[i];
+            object = &gFieldObjects[i];
             if ((cabana_drawn == 0) && ((u32) gIslandBuildings[0].tile_idx > (u32) object->tile_idx)) {
                 IslandBuilding_Draw(0, 0U);
                 cabana_drawn = 1;
             }
-            if ((house_drawn == 0) && ((u32) gIslandBuildings[1].tile_idx > (u32) object->tile_idx)) {
+            if ((house_drawn == 0) && ((u32) (&gIslandBuildings[1])->tile_idx > (u32) object->tile_idx)) {
                 IslandBuilding_Draw(1, 2U);
                 house_drawn = 1;
             }
-            entity_id = object->falling_fruit_id;
-            if (entity_id != 0) {
-                if (entity_id != 0xFFFF) {
-                    FallingFruit_Draw(entity_id - 1);
+            if (object->falling_fruit_id != 0) {
+                if (object->falling_fruit_id != 0xFFFF) {
+                    FallingFruit_Draw(object->falling_fruit_id - 1);
                 } else {
                     entity = 0;
-                    do {
+                    while (entity <= 2) {
                         if (field->entity_active[entity + 21] == 1) {
                             FallingFruit_Draw(entity);
                         }
                         entity += 1;
-                    } while (entity <= 2);
+                    }
                 }
             }
-            distance_x = object->x - (islander->x >> 8);
-            field->entity_dist_x = distance_x;
-            islander_y = islander->y;
-            field->entity_dist_y = object->y - (islander_y >> 8);
-            if (distance_x < 0) {
-                field->entity_dist_x = -distance_x;
+            field->entity_dist_x = object->x - (islander->x >> 8);
+            field->entity_dist_y = object->y - (islander->y >> 8);
+            if (field->entity_dist_x < 0) {
+                field->entity_dist_x = -field->entity_dist_x;
             }
-            distance_y = field->entity_dist_y;
-            if (distance_y < 0) {
-                field->entity_dist_y = -distance_y;
+            if (field->entity_dist_y < 0) {
+                field->entity_dist_y = -field->entity_dist_y;
             }
             if (field->entity_dist_x <= 0x10 && field->entity_dist_y <= 0x10 &&
-                (object->tile_idx & 0xF0) < (((islander_y + 0xD00) >> 8) & 0xF0) &&
+                (object->tile_idx & 0xF0) < (((islander->y + 0xD00) >> 8) & 0xF0) &&
                 islander_drawn == 0) {
                 Islander_Draw();
                 islander_drawn = 1;
@@ -807,11 +804,11 @@ void DrawIslandField(void) {
     }
     IslandBuilding_Draw(1, 1U);
     i = 0;
-    do {
+    while (i <= 0xB) {
         if (field->entity_active[i + 3] == 1) {
             Entity_DrawFloatingItemShadow(i);
         }
         i += 1;
-    } while (i <= 0xB);
+    }
 }
 
