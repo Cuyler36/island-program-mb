@@ -46,6 +46,8 @@
 
 #define NELEMS(arr) (sizeof(arr)/sizeof(*(arr)))
 
+// Converts a number to Q8.8 fixed-point format
+#define Q_8_8(n) ((s16)((n) * 256))
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
 #define max(a, b) ((a) >= (b) ? (a) : (b))
