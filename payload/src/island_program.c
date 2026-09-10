@@ -135,13 +135,9 @@ static IslandProgramModeProc sIslandProgramModeUpdateProcs[6] = {
     IslandProgram_UpdateMessageMode,
 };
 
-/* Interworking trampoline used to enter the ARM startup code. */
-/* Original address: 0x02029308 */
-void _call_via_r0(void (*entry)(void));
-
 /* Original address: 0x0201A6C8 */
 void IslandProgram_Restart(void) {
-    void (*entry)(void) = _start;
+    int (*entry)(void) = _start;
 
     gIslandDataReceived = 0;
     REG_IME = 0;
@@ -149,7 +145,7 @@ void IslandProgram_Restart(void) {
     REG_IE = 0;
     REG_IF = 0xFFFF;
     REG_DISPCNT = 0x80;
-    _call_via_r0(entry);
+    entry();
 }
 
 /* Original address: 0x0201A714 */

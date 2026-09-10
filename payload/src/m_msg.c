@@ -1470,6 +1470,7 @@ void mFont_BlitGlyphToTiles(mFont_GlyphDraw_c *glyph, s32 width) {
     u16 x;
     u16 tile_index;
     u16 byte_offset;
+    register u8 orig_pixels asm ("r0"); // @HACK - necessary to match
     u8 packed_pixels;
 
     for (glyph_row = 0, y = glyph->row; glyph_row < 8; glyph_row++, y++) {
@@ -1477,8 +1478,8 @@ void mFont_BlitGlyphToTiles(mFont_GlyphDraw_c *glyph, s32 width) {
             tile_index = (y >> 3) * glyph->tile_stride + (x >> 3);
             if ((glyph->glyph_upper_rows[glyph_row] >> column) & 1) {
                 byte_offset = (tile_index << 5) + (y & 7) * 4 + ((x & 7) >> 1);
-                packed_pixels = glyph->tile_data[byte_offset];
-
+                orig_pixels = glyph->tile_data[byte_offset];
+                packed_pixels = orig_pixels;
                 if (x & 1) {
                     packed_pixels = (packed_pixels & 0xF) | ((glyph->palette & 0xF) << 4);
                 } else {
@@ -1486,11 +1487,12 @@ void mFont_BlitGlyphToTiles(mFont_GlyphDraw_c *glyph, s32 width) {
                 }
                 glyph->tile_data[byte_offset] = packed_pixels;
             }
+
             tile_index += glyph->tile_stride;
             if ((glyph->glyph_lower_rows[glyph_row] >> column) & 1) {
                 byte_offset = (tile_index << 5) + (y & 7) * 4 + ((x & 7) >> 1);
-                packed_pixels = glyph->tile_data[byte_offset];
-
+                orig_pixels = glyph->tile_data[byte_offset];
+                packed_pixels = orig_pixels;
                 if (x & 1) {
                     packed_pixels &= 0xF;
                     packed_pixels |= (glyph->palette & 0xF) << 4;

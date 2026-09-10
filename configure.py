@@ -488,7 +488,7 @@ def generate(args: argparse.Namespace) -> None:
     )
     n.rule(
         "archive_member",
-        '"$python" tools/capture_stdout.py "$out" "$ar" p "$archive" "$member"',
+        '"$python" tools/extract_archive_member.py "$out" "$ar" "$archive" "$member"',
         description="AR $member",
     )
     n.build(
@@ -750,7 +750,7 @@ def generate(args: argparse.Namespace) -> None:
             output,
             "archive_member",
             "tools/agbcc/lib/libgcc.a",
-            implicit=["tools/capture_stdout.py"],
+            implicit=["tools/extract_archive_member.py"],
             variables={"archive": "tools/agbcc/lib/libgcc.a", "member": f"{unit}.o"},
         )
         objdiff_targets.append(output)
@@ -760,7 +760,7 @@ def generate(args: argparse.Namespace) -> None:
             output,
             "archive_member",
             "tools/agbcc/lib/libc.a",
-            implicit=["tools/capture_stdout.py"],
+            implicit=["tools/extract_archive_member.py"],
             variables={"archive": "tools/agbcc/lib/libc.a", "member": f"{unit}.o"},
         )
         objdiff_targets.append(output)

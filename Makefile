@@ -278,12 +278,10 @@ $(OBJDIFF_DATA_TARGET): $(OBJDIFF_DATA_ASM)
 # Use the installed agbcc archives as the objdiff targets.  These paths and
 # filenames preserve the original library member boundaries exactly.
 $(OBJDIFF_LIBGCC_TARGETS): $(OBJDIFF_DIR)/libgcc/%.o: tools/agbcc/lib/libgcc.a
-	@mkdir -p $(@D)
-	@cd $(@D) && $(AR) x $(abspath $<) $*.o
+	@$(PYTHON) tools/extract_archive_member.py $@ $(AR) $< $*.o
 
 $(OBJDIFF_LIBC_TARGETS): $(OBJDIFF_DIR)/libc/%.o: tools/agbcc/lib/libc.a
-	@mkdir -p $(@D)
-	@cd $(@D) && $(AR) x $(abspath $<) $*.o
+	@$(PYTHON) tools/extract_archive_member.py $@ $(AR) $< $*.o
 
 # agbcc emits tentative globals such as gGameState as COMMON.  Assign them to
 # BSS in an objdiff-only relocatable link so they participate in data matching.

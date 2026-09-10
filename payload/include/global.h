@@ -519,7 +519,7 @@ extern u16 sBgPalettes[16][16];
 /* Original address: 0x02000040 */
 #define gFieldPaletteBuffer2 ((u16 *)0x02000040)
 
-void _start(void);
+int _start(void);
 void _intr(void);
 
 #endif
