@@ -124,6 +124,7 @@ void EnableVBlankInterrupt(void) {
 }
 
 // Values of sin(x*(π/128)) as Q8.8 fixed-point numbers from x = 0 to x = 319
+/* Original address: 0x0202AD34 */
 s16 gSineTable[320] =
 {
     Q_8_8(0),           // sin(0*(π/128))

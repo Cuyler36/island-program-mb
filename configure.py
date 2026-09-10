@@ -491,6 +491,11 @@ def generate(args: argparse.Namespace) -> None:
         '"$python" tools/extract_archive_member.py "$out" "$ar" "$archive" "$member"',
         description="AR $member",
     )
+    n.rule(
+        "binary_slice",
+        '"$python" tools/extract_binary_slice.py "$in" "$out" $offset $size',
+        description="SLICE $out",
+    )
     n.build(
         [
             "build.ninja",
@@ -501,6 +506,17 @@ def generate(args: argparse.Namespace) -> None:
         "configure",
         ["configure.py", "tools/generate_objdiff_text.py", "payload/ld_script.txt", "ld_script.txt"],
     )
+    for output, offset in (
+        ("payload/data/island_right_acre_tilemaps.bin", "0x1D64"),
+        ("payload/data/island_left_acre_tilemaps.bin", "0x3D64"),
+    ):
+        n.build(
+            output,
+            "binary_slice",
+            "payload/data/data.bin",
+            implicit=["tools/extract_binary_slice.py"],
+            variables={"offset": offset, "size": "0x2000"},
+        )
 
     payload_objects: list[str] = []
     for unit in PAYLOAD_CODE_UNITS:

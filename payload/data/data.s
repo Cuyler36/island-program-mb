@@ -267,14 +267,15 @@ IslanderMoveProcTable:
 
 .incbin "data/data.bin", 0xA1C8, 0x2C
 
-	.global IslanderSubMoveAction_BuryProcTbl
-	.type IslanderSubMoveAction_BuryProcTbl, %object
-IslanderSubMoveAction_BuryProcTbl:
-	@ [0] Islander_BuryItem_State0, [1] Islander_BuryItem_State1
-	@ [2] Islander_BuryItem_State2, [3] Islander_BuryItem_State3
-	@ [4] Islander_BuryItem_State4, [5] Islander_BuryItem_State5
+	@ Original address: 0x0203388C
+	.global sIslanderDiggingStateProcs
+	.type sIslanderDiggingStateProcs, %object
+sIslanderDiggingStateProcs:
+	@ [0] Islander_DigHole, [1] Islander_BuryItemInEmptyHole
+	@ [2] Islander_ReactToDugItem, [3] Islander_SelectReplacementBuriedItem
+	@ [4] Islander_FillHole, [5] Islander_FinishDugItemReaction
 	.incbin "data/data.bin", 0xA1F4, 0x18
-	.size IslanderSubMoveAction_BuryProcTbl, . - IslanderSubMoveAction_BuryProcTbl
+	.size sIslanderDiggingStateProcs, . - sIslanderDiggingStateProcs
 
 .incbin "data/data.bin", 0xA20C, 0x20
 

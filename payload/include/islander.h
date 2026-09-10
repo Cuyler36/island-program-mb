@@ -30,46 +30,77 @@ typedef enum IslanderMoveAction {
     ISLANDER_MOVE_ACTION_DIG,
     ISLANDER_MOVE_ACTION_BURY,
     ISLANDER_MOVE_ACTION_INIT_CARRY_TRANSITION,
-    ISLANDER_MOVE_ACTION_CARRY_TRANSITION
+    ISLANDER_MOVE_ACTION_CARRY_TRANSITION,
+
+    ISLANDER_MOVE_ACTION_NUM
 } IslanderMoveAction;
 
-/* Deprecated aliases retained while older Islander call sites are migrated. */
-#define ActionInside ISLANDER_MOVE_ACTION_START_HOUSE_TRANSITION
-#define ActionMoveIndoorsOrOutdoors ISLANDER_MOVE_ACTION_MOVE_INDOORS_OR_OUTDOORS
-#define ActionOutside ISLANDER_MOVE_ACTION_START_WANDERING
-#define MoveAction3 ISLANDER_MOVE_ACTION_UPDATE_WANDERING
-#define MoveAction4 ISLANDER_MOVE_ACTION_MOVE_TO_TARGET
-#define MoveAction5 ISLANDER_MOVE_ACTION_START_FOOD_PROCESSING
-#define ProcessFood ISLANDER_MOVE_ACTION_PROCESS_FOOD
-#define MoveAction7 ISLANDER_MOVE_ACTION_UPDATE_EMOTION
-#define MoveAction8 ISLANDER_MOVE_ACTION_UPDATE_EMOTION_ANIMATION
-#define MoveAction9 ISLANDER_MOVE_ACTION_START_CLICK_REACTION
-#define CheckClickedOnTimer ISLANDER_MOVE_ACTION_CHECK_CLICKED_ON_TIMER
-#define MoveAction11 ISLANDER_MOVE_ACTION_START_FIELD_OBJECT_INTERACTION
-#define MoveAction12 ISLANDER_MOVE_ACTION_UPDATE_FIELD_OBJECT_INTERACTION
-#define MoveAction13 ISLANDER_MOVE_ACTION_INIT_FISHING
-#define MoveActionFishing ISLANDER_MOVE_ACTION_FISHING
-#define MoveActionReceiveItemInit ISLANDER_MOVE_ACTION_INIT_RECEIVE_ITEM
-#define MoveActionReceiveItem ISLANDER_MOVE_ACTION_RECEIVE_ITEM
-#define MoveActionDig ISLANDER_MOVE_ACTION_DIG
-#define MoveActionBury ISLANDER_MOVE_ACTION_BURY
-#define MoveAction19 ISLANDER_MOVE_ACTION_INIT_CARRY_TRANSITION
-#define MoveAction20 ISLANDER_MOVE_ACTION_CARRY_TRANSITION
+typedef enum IslanderFieldObjectInteractionState {
+    ISLANDER_FIELD_OBJECT_INTERACTION_SHAKE = 0,
+    ISLANDER_FIELD_OBJECT_INTERACTION_CHOP,
+    ISLANDER_FIELD_OBJECT_INTERACTION_COOLDOWN,
 
-typedef enum IslanderMoveAction20Phase {
-    ISLANDER_MOVE_ACTION20_PHASE_BEGIN = 0,
-    ISLANDER_MOVE_ACTION20_PHASE_ANIM_02,
-    ISLANDER_MOVE_ACTION20_PHASE_ANIM_06,
-    ISLANDER_MOVE_ACTION20_PHASE_ANIM_00,
-    ISLANDER_MOVE_ACTION20_PHASE_CHECK_POSITION,
-    ISLANDER_MOVE_ACTION20_PHASE_RESTART
-} IslanderMoveAction20Phase;
+    ISLANDER_FIELD_OBJECT_INTERACTION_STATE_NUM
+} IslanderFieldObjectInteractionState;
 
-typedef void (*IslanderBuryStateProc)(void);
-extern IslanderBuryStateProc IslanderSubMoveAction_BuryProcTbl[6];
+typedef enum IslanderFishingState {
+    ISLANDER_FISHING_CAST_LINE = 0,
+    ISLANDER_FISHING_WAIT_FOR_BITE,
+    ISLANDER_FISHING_NOTICE_BITE,
+    ISLANDER_FISHING_WAIT_TO_REEL_IN,
+    ISLANDER_FISHING_REEL_IN,
+    ISLANDER_FISHING_FINISH_FAILED_CATCH,
+    ISLANDER_FISHING_REACT_TO_CATCH,
+    ISLANDER_FISHING_FINISH_SUCCESSFUL_CATCH,
+
+    ISLANDER_FISHING_STATE_NUM
+} IslanderFishingState;
+
+typedef enum IslanderReceiveItemState {
+    ISLANDER_RECEIVE_ITEM_CATCH = 0,
+    ISLANDER_RECEIVE_ITEM_STORE,
+    ISLANDER_RECEIVE_ITEM_FINISH,
+
+    ISLANDER_RECEIVE_ITEM_STATE_NUM
+} IslanderReceiveItemState;
+
+typedef enum IslanderDiggingState {
+    ISLANDER_DIGGING_DIG_HOLE = 0,
+    ISLANDER_DIGGING_BURY_IN_EMPTY_HOLE,
+    ISLANDER_DIGGING_REACT_TO_DUG_ITEM,
+    ISLANDER_DIGGING_SELECT_REPLACEMENT_ITEM,
+    ISLANDER_DIGGING_FILL_HOLE,
+    ISLANDER_DIGGING_FINISH_ITEM_REACTION,
+
+    ISLANDER_DIGGING_STATE_NUM
+} IslanderDiggingState;
+
+typedef enum IslanderCarryTransitionState {
+    ISLANDER_CARRY_TRANSITION_WAIT_FOR_PICKUP = 0,
+    ISLANDER_CARRY_TRANSITION_MOSAIC_IN,
+    ISLANDER_CARRY_TRANSITION_MOSAIC_OUT,
+    ISLANDER_CARRY_TRANSITION_WAIT_FOR_PLACEMENT,
+    ISLANDER_CARRY_TRANSITION_CHECK_PLACEMENT,
+
+    ISLANDER_CARRY_TRANSITION_STATE_NUM
+} IslanderCarryTransitionState;
+
+typedef enum IslanderPlacementCheckPhase {
+    ISLANDER_PLACEMENT_CHECK_REACT = 0,
+    ISLANDER_PLACEMENT_CHECK_ANIM_02,
+    ISLANDER_PLACEMENT_CHECK_ANIM_06,
+    ISLANDER_PLACEMENT_CHECK_ANIM_00,
+    ISLANDER_PLACEMENT_CHECK_POSITION,
+    ISLANDER_PLACEMENT_CHECK_RETURN_HOME,
+
+    ISLANDER_PLACEMENT_CHECK_PHASE_NUM
+} IslanderPlacementCheckPhase;
+
+typedef void (*IslanderDiggingStateProc)(void);
+extern IslanderDiggingStateProc sIslanderDiggingStateProcs[ISLANDER_DIGGING_STATE_NUM];
 
 /* Original address: 0x0203380C */
-extern void (*IslanderMoveProcTable[21])(void);
+extern void (*IslanderMoveProcTable[ISLANDER_MOVE_ACTION_NUM])(void);
 
 typedef enum IslanderEmotion {
     ISLANDER_EMOTION_NEUTRAL = 0,
@@ -88,7 +119,7 @@ typedef union IslanderItemWork {
     struct {
         u16 phase;
         u16 timer;
-    } move_action20;
+    } carry_transition;
 } __attribute__((packed, aligned(2))) IslanderItemWork;
 
 typedef enum IslanderAnim_1_e {
@@ -193,6 +224,22 @@ typedef enum IslanderAnim_1_e {
     ISLANDER_ANIM_NUM=98
 } IslanderAnim_1_e;
 
+typedef enum IslanderTool_e {
+    ISLANDER_TOOL_NONE,
+    ISLANDER_TOOL_NET,
+    ISLANDER_TOOL_AXE,
+    ISLANDER_TOOL_SHOVEL,
+    ISLANDER_TOOL_ROD,
+    ISLANDER_TOOL_GOLD_NET,
+    ISLANDER_TOOL_GOLD_AXE,
+    ISLANDER_TOOL_GOLD_SHOVEL,
+    ISLANDER_TOOL_GOLD_ROD,
+
+    ISLANDER_TOOL_NUM
+} IslanderTool_e;
+
+#define ISLANDER_TOOL_STATE_DROP 0x40
+
 typedef void (*Islander_SUB_MOVE_PROC)(void);
 
 typedef struct IslanderFoodPreference {
@@ -281,6 +328,8 @@ typedef struct Islander_AGB {
     /* 0xB9 */ u8 reserved_B9[7];
 } Islander_AGB;
 
+#define Islander_GET_TOOL_TYPE(islander) ((islander)->equipped_tool_state & 0xF)
+
 /* Maps an item type and Islander emotion to a base in the buried-item RNG table. */
 typedef struct BuriedItemRngTileGroup {
     u16 item_type;
@@ -361,40 +410,40 @@ void Islander_UpdateEmotionAnimation(void);
 void Islander_StartClickReaction(void);
 void Islander_CheckClickedOnTimer(void);
 void Islander_StartFieldObjectInteraction(void);
-void Islander_MoveAction11_State0(void);
-void Islander_MoveAction11_State1(void);
-void Islander_MoveAction11_State2(void);
+void Islander_ShakeFieldObject(void);
+void Islander_ChopFieldObject(void);
+void Islander_FinishFieldObjectInteraction(void);
 void Islander_UpdateFieldObjectInteraction(void);
 void Islander_Fishing_Init(void);
-void Islander_Fishing_State0(void);
-void Islander_Fishing_State1(void);
-void Islander_Fishing_State2(void);
-void Islander_Fishing_State3(void);
-void Islander_Fishing_State4(void);
-void Islander_Fishing_State5(void);
-void Islander_Fishing_State6(void);
-void Islander_Fishing_State7(void);
+void Islander_CastFishingLine(void);
+void Islander_WaitForFishBite(void);
+void Islander_NoticeFishBite(void);
+void Islander_WaitToReelIn(void);
+void Islander_ReelInFish(void);
+void Islander_FinishFailedCatch(void);
+void Islander_ReactToFishingResult(void);
+void Islander_FinishSuccessfulCatch(void);
 void IslanderMoveAction_Fishing(void);
 void Islander_ReceiveItem_Init(void);
 void IslanderMoveAction_ReceiveItem(void);
-void Islander_DespawnFlyingItem(void);
+void Islander_CatchFlyingItem(void);
 void Islander_StoreHeldItem(void);
-void Islander_ProcessFishReceived(void);
+void Islander_FinishReceivingItem(void);
 void IslanderMoveAction_Dig(void);
-void Islander_BuryItem_State0(void);
-void Islander_BuryItem_State1(void);
-void Islander_BuryItem_State2(void);
-void Islander_BuryItem_State3(void);
-void Islander_BuryItem_State4(void);
-void Islander_BuryItem_State5(void);
+void Islander_DigHole(void);
+void Islander_BuryItemInEmptyHole(void);
+void Islander_ReactToDugItem(void);
+void Islander_SelectReplacementBuriedItem(void);
+void Islander_FillHole(void);
+void Islander_FinishDugItemReaction(void);
 void IslanderMoveAction_Bury(void);
-void Islander_MoveAction20_Init(void);
-void Islander_MoveAction20_State0(void);
-void Islander_MoveAction20_State1(void);
-void Islander_MoveAction20_State2(void);
-void Islander_MoveAction20_State3(void);
-void Islander_MoveAction20_State4(void);
-void Islander_MoveAction20_Move(void);
+void Islander_StartCarryTransition(void);
+void Islander_WaitForPickup(void);
+void Islander_ReturnHomeMosaicIn(void);
+void Islander_ReturnHomeMosaicOut(void);
+void Islander_WaitForPlacement(void);
+void Islander_CheckPlacement(void);
+void Islander_UpdateCarryTransition(void);
 void Islander_Draw(void);
 
 #ifdef __cplusplus

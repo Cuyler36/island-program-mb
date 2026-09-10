@@ -5,6 +5,7 @@
 *.sav
 build/
 /build.ninja
+/objdiff.json
 /.ninja_deps
 /.ninja_log
 __pycache__/

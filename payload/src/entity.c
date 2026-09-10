@@ -164,7 +164,7 @@ AnimFrameData *sEntityReactionAnimation4[2] = {
 };
 
 /* Original address: 0x02034CE0 */
-AnimFrameData **sEntityReactionAnimations[5] = {
+AnimFrameData **sEntityReactionAnimations[ENTITY_REACTION_COUNT] = {
     sEntityReactionAnimation0,
     sEntityReactionAnimation1,
     sEntityReactionAnimation2,
@@ -173,48 +173,52 @@ AnimFrameData **sEntityReactionAnimations[5] = {
 };
 
 /* Original address: 0x02034CF4 */
-ItemGeneratorDef gItemGeneratorDefs[38] = {
-    { ITM_FOOD_APPLE,      ITEM_TYPE_APPLE, 0 },
-    { ITM_FOOD_ORANGE,     ITEM_TYPE_ORANGE, 0 },
-    { ITM_FOOD_PEACH,      ITEM_TYPE_PEACH, 0 },
-    { ITM_FOOD_PEAR,       ITEM_TYPE_PEAR, 0 },
-    { ITM_FOOD_CHERRY,     ITEM_TYPE_CHERRY, 0 },
-    { ITM_FOOD_COCONUT,    ITEM_TYPE_COCONUT, 0 },
-    { ITM_FOOD_MUSHROOM,   ITEM_TYPE_MUSHROOM, 0 },
-    { ITM_FOOD_CANDY,      ITEM_TYPE_CANDY, 0 },
-    { ITM_MONEY_100,       ITEM_TYPE_100_BELLS, 0 },
-    { ITM_MONEY_1000,      ITEM_TYPE_1K_BELLS, 0 },
-    { ITM_MONEY_10000,     ITEM_TYPE_10K_BELLS, 0 },
-    { ITM_MONEY_30000,     ITEM_TYPE_30K_BELLS, 0 },
-    { ITM_PITFALL,         ITEM_TYPE_PITFALL, 0 },
-    { FLOWER_COSMOS1,      ITEM_TYPE_FLOWER_BAG, 0 },
-    { FLOWER_COSMOS2,      ITEM_TYPE_FLOWER_BAG, 0 },
-    { FLOWER_COSMOS0,      ITEM_TYPE_FLOWER_BAG, 0 },
-    { FLOWER_TULIP0,       ITEM_TYPE_FLOWER_BAG, 0 },
-    { FLOWER_TULIP1,       ITEM_TYPE_FLOWER_BAG, 0 },
-    { FLOWER_TULIP2,       ITEM_TYPE_FLOWER_BAG, 0 },
-    { FLOWER_PANSIES0,     ITEM_TYPE_FLOWER_BAG, 0 },
-    { FLOWER_PANSIES1,     ITEM_TYPE_FLOWER_BAG, 0 },
-    { FLOWER_PANSIES2,     ITEM_TYPE_FLOWER_BAG, 0 },
-    { 0x0000,              ITEM_TYPE_FURNITURE, 1 },
-    { 0x0001,              ITEM_TYPE_FURNITURE, 1 },
-    { 0x0002,              ITEM_TYPE_FURNITURE, 1 },
-    { 0x0003,              ITEM_TYPE_FURNITURE, 1 },
-    { 0x0009,              ITEM_TYPE_CARPET, 1 },
-    { 0x000A,              ITEM_TYPE_CARPET, 1 },
-    { 0x000B,              ITEM_TYPE_WALLPAPER, 1 },
-    { 0x000C,              ITEM_TYPE_WALLPAPER, 1 },
-    { 0x000D,              ITEM_TYPE_SHIRT, 1 },
-    { 0x000E,              ITEM_TYPE_SHIRT, 1 },
-    { 0x0005,              ITEM_TYPE_FOSSIL, 1 },
-    { 0x0007,              ITEM_TYPE_GYROID, 1 },
-    { 0x0008,              ITEM_TYPE_UMBRELLA, 1 },
-    { 0x0006,              ITEM_TYPE_AIR_CHECK, 1 },
-    { 0x0004,              ITEM_TYPE_NES, 1 },
-    { 0x0011,              ITEM_TYPE_TRASH, 1 },
+ItemGeneratorDef gItemGeneratorDefs[ITEM_GENERATOR_COUNT] = {
+    { ITM_FOOD_APPLE,      ITEM_TYPE_APPLE, 0 }, // ITEM_GENERATOR_APPLE
+    { ITM_FOOD_ORANGE,     ITEM_TYPE_ORANGE, 0 }, // ITEM_GENERATOR_ORANGE
+    { ITM_FOOD_PEACH,      ITEM_TYPE_PEACH, 0 }, // ITEM_GENERATOR_PEACH
+    { ITM_FOOD_PEAR,       ITEM_TYPE_PEAR, 0 }, // ITEM_GENERATOR_PEAR
+    { ITM_FOOD_CHERRY,     ITEM_TYPE_CHERRY, 0 }, // ITEM_GENERATOR_CHERRY
+    { ITM_FOOD_COCONUT,    ITEM_TYPE_COCONUT, 0 }, // ITEM_GENERATOR_COCONUT
+    { ITM_FOOD_MUSHROOM,   ITEM_TYPE_MUSHROOM, 0 }, // ITEM_GENERATOR_MUSHROOM
+    { ITM_FOOD_CANDY,      ITEM_TYPE_CANDY, 0 }, // ITEM_GENERATOR_CANDY
+    { ITM_MONEY_100,       ITEM_TYPE_100_BELLS, 0 }, // ITEM_GENERATOR_100_BELLS
+    { ITM_MONEY_1000,      ITEM_TYPE_1K_BELLS, 0 }, // ITEM_GENERATOR_1K_BELLS
+    { ITM_MONEY_10000,     ITEM_TYPE_10K_BELLS, 0 }, // ITEM_GENERATOR_10K_BELLS
+    { ITM_MONEY_30000,     ITEM_TYPE_30K_BELLS, 0 }, // ITEM_GENERATOR_30K_BELLS
+    { ITM_PITFALL,         ITEM_TYPE_PITFALL, 0 }, // ITEM_GENERATOR_PITFALL
+    { FLOWER_COSMOS1,      ITEM_TYPE_FLOWER_BAG, 0 }, // ITEM_GENERATOR_PURPLE_COSMOS
+    { FLOWER_COSMOS2,      ITEM_TYPE_FLOWER_BAG, 0 }, // ITEM_GENERATOR_BLUE_COSMOS
+    { FLOWER_COSMOS0,      ITEM_TYPE_FLOWER_BAG, 0 }, // ITEM_GENERATOR_YELLOW_COSMOS
+    { FLOWER_TULIP0,       ITEM_TYPE_FLOWER_BAG, 0 }, // ITEM_GENERATOR_RED_TULIPS
+    { FLOWER_TULIP1,       ITEM_TYPE_FLOWER_BAG, 0 }, // ITEM_GENERATOR_WHITE_TULIPS
+    { FLOWER_TULIP2,       ITEM_TYPE_FLOWER_BAG, 0 }, // ITEM_GENERATOR_YELLOW_TULIPS
+    { FLOWER_PANSIES0,     ITEM_TYPE_FLOWER_BAG, 0 }, // ITEM_GENERATOR_WHITE_PANSIES
+    { FLOWER_PANSIES1,     ITEM_TYPE_FLOWER_BAG, 0 }, // ITEM_GENERATOR_PURPLE_PANSIES
+    { FLOWER_PANSIES2,     ITEM_TYPE_FLOWER_BAG, 0 }, // ITEM_GENERATOR_YELLOW_PANSIES
+    { 0x0000,              ITEM_TYPE_FURNITURE, 1 }, // ITEM_GENERATOR_FURNITURE_COMMON
+    { 0x0001,              ITEM_TYPE_FURNITURE, 1 }, // ITEM_GENERATOR_FURNITURE_RARE
+    { 0x0002,              ITEM_TYPE_FURNITURE, 1 }, // ITEM_GENERATOR_FURNITURE_EVENT
+    { 0x0003,              ITEM_TYPE_FURNITURE, 1 }, // ITEM_GENERATOR_FURNITURE_ISLAND
+    { 0x0009,              ITEM_TYPE_CARPET, 1 }, // ITEM_GENERATOR_CARPET_COMMON
+    { 0x000A,              ITEM_TYPE_CARPET, 1 }, // ITEM_GENERATOR_CARPET_RARE
+    { 0x000B,              ITEM_TYPE_WALLPAPER, 1 }, // ITEM_GENERATOR_WALLPAPER_COMMON
+    { 0x000C,              ITEM_TYPE_WALLPAPER, 1 }, // ITEM_GENERATOR_WALLPAPER_RARE
+    { 0x000D,              ITEM_TYPE_SHIRT, 1 }, // ITEM_GENERATOR_SHIRT_COMMON
+    { 0x000E,              ITEM_TYPE_SHIRT, 1 }, // ITEM_GENERATOR_SHIRT_RARE
+    { 0x0005,              ITEM_TYPE_FOSSIL, 1 }, // ITEM_GENERATOR_FOSSIL
+    { 0x0007,              ITEM_TYPE_GYROID, 1 }, // ITEM_GENERATOR_GYROID
+    { 0x0008,              ITEM_TYPE_UMBRELLA, 1 }, // ITEM_GENERATOR_UMBRELLA
+    { 0x0006,              ITEM_TYPE_AIR_CHECK, 1 }, // ITEM_GENERATOR_AIR_CHECK
+    { 0x0004,              ITEM_TYPE_NES, 1 }, // ITEM_GENERATOR_NES
+    { 0x0011,              ITEM_TYPE_TRASH, 1 }, // ITEM_GENERATOR_TRASH
 };
 
-/* Original address: 0x02024F08 */
+/**
+ * Restores an entity slot to its default inactive state.
+ *
+ * Original address: 0x02024F08
+ */
 void Entity_Reset(s32 entity_index) {
     Entity *entity = &g_EntityTable[entity_index];
     s32 i;
@@ -232,11 +236,11 @@ void Entity_Reset(s32 entity_index) {
     entity->anim_timer = 0;
     entity->frame_index = 0;
     entity->update_type = 0;
-    entity->anim_id = 0;
+    entity->anim_id = ENTITY_ANIM_ITEM;
     entity->lifetime = 10;
     entity->sprite_tile = 0;
     entity->palette = 0;
-    entity->reaction_type = 0;
+    entity->reaction_type = ENTITY_REACTION_QUESTION;
     entity->h_flip = 0;
     entity->affine_scale = 0;
     entity->rotation = 0;
@@ -250,7 +254,11 @@ void Entity_Reset(s32 entity_index) {
     entity->landing_tile = 0;
 }
 
-/* Original address: 0x02024F8C */
+/**
+ * Resolves a dropped item and writes it to the field and tilemap.
+ *
+ * Original address: 0x02024F8C
+ */
 void Entity_PlaceLandedItem(s32 entity_index) {
     Entity *entity = &g_EntityTable[entity_index];
     IslandFieldWork *field = &gIslandFieldWork;
@@ -290,7 +298,11 @@ void Entity_PlaceLandedItem(s32 entity_index) {
     field->entity_active[entity_index + 3] = 0;
 }
 
-/* Original address: 0x020250B0 */
+/**
+ * Counts down an entity's lifetime and deactivates it at zero.
+ *
+ * Original address: 0x020250B0
+ */
 void Entity_UpdateLifetime(s32 entity_index) {
     IslandFieldWork *field = &gIslandFieldWork;
     Entity *entity = &g_EntityTable[entity_index];
@@ -302,16 +314,24 @@ void Entity_UpdateLifetime(s32 entity_index) {
     }
 }
 
-/* Original address: 0x020250EC */
+/**
+ * Starts the eight-frame topple animation.
+ *
+ * Original address: 0x020250EC
+ */
 void Entity_BeginToppleEffect(s32 entity_index) {
     Entity *entity = &g_EntityTable[entity_index];
 
     entity->anim_timer = sEntityToppleFrames[0]->duration;
-    entity->anim_id = 1;
+    entity->anim_id = ENTITY_ANIM_TOPPLE;
     entity->update_type = 2;
 }
 
-/* Original address: 0x02025118 */
+/**
+ * Advances the topple animation and deactivates it after its last frame.
+ *
+ * Original address: 0x02025118
+ */
 void Entity_UpdateToppleEffect(s32 entity_index) {
     Entity *entity = &g_EntityTable[entity_index];
     IslandFieldWork *field = &gIslandFieldWork;
@@ -327,16 +347,24 @@ void Entity_UpdateToppleEffect(s32 entity_index) {
     }
 }
 
-/* Original address: 0x02025180 */
+/**
+ * Starts the leaf particle animation.
+ *
+ * Original address: 0x02025180
+ */
 void Entity_BeginLeafEffect(s32 entity_index) {
     Entity *entity = &g_EntityTable[entity_index];
 
     entity->anim_timer = sEntityLeafFrames[0]->duration;
-    entity->anim_id = 2;
+    entity->anim_id = ENTITY_ANIM_LEAF;
     entity->update_type = 4;
 }
 
-/* Original address: 0x020251AC */
+/**
+ * Advances the leaf animation and deactivates it after its last frame.
+ *
+ * Original address: 0x020251AC
+ */
 void Entity_UpdateLeafEffect(s32 entity_index) {
     Entity *entity = &g_EntityTable[entity_index];
     IslandFieldWork *field = &gIslandFieldWork;
@@ -352,34 +380,42 @@ void Entity_UpdateLeafEffect(s32 entity_index) {
     }
 }
 
-/* Original address: 0x02025210 */
+/**
+ * Starts the selected reaction glyph animation and its sound effect.
+ *
+ * Original address: 0x02025210
+ */
 void Entity_BeginReactionEffect(s32 entity_index) {
     Entity *entity = &g_EntityTable[entity_index];
     AnimFrameData *frame = sEntityReactionAnimations[entity->reaction_type][0];
 
     switch (entity->reaction_type) {
-    case 0:
+    case ENTITY_REACTION_QUESTION:
         Sound_PlayEffect0(5);
         break;
-    case 1:
+    case ENTITY_REACTION_SWEAT:
         Sound_PlayEffect0(6);
         break;
-    case 2:
+    case ENTITY_REACTION_EXCLAMATION:
         Sound_PlayEffect0(7);
         break;
-    case 3:
+    case ENTITY_REACTION_MUSIC_NOTE:
         Sound_PlayEffect0(8);
         break;
-    case 4:
+    case ENTITY_REACTION_SLEEP:
         break;
     }
     entity->anim_timer = frame->duration;
     entity->frame_index = 0;
-    entity->anim_id = 3;
+    entity->anim_id = ENTITY_ANIM_REACTION;
     entity->update_type = 6;
 }
 
-/* Original address: 0x0202529C */
+/**
+ * Advances a reaction glyph animation until its sentinel frame.
+ *
+ * Original address: 0x0202529C
+ */
 void Entity_UpdateReactionEffect(s32 entity_index) {
     Entity *entity = &g_EntityTable[entity_index];
     IslandFieldWork *field = &gIslandFieldWork;
@@ -397,7 +433,11 @@ void Entity_UpdateReactionEffect(s32 entity_index) {
     }
 }
 
-/* Original address: 0x02025310 */
+/**
+ * Initializes an item dropped onto the field with an upward velocity.
+ *
+ * Original address: 0x02025310
+ */
 void Entity_BeginItemDrop(s32 entity_index) {
     Entity *entity = &g_EntityTable[entity_index];
 
@@ -407,11 +447,15 @@ void Entity_BeginItemDrop(s32 entity_index) {
     entity->vertical_velocity_or_x_limit = 0x200;
     entity->vertical_acceleration_or_bob_velocity = 0x20;
     Sound_PlayEffect0(30);
-    entity->anim_id = 0;
+    entity->anim_id = ENTITY_ANIM_ITEM;
     entity->update_type = 8;
 }
 
-/* Original address: 0x02025354 */
+/**
+ * Applies gravity to a dropped item and places it after it lands.
+ *
+ * Original address: 0x02025354
+ */
 void Entity_UpdateItemDrop(s32 entity_index) {
     Entity *entity = &g_EntityTable[entity_index];
     s32 landing_y;
@@ -430,7 +474,11 @@ void Entity_UpdateItemDrop(s32 entity_index) {
     }
 }
 
-/* Original address: 0x020253A8 */
+/**
+ * Initializes a rotating, bobbing floating-item entity.
+ *
+ * Original address: 0x020253A8
+ */
 void Entity_BeginFloatingItem(s32 entity_index) {
     Entity *entity = &g_EntityTable[entity_index];
 
@@ -444,11 +492,15 @@ void Entity_BeginFloatingItem(s32 entity_index) {
     entity->affine_scale = 0x300;
     entity->bob_phase = 0;
     entity->reserved_48 = 0;
-    entity->anim_id = 0;
+    entity->anim_id = ENTITY_ANIM_ITEM;
     entity->update_type = 10;
 }
 
-/* Original address: 0x02025400 */
+/**
+ * Moves and animates a floating item until it is collected or leaves view.
+ *
+ * Original address: 0x02025400
+ */
 void Entity_UpdateFloatingItem(s32 entity_index) {
     Entity *entity = &g_EntityTable[entity_index];
     Islander_AGB *islander = &gIslander;
@@ -523,14 +575,22 @@ void Entity_UpdateFloatingItem(s32 entity_index) {
     }
 }
 
-/* Original address: 0x020255F0 */
+/**
+ * Dispatches the current update procedure for an entity slot.
+ *
+ * Original address: 0x020255F0
+ */
 void Entity_Update(s32 entity_index) {
     Entity *entity = &g_EntityTable[entity_index];
 
     sEntityUpdateProcs[entity->update_type](entity_index);
 }
 
-/* Original address: 0x02025618 */
+/**
+ * Draws the small shadow beneath a floating item.
+ *
+ * Original address: 0x02025618
+ */
 void Entity_DrawFloatingItemShadow(s32 entity_index) {
     Entity *entity = &g_EntityTable[entity_index];
 
@@ -551,7 +611,11 @@ void Entity_DrawFloatingItemShadow(s32 entity_index) {
     }
 }
 
-/* Original address: 0x020256D0 */
+/**
+ * Draws an entity as either an animation frame or an item sprite.
+ *
+ * Original address: 0x020256D0
+ */
 void Entity_DrawSprite(s32 entity_index) {
     /* The BIOS reads the affine source as words. */
     struct ObjAffineSrcData transform __attribute__((aligned(4)));
@@ -563,17 +627,17 @@ void Entity_DrawSprite(s32 entity_index) {
     s32 i;
 
     switch (entity->anim_id) {
-    case 1:
+    case ENTITY_ANIM_TOPPLE:
         frame = sEntityToppleFrames[entity->frame_index];
         break;
-    case 2:
+    case ENTITY_ANIM_LEAF:
         frame = sEntityLeafFrames[entity->frame_index];
         break;
-    case 3:
+    case ENTITY_ANIM_REACTION:
         frame = sEntityReactionAnimations[entity->reaction_type][entity->frame_index];
         break;
     }
-    if (entity->anim_id != 0) {
+    if (entity->anim_id != ENTITY_ANIM_ITEM) {
         sprite = frame->sprite_gfx_p;
         for (i = 0; i < 12 && sprite->affine_param != 0xFFFF; i++, sprite++) {
             oam = &GameOAMData[gGameState.oam_count];

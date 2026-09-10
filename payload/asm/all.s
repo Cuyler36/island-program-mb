@@ -17448,7 +17448,7 @@ _02020778:
 	adds r1, #0x87
 	movs r0, #0x13
 	strb r0, [r1]
-	bl Islander_MoveAction20_Init
+	bl Islander_StartCarryTransition
 _02020788:
 	pop {r4, r5, r6}
 	pop {r0}
@@ -21243,8 +21243,8 @@ _0202242C:
 	bx r0
 	.align 2, 0
 
-	thumb_func_start Islander_MoveAction11_State0
-Islander_MoveAction11_State0: @ 0x0202243C
+	thumb_func_start Islander_ShakeFieldObject
+Islander_ShakeFieldObject: @ 0x0202243C
 	push {r4, r5, r6, lr}
 	ldr r5, _020224CC @ =0x030041A0
 	adds r0, r5, #0
@@ -21321,8 +21321,8 @@ _020224CC: .4byte 0x030041A0
 _020224D0: .4byte 0x03003C00
 _020224D4: .4byte 0x02033B27
 
-	thumb_func_start Islander_MoveAction11_State1
-Islander_MoveAction11_State1: @ 0x020224D8
+	thumb_func_start Islander_ChopFieldObject
+Islander_ChopFieldObject: @ 0x020224D8
 	push {r4, r5, r6, r7, lr}
 	mov r7, sl
 	mov r6, sb
@@ -21585,8 +21585,8 @@ _020226D0:
 _020226E0: .4byte 0x00003333
 _020226E4: .4byte 0x03004790
 
-	thumb_func_start Islander_MoveAction11_State2
-Islander_MoveAction11_State2: @ 0x020226E8
+	thumb_func_start Islander_FinishFieldObjectInteraction
+Islander_FinishFieldObjectInteraction: @ 0x020226E8
 	push {r4, r5, lr}
 	ldr r4, _02022758 @ =0x030041A0
 	adds r2, r4, #0
@@ -21713,8 +21713,8 @@ _0202279E:
 	.align 2, 0
 _020227D4: .4byte 0x02033680
 
-	thumb_func_start Islander_Fishing_State0
-Islander_Fishing_State0: @ 0x020227D8
+	thumb_func_start Islander_CastFishingLine
+Islander_CastFishingLine: @ 0x020227D8
 	push {r4, lr}
 	ldr r4, _020227F8 @ =0x030041A0
 	movs r0, #1
@@ -21782,8 +21782,8 @@ _0202284E:
 	.align 2, 0
 _02022854: .4byte 0x02033680
 
-	thumb_func_start Islander_Fishing_State1
-Islander_Fishing_State1: @ 0x02022858
+	thumb_func_start Islander_WaitForFishBite
+Islander_WaitForFishBite: @ 0x02022858
 	push {r4, lr}
 	ldr r4, _0202289C @ =0x030041A0
 	movs r0, #0
@@ -21820,8 +21820,8 @@ _02022896:
 	.align 2, 0
 _0202289C: .4byte 0x030041A0
 
-	thumb_func_start Islander_Fishing_State2
-Islander_Fishing_State2: @ 0x020228A0
+	thumb_func_start Islander_NoticeFishBite
+Islander_NoticeFishBite: @ 0x020228A0
 	push {r4, lr}
 	ldr r4, _020228C4 @ =0x030041A0
 	adds r1, r4, #0
@@ -21882,8 +21882,8 @@ _02022908:
 	.align 2, 0
 _02022910: .4byte 0x02033680
 
-	thumb_func_start Islander_Fishing_State3
-Islander_Fishing_State3: @ 0x02022914
+	thumb_func_start Islander_WaitToReelIn
+Islander_WaitToReelIn: @ 0x02022914
 	push {r4, lr}
 	ldr r4, _02022944 @ =0x030041A0
 	movs r0, #0
@@ -21947,8 +21947,8 @@ _0202298A:
 	.align 2, 0
 _02022990: .4byte 0x02033680
 
-	thumb_func_start Islander_Fishing_State4
-Islander_Fishing_State4: @ 0x02022994
+	thumb_func_start Islander_ReelInFish
+Islander_ReelInFish: @ 0x02022994
 	push {r4, r5, lr}
 	ldr r4, _020229D4 @ =0x030041A0
 	movs r0, #1
@@ -22123,8 +22123,8 @@ _02022AD8:
 	.align 2, 0
 _02022AE0: .4byte 0x02033680
 
-	thumb_func_start Islander_Fishing_State5
-Islander_Fishing_State5: @ 0x02022AE4
+	thumb_func_start Islander_FinishFailedCatch
+Islander_FinishFailedCatch: @ 0x02022AE4
 	push {r4, lr}
 	ldr r4, _02022B20 @ =0x030041A0
 	movs r0, #1
@@ -22171,8 +22171,8 @@ _02022B3C:
 	bx r0
 	.align 2, 0
 
-	thumb_func_start Islander_Fishing_State6
-Islander_Fishing_State6: @ 0x02022B44
+	thumb_func_start Islander_ReactToFishingResult
+Islander_ReactToFishingResult: @ 0x02022B44
 	push {r4, r5, lr}
 	ldr r4, _02022B78 @ =0x030041A0
 	movs r0, #1
@@ -22258,8 +22258,8 @@ _02022BD6:
 	.align 2, 0
 _02022BDC: .4byte 0x02033680
 
-	thumb_func_start Islander_Fishing_State7
-Islander_Fishing_State7: @ 0x02022BE0
+	thumb_func_start Islander_FinishSuccessfulCatch
+Islander_FinishSuccessfulCatch: @ 0x02022BE0
 	push {r4, lr}
 	ldr r4, _02022C0C @ =0x030041A0
 	movs r0, #1
@@ -22367,8 +22367,8 @@ IslanderMoveAction_ReceiveItem: @ 0x02022C8C
 _02022CA4: .4byte 0x030041A0
 _02022CA8: .4byte 0x020338B8
 
-	thumb_func_start Islander_DespawnFlyingItem
-Islander_DespawnFlyingItem: @ 0x02022CAC
+	thumb_func_start Islander_CatchFlyingItem
+Islander_CatchFlyingItem: @ 0x02022CAC
 	push {r4, r5, r6, r7, lr}
 	mov r7, sb
 	mov r6, r8
@@ -22633,8 +22633,8 @@ _02022EB4:
 	.align 2, 0
 _02022EBC: .4byte 0x02033680
 
-	thumb_func_start Islander_ProcessFishReceived
-Islander_ProcessFishReceived: @ 0x02022EC0
+	thumb_func_start Islander_FinishReceivingItem
+Islander_FinishReceivingItem: @ 0x02022EC0
 	push {r4, lr}
 	ldr r4, _02022F04 @ =0x030041A0
 	movs r0, #1
@@ -22732,8 +22732,8 @@ _02022F4A:
 	.align 2, 0
 _02022F80: .4byte 0x02033680
 
-	thumb_func_start Islander_BuryItem_State0
-Islander_BuryItem_State0: @ 0x02022F84
+	thumb_func_start Islander_DigHole
+Islander_DigHole: @ 0x02022F84
 	push {r4, r5, r6, r7, lr}
 	mov r7, sb
 	mov r6, r8
@@ -22945,8 +22945,8 @@ _02023110:
 	.align 2, 0
 _0202311C: .4byte 0x02033680
 
-	thumb_func_start Islander_BuryItem_State1
-Islander_BuryItem_State1: @ 0x02023120
+	thumb_func_start Islander_BuryItemInEmptyHole
+Islander_BuryItemInEmptyHole: @ 0x02023120
 	push {r4, r5, r6, r7, lr}
 	mov r7, sb
 	mov r6, r8
@@ -23181,8 +23181,8 @@ _020232F8: .4byte 0x00007777
 _020232FC: .4byte 0x03001B40
 _02023300: .4byte 0x00001918
 
-	thumb_func_start Islander_BuryItem_State2
-Islander_BuryItem_State2: @ 0x02023304
+	thumb_func_start Islander_ReactToDugItem
+Islander_ReactToDugItem: @ 0x02023304
 	push {r4, r5, lr}
 	ldr r4, _02023330 @ =0x030041A0
 	movs r0, #1
@@ -23303,8 +23303,8 @@ _020233D8:
 	.align 2, 0
 _020233E0: .4byte 0x02033680
 
-	thumb_func_start Islander_BuryItem_State3
-Islander_BuryItem_State3: @ 0x020233E4
+	thumb_func_start Islander_SelectReplacementBuriedItem
+Islander_SelectReplacementBuriedItem: @ 0x020233E4
 	push {r4, r5, lr}
 	ldr r4, _02023444 @ =0x030041A0
 	movs r0, #1
@@ -23411,8 +23411,8 @@ _020234A6:
 	.align 2, 0
 _020234AC: .4byte 0x02033680
 
-	thumb_func_start Islander_BuryItem_State4
-Islander_BuryItem_State4: @ 0x020234B0
+	thumb_func_start Islander_FillHole
+Islander_FillHole: @ 0x020234B0
 	push {r4, r5, r6, r7, lr}
 	ldr r5, _020235C0 @ =0x030041A0
 	adds r0, r5, #0
@@ -23599,8 +23599,8 @@ _0202361E:
 	.align 2, 0
 _02023624: .4byte 0x02033680
 
-	thumb_func_start Islander_BuryItem_State5
-Islander_BuryItem_State5: @ 0x02023628
+	thumb_func_start Islander_FinishDugItemReaction
+Islander_FinishDugItemReaction: @ 0x02023628
 	push {r4, lr}
 	ldr r4, _02023654 @ =0x030041A0
 	movs r0, #1
@@ -23694,8 +23694,8 @@ IslanderMoveAction_Bury: @ 0x020236B0
 _020236C8: .4byte 0x030041A0
 _020236CC: .4byte 0x0203388C
 
-	thumb_func_start Islander_MoveAction20_Init
-Islander_MoveAction20_Init: @ 0x020236D0
+	thumb_func_start Islander_StartCarryTransition
+Islander_StartCarryTransition: @ 0x020236D0
 	push {r4, lr}
 	ldr r0, _0202372C @ =0x030041A0
 	mov ip, r0
@@ -23746,8 +23746,8 @@ _0202372C: .4byte 0x030041A0
 _02023730: .4byte 0x02033680
 _02023734: .4byte 0x00002A30
 
-	thumb_func_start Islander_MoveAction20_State0
-Islander_MoveAction20_State0: @ 0x02023738
+	thumb_func_start Islander_WaitForPickup
+Islander_WaitForPickup: @ 0x02023738
 	push {r4, r5, lr}
 	ldr r5, _0202375C @ =0x030041A0
 	adds r0, r5, #0
@@ -23834,8 +23834,8 @@ _020237DC: .4byte 0x00000824
 _020237E0: .4byte 0x00000826
 _020237E4: .4byte 0x00000828
 
-	thumb_func_start Islander_MoveAction20_State1
-Islander_MoveAction20_State1: @ 0x020237E8
+	thumb_func_start Islander_ReturnHomeMosaicIn
+Islander_ReturnHomeMosaicIn: @ 0x020237E8
 	push {r4, r5, r6, lr}
 	ldr r0, _02023894 @ =0x030041A0
 	mov ip, r0
@@ -23938,8 +23938,8 @@ _020238B0: .4byte 0x00000844
 _020238B4: .4byte 0x00000846
 _020238B8: .4byte 0x0400004C
 
-	thumb_func_start Islander_MoveAction20_State2
-Islander_MoveAction20_State2: @ 0x020238BC
+	thumb_func_start Islander_ReturnHomeMosaicOut
+Islander_ReturnHomeMosaicOut: @ 0x020238BC
 	push {r4, r5, r6, r7, lr}
 	ldr r0, _02023944 @ =0x030041A0
 	mov ip, r0
@@ -24019,8 +24019,8 @@ _0202395C: .4byte 0x00000828
 _02023960: .4byte 0x0000049A
 _02023964: .4byte 0x0400004C
 
-	thumb_func_start Islander_MoveAction20_State3
-Islander_MoveAction20_State3: @ 0x02023968
+	thumb_func_start Islander_WaitForPlacement
+Islander_WaitForPlacement: @ 0x02023968
 	push {lr}
 	ldr r3, _02023990 @ =0x030041A0
 	adds r0, r3, #0
@@ -24045,8 +24045,8 @@ _0202398C:
 	.align 2, 0
 _02023990: .4byte 0x030041A0
 
-	thumb_func_start Islander_MoveAction20_State4
-Islander_MoveAction20_State4: @ 0x02023994
+	thumb_func_start Islander_CheckPlacement
+Islander_CheckPlacement: @ 0x02023994
 	push {r4, r5, r6, r7, lr}
 	mov r7, r8
 	push {r7}
@@ -24259,8 +24259,8 @@ _02023B2C: .4byte 0x00000824
 _02023B30: .4byte 0x00000826
 _02023B34: .4byte 0x00000828
 
-	thumb_func_start Islander_MoveAction20_Move
-Islander_MoveAction20_Move: @ 0x02023B38
+	thumb_func_start Islander_UpdateCarryTransition
+Islander_UpdateCarryTransition: @ 0x02023B38
 	push {lr}
 	ldr r0, _02023B50 @ =0x030041A0
 	ldr r1, _02023B54 @ =0x020338A4

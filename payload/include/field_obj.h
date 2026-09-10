@@ -12,13 +12,54 @@ enum {
     FIELD_OBJECT_COUNT = 30
 };
 
+/* Runtime field-object types derived from ItemGroupStruct.field_entity_type. */
+typedef enum FieldObjectType {
+    FIELD_OBJECT_TYPE_NONE,
+    FIELD_OBJECT_TYPE_MY_COTTAGE,
+    FIELD_OBJECT_TYPE_NPC_COTTAGE,
+    FIELD_OBJECT_TYPE_SMALL_TREE,
+    FIELD_OBJECT_TYPE_MEDIUM_TREE,
+    FIELD_OBJECT_TYPE_LARGE_TREE,
+    FIELD_OBJECT_TYPE_FULLY_GROWN_TREE,
+    FIELD_OBJECT_TYPE_APPLE_TREE,
+    FIELD_OBJECT_TYPE_ORANGE_TREE,
+    FIELD_OBJECT_TYPE_PEACH_TREE,
+    FIELD_OBJECT_TYPE_PEAR_TREE,
+    FIELD_OBJECT_TYPE_CHERRY_TREE,
+    FIELD_OBJECT_TYPE_LARGE_STUMP,
+    FIELD_OBJECT_TYPE_FULLY_GROWN_STUMP,
+    FIELD_OBJECT_TYPE_SMALL_PALM_TREE,
+    FIELD_OBJECT_TYPE_MEDIUM_PALM_TREE,
+    FIELD_OBJECT_TYPE_LARGE_PALM_TREE,
+    FIELD_OBJECT_TYPE_FULLY_GROWN_PALM_TREE,
+    FIELD_OBJECT_TYPE_FRUIT_PALM_TREE,
+
+    FIELD_OBJECT_TYPE_NUM,
+
+    FIELD_OBJECT_TYPE_FLAG = FIELD_OBJECT_TYPE_NUM,
+    FIELD_OBJECT_TYPE_HOLE,
+
+    FIELD_OBJECT_TYPE_ALL_NUM
+} FieldObjectType;
+
+/* Indices into gFieldObjectProcs. */
+typedef enum FieldObjectActionState {
+    FIELD_OBJECT_ACTION_IDLE = 0,
+    FIELD_OBJECT_ACTION_HANDLE_HIT,
+    FIELD_OBJECT_ACTION_SHAKE,
+    FIELD_OBJECT_ACTION_TOPPLE,
+    FIELD_OBJECT_ACTION_DEACTIVATE,
+
+    FIELD_OBJECT_ACTION_NUM
+} FieldObjectActionState;
+
 /* Runtime state for a field object such as a tree, flower, or rock. */
 /* sizeof(FieldObject) == 0x30 */
 typedef struct FieldObject {
     /* 0x00 */ s32 x;
     /* 0x04 */ s32 y;
     /* 0x08 */ u16 *drop_tilemap;
-    /* 0x0C */ u16 type;
+    /* 0x0C */ u16 type; /* FieldObjectType */
     /* 0x0E */ u16 tile_idx;
     /* 0x10 */ u16 rotation;
     /* 0x12 */ u16 rotation_speed;
@@ -34,7 +75,7 @@ typedef struct FieldObject {
     /* 0x25 */ u8 anim_frame;
     /* 0x26 */ u8 anim_counter;
     /* 0x27 */ u8 anim_timer;
-    /* 0x28 */ u8 action_state;
+    /* 0x28 */ u8 action_state; /* FieldObjectActionState */
     /* 0x29 */ u8 x_flip;
     /* 0x2A */ u8 hits_remaining;
     /* 0x2B */ u8 fruit_drop_processed;
@@ -52,16 +93,16 @@ typedef struct FieldObjectSpriteFrame {
     /* 0x0E */ u16 unused;
 } FieldObjectSpriteFrame;
 
-void FieldObject_AttachEntity(s32 arg0, s32 arg1);
-void FieldObject_Init(s32 arg0, u16 arg1, s32 arg2, u8 arg3);
-void FieldObject_Update(s32 arg0);
-void FieldObject_Idle(s32 idx);
-void FieldObject_SpawnToppleEffect(s32 arg0);
-void FieldObject_UpdateForegroundItem(s32 arg0);
-void FieldObject_HandleHit(s32 arg0);
-void FieldObject_UpdateShake(s32 arg0);
+void FieldObject_AttachEntity(s32 object_index, s32 fruit_type);
+void FieldObject_Init(s32 object_index, u16 type, s32 tile, u8 layer);
+void FieldObject_Update(s32 object_index);
+void FieldObject_Idle(s32 object_index);
+void FieldObject_SpawnToppleEffect(s32 object_index);
+void FieldObject_UpdateForegroundItem(s32 object_index);
+void FieldObject_HandleHit(s32 object_index);
+void FieldObject_UpdateShake(s32 object_index);
 void FieldObject_UpdateTopple(s32 object_index);
-void FieldObject_Deactivate(s32 arg0);
+void FieldObject_Deactivate(s32 object_index);
 void FieldObject_DrawSprite(FieldObjectSpriteFrame *frame, s32 object_index);
 void FieldObject_Draw(s32 object_index);
 

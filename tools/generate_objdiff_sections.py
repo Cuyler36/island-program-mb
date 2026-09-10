@@ -185,9 +185,12 @@ DATA_OBJECTS = (
     DataObject("gIslanderAnimData", 0x9FE8, 0x018C, "islander_anim_table", True),
     # Original address: 0x0203380C
     DataObject("IslanderMoveProcTable", 0xA174, 0x0054, "thumb_functions", True),
-    DataObject("sIslanderMoveAction11SubMoveProcs", 0xA1C8, 0x000C, "thumb_functions"),
-    DataObject("sIslanderFishingSubMoveProcs", 0xA1D4, 0x0020, "thumb_functions"),
-    DataObject("sIslanderReceiveItemSubMoveProcs", 0xA220, 0x000C, "thumb_functions"),
+    # Original address: 0x02033860
+    DataObject("sIslanderFieldObjectInteractionProcs", 0xA1C8, 0x000C, "thumb_functions"),
+    # Original address: 0x0203386C
+    DataObject("sIslanderFishingStateProcs", 0xA1D4, 0x0020, "thumb_functions"),
+    # Original address: 0x020338B8
+    DataObject("sIslanderReceiveItemStateProcs", 0xA220, 0x000C, "thumb_functions"),
     # Original address: 0x020338C4
     DataObject("sIslanderMoodEmotions", 0xA22C, 0x000E, global_symbol=True),
     # Original address: 0x020338D2
@@ -202,17 +205,17 @@ DATA_OBJECTS = (
     DataObject("sIslanderMoveSteps", 0xA3EC, 0x0040, global_symbol=True),
     # Original address: 0x02033AC4
     DataObject("gIslanderAnimMirrorFlags", 0xA42C, 0x0063, global_symbol=True),
-    DataObject("gMoveAction11ObjectAnimFrames", 0xA48F, 0x0009, global_symbol=True),
+    DataObject("sFieldObjectInteractionAnimFrames", 0xA48F, 0x0009, global_symbol=True),
     # Original address: 0x02033B30
     DataObject("sFlyingItemFruitParams", 0xA498, 0x18, global_symbol=True),
     # Original address: 0x02033B48
     DataObject("sFlyingItemParams", 0xA4B0, 0x280, global_symbol=True),
     # Original address: 0x02033DC8
     DataObject("sFloatingItemHourOffsets", 0xA730, 0x18, global_symbol=True),
-    DataObject("gMoveAction11EmotionSpawnOffsets", 0xA748, 0x0004, global_symbol=True),
+    DataObject("sEmotionItemSpawnOffsets", 0xA748, 0x0004, global_symbol=True),
     # Original address: 0x02033DE4
     DataObject("sFloatingItemBaseIndices", 0xA74C, 0xFC, global_symbol=True),
-    DataObject("gMoveAction11EntitySpawnParams", 0xA848, 0x009C, global_symbol=True),
+    DataObject("sFieldObjectInteractionEntitySpawnParams", 0xA848, 0x009C, global_symbol=True),
     # Original address: 0x02033F80
     DataObject("sIslanderFlowerItems", 0xA8E8, 0x12, global_symbol=True),
     # Original address: 0x02033F92
@@ -381,9 +384,9 @@ DATA_OBJECTS = tuple(sorted(DATA_OBJECTS + (
     # Original address: 0x0202FECC
     DataObject("gFieldObjectProcs", 0x6834, 0x14, "thumb_functions", global_symbol=True),
     # Original address: 0x0203388C
-    DataObject("IslanderSubMoveAction_BuryProcTbl", 0xA1F4, 0x18, "thumb_functions", global_symbol=True),
+    DataObject("sIslanderDiggingStateProcs", 0xA1F4, 0x18, "thumb_functions", global_symbol=True),
     # Original address: 0x020338A4
-    DataObject("sIslanderMoveAction20SubMoveProcs", 0xA20C, 0x14, "thumb_functions", global_symbol=True),
+    DataObject("sIslanderCarryTransitionProcs", 0xA20C, 0x14, "thumb_functions", global_symbol=True),
     # Original address: 0x020338DA
     DataObject("sData_020338DA", 0xA242, 0x2, global_symbol=True),
     # Original address: 0x02033A6C

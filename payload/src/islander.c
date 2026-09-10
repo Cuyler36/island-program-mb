@@ -2086,7 +2086,7 @@ AnimFrameData** gIslanderAnimData[ISLANDER_ANIM_NUM+1] = {
 };
 
 /* Original address: 0x0203380C */
-void (*IslanderMoveProcTable[21])(void) = {
+void (*IslanderMoveProcTable[ISLANDER_MOVE_ACTION_NUM])(void) = {
     Islander_StartHouseTransition,
     Islander_MoveIndoorsOrOutdoors,
     Islander_StartWandering,
@@ -2106,53 +2106,53 @@ void (*IslanderMoveProcTable[21])(void) = {
     IslanderMoveAction_ReceiveItem,
     IslanderMoveAction_Dig,
     IslanderMoveAction_Bury,
-    Islander_MoveAction20_Init,
-    Islander_MoveAction20_Move,
+    Islander_StartCarryTransition,
+    Islander_UpdateCarryTransition,
 };
 
 /* Original address: 0x02033860 */
-Islander_SUB_MOVE_PROC sIslanderMoveAction11SubMoveProcs[] = {
-    Islander_MoveAction11_State0,
-    Islander_MoveAction11_State1,
-    Islander_MoveAction11_State2,
+Islander_SUB_MOVE_PROC sIslanderFieldObjectInteractionProcs[ISLANDER_FIELD_OBJECT_INTERACTION_STATE_NUM] = {
+    Islander_ShakeFieldObject,
+    Islander_ChopFieldObject,
+    Islander_FinishFieldObjectInteraction,
 };
 
 /* Original address: 0x0203386C */
-Islander_SUB_MOVE_PROC sIslanderFishingSubMoveProcs[] = {
-        Islander_Fishing_State0,
-        Islander_Fishing_State1,
-        Islander_Fishing_State2,
-        Islander_Fishing_State3,
-        Islander_Fishing_State4,
-        Islander_Fishing_State5,
-        Islander_Fishing_State6,
-        Islander_Fishing_State7,
-    };
+Islander_SUB_MOVE_PROC sIslanderFishingStateProcs[ISLANDER_FISHING_STATE_NUM] = {
+    Islander_CastFishingLine,
+    Islander_WaitForFishBite,
+    Islander_NoticeFishBite,
+    Islander_WaitToReelIn,
+    Islander_ReelInFish,
+    Islander_FinishFailedCatch,
+    Islander_ReactToFishingResult,
+    Islander_FinishSuccessfulCatch,
+};
 
 /* Original address: 0x0203388C */
-void (*IslanderSubMoveAction_BuryProcTbl[6])(void) = {
-    Islander_BuryItem_State0,
-    Islander_BuryItem_State1,
-    Islander_BuryItem_State2,
-    Islander_BuryItem_State3,
-    Islander_BuryItem_State4,
-    Islander_BuryItem_State5,
+void (*sIslanderDiggingStateProcs[ISLANDER_DIGGING_STATE_NUM])(void) = {
+    Islander_DigHole,
+    Islander_BuryItemInEmptyHole,
+    Islander_ReactToDugItem,
+    Islander_SelectReplacementBuriedItem,
+    Islander_FillHole,
+    Islander_FinishDugItemReaction,
 };
 
 /* Original address: 0x020338A4 */
-Islander_SUB_MOVE_PROC sIslanderMoveAction20SubMoveProcs[] = {
-        Islander_MoveAction20_State0,
-        Islander_MoveAction20_State1,
-        Islander_MoveAction20_State2,
-        Islander_MoveAction20_State3,
-        Islander_MoveAction20_State4,
-    };
+Islander_SUB_MOVE_PROC sIslanderCarryTransitionProcs[ISLANDER_CARRY_TRANSITION_STATE_NUM] = {
+    Islander_WaitForPickup,
+    Islander_ReturnHomeMosaicIn,
+    Islander_ReturnHomeMosaicOut,
+    Islander_WaitForPlacement,
+    Islander_CheckPlacement,
+};
 
 /* Original address: 0x020338B8 */
-Islander_SUB_MOVE_PROC sIslanderReceiveItemSubMoveProcs[] = {
-    Islander_DespawnFlyingItem,
+Islander_SUB_MOVE_PROC sIslanderReceiveItemStateProcs[ISLANDER_RECEIVE_ITEM_STATE_NUM] = {
+    Islander_CatchFlyingItem,
     Islander_StoreHeldItem,
-    Islander_ProcessFishReceived,
+    Islander_FinishReceivingItem,
 };
 
 /* Original address: 0x020338C4 */
@@ -2180,26 +2180,37 @@ IslanderDirectionSector gIslanderDirectionSectors[8] = {
 
 /* Original address: 0x020338FC */
 u16 sFishingRewardGeneratorIndices[64] = {
-    0x16, 0x1A, 0x1C, 0x1E, 0x25, 0x7E, 0x7E, 0x7F,
-    0x17, 0x1B, 0x1D, 0x1F, 0x25, 0x7E, 0x7E, 0x7F,
-    0x0C, 0x25, 0x7E, 0x7E, 0x7E, 0x7E, 0x7E, 0x7F,
-    0x21, 0x25, 0x7E, 0x7E, 0x7E, 0x7E, 0x7E, 0x7F,
-    0x09, 0x25, 0x7E, 0x7E, 0x7E, 0x7E, 0x7E, 0x7F,
-    0x22, 0x25, 0x7E, 0x7E, 0x7E, 0x7E, 0x7E, 0x7F,
-    0x19, 0x17, 0x21, 0x25, 0x7E, 0x7F, 0x7F, 0x7F,
-    0x24, 0x19, 0x18, 0x25, 0x25, 0x7F, 0x7F, 0x7F,
+    ITEM_GENERATOR_FURNITURE_COMMON, ITEM_GENERATOR_CARPET_COMMON,
+    ITEM_GENERATOR_WALLPAPER_COMMON, ITEM_GENERATOR_SHIRT_COMMON,
+    ITEM_GENERATOR_TRASH, 0x7E, 0x7E, 0x7F,
+    ITEM_GENERATOR_FURNITURE_RARE, ITEM_GENERATOR_CARPET_RARE,
+    ITEM_GENERATOR_WALLPAPER_RARE, ITEM_GENERATOR_SHIRT_RARE,
+    ITEM_GENERATOR_TRASH, 0x7E, 0x7E, 0x7F,
+    ITEM_GENERATOR_PITFALL, ITEM_GENERATOR_TRASH, 0x7E, 0x7E, 0x7E, 0x7E, 0x7E, 0x7F,
+    ITEM_GENERATOR_GYROID, ITEM_GENERATOR_TRASH, 0x7E, 0x7E, 0x7E, 0x7E, 0x7E, 0x7F,
+    ITEM_GENERATOR_1K_BELLS, ITEM_GENERATOR_TRASH, 0x7E, 0x7E, 0x7E, 0x7E, 0x7E, 0x7F,
+    ITEM_GENERATOR_UMBRELLA, ITEM_GENERATOR_TRASH, 0x7E, 0x7E, 0x7E, 0x7E, 0x7E, 0x7F,
+    ITEM_GENERATOR_FURNITURE_ISLAND, ITEM_GENERATOR_FURNITURE_RARE,
+    ITEM_GENERATOR_GYROID, ITEM_GENERATOR_TRASH, 0x7E, 0x7F, 0x7F, 0x7F,
+    ITEM_GENERATOR_NES, ITEM_GENERATOR_FURNITURE_ISLAND,
+    ITEM_GENERATOR_FURNITURE_EVENT, ITEM_GENERATOR_TRASH,
+    ITEM_GENERATOR_TRASH, 0x7F, 0x7F, 0x7F,
 };
 
 /* Original address: 0x0203397C */
 u16 sFishingRewardItemTypes[64] = {
-    0x01, 0x52, 0x53, 0x0E, 0x0F, 0x7E, 0x7E, 0x7F,
-    0x01, 0x52, 0x53, 0x0E, 0x0F, 0x7E, 0x7E, 0x7F,
-    0x10, 0x0F, 0x7E, 0x7E, 0x7E, 0x7E, 0x7E, 0x7F,
-    0x02, 0x0F, 0x7E, 0x7E, 0x7E, 0x7E, 0x7E, 0x7F,
-    0x42, 0x0F, 0x7E, 0x7E, 0x7E, 0x7E, 0x7E, 0x7F,
-    0x4D, 0x0F, 0x7E, 0x7E, 0x7E, 0x7E, 0x7E, 0x7F,
-    0x01, 0x01, 0x02, 0x0F, 0x7E, 0x7F, 0x7F, 0x7F,
-    0x55, 0x01, 0x01, 0x0F, 0x0F, 0x7F, 0x7F, 0x7F,
+    ITEM_TYPE_FURNITURE, ITEM_TYPE_CARPET, ITEM_TYPE_WALLPAPER, ITEM_TYPE_SHIRT,
+    ITEM_TYPE_TRASH, 0x7E, 0x7E, 0x7F,
+    ITEM_TYPE_FURNITURE, ITEM_TYPE_CARPET, ITEM_TYPE_WALLPAPER, ITEM_TYPE_SHIRT,
+    ITEM_TYPE_TRASH, 0x7E, 0x7E, 0x7F,
+    ITEM_TYPE_PITFALL, ITEM_TYPE_TRASH, 0x7E, 0x7E, 0x7E, 0x7E, 0x7E, 0x7F,
+    ITEM_TYPE_GYROID, ITEM_TYPE_TRASH, 0x7E, 0x7E, 0x7E, 0x7E, 0x7E, 0x7F,
+    ITEM_TYPE_1K_BELLS, ITEM_TYPE_TRASH, 0x7E, 0x7E, 0x7E, 0x7E, 0x7E, 0x7F,
+    ITEM_TYPE_UMBRELLA, ITEM_TYPE_TRASH, 0x7E, 0x7E, 0x7E, 0x7E, 0x7E, 0x7F,
+    ITEM_TYPE_FURNITURE, ITEM_TYPE_FURNITURE, ITEM_TYPE_GYROID, ITEM_TYPE_TRASH,
+    0x7E, 0x7F, 0x7F, 0x7F,
+    ITEM_TYPE_NES, ITEM_TYPE_FURNITURE, ITEM_TYPE_FURNITURE, ITEM_TYPE_TRASH,
+    ITEM_TYPE_TRASH, 0x7F, 0x7F, 0x7F,
 };
 
 /* Original address: 0x020339FC */
@@ -2253,182 +2264,182 @@ u8 gIslanderAnimMirrorFlags[ISLANDER_ANIM_NUM+1] = {
 };
 
 /* Original address: 0x02033B27 */
-u8 gMoveAction11ObjectAnimFrames[9] = {
+u8 sFieldObjectInteractionAnimFrames[9] = {
     1, 2, 1, 0, 2, 1, 2, 1, 3
 };
 
 /* Original address: 0x02033B30 */
 EntitySpawnParams sFlyingItemFruitParams[6] = {
-    { 0x0003, 0x0000 },
-    { 0x0004, 0x0001 },
-    { 0x0005, 0x0002 },
-    { 0x0006, 0x0003 },
-    { 0x0007, 0x0004 },
-    { 0x001E, 0x0005 },
+    { ITEM_TYPE_APPLE,   ITEM_GENERATOR_APPLE },
+    { ITEM_TYPE_ORANGE,  ITEM_GENERATOR_ORANGE },
+    { ITEM_TYPE_PEACH,   ITEM_GENERATOR_PEACH },
+    { ITEM_TYPE_PEAR,    ITEM_GENERATOR_PEAR },
+    { ITEM_TYPE_CHERRY,  ITEM_GENERATOR_CHERRY },
+    { ITEM_TYPE_COCONUT, ITEM_GENERATOR_COCONUT },
 };
 
 /* Original address: 0x02033B48 */
 EntitySpawnParams sFlyingItemParams[160] = {
-    { 0x0001, 0x0016 },
-    { 0x0052, 0x001A },
-    { 0x0053, 0x001C },
-    { 0x000E, 0x001E },
-    { 0x0000, 0x0000 },
-    { 0x000B, 0x0008 },
-    { 0x001E, 0x0005 },
-    { 0x0042, 0x0009 },
-    { 0x004D, 0x0022 },
-    { 0x0000, 0x0000 },
-    { 0x0010, 0x000C },
-    { 0x000F, 0x0025 },
-    { 0x0010, 0x000C },
-    { 0x000F, 0x0025 },
-    { 0x0000, 0x0000 },
-    { 0x0010, 0x000C },
-    { 0x000F, 0x0025 },
-    { 0x0010, 0x000C },
-    { 0x000F, 0x0025 },
-    { 0x0000, 0x0000 },
-    { 0x0001, 0x0017 },
-    { 0x0052, 0x001B },
-    { 0x0053, 0x001D },
-    { 0x000E, 0x001F },
-    { 0x0000, 0x0000 },
-    { 0x0042, 0x0009 },
-    { 0x0009, 0x0006 },
-    { 0x0043, 0x000A },
-    { 0x004D, 0x0022 },
-    { 0x0000, 0x0000 },
-    { 0x0010, 0x000C },
-    { 0x000F, 0x0025 },
-    { 0x0010, 0x000C },
-    { 0x000F, 0x0025 },
-    { 0x0000, 0x0000 },
-    { 0x0010, 0x000C },
-    { 0x000F, 0x0025 },
-    { 0x0010, 0x000C },
-    { 0x000F, 0x0025 },
-    { 0x0000, 0x0000 },
-    { 0x0043, 0x000A },
-    { 0x0007, 0x0004 },
-    { 0x000B, 0x0008 },
-    { 0x0010, 0x000C },
-    { 0x0000, 0x0000 },
-    { 0x0042, 0x0009 },
-    { 0x0007, 0x0004 },
-    { 0x000B, 0x0008 },
-    { 0x0010, 0x000C },
-    { 0x0000, 0x0000 },
-    { 0x000B, 0x0008 },
-    { 0x0007, 0x0004 },
-    { 0x000B, 0x0008 },
-    { 0x0010, 0x000C },
-    { 0x0000, 0x0000 },
-    { 0x000B, 0x0008 },
-    { 0x0007, 0x0004 },
-    { 0x000B, 0x0008 },
-    { 0x0010, 0x000C },
-    { 0x0000, 0x0000 },
-    { 0x0044, 0x000B },
-    { 0x0009, 0x0006 },
-    { 0x0042, 0x0009 },
-    { 0x0010, 0x000C },
-    { 0x0000, 0x0000 },
-    { 0x0043, 0x000A },
-    { 0x0009, 0x0006 },
-    { 0x0042, 0x0009 },
-    { 0x0010, 0x000C },
-    { 0x0000, 0x0000 },
-    { 0x0042, 0x0009 },
-    { 0x0009, 0x0006 },
-    { 0x000B, 0x0008 },
-    { 0x0010, 0x000C },
-    { 0x0000, 0x0000 },
-    { 0x0042, 0x0009 },
-    { 0x0009, 0x0006 },
-    { 0x000B, 0x0008 },
-    { 0x0010, 0x000C },
-    { 0x0000, 0x0000 },
-    { 0x0002, 0x0021 },
-    { 0x0001, 0x0017 },
-    { 0x000E, 0x001F },
-    { 0x004D, 0x0022 },
-    { 0x0000, 0x0000 },
-    { 0x0001, 0x0016 },
-    { 0x0052, 0x001A },
-    { 0x0053, 0x001C },
-    { 0x000E, 0x001E },
-    { 0x0000, 0x0000 },
-    { 0x000E, 0x001E },
-    { 0x0010, 0x000C },
-    { 0x000E, 0x001E },
-    { 0x0010, 0x000C },
-    { 0x0000, 0x0000 },
-    { 0x000E, 0x001E },
-    { 0x0010, 0x000C },
-    { 0x000E, 0x001E },
-    { 0x0010, 0x000C },
-    { 0x0000, 0x0000 },
-    { 0x0001, 0x0019 },
-    { 0x0001, 0x0018 },
-    { 0x0002, 0x0021 },
-    { 0x000E, 0x001F },
-    { 0x0000, 0x0000 },
-    { 0x0001, 0x0017 },
-    { 0x0052, 0x001B },
-    { 0x0053, 0x001D },
-    { 0x000E, 0x001F },
-    { 0x0000, 0x0000 },
-    { 0x000E, 0x001E },
-    { 0x0010, 0x000C },
-    { 0x000E, 0x001E },
-    { 0x0010, 0x000C },
-    { 0x0000, 0x0000 },
-    { 0x000E, 0x001E },
-    { 0x0010, 0x000C },
-    { 0x000E, 0x001E },
-    { 0x0010, 0x000C },
-    { 0x0000, 0x0000 },
-    { 0x0001, 0x0018 },
-    { 0x000F, 0x0025 },
-    { 0x0010, 0x000C },
-    { 0x000F, 0x0025 },
-    { 0x0000, 0x0000 },
-    { 0x0001, 0x0017 },
-    { 0x000F, 0x0025 },
-    { 0x0010, 0x000C },
-    { 0x000F, 0x0025 },
-    { 0x0000, 0x0000 },
-    { 0x0001, 0x0016 },
-    { 0x000F, 0x0025 },
-    { 0x0010, 0x000C },
-    { 0x000F, 0x0025 },
-    { 0x0000, 0x0000 },
-    { 0x0001, 0x0016 },
-    { 0x000F, 0x0025 },
-    { 0x0010, 0x000C },
-    { 0x000F, 0x0025 },
-    { 0x0000, 0x0000 },
-    { 0x0055, 0x0024 },
-    { 0x000F, 0x0025 },
-    { 0x0010, 0x000C },
-    { 0x000F, 0x0025 },
-    { 0x0000, 0x0000 },
-    { 0x0001, 0x0019 },
-    { 0x000F, 0x0025 },
-    { 0x0010, 0x000C },
-    { 0x000F, 0x0025 },
-    { 0x0000, 0x0000 },
-    { 0x0001, 0x0017 },
-    { 0x000F, 0x0025 },
-    { 0x0010, 0x000C },
-    { 0x000F, 0x0025 },
-    { 0x0000, 0x0000 },
-    { 0x0001, 0x0017 },
-    { 0x000F, 0x0025 },
-    { 0x0010, 0x000C },
-    { 0x000F, 0x0025 },
-    { 0x0000, 0x0000 },
+    { ITEM_TYPE_FURNITURE, ITEM_GENERATOR_FURNITURE_COMMON },
+    { ITEM_TYPE_CARPET, ITEM_GENERATOR_CARPET_COMMON },
+    { ITEM_TYPE_WALLPAPER, ITEM_GENERATOR_WALLPAPER_COMMON },
+    { ITEM_TYPE_SHIRT, ITEM_GENERATOR_SHIRT_COMMON },
+    { 0, 0 },
+    { ITEM_TYPE_100_BELLS, ITEM_GENERATOR_100_BELLS },
+    { ITEM_TYPE_COCONUT, ITEM_GENERATOR_COCONUT },
+    { ITEM_TYPE_1K_BELLS, ITEM_GENERATOR_1K_BELLS },
+    { ITEM_TYPE_UMBRELLA, ITEM_GENERATOR_UMBRELLA },
+    { 0, 0 },
+    { ITEM_TYPE_PITFALL, ITEM_GENERATOR_PITFALL },
+    { ITEM_TYPE_TRASH, ITEM_GENERATOR_TRASH },
+    { ITEM_TYPE_PITFALL, ITEM_GENERATOR_PITFALL },
+    { ITEM_TYPE_TRASH, ITEM_GENERATOR_TRASH },
+    { 0, 0 },
+    { ITEM_TYPE_PITFALL, ITEM_GENERATOR_PITFALL },
+    { ITEM_TYPE_TRASH, ITEM_GENERATOR_TRASH },
+    { ITEM_TYPE_PITFALL, ITEM_GENERATOR_PITFALL },
+    { ITEM_TYPE_TRASH, ITEM_GENERATOR_TRASH },
+    { 0, 0 },
+    { ITEM_TYPE_FURNITURE, ITEM_GENERATOR_FURNITURE_RARE },
+    { ITEM_TYPE_CARPET, ITEM_GENERATOR_CARPET_RARE },
+    { ITEM_TYPE_WALLPAPER, ITEM_GENERATOR_WALLPAPER_RARE },
+    { ITEM_TYPE_SHIRT, ITEM_GENERATOR_SHIRT_RARE },
+    { 0, 0 },
+    { ITEM_TYPE_1K_BELLS, ITEM_GENERATOR_1K_BELLS },
+    { ITEM_TYPE_MUSHROOM, ITEM_GENERATOR_MUSHROOM },
+    { ITEM_TYPE_10K_BELLS, ITEM_GENERATOR_10K_BELLS },
+    { ITEM_TYPE_UMBRELLA, ITEM_GENERATOR_UMBRELLA },
+    { 0, 0 },
+    { ITEM_TYPE_PITFALL, ITEM_GENERATOR_PITFALL },
+    { ITEM_TYPE_TRASH, ITEM_GENERATOR_TRASH },
+    { ITEM_TYPE_PITFALL, ITEM_GENERATOR_PITFALL },
+    { ITEM_TYPE_TRASH, ITEM_GENERATOR_TRASH },
+    { 0, 0 },
+    { ITEM_TYPE_PITFALL, ITEM_GENERATOR_PITFALL },
+    { ITEM_TYPE_TRASH, ITEM_GENERATOR_TRASH },
+    { ITEM_TYPE_PITFALL, ITEM_GENERATOR_PITFALL },
+    { ITEM_TYPE_TRASH, ITEM_GENERATOR_TRASH },
+    { 0, 0 },
+    { ITEM_TYPE_10K_BELLS, ITEM_GENERATOR_10K_BELLS },
+    { ITEM_TYPE_CHERRY, ITEM_GENERATOR_CHERRY },
+    { ITEM_TYPE_100_BELLS, ITEM_GENERATOR_100_BELLS },
+    { ITEM_TYPE_PITFALL, ITEM_GENERATOR_PITFALL },
+    { 0, 0 },
+    { ITEM_TYPE_1K_BELLS, ITEM_GENERATOR_1K_BELLS },
+    { ITEM_TYPE_CHERRY, ITEM_GENERATOR_CHERRY },
+    { ITEM_TYPE_100_BELLS, ITEM_GENERATOR_100_BELLS },
+    { ITEM_TYPE_PITFALL, ITEM_GENERATOR_PITFALL },
+    { 0, 0 },
+    { ITEM_TYPE_100_BELLS, ITEM_GENERATOR_100_BELLS },
+    { ITEM_TYPE_CHERRY, ITEM_GENERATOR_CHERRY },
+    { ITEM_TYPE_100_BELLS, ITEM_GENERATOR_100_BELLS },
+    { ITEM_TYPE_PITFALL, ITEM_GENERATOR_PITFALL },
+    { 0, 0 },
+    { ITEM_TYPE_100_BELLS, ITEM_GENERATOR_100_BELLS },
+    { ITEM_TYPE_CHERRY, ITEM_GENERATOR_CHERRY },
+    { ITEM_TYPE_100_BELLS, ITEM_GENERATOR_100_BELLS },
+    { ITEM_TYPE_PITFALL, ITEM_GENERATOR_PITFALL },
+    { 0, 0 },
+    { ITEM_TYPE_30K_BELLS, ITEM_GENERATOR_30K_BELLS },
+    { ITEM_TYPE_MUSHROOM, ITEM_GENERATOR_MUSHROOM },
+    { ITEM_TYPE_1K_BELLS, ITEM_GENERATOR_1K_BELLS },
+    { ITEM_TYPE_PITFALL, ITEM_GENERATOR_PITFALL },
+    { 0, 0 },
+    { ITEM_TYPE_10K_BELLS, ITEM_GENERATOR_10K_BELLS },
+    { ITEM_TYPE_MUSHROOM, ITEM_GENERATOR_MUSHROOM },
+    { ITEM_TYPE_1K_BELLS, ITEM_GENERATOR_1K_BELLS },
+    { ITEM_TYPE_PITFALL, ITEM_GENERATOR_PITFALL },
+    { 0, 0 },
+    { ITEM_TYPE_1K_BELLS, ITEM_GENERATOR_1K_BELLS },
+    { ITEM_TYPE_MUSHROOM, ITEM_GENERATOR_MUSHROOM },
+    { ITEM_TYPE_100_BELLS, ITEM_GENERATOR_100_BELLS },
+    { ITEM_TYPE_PITFALL, ITEM_GENERATOR_PITFALL },
+    { 0, 0 },
+    { ITEM_TYPE_1K_BELLS, ITEM_GENERATOR_1K_BELLS },
+    { ITEM_TYPE_MUSHROOM, ITEM_GENERATOR_MUSHROOM },
+    { ITEM_TYPE_100_BELLS, ITEM_GENERATOR_100_BELLS },
+    { ITEM_TYPE_PITFALL, ITEM_GENERATOR_PITFALL },
+    { 0, 0 },
+    { ITEM_TYPE_GYROID, ITEM_GENERATOR_GYROID },
+    { ITEM_TYPE_FURNITURE, ITEM_GENERATOR_FURNITURE_RARE },
+    { ITEM_TYPE_SHIRT, ITEM_GENERATOR_SHIRT_RARE },
+    { ITEM_TYPE_UMBRELLA, ITEM_GENERATOR_UMBRELLA },
+    { 0, 0 },
+    { ITEM_TYPE_FURNITURE, ITEM_GENERATOR_FURNITURE_COMMON },
+    { ITEM_TYPE_CARPET, ITEM_GENERATOR_CARPET_COMMON },
+    { ITEM_TYPE_WALLPAPER, ITEM_GENERATOR_WALLPAPER_COMMON },
+    { ITEM_TYPE_SHIRT, ITEM_GENERATOR_SHIRT_COMMON },
+    { 0, 0 },
+    { ITEM_TYPE_SHIRT, ITEM_GENERATOR_SHIRT_COMMON },
+    { ITEM_TYPE_PITFALL, ITEM_GENERATOR_PITFALL },
+    { ITEM_TYPE_SHIRT, ITEM_GENERATOR_SHIRT_COMMON },
+    { ITEM_TYPE_PITFALL, ITEM_GENERATOR_PITFALL },
+    { 0, 0 },
+    { ITEM_TYPE_SHIRT, ITEM_GENERATOR_SHIRT_COMMON },
+    { ITEM_TYPE_PITFALL, ITEM_GENERATOR_PITFALL },
+    { ITEM_TYPE_SHIRT, ITEM_GENERATOR_SHIRT_COMMON },
+    { ITEM_TYPE_PITFALL, ITEM_GENERATOR_PITFALL },
+    { 0, 0 },
+    { ITEM_TYPE_FURNITURE, ITEM_GENERATOR_FURNITURE_ISLAND },
+    { ITEM_TYPE_FURNITURE, ITEM_GENERATOR_FURNITURE_EVENT },
+    { ITEM_TYPE_GYROID, ITEM_GENERATOR_GYROID },
+    { ITEM_TYPE_SHIRT, ITEM_GENERATOR_SHIRT_RARE },
+    { 0, 0 },
+    { ITEM_TYPE_FURNITURE, ITEM_GENERATOR_FURNITURE_RARE },
+    { ITEM_TYPE_CARPET, ITEM_GENERATOR_CARPET_RARE },
+    { ITEM_TYPE_WALLPAPER, ITEM_GENERATOR_WALLPAPER_RARE },
+    { ITEM_TYPE_SHIRT, ITEM_GENERATOR_SHIRT_RARE },
+    { 0, 0 },
+    { ITEM_TYPE_SHIRT, ITEM_GENERATOR_SHIRT_COMMON },
+    { ITEM_TYPE_PITFALL, ITEM_GENERATOR_PITFALL },
+    { ITEM_TYPE_SHIRT, ITEM_GENERATOR_SHIRT_COMMON },
+    { ITEM_TYPE_PITFALL, ITEM_GENERATOR_PITFALL },
+    { 0, 0 },
+    { ITEM_TYPE_SHIRT, ITEM_GENERATOR_SHIRT_COMMON },
+    { ITEM_TYPE_PITFALL, ITEM_GENERATOR_PITFALL },
+    { ITEM_TYPE_SHIRT, ITEM_GENERATOR_SHIRT_COMMON },
+    { ITEM_TYPE_PITFALL, ITEM_GENERATOR_PITFALL },
+    { 0, 0 },
+    { ITEM_TYPE_FURNITURE, ITEM_GENERATOR_FURNITURE_EVENT },
+    { ITEM_TYPE_TRASH, ITEM_GENERATOR_TRASH },
+    { ITEM_TYPE_PITFALL, ITEM_GENERATOR_PITFALL },
+    { ITEM_TYPE_TRASH, ITEM_GENERATOR_TRASH },
+    { 0, 0 },
+    { ITEM_TYPE_FURNITURE, ITEM_GENERATOR_FURNITURE_RARE },
+    { ITEM_TYPE_TRASH, ITEM_GENERATOR_TRASH },
+    { ITEM_TYPE_PITFALL, ITEM_GENERATOR_PITFALL },
+    { ITEM_TYPE_TRASH, ITEM_GENERATOR_TRASH },
+    { 0, 0 },
+    { ITEM_TYPE_FURNITURE, ITEM_GENERATOR_FURNITURE_COMMON },
+    { ITEM_TYPE_TRASH, ITEM_GENERATOR_TRASH },
+    { ITEM_TYPE_PITFALL, ITEM_GENERATOR_PITFALL },
+    { ITEM_TYPE_TRASH, ITEM_GENERATOR_TRASH },
+    { 0, 0 },
+    { ITEM_TYPE_FURNITURE, ITEM_GENERATOR_FURNITURE_COMMON },
+    { ITEM_TYPE_TRASH, ITEM_GENERATOR_TRASH },
+    { ITEM_TYPE_PITFALL, ITEM_GENERATOR_PITFALL },
+    { ITEM_TYPE_TRASH, ITEM_GENERATOR_TRASH },
+    { 0, 0 },
+    { ITEM_TYPE_NES, ITEM_GENERATOR_NES },
+    { ITEM_TYPE_TRASH, ITEM_GENERATOR_TRASH },
+    { ITEM_TYPE_PITFALL, ITEM_GENERATOR_PITFALL },
+    { ITEM_TYPE_TRASH, ITEM_GENERATOR_TRASH },
+    { 0, 0 },
+    { ITEM_TYPE_FURNITURE, ITEM_GENERATOR_FURNITURE_ISLAND },
+    { ITEM_TYPE_TRASH, ITEM_GENERATOR_TRASH },
+    { ITEM_TYPE_PITFALL, ITEM_GENERATOR_PITFALL },
+    { ITEM_TYPE_TRASH, ITEM_GENERATOR_TRASH },
+    { 0, 0 },
+    { ITEM_TYPE_FURNITURE, ITEM_GENERATOR_FURNITURE_RARE },
+    { ITEM_TYPE_TRASH, ITEM_GENERATOR_TRASH },
+    { ITEM_TYPE_PITFALL, ITEM_GENERATOR_PITFALL },
+    { ITEM_TYPE_TRASH, ITEM_GENERATOR_TRASH },
+    { 0, 0 },
+    { ITEM_TYPE_FURNITURE, ITEM_GENERATOR_FURNITURE_RARE },
+    { ITEM_TYPE_TRASH, ITEM_GENERATOR_TRASH },
+    { ITEM_TYPE_PITFALL, ITEM_GENERATOR_PITFALL },
+    { ITEM_TYPE_TRASH, ITEM_GENERATOR_TRASH },
+    { 0, 0 },
 };
 
 /* Original address: 0x02033DC8 */
@@ -2438,7 +2449,7 @@ u8 sFloatingItemHourOffsets[24] = {
 };
 
 /* Original address: 0x02033DE0 */
-u8 gMoveAction11EmotionSpawnOffsets[4] = {
+u8 sEmotionItemSpawnOffsets[4] = {
     5, 15, 10, 0
 };
 
@@ -2463,20 +2474,46 @@ u16 sFloatingItemBaseIndices[18 * 7] = {
 };
 
 /* Original address: 0x02033EE0 */
-EntitySpawnParams gMoveAction11EntitySpawnParams[39] = {
-    { 0x0001, 0x0019 }, { 0x0001, 0x0018 }, { 0x0043, 0x000A },
-    { 0x0043, 0x000A }, { 0x0000, 0x0000 }, { 0x0001, 0x0017 },
-    { 0x000E, 0x001F }, { 0x0042, 0x0009 }, { 0x0042, 0x0009 },
-    { 0x0000, 0x0000 }, { 0x000B, 0x0008 }, { 0x000B, 0x0008 },
-    { 0x000B, 0x0008 }, { 0x0010, 0x000C }, { 0x0000, 0x0000 },
-    { 0x000B, 0x0008 }, { 0x000B, 0x0008 }, { 0x0010, 0x000C },
-    { 0x000F, 0x0025 }, { 0x0000, 0x0000 }, { 0x0055, 0x0024 },
-    { 0x0001, 0x0019 }, { 0x0044, 0x000B }, { 0x0044, 0x000B },
-    { 0x0000, 0x0000 }, { 0x0001, 0x0018 }, { 0x000E, 0x001F },
-    { 0x0043, 0x000A }, { 0x0043, 0x000A }, { 0x0000, 0x0000 },
-    { 0x000B, 0x0008 }, { 0x000B, 0x0008 }, { 0x000B, 0x0008 },
-    { 0x0010, 0x000C }, { 0x0000, 0x0000 }, { 0x000B, 0x0008 },
-    { 0x000B, 0x0008 }, { 0x0010, 0x000C }, { 0x000F, 0x0025 }
+EntitySpawnParams sFieldObjectInteractionEntitySpawnParams[39] = {
+    { ITEM_TYPE_FURNITURE, ITEM_GENERATOR_FURNITURE_ISLAND },
+    { ITEM_TYPE_FURNITURE, ITEM_GENERATOR_FURNITURE_EVENT },
+    { ITEM_TYPE_10K_BELLS, ITEM_GENERATOR_10K_BELLS },
+    { ITEM_TYPE_10K_BELLS, ITEM_GENERATOR_10K_BELLS },
+    { 0, 0 },
+    { ITEM_TYPE_FURNITURE, ITEM_GENERATOR_FURNITURE_RARE },
+    { ITEM_TYPE_SHIRT, ITEM_GENERATOR_SHIRT_RARE },
+    { ITEM_TYPE_1K_BELLS, ITEM_GENERATOR_1K_BELLS },
+    { ITEM_TYPE_1K_BELLS, ITEM_GENERATOR_1K_BELLS },
+    { 0, 0 },
+    { ITEM_TYPE_100_BELLS, ITEM_GENERATOR_100_BELLS },
+    { ITEM_TYPE_100_BELLS, ITEM_GENERATOR_100_BELLS },
+    { ITEM_TYPE_100_BELLS, ITEM_GENERATOR_100_BELLS },
+    { ITEM_TYPE_PITFALL, ITEM_GENERATOR_PITFALL },
+    { 0, 0 },
+    { ITEM_TYPE_100_BELLS, ITEM_GENERATOR_100_BELLS },
+    { ITEM_TYPE_100_BELLS, ITEM_GENERATOR_100_BELLS },
+    { ITEM_TYPE_PITFALL, ITEM_GENERATOR_PITFALL },
+    { ITEM_TYPE_TRASH, ITEM_GENERATOR_TRASH },
+    { 0, 0 },
+    { ITEM_TYPE_NES, ITEM_GENERATOR_NES },
+    { ITEM_TYPE_FURNITURE, ITEM_GENERATOR_FURNITURE_ISLAND },
+    { ITEM_TYPE_30K_BELLS, ITEM_GENERATOR_30K_BELLS },
+    { ITEM_TYPE_30K_BELLS, ITEM_GENERATOR_30K_BELLS },
+    { 0, 0 },
+    { ITEM_TYPE_FURNITURE, ITEM_GENERATOR_FURNITURE_EVENT },
+    { ITEM_TYPE_SHIRT, ITEM_GENERATOR_SHIRT_RARE },
+    { ITEM_TYPE_10K_BELLS, ITEM_GENERATOR_10K_BELLS },
+    { ITEM_TYPE_10K_BELLS, ITEM_GENERATOR_10K_BELLS },
+    { 0, 0 },
+    { ITEM_TYPE_100_BELLS, ITEM_GENERATOR_100_BELLS },
+    { ITEM_TYPE_100_BELLS, ITEM_GENERATOR_100_BELLS },
+    { ITEM_TYPE_100_BELLS, ITEM_GENERATOR_100_BELLS },
+    { ITEM_TYPE_PITFALL, ITEM_GENERATOR_PITFALL },
+    { 0, 0 },
+    { ITEM_TYPE_100_BELLS, ITEM_GENERATOR_100_BELLS },
+    { ITEM_TYPE_100_BELLS, ITEM_GENERATOR_100_BELLS },
+    { ITEM_TYPE_PITFALL, ITEM_GENERATOR_PITFALL },
+    { ITEM_TYPE_TRASH, ITEM_GENERATOR_TRASH }
 };
 
 /* Original address: 0x02033F7C */
@@ -2543,28 +2580,375 @@ BuriedItemRngTileGroup gBuriedItemRngTileGroups[13] = {
 
 /* Original address: 0x020340E4 */
 u8 gBuriedItemGeneratorIndices[0x120] = {
-    0x19, 0x18, 0x17, 0x17, 0x17, 0x16, 0x16, 0x09, 0x16, 0x16, 0x16, 0x0D, 0x16, 0x16,
-    0x0C, 0x0C, 0x24, 0x19, 0x18, 0x17, 0x17, 0x17, 0x17, 0x17, 0x16, 0x16, 0x16, 0x0D, 0x16, 0x16,
-    0x0C, 0x0C, 0x1F, 0x1F, 0x1E, 0x1E, 0x1E, 0x1E, 0x1E, 0x09, 0x1E, 0x1E, 0x1E, 0x0D, 0x1E, 0x1E,
-    0x0C, 0x0C, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1E, 0x1E, 0x1E, 0x1E, 0x1E, 0x0D, 0x1E, 0x1E,
-    0x0C, 0x0C, 0x1B, 0x1B, 0x1A, 0x1A, 0x1A, 0x1A, 0x1A, 0x09, 0x1A, 0x1A, 0x1A, 0x0D, 0x1A, 0x1A,
-    0x0C, 0x0C, 0x1B, 0x1B, 0x1B, 0x1B, 0x1B, 0x1B, 0x1A, 0x1A, 0x1A, 0x1A, 0x1A, 0x0D, 0x1A, 0x1A,
-    0x0C, 0x0C, 0x1D, 0x1D, 0x1C, 0x1C, 0x1C, 0x1C, 0x1C, 0x09, 0x1C, 0x1C, 0x1C, 0x0D, 0x1C, 0x1C,
-    0x0C, 0x0C, 0x1D, 0x1D, 0x1D, 0x1D, 0x1D, 0x1D, 0x1C, 0x1C, 0x1C, 0x1C, 0x1C, 0x0D, 0x1C, 0x1C,
-    0x0C, 0x0C, 0x21, 0x21, 0x21, 0x21, 0x21, 0x21, 0x21, 0x09, 0x21, 0x21, 0x21, 0x0D, 0x21, 0x21,
-    0x0C, 0x0C, 0x21, 0x21, 0x21, 0x21, 0x21, 0x21, 0x21, 0x21, 0x21, 0x21, 0x21, 0x0D, 0x21, 0x21,
-    0x0C, 0x0C, 0x0D, 0x0D, 0x0D, 0x0D, 0x0D, 0x0D, 0x0D, 0x0D, 0x25, 0x25, 0x0D, 0x0D, 0x25, 0x25,
-    0x0C, 0x0C, 0x07, 0x06, 0x05, 0x04, 0x00, 0x01, 0x02, 0x03, 0x25, 0x25, 0x0D, 0x0D, 0x25, 0x25,
-    0x0C, 0x0C, 0x1F, 0x1F, 0x1E, 0x22, 0x1E, 0x1E, 0x22, 0x22, 0x1E, 0x1E, 0x1E, 0x0D, 0x1E, 0x1E,
-    0x0C, 0x0C, 0x17, 0x17, 0x17, 0x1F, 0x17, 0x1F, 0x1F, 0x1F, 0x1E, 0x1E, 0x1E, 0x0D, 0x1E, 0x1E,
-    0x0C, 0x0C, 0x18, 0x17, 0x16, 0x1F, 0x16, 0x1A, 0x1C, 0x1E, 0x16, 0x1A, 0x1C, 0x0D, 0x16, 0x1E,
-    0x0C, 0x0C, 0x19, 0x18, 0x17, 0x21, 0x17, 0x17, 0x17, 0x1F, 0x16, 0x1A, 0x1C, 0x0D, 0x16, 0x1E,
-    0x0C, 0x0C, 0x24, 0x19, 0x18, 0x17, 0x17, 0x17, 0x16, 0x1F, 0x16, 0x1A, 0x1C, 0x0D, 0x16, 0x1E,
-    0x0C, 0x0C, 0x24, 0x24, 0x18, 0x17, 0x18, 0x17, 0x1B, 0x1D, 0x16, 0x1A, 0x1C, 0x0D, 0x16, 0x1E,
-    0x0C, 0x0C,
+    // Buried furniture/NES (happy) [reg. shovel]
+    ITEM_GENERATOR_FURNITURE_ISLAND,
+    ITEM_GENERATOR_FURNITURE_EVENT,
+    ITEM_GENERATOR_FURNITURE_RARE,
+    ITEM_GENERATOR_FURNITURE_RARE,
+    // Buried furniture/NES (neutral) [reg. shovel]
+    ITEM_GENERATOR_FURNITURE_RARE,
+    ITEM_GENERATOR_FURNITURE_COMMON,
+    ITEM_GENERATOR_FURNITURE_COMMON,
+    ITEM_GENERATOR_1K_BELLS,
+    // Buried furniture/NES (angry) [reg. shovel]
+    ITEM_GENERATOR_FURNITURE_COMMON,
+    ITEM_GENERATOR_FURNITURE_COMMON,
+    ITEM_GENERATOR_FURNITURE_COMMON,
+    ITEM_GENERATOR_PURPLE_COSMOS,
+    // Buried furniture/NES (sad) [reg. shovel]
+    ITEM_GENERATOR_FURNITURE_COMMON,
+    ITEM_GENERATOR_FURNITURE_COMMON,
+    ITEM_GENERATOR_PITFALL,
+    ITEM_GENERATOR_PITFALL,
+    // Buried furniture/NES (happy) [gold shovel]
+    ITEM_GENERATOR_NES,
+    ITEM_GENERATOR_FURNITURE_ISLAND,
+    ITEM_GENERATOR_FURNITURE_EVENT,
+    ITEM_GENERATOR_FURNITURE_RARE,
+    // Buried furniture/NES (neutral) [gold shovel]
+    ITEM_GENERATOR_FURNITURE_RARE,
+    ITEM_GENERATOR_FURNITURE_RARE,
+    ITEM_GENERATOR_FURNITURE_RARE,
+    ITEM_GENERATOR_FURNITURE_RARE,
+    // Buried furniture/NES (angry) [gold shovel]
+    ITEM_GENERATOR_FURNITURE_COMMON,
+    ITEM_GENERATOR_FURNITURE_COMMON,
+    ITEM_GENERATOR_FURNITURE_COMMON,
+    ITEM_GENERATOR_PURPLE_COSMOS,
+    // Buried furniture/NES (sad) [gold shovel]
+    ITEM_GENERATOR_FURNITURE_COMMON,
+    ITEM_GENERATOR_FURNITURE_COMMON,
+    ITEM_GENERATOR_PITFALL,
+    ITEM_GENERATOR_PITFALL,
+    // Buried shirt (happy) [reg. shovel]
+    ITEM_GENERATOR_SHIRT_RARE,
+    ITEM_GENERATOR_SHIRT_RARE,
+    ITEM_GENERATOR_SHIRT_COMMON,
+    ITEM_GENERATOR_SHIRT_COMMON,
+    // Buried shirt (neutral) [reg. shovel]
+    ITEM_GENERATOR_SHIRT_COMMON,
+    ITEM_GENERATOR_SHIRT_COMMON,
+    ITEM_GENERATOR_SHIRT_COMMON,
+    ITEM_GENERATOR_1K_BELLS,
+    // Buried shirt (angry) [reg. shovel]
+    ITEM_GENERATOR_SHIRT_COMMON,
+    ITEM_GENERATOR_SHIRT_COMMON,
+    ITEM_GENERATOR_SHIRT_COMMON,
+    ITEM_GENERATOR_PURPLE_COSMOS,
+    // Buried shirt (sad) [reg. shovel]
+    ITEM_GENERATOR_SHIRT_COMMON,
+    ITEM_GENERATOR_SHIRT_COMMON,
+    ITEM_GENERATOR_PITFALL,
+    ITEM_GENERATOR_PITFALL,
+    // Buried shirt (happy) [gold shovel]
+    ITEM_GENERATOR_SHIRT_RARE,
+    ITEM_GENERATOR_SHIRT_RARE,
+    ITEM_GENERATOR_SHIRT_RARE,
+    ITEM_GENERATOR_SHIRT_RARE,
+    // Buried shirt (neutral) [gold shovel]
+    ITEM_GENERATOR_SHIRT_RARE,
+    ITEM_GENERATOR_SHIRT_RARE,
+    ITEM_GENERATOR_SHIRT_COMMON,
+    ITEM_GENERATOR_SHIRT_COMMON,
+    // Buried shirt (angry) [gold shovel]
+    ITEM_GENERATOR_SHIRT_COMMON,
+    ITEM_GENERATOR_SHIRT_COMMON,
+    ITEM_GENERATOR_SHIRT_COMMON,
+    ITEM_GENERATOR_PURPLE_COSMOS,
+    // Buried shirt (sad) [gold shovel]
+    ITEM_GENERATOR_SHIRT_COMMON,
+    ITEM_GENERATOR_SHIRT_COMMON,
+    ITEM_GENERATOR_PITFALL,
+    ITEM_GENERATOR_PITFALL,
+    // Buried carpet (happy) [reg. shovel]
+    ITEM_GENERATOR_CARPET_RARE,
+    ITEM_GENERATOR_CARPET_RARE,
+    ITEM_GENERATOR_CARPET_COMMON,
+    ITEM_GENERATOR_CARPET_COMMON,
+    // Buried carpet (netural) [reg. shovel]
+    ITEM_GENERATOR_CARPET_COMMON,
+    ITEM_GENERATOR_CARPET_COMMON,
+    ITEM_GENERATOR_CARPET_COMMON,
+    ITEM_GENERATOR_1K_BELLS,
+    // Buried carpet (angry) [reg. shovel]
+    ITEM_GENERATOR_CARPET_COMMON,
+    ITEM_GENERATOR_CARPET_COMMON,
+    ITEM_GENERATOR_CARPET_COMMON,
+    ITEM_GENERATOR_PURPLE_COSMOS,
+    // Buried carpet (sad) [reg. shovel]
+    ITEM_GENERATOR_CARPET_COMMON,
+    ITEM_GENERATOR_CARPET_COMMON,
+    ITEM_GENERATOR_PITFALL,
+    ITEM_GENERATOR_PITFALL,
+    // Buried carpet (happy) [gold shovel]
+    ITEM_GENERATOR_CARPET_RARE,
+    ITEM_GENERATOR_CARPET_RARE,
+    ITEM_GENERATOR_CARPET_RARE,
+    ITEM_GENERATOR_CARPET_RARE,
+    // Buried carpet (neutral) [gold shovel]
+    ITEM_GENERATOR_CARPET_RARE,
+    ITEM_GENERATOR_CARPET_RARE,
+    ITEM_GENERATOR_CARPET_COMMON,
+    ITEM_GENERATOR_CARPET_COMMON,
+    // Buried carpet (angry) [gold shovel]
+    ITEM_GENERATOR_CARPET_COMMON,
+    ITEM_GENERATOR_CARPET_COMMON,
+    ITEM_GENERATOR_CARPET_COMMON,
+    ITEM_GENERATOR_PURPLE_COSMOS,
+    // Buried carpet (sad) [gold shovel]
+    ITEM_GENERATOR_CARPET_COMMON,
+    ITEM_GENERATOR_CARPET_COMMON,
+    ITEM_GENERATOR_PITFALL,
+    ITEM_GENERATOR_PITFALL,
+    // Buried wallpaper (happy) [reg. shovel]
+    ITEM_GENERATOR_WALLPAPER_RARE,
+    ITEM_GENERATOR_WALLPAPER_RARE,
+    ITEM_GENERATOR_WALLPAPER_COMMON,
+    ITEM_GENERATOR_WALLPAPER_COMMON,
+    // Buried wallpaper (neutral) [reg. shovel]
+    ITEM_GENERATOR_WALLPAPER_COMMON,
+    ITEM_GENERATOR_WALLPAPER_COMMON,
+    ITEM_GENERATOR_WALLPAPER_COMMON,
+    ITEM_GENERATOR_1K_BELLS,
+    // Buried wallpaper (angry) [reg. shovel]
+    ITEM_GENERATOR_WALLPAPER_COMMON,
+    ITEM_GENERATOR_WALLPAPER_COMMON,
+    ITEM_GENERATOR_WALLPAPER_COMMON,
+    ITEM_GENERATOR_PURPLE_COSMOS,
+    // Buried wallpaper (sad) [reg. shovel]
+    ITEM_GENERATOR_WALLPAPER_COMMON,
+    ITEM_GENERATOR_WALLPAPER_COMMON,
+    ITEM_GENERATOR_PITFALL,
+    ITEM_GENERATOR_PITFALL,
+    // Buried wallpaper (happy) [gold shovel]
+    ITEM_GENERATOR_WALLPAPER_RARE,
+    ITEM_GENERATOR_WALLPAPER_RARE,
+    ITEM_GENERATOR_WALLPAPER_RARE,
+    ITEM_GENERATOR_WALLPAPER_RARE,
+    // Buried wallpaper (neutral) [gold shovel]
+    ITEM_GENERATOR_WALLPAPER_RARE,
+    ITEM_GENERATOR_WALLPAPER_RARE,
+    ITEM_GENERATOR_WALLPAPER_COMMON,
+    ITEM_GENERATOR_WALLPAPER_COMMON,
+    // Buried wallpaper (angry) [gold shovel]
+    ITEM_GENERATOR_WALLPAPER_COMMON,
+    ITEM_GENERATOR_WALLPAPER_COMMON,
+    ITEM_GENERATOR_WALLPAPER_COMMON,
+    ITEM_GENERATOR_PURPLE_COSMOS,
+    // Buried wallpaper (sad) [gold shovel]
+    ITEM_GENERATOR_WALLPAPER_COMMON,
+    ITEM_GENERATOR_WALLPAPER_COMMON,
+    ITEM_GENERATOR_PITFALL,
+    ITEM_GENERATOR_PITFALL,
+    // Buried gyroid (happy) [reg. shovel]
+    ITEM_GENERATOR_GYROID,
+    ITEM_GENERATOR_GYROID,
+    ITEM_GENERATOR_GYROID,
+    ITEM_GENERATOR_GYROID,
+    // Buried gyroid (neutral) [reg. shovel]
+    ITEM_GENERATOR_GYROID,
+    ITEM_GENERATOR_GYROID,
+    ITEM_GENERATOR_GYROID,
+    ITEM_GENERATOR_1K_BELLS,
+    // Buried gyroid (angry) [reg. shovel]
+    ITEM_GENERATOR_GYROID,
+    ITEM_GENERATOR_GYROID,
+    ITEM_GENERATOR_GYROID,
+    ITEM_GENERATOR_PURPLE_COSMOS,
+    // Buried gyroid (sad) [reg. shovel]
+    ITEM_GENERATOR_GYROID,
+    ITEM_GENERATOR_GYROID,
+    ITEM_GENERATOR_PITFALL,
+    ITEM_GENERATOR_PITFALL,
+    // Buried gyroid (happy) [gold shovel]
+    ITEM_GENERATOR_GYROID,
+    ITEM_GENERATOR_GYROID,
+    ITEM_GENERATOR_GYROID,
+    ITEM_GENERATOR_GYROID,
+    // Buried gyroid (neutral) [gold shovel]
+    ITEM_GENERATOR_GYROID,
+    ITEM_GENERATOR_GYROID,
+    ITEM_GENERATOR_GYROID,
+    ITEM_GENERATOR_GYROID,
+    // Buried gyroid (angry) [gold shovel]
+    ITEM_GENERATOR_GYROID,
+    ITEM_GENERATOR_GYROID,
+    ITEM_GENERATOR_GYROID,
+    ITEM_GENERATOR_PURPLE_COSMOS,
+    // Buried gyroid (sad) [gold shovel]
+    ITEM_GENERATOR_GYROID,
+    ITEM_GENERATOR_GYROID,
+    ITEM_GENERATOR_PITFALL,
+    ITEM_GENERATOR_PITFALL,
+    // Buried 100 Bells/candy (happy) [reg. shovel]
+    ITEM_GENERATOR_PURPLE_COSMOS,
+    ITEM_GENERATOR_PURPLE_COSMOS,
+    ITEM_GENERATOR_PURPLE_COSMOS,
+    ITEM_GENERATOR_PURPLE_COSMOS,
+    // Buried 100 Bells/candy (neutral) [reg. shovel]
+    ITEM_GENERATOR_PURPLE_COSMOS,
+    ITEM_GENERATOR_PURPLE_COSMOS,
+    ITEM_GENERATOR_PURPLE_COSMOS,
+    ITEM_GENERATOR_PURPLE_COSMOS,
+    // Buried 100 Bells/candy (angry) [reg. shovel]
+    ITEM_GENERATOR_TRASH,
+    ITEM_GENERATOR_TRASH,
+    ITEM_GENERATOR_PURPLE_COSMOS,
+    ITEM_GENERATOR_PURPLE_COSMOS,
+    // Buried 100 Bells/candy (sad) [reg. shovel]
+    ITEM_GENERATOR_TRASH,
+    ITEM_GENERATOR_TRASH,
+    ITEM_GENERATOR_PITFALL,
+    ITEM_GENERATOR_PITFALL,
+    // Buried 100 Bells/candy (happy) [gold shovel]
+    ITEM_GENERATOR_CANDY,
+    ITEM_GENERATOR_MUSHROOM,
+    ITEM_GENERATOR_COCONUT,
+    ITEM_GENERATOR_CHERRY,
+    // Buried 100 Bells/candy (neutral) [gold shovel]
+    ITEM_GENERATOR_APPLE,
+    ITEM_GENERATOR_ORANGE,
+    ITEM_GENERATOR_PEACH,
+    ITEM_GENERATOR_PEAR,
+    // Buried 100 Bells/candy (angry) [gold shovel]
+    ITEM_GENERATOR_TRASH,
+    ITEM_GENERATOR_TRASH,
+    ITEM_GENERATOR_PURPLE_COSMOS,
+    ITEM_GENERATOR_PURPLE_COSMOS,
+    // Buried 100 Bells/candy (sad) [gold shovel]
+    ITEM_GENERATOR_TRASH,
+    ITEM_GENERATOR_TRASH,
+    ITEM_GENERATOR_PITFALL,
+    ITEM_GENERATOR_PITFALL,
+    // Buried 1,000 Bells/turnips (happy) [reg. shovel]
+    ITEM_GENERATOR_SHIRT_RARE,
+    ITEM_GENERATOR_SHIRT_RARE,
+    ITEM_GENERATOR_SHIRT_COMMON,
+    ITEM_GENERATOR_UMBRELLA,
+    // Buried 1,000 Bells/turnips (neutral) [reg. shovel]
+    ITEM_GENERATOR_SHIRT_COMMON,
+    ITEM_GENERATOR_SHIRT_COMMON,
+    ITEM_GENERATOR_UMBRELLA,
+    ITEM_GENERATOR_UMBRELLA,
+    // Buried 1,000 Bells/turnips (angry) [reg. shovel]
+    ITEM_GENERATOR_SHIRT_COMMON,
+    ITEM_GENERATOR_SHIRT_COMMON,
+    ITEM_GENERATOR_SHIRT_COMMON,
+    ITEM_GENERATOR_PURPLE_COSMOS,
+    // Buried 1,000 Bells/turnips (sad) [reg. shovel]
+    ITEM_GENERATOR_SHIRT_COMMON,
+    ITEM_GENERATOR_SHIRT_COMMON,
+    ITEM_GENERATOR_PITFALL,
+    ITEM_GENERATOR_PITFALL,
+    // Buried 1,000 Bells/turnips (happy) [gold shovel]
+    ITEM_GENERATOR_FURNITURE_RARE,
+    ITEM_GENERATOR_FURNITURE_RARE,
+    ITEM_GENERATOR_FURNITURE_RARE,
+    ITEM_GENERATOR_SHIRT_RARE,
+    // Buried 1,000 Bells/turnips (neutral) [gold shovel]
+    ITEM_GENERATOR_FURNITURE_RARE,
+    ITEM_GENERATOR_SHIRT_RARE,
+    ITEM_GENERATOR_SHIRT_RARE,
+    ITEM_GENERATOR_SHIRT_RARE,
+    // Buried 1,000 Bells/turnips (angry) [gold shovel]
+    ITEM_GENERATOR_SHIRT_COMMON,
+    ITEM_GENERATOR_SHIRT_COMMON,
+    ITEM_GENERATOR_SHIRT_COMMON,
+    ITEM_GENERATOR_PURPLE_COSMOS,
+    // Buried 1,000 Bells/turnips (sad) [gold shovel]
+    ITEM_GENERATOR_SHIRT_COMMON,
+    ITEM_GENERATOR_SHIRT_COMMON,
+    ITEM_GENERATOR_PITFALL,
+    ITEM_GENERATOR_PITFALL,
+    // Buried 10,000 Bells/mushroom (happy) [reg. shovel]
+    ITEM_GENERATOR_FURNITURE_EVENT,
+    ITEM_GENERATOR_FURNITURE_RARE,
+    ITEM_GENERATOR_FURNITURE_COMMON,
+    ITEM_GENERATOR_SHIRT_RARE,
+    // Buried 10,000 Bells/mushroom (neutral) [reg. shovel]
+    ITEM_GENERATOR_FURNITURE_COMMON,
+    ITEM_GENERATOR_CARPET_COMMON,
+    ITEM_GENERATOR_WALLPAPER_COMMON,
+    ITEM_GENERATOR_SHIRT_COMMON,
+    // Buried 10,000 Bells/mushroom (angry) [reg. shovel]
+    ITEM_GENERATOR_FURNITURE_COMMON,
+    ITEM_GENERATOR_CARPET_COMMON,
+    ITEM_GENERATOR_WALLPAPER_COMMON,
+    ITEM_GENERATOR_PURPLE_COSMOS,
+    // Buried 10,000 Bells/mushroom (sad) [reg. shovel]
+    ITEM_GENERATOR_FURNITURE_COMMON,
+    ITEM_GENERATOR_SHIRT_COMMON,
+    ITEM_GENERATOR_PITFALL,
+    ITEM_GENERATOR_PITFALL,
+    // Buried 10,000 Bells/mushroom (happy) [gold shovel]
+    ITEM_GENERATOR_FURNITURE_ISLAND,
+    ITEM_GENERATOR_FURNITURE_EVENT,
+    ITEM_GENERATOR_FURNITURE_RARE,
+    ITEM_GENERATOR_GYROID,
+    // Buried 10,000 Bells/mushroom (neutral) [gold shovel]
+    ITEM_GENERATOR_FURNITURE_RARE,
+    ITEM_GENERATOR_FURNITURE_RARE,
+    ITEM_GENERATOR_FURNITURE_RARE,
+    ITEM_GENERATOR_SHIRT_RARE,
+    // Buried 10,000 Bells/mushroom (angry) [gold shovel]
+    ITEM_GENERATOR_FURNITURE_COMMON,
+    ITEM_GENERATOR_CARPET_COMMON,
+    ITEM_GENERATOR_WALLPAPER_COMMON,
+    ITEM_GENERATOR_PURPLE_COSMOS,
+    // Buried 10,000 Bells/mushroom (sad) [gold shovel]
+    ITEM_GENERATOR_FURNITURE_COMMON,
+    ITEM_GENERATOR_SHIRT_COMMON,
+    ITEM_GENERATOR_PITFALL,
+    ITEM_GENERATOR_PITFALL,
+    // Buried 30,000 Bells (happy) [reg. shovel]
+    ITEM_GENERATOR_NES,
+    ITEM_GENERATOR_FURNITURE_ISLAND,
+    ITEM_GENERATOR_FURNITURE_EVENT,
+    ITEM_GENERATOR_FURNITURE_RARE,
+    // Buried 30,000 Bells (neutral) [reg. shovel]
+    ITEM_GENERATOR_FURNITURE_RARE,
+    ITEM_GENERATOR_FURNITURE_RARE,
+    ITEM_GENERATOR_FURNITURE_COMMON,
+    ITEM_GENERATOR_SHIRT_RARE,
+    // Buried 30,000 Bells (angry) [reg. shovel]
+    ITEM_GENERATOR_FURNITURE_COMMON,
+    ITEM_GENERATOR_CARPET_COMMON,
+    ITEM_GENERATOR_WALLPAPER_COMMON,
+    ITEM_GENERATOR_PURPLE_COSMOS,
+    // Buried 30,000 Bells (sad) [reg. shovel]
+    ITEM_GENERATOR_FURNITURE_COMMON,
+    ITEM_GENERATOR_SHIRT_COMMON,
+    ITEM_GENERATOR_PITFALL,
+    ITEM_GENERATOR_PITFALL,
+    // Buried 30,000 Bells (happy) [gold shovel]
+    ITEM_GENERATOR_NES,
+    ITEM_GENERATOR_NES,
+    ITEM_GENERATOR_FURNITURE_EVENT,
+    ITEM_GENERATOR_FURNITURE_RARE,
+    // Buried 30,000 Bells (neutral) [gold shovel]
+    ITEM_GENERATOR_FURNITURE_EVENT,
+    ITEM_GENERATOR_FURNITURE_RARE,
+    ITEM_GENERATOR_CARPET_RARE,
+    ITEM_GENERATOR_WALLPAPER_RARE,
+    // Buried 30,000 Bells (angry) [gold shovel]
+    ITEM_GENERATOR_FURNITURE_COMMON,
+    ITEM_GENERATOR_CARPET_COMMON,
+    ITEM_GENERATOR_WALLPAPER_COMMON,
+    ITEM_GENERATOR_PURPLE_COSMOS,
+    // Buried 30,000 Bells (sad) [gold shovel]
+    ITEM_GENERATOR_FURNITURE_COMMON,
+    ITEM_GENERATOR_SHIRT_COMMON,
+    ITEM_GENERATOR_PITFALL,
+    ITEM_GENERATOR_PITFALL,
 };
 
-/* Original address: 0x0201EFB8 */
+/**
+ * Stores a generated item in the islander's first available inventory slot.
+ *
+ * Returns nonzero when the item was stored.
+ *
+ * Original address: 0x0201EFB8
+ */
 s32 Islander_StoreItem(u16 item_type, u16 generator_idx) {
     Islander_AGB *islander = &gIslander;
     ItemGroupStruct *definition = &g_ItemDefinitions[item_type];
@@ -2604,6 +2988,7 @@ extern u16 sFishingRewardGeneratorIndices[64];
 /* Original address: 0x0203397C */
 extern u16 sFishingRewardItemTypes[64];
 
+/** Returns the held-item sprite attributes for a special fishing reward. */
 static inline u16 FishingSpecialCatchAttr2(u16 generator_idx) {
     if (generator_idx == 0x7F) {
         return 0x434E;
@@ -2612,7 +2997,14 @@ static inline u16 FishingSpecialCatchAttr2(u16 generator_idx) {
     }
 }
 
-/* Original address: 0x0201F030 */
+/**
+ * Selects a fishing reward using the islander's emotion and fishing-rod tier.
+ *
+ * Stores ordinary rewards when possible and prepares the held-item sprite for
+ * rewards that must be shown directly.
+ *
+ * Original address: 0x0201F030
+ */
 s16 Islander_GetFishingItem(void) {
     Islander_AGB *islander = &gIslander;
     ItemGroupStruct *definition;
@@ -2622,13 +3014,13 @@ s16 Islander_GetFishingItem(void) {
     u32 item_flags;
 
     reward_idx = (islander->emotion & 3) * 16;
-    if ((islander->equipped_tool_state & 0xF) == 8) {
+    if ((Islander_GET_TOOL_TYPE(islander)) == ISLANDER_TOOL_GOLD_ROD) {
         reward_idx += 8;
     }
     reward_idx = (reward_idx + rand_u16(&gGameState) % 8) & 0x3F;
     generator_idx = sFishingRewardGeneratorIndices[reward_idx];
     if ((u16)(generator_idx - 0x7E) > 1) {
-        if (generator_idx != 0x25 && islander->stored_item_type_plus_one[4] != 0) {
+        if (generator_idx != ITEM_GENERATOR_TRASH && islander->stored_item_type_plus_one[4] != 0) {
             definition = &g_ItemDefinitions[sFishingRewardItemTypes[reward_idx]];
             item_flags = 0x800000;
             islander->held_item_sprite = item_flags;
@@ -2646,8 +3038,13 @@ s16 Islander_GetFishingItem(void) {
     return 0xFE;
 }
 
-/* Try mirrored approach tiles; save the dig tile and both movement waypoints. */
-/* Original address: 0x0201F0FC */
+/**
+ * Tries mirrored approach tiles and saves the dig tile and movement waypoints.
+ *
+ * Returns nonzero when a usable approach was found.
+ *
+ * Original address: 0x0201F0FC
+ */
 s32 Islander_SetupDigApproach(u8 tile_offset) {
     u16 *right_tiles;
     u16 *left_tiles;
@@ -2731,7 +3128,11 @@ s32 Islander_SetupDigApproach(u8 tile_offset) {
 /* Original address: 0x02033A1C */
 extern int collision_check_offsets[4];
 
-/* Original address: 0x0201F368 */
+/**
+ * Checks whether the islander's current tile can support a digging action.
+ *
+ * Original address: 0x0201F368
+ */
 s32 Islander_CanDigHere(void) {
     Islander_AGB *islander = &gIslander;
     u8 *tilemap;
@@ -2763,6 +3164,7 @@ s32 Islander_CanDigHere(void) {
     return 1;
 }
 
+/** Returns the direction-sector descriptor containing the supplied angle. */
 static inline IslanderDirectionSector *Islander_GetDirectionSector(u16 angle) {
     IslanderDirectionSector *sectors = &gIslanderDirectionSectors[7];
     s32 sector_idx;
@@ -2781,7 +3183,13 @@ static inline IslanderDirectionSector *Islander_GetDirectionSector(u16 angle) {
     return &sectors[sector_idx];
 }
 
-/* Original address: 0x0201F3F8 */
+/**
+ * Moves toward a target according to the requested axis mode and updates facing.
+ *
+ * Returns nonzero when the islander is already at the target.
+ *
+ * Original address: 0x0201F3F8
+ */
 s32 Islander_ChangeMoveDir(s32 target_x, s32 target_y, u8 move_mode) {
     Islander_AGB *islander = &gIslander;
     u8 old_direction;
@@ -2846,7 +3254,11 @@ s32 Islander_ChangeMoveDir(s32 target_x, s32 target_y, u8 move_mode) {
 /* Original address: 0x020339FC */
 extern s32 sIslanderCollisionSampleOffsets[8];
 
-/* Original address: 0x0201F538 */
+/**
+ * Refreshes the islander's current, surrounding, and terrain collision tiles.
+ *
+ * Original address: 0x0201F538
+ */
 void Islander_UpdateCollisionTiles(u8 direction) {
     Islander_AGB *islander = &gIslander;
     IslandFieldWork *field = &gIslandFieldWork;
@@ -2897,7 +3309,11 @@ void Islander_UpdateCollisionTiles(u8 direction) {
     islander->collision_tilemap = tilemap;
 }
 
-/* Original address: 0x0201F660 */
+/**
+ * Writes an item to island save data and updates its 2x2 field tile graphics.
+ *
+ * Original address: 0x0201F660
+ */
 void WriteItemToTile(s32 x, u8 tile_idx, u16 item, u16 item_tile) {
     u16 *tilemap_vram;
 
@@ -2914,6 +3330,7 @@ void WriteItemToTile(s32 x, u8 tile_idx, u16 item, u16 item_tile) {
     WriteItemTileToVRAM(tilemap_vram, item_tile);
 }
 
+/** Returns nonzero when any sampled terrain tile blocks the islander. */
 static inline s32 HasSurroundingTileCollision(u16 *tile_info) {
     int i;
 
@@ -2928,7 +3345,13 @@ static inline s32 HasSurroundingTileCollision(u16 *tile_info) {
     return 0;
 }
 
-/* Original address: 0x0201F6DC */
+/**
+ * Classifies collision for an item tile and its surrounding terrain samples.
+ *
+ * Returns zero when clear, one for an item obstruction, or two for terrain.
+ *
+ * Original address: 0x0201F6DC
+ */
 s32 CheckSurroundingCollision(u16 main_tile, u16 *tile_info) {
     if (!HasSurroundingTileCollision(tile_info)) {
         if ((u16)(main_tile - 0x1F) < 2 || (u16)(main_tile - 0x22) < 4 || (u16)(main_tile - 0x27) < 9 || (u16)(main_tile - 0x31) < 4 || (u16)(main_tile - 0x36) < 7 || main_tile == 0x41) {
@@ -2941,7 +3364,13 @@ s32 CheckSurroundingCollision(u16 main_tile, u16 *tile_info) {
     return 0;
 }
 
-/* Original address: 0x0201F78C */
+/**
+ * Chooses a random unblocked movement direction.
+ *
+ * Returns the selected direction or 0x777 when no direction is available.
+ *
+ * Original address: 0x0201F78C
+ */
 s32 Islander_ChooseNewMoveDirection(u8 allow_reverse) {
     Islander_AGB *islander = &gIslander;
     s32 direction;
@@ -2987,7 +3416,11 @@ s32 Islander_ChooseNewMoveDirection(u8 allow_reverse) {
 /* Original address: 0x02033A2C */
 extern s32 gIslanderMoveCollisionOffsets[16];
 
-/* Original address: 0x0201F844 */
+/**
+ * Tests whether the islander can enter the adjacent tile in a direction.
+ *
+ * Original address: 0x0201F844
+ */
 s32 Islander_CanMoveInDirection(u8 direction) {
     Islander_AGB *islander = &gIslander;
     IslandFieldWork *field = &gIslandFieldWork;
@@ -3019,7 +3452,11 @@ s32 Islander_CanMoveInDirection(u8 direction) {
     }
 }
 
-/* Original address: 0x0201F8FC */
+/**
+ * Generates and buries an item at the islander's prepared interaction tile.
+ *
+ * Original address: 0x0201F8FC
+ */
 void Islander_BuryRandomItem(s32 item_type) {
     Islander_AGB *islander = &gIslander;
     IslandFieldWork *field = &gIslandFieldWork;
@@ -3041,12 +3478,12 @@ void Islander_BuryRandomItem(s32 item_type) {
         islander->item_work.held_item.type_idx = ITEM_TYPE_TRASH;
         return;
     }
-    if ((islander->equipped_tool_state & 0xF) == 7) {
+    if ((Islander_GET_TOOL_TYPE(islander)) == ISLANDER_TOOL_GOLD_SHOVEL) {
         item_type += 0x10;
     }
 
     item_type += rand_u16(&gGameState) % 4;
-    if (item_type >= 0x120) {
+    if (item_type >= ARRAY_COUNT(gBuriedItemGeneratorIndices)) {
         item_type = 0;
     }
 
@@ -3054,7 +3491,8 @@ void Islander_BuryRandomItem(s32 item_type) {
     generator_def = &gItemGeneratorDefs[item_type];
     item_definition = &g_ItemDefinitions[generator_def->item_type];
 
-    if ((item_definition->default_generator_idx == 0xFFF) || (item_type == 0xD)) {
+    if ((item_definition->default_generator_idx == 0xFFF) ||
+        (item_type == ITEM_GENERATOR_PURPLE_COSMOS)) {
         islander->item_work.held_item.type_idx = ITEM_TYPE_TRASH;
         return;
     }
@@ -3103,7 +3541,11 @@ void Islander_BuryRandomItem(s32 item_type) {
     }
 }
 
-/* Original address: 0x0201FB9C */
+/**
+ * Plants a randomly selected flower at the prepared interaction tile.
+ *
+ * Original address: 0x0201FB9C
+ */
 void Islander_PlantRandomFlower(void) {
     Islander_AGB *islander = &gIslander;
     IslandFieldWork *field = &gIslandFieldWork;
@@ -3125,7 +3567,11 @@ void Islander_PlantRandomFlower(void) {
     islander->buried_item_tile_base = (g_ItemDefinitions + ITEM_TYPE_PURPLE_COSMOS)[flower].field_tile_id;
 }
 
-/* Original address: 0x0201FCB0 */
+/**
+ * Advances the neutral-expression blink animation and schedules the next blink.
+ *
+ * Original address: 0x0201FCB0
+ */
 void Islander_UpdateBlink(void) {
     Islander_AGB *islander = &gIslander;
     u8 direction = islander->direction;
@@ -3143,6 +3589,7 @@ void Islander_UpdateBlink(void) {
     }
 }
 
+/** Returns the index of the direction sector containing an angle. */
 static inline s32 Islander_FindDirectionSector(u16 angle) {
     s32 sector;
     IslanderDirectionSector *sectors = &gIslanderDirectionSectors[7];
@@ -3160,7 +3607,11 @@ static inline s32 Islander_FindDirectionSector(u16 angle) {
     return sector;
 }
 
-/* Original address: 0x0201FD1C */
+/**
+ * Faces a target while testing whether the islander has reached it.
+ *
+ * Original address: 0x0201FD1C
+ */
 s32 Islander_FaceTargetAndCheckArrival(s32 target_x, s32 target_y) {
     Islander_AGB *islander = &gIslander;
     u16 angle;
@@ -3195,7 +3646,13 @@ s32 Islander_FaceTargetAndCheckArrival(s32 target_x, s32 target_y) {
     return 0;
 }
 
-/* Original address: 0x0201FDF4 */
+/**
+ * Advances the current animation when its frame timer expires.
+ *
+ * Returns nonzero after reaching the end when stop_at_end is enabled.
+ *
+ * Original address: 0x0201FDF4
+ */
 s32 Islander_PlayAnim(u8 stop_at_end) {
     Islander_AGB *islander = &gIslander;
     AnimFrameData *frame;
@@ -3216,7 +3673,11 @@ s32 Islander_PlayAnim(u8 stop_at_end) {
     return 0;
 }
 
-/* Original address: 0x0201FE6C */
+/**
+ * Removes an inventory entry and compacts later entries into the empty slot.
+ *
+ * Original address: 0x0201FE6C
+ */
 void Islander_ClearStoredItem(s32 index) {
     Islander_AGB *islander = &gIslander;
     s32 i;
@@ -3233,7 +3694,13 @@ void Islander_ClearStoredItem(s32 index) {
     }
 }
 
-/* Original address: 0x0201FED4 */
+/**
+ * Spawns a timed reaction effect above the islander.
+ *
+ * Returns nonzero when an entity slot was available.
+ *
+ * Original address: 0x0201FED4
+ */
 s32 Islander_SpawnReactionEffect(u8 effect, u8 duration) {
     Islander_AGB *islander = &gIslander;
     IslandFieldWork *field = &gIslandFieldWork;
@@ -3256,11 +3723,18 @@ s32 Islander_SpawnReactionEffect(u8 effect, u8 duration) {
     return 0;
 }
 
+/** Returns the terrain tile number stored in a screen-block entry. */
 static inline u16 Islander_GetTerrainTile(u16 *tilemap) {
     return *tilemap & 0x3FF;
 }
 
-/* Original address: 0x0201FF48 */
+/**
+ * Spawns an item entity for a drop or flying-item interaction.
+ *
+ * Returns the entity index, or zero when placement or allocation fails.
+ *
+ * Original address: 0x0201FF48
+ */
 s32 SpawnEntity(u8 spawn_flag, u8 spawn_mode, u16 item_type, u16 item) {
     s32 active_idx;
     s32 entity_idx;
@@ -3330,7 +3804,11 @@ s32 SpawnEntity(u8 spawn_flag, u8 spawn_mode, u16 item_type, u16 item) {
     return 0;
 }
 
-/* Original address: 0x02020118 */
+/**
+ * Chooses an accessible side of a tree and records the approach waypoints.
+ *
+ * Original address: 0x02020118
+ */
 s32 Islander_SelectTreeApproach(FieldObject *object, s32 right_x, s32 left_x) {
     Islander_AGB *islander = &gIslander;
     s32 i;
@@ -3402,7 +3880,11 @@ s32 Islander_SelectTreeApproach(FieldObject *object, s32 right_x, s32 left_x) {
     return 1;
 }
 
-/* Original address: 0x0202029C */
+/**
+ * Evaluates the tiles around a tree and prepares an approach route.
+ *
+ * Original address: 0x0202029C
+ */
 s32 Islander_SetupTreeApproach(FieldObject *object) {
     u16 tile_ids[2];
     u32 tilemap_addresses[2];
@@ -3462,12 +3944,16 @@ s32 Islander_SetupTreeApproach(FieldObject *object) {
 /* Original address: 0x020338D2 */
 extern u8 sIslanderTreeActionChances[8];
 
-/* Original address: 0x02020480 */
+/**
+ * Chooses whether and how the islander will interact with a nearby tree.
+ *
+ * Original address: 0x02020480
+ */
 s32 Islander_DecideTreeAction(void) {
     Islander_AGB *islander = &gIslander;
     IslandFieldWork *field = &gIslandFieldWork;
     s32 tree;
-    s32 state;
+    s32 tool;
     s32 i;
     u8 chance;
     u8 chance_idx;
@@ -3483,8 +3969,8 @@ s32 Islander_DecideTreeAction(void) {
         islander->tree_action_skipped = tree;
         return 0;
     }
-    state = islander->equipped_tool_state & 0xF;
-    if (state == 0 || state == 2 || state == 6) {
+    tool = Islander_GET_TOOL_TYPE(islander);
+    if (tool == ISLANDER_TOOL_NONE || tool == ISLANDER_TOOL_AXE || tool == ISLANDER_TOOL_GOLD_AXE) {
         for (i = 0; i < FIELD_OBJECT_COUNT; i++) {
             if (field->entity_active[0x36 + i] == 1) {
                 object = &gFieldObjects[i];
@@ -3510,7 +3996,7 @@ s32 Islander_DecideTreeAction(void) {
                 approach = Islander_SetupTreeApproach(object);
                 if (approach != 0) {
                     islander->previous_direction = islander->direction;
-                    islander->move_action = 4;
+                    islander->move_action = ISLANDER_MOVE_ACTION_MOVE_TO_TARGET;
                     IslanderMoveAction_MoveToTarget();
                     return 1;
                 }
@@ -3527,7 +4013,12 @@ s32 Islander_DecideTreeAction(void) {
 extern s32 sIslanderMoveSteps[8][2];
 
 
-/* Original address: 0x020205E0 */
+/**
+ * Applies one movement step, resolving collision and choosing a new direction
+ * when the current path is blocked.
+ *
+ * Original address: 0x020205E0
+ */
 void Islander_MoveWithCollision(void) {
     Islander_AGB *islander = &gIslander;
     IslandFieldWork *field = &gIslandFieldWork;
@@ -3585,7 +4076,7 @@ void Islander_MoveWithCollision(void) {
             islander->collision_retry_count++;
             if (collision != 0x777 && islander->collision_retry_count <= 6) {
                 islander->direction = collision;
-                islander->move_action = 2;
+                islander->move_action = ISLANDER_MOVE_ACTION_START_WANDERING;
                 Islander_StartWandering();
                 return;
             }
@@ -3596,28 +4087,38 @@ void Islander_MoveWithCollision(void) {
             islander->target_y = (house->y << 8) + 0x1000;
             islander->target_action = 0x20;
             islander->item_work.held_item.type_idx = 0;
-            islander->move_action = 4;
+            islander->move_action = ISLANDER_MOVE_ACTION_MOVE_TO_TARGET;
             IslanderMoveAction_MoveToTarget();
             return;
         }
         islander->collision_retry_count = 0;
-        islander->move_action = 0x13;
-        Islander_MoveAction20_Init();
+        islander->move_action = ISLANDER_MOVE_ACTION_INIT_CARRY_TRANSITION;
+        Islander_StartCarryTransition();
     }
 }
 
-/* Original address: 0x02020790 */
+/**
+ * Selects the directional animation corresponding to the equipped tool.
+ *
+ * Original address: 0x02020790
+ */
 void Islander_AdjustAnimForTool(void) {
-    u32 var_r1_17464;
+    u16 tool;
 
-    var_r1_17464 = 0xF & gIslander.equipped_tool_state;
-    if (var_r1_17464 > 4U) {
-        var_r1_17464 = (u32) (u16) (var_r1_17464 - 4);
+    tool = Islander_GET_TOOL_TYPE(&gIslander);
+    if (tool >= ISLANDER_TOOL_GOLD_NET) {
+        tool -= 4;
     }
-    gIslander.anim_id = (var_r1_17464 * 8) + gIslander.direction;
+    gIslander.anim_id = (tool * 8) + gIslander.direction;
 }
 
-/* Original address: 0x020207C0 */
+/**
+ * Moves the islander one step toward a horizontal target.
+ *
+ * Returns nonzero when no horizontal movement was needed.
+ *
+ * Original address: 0x020207C0
+ */
 s32 Islander_MoveTowardX(u8 keep_facing, s32 target) {
     Islander_AGB *islander = &gIslander;
     s32 x = islander->x;
@@ -3643,7 +4144,13 @@ s32 Islander_MoveTowardX(u8 keep_facing, s32 target) {
     return 1;
 }
 
-/* Original address: 0x02020814 */
+/**
+ * Moves the islander one step toward a vertical target.
+ *
+ * Returns nonzero when no vertical movement was needed.
+ *
+ * Original address: 0x02020814
+ */
 s32 Islander_MoveTowardY(u8 keep_facing, s32 target) {
     Islander_AGB *islander = &gIslander;
     s32 y = islander->y;
@@ -3669,7 +4176,11 @@ s32 Islander_MoveTowardY(u8 keep_facing, s32 target) {
     return 1;
 }
 
-/* Original address: 0x0202086C */
+/**
+ * Searches for a nearby usable tree and begins approaching it when selected.
+ *
+ * Original address: 0x0202086C
+ */
 s32 Islander_FindNearbyTree(void) {
     Islander_AGB *islander = &gIslander;
     s32 i;
@@ -3687,7 +4198,11 @@ s32 Islander_FindNearbyTree(void) {
     return 0;
 }
 
-/* Original address: 0x020208BC */
+/**
+ * Checks for a buried item under the current tile and prepares a dig route.
+ *
+ * Original address: 0x020208BC
+ */
 s32 Islander_TryInteractWithBuriedItem(u8 layer) {
     Islander_AGB *islander = &gIslander;
     IslandFieldWork *field = &gIslandFieldWork;
@@ -3700,7 +4215,7 @@ s32 Islander_TryInteractWithBuriedItem(u8 layer) {
 
     if ((island->deposit[layer][islander->tile_idx >> 4] >> (0xF & islander->tile_idx)) & 1) {
         if (islander->digging_cooldown_timer == 0 &&
-            ((state = 0xF & islander->equipped_tool_state) == 3 || state == 7)) {
+            ((state = Islander_GET_TOOL_TYPE(islander)) == ISLANDER_TOOL_SHOVEL || state == ISLANDER_TOOL_GOLD_SHOVEL)) {
             if (!(islander->x & 0xFF0000)) {
                 tile = field->fg_tiles[0][islander->tile_idx];
             } else {
@@ -3723,7 +4238,7 @@ s32 Islander_TryInteractWithBuriedItem(u8 layer) {
                         islander->accepted_y = islander->target_y;
                         islander->buried_item_tile_base = 0;
                         islander->item_work.held_item.type_idx = 2;
-                        islander->move_action = 4;
+                        islander->move_action = ISLANDER_MOVE_ACTION_MOVE_TO_TARGET;
                         IslanderMoveAction_MoveToTarget();
                         return 2;
                     }
@@ -3735,7 +4250,11 @@ s32 Islander_TryInteractWithBuriedItem(u8 layer) {
     return 0;
 }
 
-/* Original address: 0x020209E0 */
+/**
+ * Applies the emotion associated with the current mood and updates the music.
+ *
+ * Original address: 0x020209E0
+ */
 void Islander_OnMoodChanged(void) {
     Islander_AGB *islander = &gIslander;
     u16 *emotions = sIslanderMoodEmotions;
@@ -3745,7 +4264,11 @@ void Islander_OnMoodChanged(void) {
     Sound_SetEmotion(emotion + SOUND_EMOTION_NEUTRAL);
 }
 
-/* Original address: 0x02020A0C */
+/**
+ * Writes the four screen entries for a 2x2 field-item graphic.
+ *
+ * Original address: 0x02020A0C
+ */
 void WriteItemTileToVRAM(u16 *tilemap, u16 tile_base) {
     *tilemap++ = tile_base;
     *tilemap = tile_base + 1;
@@ -3754,7 +4277,13 @@ void WriteItemTileToVRAM(u16 *tilemap, u16 tile_base) {
     tilemap[1] = tile_base + 3;
 }
 
-/* Original address: 0x02020A24 */
+/**
+ * Converts a fruit item type to its buried-item ID and display tile.
+ *
+ * Returns EMPTY_NO for unsupported item types.
+ *
+ * Original address: 0x02020A24
+ */
 u16 Item_GetItemIdFromTileId(s32 item_type) {
     Islander_AGB *islander = &gIslander;
     BuriedItemUpdateGroup *buried_item_update;
@@ -3779,20 +4308,26 @@ u16 Item_GetItemIdFromTileId(s32 item_type) {
     return EMPTY_NO;
 }
 
-/* Original address: 0x02020A78 */
+/**
+ * Attempts to return the islander's equipped tool to an open field tile.
+ *
+ * Returns nonzero when the tool was placed successfully.
+ *
+ * Original address: 0x02020A78
+ */
 s32 Islander_TryDropTool(void) {
     Islander_AGB *islander = &gIslander;
     IslandFieldWork *field = &gIslandFieldWork;
     s32 placed = 0;
-    u16 tile = islander->equipped_tool_state & 0xF;
+    u16 tile = Islander_GET_TOOL_TYPE(islander);
     u32 tool = tile;
     s32 collision;
 
-    if (tile > 4) {
+    if (tile >= ISLANDER_TOOL_GOLD_NET) {
         tile -= 4;
     }
     tile = tile * 2 + 0x8043;
-    if (tool > 4) {
+    if (tool >= ISLANDER_TOOL_GOLD_NET) {
         tile++;
     }
     if (Islander_CanDigHere() != 0) {
@@ -3820,7 +4355,7 @@ s32 Islander_TryDropTool(void) {
             }
             islander->removed_tool_tile_idx = 0;
             islander->removed_tool_layer = 0;
-            islander->equipped_tool_state = 0;
+            islander->equipped_tool_state = ISLANDER_TOOL_NONE;
             islander->removed_tool_item = 0;
             Islander_AdjustAnimForTool();
             return 1;
@@ -3829,7 +4364,11 @@ s32 Islander_TryDropTool(void) {
     return 0;
 }
 
-/* Original address: 0x02020B88 */
+/**
+ * Initializes all islander runtime state and starts the house-exit sequence.
+ *
+ * Original address: 0x02020B88
+ */
 void Islander_Init(void) {
     Islander_AGB *islander = &gIslander;
     s32 i;
@@ -3852,13 +4391,13 @@ void Islander_Init(void) {
     islander->removed_tool_tile_idx = 0;
     islander->held_item_sprite = 0;
     islander->wander_timer = 0;
-    islander->move_action = 0;
+    islander->move_action = ISLANDER_MOVE_ACTION_START_HOUSE_TRANSITION;
     islander->anim_id = 0;
     islander->anim_frame = 0;
     islander->anim_timer = 0;
     islander->direction = 0;
     islander->previous_direction = 0;
-    islander->equipped_tool_state = 0;
+    islander->equipped_tool_state = ISLANDER_TOOL_NONE;
     islander->removed_tool_item = 0;
     islander->tile_idx = 0;
     islander->interaction_tile = 0;
@@ -3914,10 +4453,14 @@ void Islander_Init(void) {
     Sound_InitMusic();
     islander->anim_timer = 0xFE;
     islander->anim_id = ISLANDER_ANIM_60;
-    islander->move_action = 0;
+    islander->move_action = ISLANDER_MOVE_ACTION_START_HOUSE_TRANSITION;
 }
 
-/* Original address: 0x02020D20 */
+/**
+ * Selects the flying-item parameter group for the islander, hour, and emotion.
+ *
+ * Original address: 0x02020D20
+ */
 s32 Island_GetFloatingItem(void) {
     Islander_AGB *islander = &gIslander;
     IslandFieldWork *field = &gIslandFieldWork;
@@ -3926,8 +4469,8 @@ s32 Island_GetFloatingItem(void) {
     *index = islander->islander_npc_idx * 7;
     *index += sFloatingItemHourOffsets[field->last_palette_hour];
     *index = sFloatingItemBaseIndices[*index];
-    *index += gMoveAction11EmotionSpawnOffsets[islander->emotion];
-    if ((islander->equipped_tool_state & 0xF) == 5) {
+    *index += sEmotionItemSpawnOffsets[islander->emotion];
+    if ((Islander_GET_TOOL_TYPE(islander)) == ISLANDER_TOOL_GOLD_NET) {
         *index += 20;
     }
     if (*index >= 160) {
@@ -3944,7 +4487,11 @@ extern EntitySpawnParams sFlyingItemFruitParams[6];
 /* Original address: 0x02033B48 */
 extern EntitySpawnParams sFlyingItemParams[160];
 
-/* Original address: 0x02020DA8 */
+/**
+ * Updates flying-item spawning and starts a net catch when conditions allow.
+ *
+ * Original address: 0x02020DA8
+ */
 void Islander_StepFlyingItem(void) {
     Islander_AGB *islander = &gIslander;
     Entity *balloon;
@@ -3956,7 +4503,7 @@ void Islander_StepFlyingItem(void) {
     u16 item;
     s32 chance;
 
-    if (islander->move_action == 16) {
+    if (islander->move_action == ISLANDER_MOVE_ACTION_RECEIVE_ITEM) {
         return;
     }
     if (islander->flying_item_spawn_timer != 0) {
@@ -4002,12 +4549,12 @@ void Islander_StepFlyingItem(void) {
             i++;
             params++;
         }
-    } else if (islander->move_action == 3) {
+    } else if (islander->move_action == ISLANDER_MOVE_ACTION_UPDATE_WANDERING) {
         if (islander->stored_item_type_plus_one[4] != 0) {
             islander->floating_balloon_target_entity_id = 0;
             return;
         }
-        if ((islander->equipped_tool_state & 0xF) == 1 || (islander->equipped_tool_state & 0xF) == 5) {
+        if ((Islander_GET_TOOL_TYPE(islander)) == ISLANDER_TOOL_NET || (Islander_GET_TOOL_TYPE(islander)) == ISLANDER_TOOL_GOLD_NET) {
             islander->work_x = islander->flying_item_x - islander->x;
             islander->work_y = islander->flying_item_y - islander->y;
             if (islander->work_x < 0) {
@@ -4027,7 +4574,7 @@ void Islander_StepFlyingItem(void) {
                     } else {
                         islander->direction = 1;
                     }
-                    islander->move_action = MoveActionReceiveItemInit;
+                    islander->move_action = ISLANDER_MOVE_ACTION_INIT_RECEIVE_ITEM;
                     Islander_ReceiveItem_Init();
                 }
             }
@@ -4035,7 +4582,13 @@ void Islander_StepFlyingItem(void) {
     }
 }
 
-/* Original address: 0x02020F54 */
+/**
+ * Tests the nearby water and random chance before starting a fishing action.
+ *
+ * Returns nonzero when fishing was started.
+ *
+ * Original address: 0x02020F54
+ */
 s32 Islander_TryStartFishing(void) {
     u16 tile;
     u16 *tilemap;
@@ -4045,7 +4598,7 @@ s32 Islander_TryStartFishing(void) {
     Islander_AGB *islander = &gIslander;
     s32 can_fish = 0;
 
-    if (islander->fishing_cooldown_timer == 0 && ((islander->equipped_tool_state & 0xF) == 4 || (islander->equipped_tool_state & 0xF) == 8)) {
+    if (islander->fishing_cooldown_timer == 0 && ((Islander_GET_TOOL_TYPE(islander)) == ISLANDER_TOOL_ROD || (Islander_GET_TOOL_TYPE(islander)) == ISLANDER_TOOL_GOLD_ROD)) {
         if (!(islander->x & 0xFF0000)) {
             tile = islander->tile_idx - 2;
             tile += 16;
@@ -4084,7 +4637,7 @@ s32 Islander_TryStartFishing(void) {
                 } else {
                     islander->direction = 1;
                 }
-                islander->move_action = MoveAction13;
+                islander->move_action = ISLANDER_MOVE_ACTION_INIT_FISHING;
                 Islander_Fishing_Init();
                 return 1;
             }
@@ -4093,7 +4646,11 @@ s32 Islander_TryStartFishing(void) {
     return 0;
 }
 
-/* Original address: 0x02021050 */
+/**
+ * Removes and returns the item stored at the islander's current field tile.
+ *
+ * Original address: 0x02021050
+ */
 u16 Islander_TakeCurrentTileItem(void) {
     Islander_AGB *islander = &gIslander;
     IslandFieldWork *field = &gIslandFieldWork;
@@ -4109,19 +4666,25 @@ u16 Islander_TakeCurrentTileItem(void) {
     return item;
 }
 
-/* Original address: 0x020210D4 */
+/**
+ * Handles tool pickup, item pickup, and buried-item interaction on the current tile.
+ *
+ * Returns nonzero when an interaction was started.
+ *
+ * Original address: 0x020210D4
+ */
 s32 Islander_TryInteractWithCurrentTile(void) {
     Islander_AGB *islander = &gIslander;
     IslandFieldWork *field = &gIslandFieldWork;
     u16 item = 0;
     u16 tile;
     ItemGroupStruct *definition;
-    s32 state;
+    s32 tool;
     s32 result;
     s32 slot;
 
-    state = islander->equipped_tool_state & 0xF;
-    if (state != 0 && state != 3 && state != 7) {
+    tool = Islander_GET_TOOL_TYPE(islander);
+    if (tool != ISLANDER_TOOL_NONE && tool != ISLANDER_TOOL_SHOVEL && tool != ISLANDER_TOOL_GOLD_SHOVEL) {
         return 0;
     }
     if (!(islander->x & 0xFF0000)) {
@@ -4158,7 +4721,7 @@ s32 Islander_TryInteractWithCurrentTile(void) {
     }
 
     islander->removed_field_item_type = 0;
-    if ((islander->equipped_tool_state & 0xF) == 3 || (islander->equipped_tool_state & 0xF) == 7) {
+    if ((Islander_GET_TOOL_TYPE(islander)) == ISLANDER_TOOL_SHOVEL || (Islander_GET_TOOL_TYPE(islander)) == ISLANDER_TOOL_GOLD_SHOVEL) {
         if (islander->stored_item_type_plus_one[4] != 0 ||
             (definition->interaction_type >= 7 && definition->interaction_type <= 14)) {
             return 0;
@@ -4192,7 +4755,7 @@ s32 Islander_TryInteractWithCurrentTile(void) {
     islander->target_y = ((islander->tile_idx & 0xF0) << 8) + 0x800;
     islander->item_work.held_item.type_idx = 2;
     islander->target_action = 0x10;
-    islander->move_action = 4;
+    islander->move_action = ISLANDER_MOVE_ACTION_MOVE_TO_TARGET;
     islander->immediate_item_type_plus_one = 0;
     if (item != 0) {
         for (slot = 0; slot < 5; slot++) {
@@ -4212,7 +4775,11 @@ s32 Islander_TryInteractWithCurrentTile(void) {
     return 0;
 }
 
-/* Original address: 0x020212F4 */
+/**
+ * Attempts to start a spontaneous digging action on an empty tile.
+ *
+ * Original address: 0x020212F4
+ */
 s32 Islander_TryStartDigging(void) {
     Islander_AGB *islander = &gIslander;
     IslandFieldWork *field = &gIslandFieldWork;
@@ -4220,7 +4787,7 @@ s32 Islander_TryStartDigging(void) {
     u8 *standing_tile;
 
     if ((islander->emotion == ISLANDER_EMOTION_HAPPY || islander->emotion == ISLANDER_EMOTION_ANGRY) &&
-        ((islander->equipped_tool_state & 0xF) == 3 || (islander->equipped_tool_state & 0xF) == 7) && islander->digging_cooldown_timer == 0) {
+        ((Islander_GET_TOOL_TYPE(islander)) == ISLANDER_TOOL_SHOVEL || (Islander_GET_TOOL_TYPE(islander)) == ISLANDER_TOOL_GOLD_SHOVEL) && islander->digging_cooldown_timer == 0) {
         if (!(islander->x & 0xFF0000)) {
             standing_tile = &islander->tile_idx;
             tile = field->fg_tiles[0][*standing_tile];
@@ -4239,7 +4806,7 @@ s32 Islander_TryStartDigging(void) {
             }
             islander->buried_item_tile_base = 0;
             islander->item_work.held_item.type_idx = 2;
-            islander->move_action = MoveAction4;
+            islander->move_action = ISLANDER_MOVE_ACTION_MOVE_TO_TARGET;
             IslanderMoveAction_MoveToTarget();
             return 2;
         }
@@ -4247,7 +4814,11 @@ s32 Islander_TryStartDigging(void) {
     return 0;
 }
 
-/* Original address: 0x020213DC */
+/**
+ * Restores temporarily carried player items and removed islander tools to the field.
+ *
+ * Original address: 0x020213DC
+ */
 void RestoreHeldItemsToField(void) {
     Islander_AGB *islander = &gIslander;
     IslandFieldWork *field = &gIslandFieldWork;
@@ -4270,8 +4841,8 @@ void RestoreHeldItemsToField(void) {
         field->entity_active[2] = 0;
     }
 
-    tool = islander->equipped_tool_state & 0xF;
-    if (tool != 0) {
+    tool = Islander_GET_TOOL_TYPE(islander);
+    if (tool != ISLANDER_TOOL_NONE) {
         tile = tool;
         if (tile > 4) {
             tile -= 4;
@@ -4297,23 +4868,27 @@ void RestoreHeldItemsToField(void) {
             WriteItemTileToVRAM(tilemap_vram, 0x6234);
             islander->removed_tool_tile_idx = 0;
             islander->removed_tool_layer = 0;
-            islander->equipped_tool_state = 0;
+            islander->equipped_tool_state = ISLANDER_TOOL_NONE;
             islander->removed_tool_item = 0;
-            if (islander->move_action == MoveAction3) {
+            if (islander->move_action == ISLANDER_MOVE_ACTION_UPDATE_WANDERING) {
                 Islander_AdjustAnimForTool();
             }
         }
     }
 }
-/* Original address: 0x02021574 */
+/**
+ * Runs the islander's active movement action and updates its shared timers.
+ *
+ * Original address: 0x02021574
+ */
 void Islander_UpdateMovement(void) {
     Islander_AGB *islander = &gIslander;
 
     if (gIslandFieldWork.gameplay_active != 0) {
         Islander_StepFlyingItem();
-        if ((islander->move_action >= MoveAction9 && islander->move_action <= CheckClickedOnTimer) ||
+        if ((islander->move_action >= ISLANDER_MOVE_ACTION_START_CLICK_REACTION && islander->move_action <= ISLANDER_MOVE_ACTION_CHECK_CLICKED_ON_TIMER) ||
             islander->click_cooldown_timer == 0) {
-            if (islander->move_action == MoveAction3) {
+            if (islander->move_action == ISLANDER_MOVE_ACTION_UPDATE_WANDERING) {
                 Islander_MoveWithCollision();
             }
             IslanderMoveProcTable[islander->move_action]();
@@ -4321,7 +4896,11 @@ void Islander_UpdateMovement(void) {
     }
 }
 
-/* Original address: 0x020215D0 */
+/**
+ * Prepares the islander to enter or leave its house.
+ *
+ * Original address: 0x020215D0
+ */
 void Islander_StartHouseTransition(void) {
     gIslander.anim_timer = 0;
     gIslander.anim_frame = 0;
@@ -4331,10 +4910,14 @@ void Islander_StartHouseTransition(void) {
     if (gIslander.anim_id == 0x60) {
         gIslander.anim_timer = 0xFE;
     }
-    gIslander.move_action = 1;
+    gIslander.move_action = ISLANDER_MOVE_ACTION_MOVE_INDOORS_OR_OUTDOORS;
 }
 
-/* Original address: 0x02021608 */
+/**
+ * Advances the islander's movement between the house and outdoor field.
+ *
+ * Original address: 0x02021608
+ */
 void Islander_MoveIndoorsOrOutdoors(void) {
     Islander_AGB *islander = &gIslander;
     IslandBuilding *house = &gIslandBuildings[ISLAND_BUILDING_ISLANDER_HOUSE];
@@ -4366,7 +4949,7 @@ void Islander_MoveIndoorsOrOutdoors(void) {
                 islander->y += 0x1200;
                 islander->accepted_y = islander->y;
                 islander->direction_change_cooldown_timer = anim_id;
-                islander->move_action = ActionOutside;
+                islander->move_action = ISLANDER_MOVE_ACTION_START_WANDERING;
                 Islander_StartWandering();
                 islander->collision_bypass_timer = 0x40;
                 islander->wander_timer = 0x60;
@@ -4383,13 +4966,17 @@ void Islander_MoveIndoorsOrOutdoors(void) {
                 }
                 islander->anim_timer = 0xFE;
                 islander->anim_id = ISLANDER_ANIM_60;
-                islander->move_action = ActionInside;
+                islander->move_action = ISLANDER_MOVE_ACTION_START_HOUSE_TRANSITION;
                 house->state = 1;
             }
         }
     }
 }
-/* Original address: 0x02021720 */
+/**
+ * Initializes free-roaming movement and selects an initial direction.
+ *
+ * Original address: 0x02021720
+ */
 void Islander_StartWandering(void) {
     Islander_AGB *islander = &gIslander;
     s32 base_duration = 0;
@@ -4415,10 +5002,14 @@ void Islander_StartWandering(void) {
     }
     islander->wander_timer = base_duration + rand_u16(&gGameState) % 337;
     islander->anim_timer = anim->duration;
-    islander->move_action = MoveAction3;
+    islander->move_action = ISLANDER_MOVE_ACTION_UPDATE_WANDERING;
 }
 
-/* Original address: 0x020217AC */
+/**
+ * Updates free-roaming behavior and selects opportunistic field actions.
+ *
+ * Original address: 0x020217AC
+ */
 void Islander_UpdateWandering(void) {
     Islander_AGB *islander = &gIslander;
     s32 direction = 0;
@@ -4436,7 +5027,7 @@ void Islander_UpdateWandering(void) {
     if (islander->fishing_cooldown_timer != 0) {
         islander->fishing_cooldown_timer--;
     }
-    if (islander->equipped_tool_state & 0xF) {
+    if (Islander_GET_TOOL_TYPE(islander) != ISLANDER_TOOL_NONE) {
         if (islander->equipped_tool_timer > 0x1C20) {
             if (Islander_TryDropTool() != 0) {
                 islander->equipped_tool_timer = 0;
@@ -4459,7 +5050,7 @@ void Islander_UpdateWandering(void) {
                 direction = Islander_ChooseNewMoveDirection(0);
                 if (direction != 0x777) {
                     islander->direction = direction;
-                    islander->move_action = ActionOutside;
+                    islander->move_action = ISLANDER_MOVE_ACTION_START_WANDERING;
                     Islander_StartWandering();
                     return;
                 }
@@ -4471,7 +5062,11 @@ void Islander_UpdateWandering(void) {
     }
 }
 
-/* Original address: 0x020218B0 */
+/**
+ * Moves through prepared waypoints and starts the selected target interaction.
+ *
+ * Original address: 0x020218B0
+ */
 void IslanderMoveAction_MoveToTarget(void) {
     Islander_AGB *islander = &gIslander;
     IslandBuilding *house = &gIslandBuildings[ISLAND_BUILDING_ISLANDER_HOUSE];
@@ -4492,7 +5087,7 @@ void IslanderMoveAction_MoveToTarget(void) {
         }
         switch (islander->target_action) {
         case 0x10:
-            islander->move_action = MoveAction5;
+            islander->move_action = ISLANDER_MOVE_ACTION_START_FOOD_PROCESSING;
             Islander_StartFoodProcessing();
             break;
         case 0x20:
@@ -4500,21 +5095,21 @@ void IslanderMoveAction_MoveToTarget(void) {
             islander->y = islander->target_y - 0x1000;
             house->state = 0;
             islander->anim_id = ISLANDER_ANIM_5F;
-            islander->move_action = ActionInside;
+            islander->move_action = ISLANDER_MOVE_ACTION_START_HOUSE_TRANSITION;
             Islander_StartHouseTransition();
             islander->anim_timer = 4;
             break;
         case 0x30:
             object->x_flip = 0;
             if (islander->next_target_x == 0 && islander->next_target_y == 0) {
-                if ((islander->equipped_tool_state & 0xF) != 2 && (islander->equipped_tool_state & 0xF) != 6) {
+                if ((Islander_GET_TOOL_TYPE(islander)) != ISLANDER_TOOL_AXE && (Islander_GET_TOOL_TYPE(islander)) != ISLANDER_TOOL_GOLD_AXE) {
                     islander->anim_id = 0x62;
                 } else {
                     islander->anim_id = ISLANDER_ANIM_55;
                 }
                 islander->x = islander->target_x;
                 islander->y = islander->target_y;
-                islander->move_action = MoveAction11;
+                islander->move_action = ISLANDER_MOVE_ACTION_START_FIELD_OBJECT_INTERACTION;
                 Islander_StartFieldObjectInteraction();
             } else {
                 islander->target_x = islander->next_target_x;
@@ -4527,14 +5122,14 @@ void IslanderMoveAction_MoveToTarget(void) {
         case 0x40:
             object->x_flip = 1;
             if (islander->next_target_x == 0 && islander->next_target_y == 0) {
-                if ((islander->equipped_tool_state & 0xF) != 2 && (islander->equipped_tool_state & 0xF) != 6) {
+                if ((Islander_GET_TOOL_TYPE(islander)) != ISLANDER_TOOL_AXE && (Islander_GET_TOOL_TYPE(islander)) != ISLANDER_TOOL_GOLD_AXE) {
                     islander->anim_id = ISLANDER_ANIM_61;
                 } else {
                     islander->anim_id = ISLANDER_ANIM_54;
                 }
                 islander->x = islander->target_x;
                 islander->y = islander->target_y;
-                islander->move_action = MoveAction11;
+                islander->move_action = ISLANDER_MOVE_ACTION_START_FIELD_OBJECT_INTERACTION;
                 Islander_StartFieldObjectInteraction();
             } else {
                 islander->target_x = islander->next_target_x;
@@ -4548,7 +5143,7 @@ void IslanderMoveAction_MoveToTarget(void) {
             islander->x = islander->target_x;
             islander->y = islander->target_y;
             Islander_ChooseNewMoveDirection(1);
-            islander->move_action = ActionOutside;
+            islander->move_action = ISLANDER_MOVE_ACTION_START_WANDERING;
             Islander_StartWandering();
             break;
         case 0x60:
@@ -4558,7 +5153,7 @@ void IslanderMoveAction_MoveToTarget(void) {
             if (islander->next_target_x == 0 && islander->next_target_y == 0) {
                 islander->item_work.held_item.type_idx = 0;
                 islander->target_action = 0;
-                islander->move_action = MoveActionDig;
+                islander->move_action = ISLANDER_MOVE_ACTION_DIG;
                 IslanderMoveAction_Dig();
             } else {
                 islander->target_x = islander->next_target_x;
@@ -4575,7 +5170,7 @@ void IslanderMoveAction_MoveToTarget(void) {
             if (islander->next_target_x == 0 && islander->next_target_y == 0) {
                 islander->item_work.held_item.type_idx = 0;
                 islander->target_action = 0;
-                islander->move_action = MoveActionDig;
+                islander->move_action = ISLANDER_MOVE_ACTION_DIG;
                 IslanderMoveAction_Dig();
             } else {
                 islander->target_x = islander->next_target_x;
@@ -4598,7 +5193,11 @@ void IslanderMoveAction_MoveToTarget(void) {
 }
 
 
-/* Original address: 0x02021AD8 */
+/**
+ * Selects a stored food item and prepares the eating animation.
+ *
+ * Original address: 0x02021AD8
+ */
 void Islander_StartFoodProcessing(void) {
     Islander_AGB *islander = &gIslander;
     u8 *anim_id = &islander->anim_id;
@@ -4636,10 +5235,14 @@ void Islander_StartFoodProcessing(void) {
         item_type_idx = islander->immediate_item_type_plus_one - 1;
     }
     islander->held_item_sprite = (item_type_idx + g_ItemDefinitions)->held_item_oam_attr2 | 0x800000;
-    islander->move_action = ProcessFood;
+    islander->move_action = ISLANDER_MOVE_ACTION_PROCESS_FOOD;
 }
 
-/* Original address: 0x02021BCC */
+/**
+ * Advances the eating sequence and applies its mood or inventory effects.
+ *
+ * Original address: 0x02021BCC
+ */
 void Islander_ProcessFood(void) {
     Islander_AGB *islander = &gIslander;
     IslandFieldWork *field = &gIslandFieldWork;
@@ -4753,35 +5356,35 @@ void Islander_ProcessFood(void) {
             result = 1;
             break;
         case 8:
-            islander->equipped_tool_state = 5;
+            islander->equipped_tool_state = ISLANDER_TOOL_GOLD_NET;
             result = 2;
             break;
         case 7:
-            islander->equipped_tool_state = 1;
+            islander->equipped_tool_state = ISLANDER_TOOL_NET;
             result = 2;
             break;
         case 10:
-            islander->equipped_tool_state = 6;
+            islander->equipped_tool_state = ISLANDER_TOOL_GOLD_AXE;
             result = 2;
             break;
         case 9:
-            islander->equipped_tool_state = 2;
+            islander->equipped_tool_state = ISLANDER_TOOL_AXE;
             result = 2;
             break;
         case 12:
-            islander->equipped_tool_state = 7;
+            islander->equipped_tool_state = ISLANDER_TOOL_GOLD_SHOVEL;
             result = 2;
             break;
         case 11:
-            islander->equipped_tool_state = 3;
+            islander->equipped_tool_state = ISLANDER_TOOL_SHOVEL;
             result = 2;
             break;
         case 14:
-            islander->equipped_tool_state = 8;
+            islander->equipped_tool_state = ISLANDER_TOOL_GOLD_ROD;
             result = 2;
             break;
         case 13:
-            islander->equipped_tool_state = 4;
+            islander->equipped_tool_state = ISLANDER_TOOL_ROD;
             result = 2;
             break;
         default:
@@ -4804,14 +5407,14 @@ void Islander_ProcessFood(void) {
         }
         islander->item_work.held_item.type_idx = 2;
         islander->target_action = 0x50;
-        islander->move_action = MoveAction7;
+        islander->move_action = ISLANDER_MOVE_ACTION_UPDATE_EMOTION;
         IslanderMoveAction_UpdateEmotion();
         break;
     case 2:
         WriteItemToTile(islander->x, islander->tile_idx, 0, 0x200);
         islander->equipped_tool_timer = 0;
         islander->direction_change_cooldown_timer = 0x20;
-        islander->move_action = ActionOutside;
+        islander->move_action = ISLANDER_MOVE_ACTION_START_WANDERING;
         Islander_StartWandering();
         break;
     }
@@ -4819,6 +5422,11 @@ void Islander_ProcessFood(void) {
     islander->anim_timer = gIslanderAnimData[islander->anim_id][islander->anim_frame]->duration;
 }
 
+/**
+ * Starts an emotion reaction selected from the islander's current mood state.
+ *
+ * Original address: 0x02021FA4
+ */
 void IslanderMoveAction_UpdateEmotion(void) {
     Islander_AGB *islander = &gIslander;
     AnimFrameData *anim_data;
@@ -4852,10 +5460,14 @@ void IslanderMoveAction_UpdateEmotion(void) {
 
     Sound_SetEmotion(islander->emotion + SOUND_EMOTION_NEUTRAL);
     islander->anim_timer = anim_data->duration;
-    islander->move_action = MoveAction8;
+    islander->move_action = ISLANDER_MOVE_ACTION_UPDATE_EMOTION_ANIMATION;
 }
 
-/* Original address: 0x02022054 */
+/**
+ * Advances the active emotion animation and returns to wandering afterward.
+ *
+ * Original address: 0x02022054
+ */
 void Islander_UpdateEmotionAnimation(void) {
     Islander_AGB *islander = &gIslander;
     IslandBuilding *house = &gIslandBuildings[ISLAND_BUILDING_ISLANDER_HOUSE];
@@ -4880,13 +5492,13 @@ void Islander_UpdateEmotionAnimation(void) {
             } else {
                 random = rand_u16(&gGameState) % 101;
                 if (random < 60) {
-                    SpawnEntity(0, 0, 0xB, 8);
+                    SpawnEntity(0, 0, ITEM_TYPE_100_BELLS, ITEM_GENERATOR_100_BELLS);
                 } else if (random < 90) {
-                    SpawnEntity(0, 0, 0x42, 9);
+                    SpawnEntity(0, 0, ITEM_TYPE_1K_BELLS, ITEM_GENERATOR_1K_BELLS);
                 } else if (random < 98) {
-                    SpawnEntity(0, 0, 0x43, 10);
+                    SpawnEntity(0, 0, ITEM_TYPE_10K_BELLS, ITEM_GENERATOR_10K_BELLS);
                 } else {
-                    SpawnEntity(0, 0, 0x44, 11);
+                    SpawnEntity(0, 0, ITEM_TYPE_30K_BELLS, ITEM_GENERATOR_30K_BELLS);
                 }
             }
         }
@@ -4898,7 +5510,7 @@ void Islander_UpdateEmotionAnimation(void) {
         islander->anim_frame = 0;
         Islander_AdjustAnimForTool();
         islander->anim_timer = (*gIslanderAnimData[islander->anim_id])->duration;
-        islander->move_action = MoveAction4;
+        islander->move_action = ISLANDER_MOVE_ACTION_MOVE_TO_TARGET;
         IslanderMoveAction_MoveToTarget();
         return;
     }
@@ -4909,7 +5521,7 @@ void Islander_UpdateEmotionAnimation(void) {
         islander->y = house->y << 8;
         islander->target_action = 0;
         islander->anim_id = ISLANDER_ANIM_5F;
-        islander->move_action = ActionInside;
+        islander->move_action = ISLANDER_MOVE_ACTION_START_HOUSE_TRANSITION;
         Islander_StartHouseTransition();
         islander->anim_timer = 4;
         {
@@ -4930,11 +5542,15 @@ void Islander_UpdateEmotionAnimation(void) {
     }
 
     Islander_ChooseNewMoveDirection(1);
-    islander->move_action = ActionOutside;
+    islander->move_action = ISLANDER_MOVE_ACTION_START_WANDERING;
     Islander_StartWandering();
 }
 
-/* Original address: 0x020221C0 */
+/**
+ * Begins reacting to a player-selected target and approaches it when necessary.
+ *
+ * Original address: 0x020221C0
+ */
 void Islander_StartClickReaction(void) {
     Islander_AGB *islander = &gIslander;
     IslandFieldWork *field = &gIslandFieldWork;
@@ -4951,13 +5567,13 @@ void Islander_StartClickReaction(void) {
 
         if (((u16)index == 0xFFF) || (index == 0x3333) || (index == 0x7777) ||
             ((&g_ItemDefinitions[index])->held_item_oam_attr2 == 0xFFF)) {
-            islander->move_action = ActionOutside;
+            islander->move_action = ISLANDER_MOVE_ACTION_START_WANDERING;
             Islander_StartWandering();
             return;
         }
     }
 
-    Islander_SpawnReactionEffect(0, 0x30);
+    Islander_SpawnReactionEffect(ENTITY_REACTION_QUESTION, 0x30);
     islander->click_cooldown_timer = 0x30;
     islander->direction_change_cooldown_timer = 0x60;
     islander->work_x = (islander->target_x - islander->x) >> 8;
@@ -4981,9 +5597,14 @@ void Islander_StartClickReaction(void) {
     islander->anim_frame = 0;
     islander->anim_timer = 0;
     Islander_AdjustAnimForTool();
-    islander->move_action = CheckClickedOnTimer;
+    islander->move_action = ISLANDER_MOVE_ACTION_CHECK_CLICKED_ON_TIMER;
 }
 
+/**
+ * Holds the click reaction until its cooldown expires, then resumes wandering.
+ *
+ * Original address: 0x020222F8
+ */
 void Islander_CheckClickedOnTimer(void) {
     Islander_AGB *islander = &gIslander;
     u8 timer;
@@ -4993,11 +5614,11 @@ void Islander_CheckClickedOnTimer(void) {
     if (timer == 0) {
         if (islander->reaction_anim_id == ISLANDER_ANIM_00) {
             state = islander->equipped_tool_state;
-            if (state & 0x40) {
-                islander->equipped_tool_state = state - 0x40;
+            if (state & ISLANDER_TOOL_STATE_DROP) {
+                islander->equipped_tool_state = state - ISLANDER_TOOL_STATE_DROP;
                 Islander_TryDropTool();
             }
-            islander->move_action = ActionOutside;
+            islander->move_action = ISLANDER_MOVE_ACTION_START_WANDERING;
             Islander_StartWandering();
             return;
         }
@@ -5012,7 +5633,7 @@ void Islander_CheckClickedOnTimer(void) {
         if ((islander->emotion == ISLANDER_EMOTION_NEUTRAL) ||
             (islander->emotion == ISLANDER_EMOTION_HAPPY)) {
             islander->direction = 0;
-            Islander_SpawnReactionEffect(1, 0x30);
+            Islander_SpawnReactionEffect(ENTITY_REACTION_SWEAT, 0x30);
             islander->click_cooldown_timer = 0x30;
             return;
         }
@@ -5024,12 +5645,16 @@ void Islander_CheckClickedOnTimer(void) {
             islander->reaction_anim_id = ISLANDER_ANIM_SAD;
             islander->emotion = ISLANDER_EMOTION_SAD;
         }
-        islander->move_action = MoveAction7;
+        islander->move_action = ISLANDER_MOVE_ACTION_UPDATE_EMOTION;
         IslanderMoveAction_UpdateEmotion();
     }
 }
 
-/* Original address: 0x020223AC */
+/**
+ * Selects the shake or chop state for the targeted field object.
+ *
+ * Original address: 0x020223AC
+ */
 void Islander_StartFieldObjectInteraction(void) {
     Islander_AGB *islander = &gIslander;
     FieldObject *field_object = &gFieldObjects[islander->target_field_object_idx];
@@ -5038,27 +5663,32 @@ void Islander_StartFieldObjectInteraction(void) {
     islander->anim_timer = (*gIslanderAnimData[islander->anim_id])->duration;
     islander->item_work.held_item.type_idx = 0;
     islander->tree_action_cooldown_timer = 0;
-    if (((islander->equipped_tool_state & 0xF) != 2) && ((islander->equipped_tool_state & 0xF) != 6)) {
-        islander->action_state = 0;
+    if (((Islander_GET_TOOL_TYPE(islander)) != ISLANDER_TOOL_AXE) && ((Islander_GET_TOOL_TYPE(islander)) != ISLANDER_TOOL_GOLD_AXE)) {
+        islander->action_state = ISLANDER_FIELD_OBJECT_INTERACTION_SHAKE;
         field_object->shake_animation_paused = 1;
-        field_object->action_state = 1;
+        field_object->action_state = FIELD_OBJECT_ACTION_HANDLE_HIT;
     } else {
         field_object->shake_animation_paused = 0;
-        islander->action_state = 1;
+        islander->action_state = ISLANDER_FIELD_OBJECT_INTERACTION_CHOP;
     }
-    islander->move_action = MoveAction12;
+    islander->move_action = ISLANDER_MOVE_ACTION_UPDATE_FIELD_OBJECT_INTERACTION;
 }
 
-void Islander_MoveAction11_State0(void) {
+/**
+ * Shakes the targeted field object and waits for the animation to finish.
+ *
+ * Original address: 0x0202243C
+ */
+void Islander_ShakeFieldObject(void) {
     Islander_AGB *islander = &gIslander;
     FieldObject *field_object = &gFieldObjects[islander->target_field_object_idx];
 
     if ((islander->anim_frame != 0) && (islander->anim_timer == 1)) {
-        field_object->anim_frame = gMoveAction11ObjectAnimFrames[islander->anim_frame - 1];
+        field_object->anim_frame = sFieldObjectInteractionAnimFrames[islander->anim_frame - 1];
     }
     if (Islander_PlayAnim(1) != 0) {
         islander->tree_action_cooldown_timer = 600;
-        islander->action_state = 0;
+        islander->action_state = ISLANDER_FIELD_OBJECT_INTERACTION_SHAKE;
         field_object->anim_frame = 3;
         islander->target_x = islander->accepted_x;
         islander->target_y = islander->accepted_y;
@@ -5067,13 +5697,17 @@ void Islander_MoveAction11_State0(void) {
         Islander_AdjustAnimForTool();
         islander->item_work.held_item.type_idx = 1;
         islander->target_action = 0x50;
-        islander->move_action = MoveAction4;
+        islander->move_action = ISLANDER_MOVE_ACTION_MOVE_TO_TARGET;
         IslanderMoveAction_MoveToTarget();
     }
 }
 
-/* Original address: 0x020224D8 */
-void Islander_MoveAction11_State1(void) {
+/**
+ * Swings an axe at the targeted field object and applies the resulting hit.
+ *
+ * Original address: 0x020224D8
+ */
+void Islander_ChopFieldObject(void) {
     IslandFieldWork *field = &gIslandFieldWork;
     Islander_AGB *islander = &gIslander;
     FieldObject *field_object = &gFieldObjects[islander->target_field_object_idx];
@@ -5090,9 +5724,9 @@ void Islander_MoveAction11_State1(void) {
     if (Islander_PlayAnim(1) != 0) {
         if ((field_object->hits_remaining == 0) || (field_object->hits_remaining & 0x80)) {
             islander->tree_action_cooldown_timer = 0x20;
-            islander->action_state = 2;
+            islander->action_state = ISLANDER_FIELD_OBJECT_INTERACTION_COOLDOWN;
         } else {
-            islander->move_action = MoveAction11;
+            islander->move_action = ISLANDER_MOVE_ACTION_START_FIELD_OBJECT_INTERACTION;
             Islander_StartFieldObjectInteraction();
         }
     }
@@ -5113,12 +5747,12 @@ void Islander_MoveAction11_State1(void) {
         if (tile == 0xFFF) {
             islander->item_work.held_item.type_idx = 1;
             spawn_idx = 0;
-            if ((islander->equipped_tool_state & 0xF) == 6) {
+            if ((Islander_GET_TOOL_TYPE(islander)) == ISLANDER_TOOL_GOLD_AXE) {
                 spawn_idx = 0x14;
             }
-            spawn_idx += gMoveAction11EmotionSpawnOffsets[islander->emotion];
+            spawn_idx += sEmotionItemSpawnOffsets[islander->emotion];
             spawn_idx += rand_u16(&gGameState) % 4;
-            spawn_params = &gMoveAction11EntitySpawnParams[spawn_idx];
+            spawn_params = &sFieldObjectInteractionEntitySpawnParams[spawn_idx];
             spawn_idx = SpawnEntity(0, 2, spawn_params->type, spawn_params->param);
             if (spawn_idx != 0) {
                 if (field_object->layer == 0) {
@@ -5139,11 +5773,16 @@ void Islander_MoveAction11_State1(void) {
             }
         }
     }
-    field_object->action_state = 1;
+    field_object->action_state = FIELD_OBJECT_ACTION_HANDLE_HIT;
     field_object->hits_remaining--;
     Sound_PlayEffect0(0);
 }
-void Islander_MoveAction11_State2(void) {
+/**
+ * Waits out the field-object interaction cooldown and resumes wandering.
+ *
+ * Original address: 0x020226E8
+ */
+void Islander_FinishFieldObjectInteraction(void) {
     Islander_AGB *islander = &gIslander;
     u16 next_timer;
 
@@ -5151,7 +5790,7 @@ void Islander_MoveAction11_State2(void) {
     if (next_timer == 0) {
         islander->tree_action_cooldown_timer = 600;
         islander->item_work.held_item.type_idx = next_timer;
-        islander->action_state = 0;
+        islander->action_state = ISLANDER_FIELD_OBJECT_INTERACTION_SHAKE;
         if (islander->emotion == ISLANDER_EMOTION_ANGRY) {
             islander->mood_level++;
             if (islander->mood_level > 6) {
@@ -5168,15 +5807,24 @@ void Islander_MoveAction11_State2(void) {
     }
 }
 
-extern Islander_SUB_MOVE_PROC sIslanderMoveAction11SubMoveProcs[];
+extern Islander_SUB_MOVE_PROC sIslanderFieldObjectInteractionProcs[];
 
-/* Original address: 0x0202275C */
+/**
+ * Dispatches the current field-object interaction state.
+ *
+ * Original address: 0x0202275C
+ */
 void Islander_UpdateFieldObjectInteraction(void) {
     Islander_AGB *islander = &gIslander;
 
-    sIslanderMoveAction11SubMoveProcs[islander->action_state]();
+    sIslanderFieldObjectInteractionProcs[islander->action_state]();
 }
 
+/**
+ * Initializes the fishing state machine and switches to the casting animation.
+ *
+ * Original address: 0x0202277C
+ */
 void Islander_Fishing_Init(void) {
     Islander_AGB *islander = &gIslander;
 
@@ -5188,11 +5836,16 @@ void Islander_Fishing_Init(void) {
     islander->anim_timer = (*gIslanderAnimData[islander->anim_id])->duration;
     islander->anim_frame = 0;
     islander->item_work.held_item.type_idx = 0;
-    islander->action_state = 0;
-    islander->move_action = MoveActionFishing;
+    islander->action_state = ISLANDER_FISHING_CAST_LINE;
+    islander->move_action = ISLANDER_MOVE_ACTION_FISHING;
 }
 
-void Islander_Fishing_State0(void) {
+/**
+ * Plays the rod-casting sequence and advances to waiting for a bite.
+ *
+ * Original address: 0x020227D8
+ */
+void Islander_CastFishingLine(void) {
     Islander_AGB *islander = &gIslander;
     AnimFrameData *anim_data;
     u8 *anim_timer;
@@ -5208,7 +5861,7 @@ void Islander_Fishing_State0(void) {
         islander->anim_frame = 0;
         islander->item_work.held_item.type_idx = 0;
         islander->item_work.held_item.tile_no = 0x20;
-        islander->action_state = 1;
+        islander->action_state = ISLANDER_FISHING_WAIT_FOR_BITE;
     }
     anim_timer = &islander->anim_timer;
     if ((*anim_timer == 1) && (islander->anim_frame == 3)) {
@@ -5216,7 +5869,12 @@ void Islander_Fishing_State0(void) {
     }
 }
 
-void Islander_Fishing_State1(void) {
+/**
+ * Waits for the fishing bite timer to expire.
+ *
+ * Original address: 0x02022858
+ */
+void Islander_WaitForFishBite(void) {
     Islander_AGB *islander = &gIslander;
     u16 timer;
 
@@ -5226,12 +5884,17 @@ void Islander_Fishing_State1(void) {
         islander->anim_frame = 0;
         islander->item_work.held_item.tile_no = 0x30;
         islander->item_work.held_item.type_idx = timer;
-        Islander_SpawnReactionEffect(0, 0x30);
-        islander->action_state = 2;
+        Islander_SpawnReactionEffect(ENTITY_REACTION_QUESTION, 0x30);
+        islander->action_state = ISLANDER_FISHING_NOTICE_BITE;
     }
 }
 
-void Islander_Fishing_State2(void) {
+/**
+ * Shows the bite reaction and prepares the reel-in window.
+ *
+ * Original address: 0x020228A0
+ */
+void Islander_NoticeFishBite(void) {
     Islander_AGB *islander = &gIslander;
 
     if (--islander->item_work.held_item.tile_no == 0) {
@@ -5243,13 +5906,18 @@ void Islander_Fishing_State2(void) {
         islander->anim_timer = (*gIslanderAnimData[islander->anim_id])->duration;
         islander->anim_frame = 0;
         islander->item_work.held_item.type_idx = 0;
-        islander->action_state = 3;
+        islander->action_state = ISLANDER_FISHING_WAIT_TO_REEL_IN;
         Sound_PlayEffect1(0x15);
         islander->item_work.held_item.tile_no = 0x51;
     }
 }
 
-void Islander_Fishing_State3(void) {
+/**
+ * Waits through the pre-reel animation before starting the catch attempt.
+ *
+ * Original address: 0x02022914
+ */
+void Islander_WaitToReelIn(void) {
     Islander_AGB *islander = &gIslander;
     u16 timer;
 
@@ -5265,13 +5933,18 @@ void Islander_Fishing_State3(void) {
         islander->anim_timer = (*gIslanderAnimData[islander->anim_id])->duration;
         islander->anim_frame = 0;
         islander->item_work.held_item.type_idx = Islander_GetFishingItem();
-        islander->action_state = 4;
+        islander->action_state = ISLANDER_FISHING_REEL_IN;
         Sound_StopEffect1(0x15);
         Sound_PlayEffect0(0x16);
     }
 }
 
-void Islander_Fishing_State4(void) {
+/**
+ * Advances the reel-in animation and determines the fishing result.
+ *
+ * Original address: 0x02022994
+ */
+void Islander_ReelInFish(void) {
     Islander_AGB *islander = &gIslander;
     AnimFrameData *anim_data;
 
@@ -5307,7 +5980,7 @@ void Islander_Fishing_State4(void) {
             if (islander->mood_level > 6) {
                 islander->mood_level = 6;
             }
-            Islander_SpawnReactionEffect(3, 0x30);
+            Islander_SpawnReactionEffect(ENTITY_REACTION_MUSIC_NOTE, 0x30);
             if (islander->direction == 0) {
                 islander->anim_id = ISLANDER_ANIM_3F;
             } else {
@@ -5321,13 +5994,18 @@ void Islander_Fishing_State4(void) {
         Islander_OnMoodChanged();
     }
     anim_data = *gIslanderAnimData[islander->anim_id];
-    islander->action_state = 6;
+    islander->action_state = ISLANDER_FISHING_REACT_TO_CATCH;
     islander->item_work.held_item.tile_no = 0;
     islander->anim_frame = 0;
     islander->anim_timer = anim_data->duration;
 }
 
-void Islander_Fishing_State5(void) {
+/**
+ * Completes a failed catch animation and transitions to the result reaction.
+ *
+ * Original address: 0x02022AE4
+ */
+void Islander_FinishFailedCatch(void) {
     Islander_AGB *islander = &gIslander;
 
     if (Islander_PlayAnim(1) != 0) {
@@ -5335,17 +6013,22 @@ void Islander_Fishing_State5(void) {
             islander->mood_level = 0;
             islander->reaction_anim_id = ISLANDER_ANIM_SAD;
             islander->emotion = ISLANDER_EMOTION_SAD;
-            islander->move_action = MoveAction7;
+            islander->move_action = ISLANDER_MOVE_ACTION_UPDATE_EMOTION;
             IslanderMoveAction_UpdateEmotion();
         } else {
-            islander->move_action = ActionOutside;
+            islander->move_action = ISLANDER_MOVE_ACTION_START_WANDERING;
             Islander_StartWandering();
         }
         islander->held_item_sprite = 0;
     }
 }
 
-void Islander_Fishing_State6(void) {
+/**
+ * Reacts to the fishing result and prepares the appropriate ending state.
+ *
+ * Original address: 0x02022B44
+ */
+void Islander_ReactToFishingResult(void) {
     Islander_AGB *islander = &gIslander;
     AnimFrameData *anim_data;
 
@@ -5357,14 +6040,14 @@ void Islander_Fishing_State6(void) {
             } else {
                 islander->anim_id = ISLANDER_ANIM_45;
             }
-            islander->action_state = 5;
+            islander->action_state = ISLANDER_FISHING_FINISH_FAILED_CATCH;
         } else {
             if (islander->direction == 0) {
                 islander->anim_id = ISLANDER_ANIM_3D;
             } else {
                 islander->anim_id = ISLANDER_ANIM_46;
             }
-            islander->action_state = 7;
+            islander->action_state = ISLANDER_FISHING_FINISH_SUCCESSFUL_CATCH;
         }
         anim_data = *gIslanderAnimData[islander->anim_id];
         islander->item_work.held_item.tile_no = 0;
@@ -5374,25 +6057,40 @@ void Islander_Fishing_State6(void) {
     }
 }
 
-void Islander_Fishing_State7(void) {
+/**
+ * Finishes displaying a successful catch and returns to wandering.
+ *
+ * Original address: 0x02022BE0
+ */
+void Islander_FinishSuccessfulCatch(void) {
     Islander_AGB *islander = &gIslander;
 
     if (Islander_PlayAnim(1) != 0) {
         Islander_ChooseNewMoveDirection(1);
         islander->held_item_sprite = 0;
-        islander->move_action = ActionOutside;
+        islander->move_action = ISLANDER_MOVE_ACTION_START_WANDERING;
         Islander_StartWandering();
     }
 }
 
+/**
+ * Dispatches the current fishing state.
+ *
+ * Original address: 0x02022C10
+ */
 void IslanderMoveAction_Fishing(void) {
-    extern Islander_SUB_MOVE_PROC sIslanderFishingSubMoveProcs[];
+    extern Islander_SUB_MOVE_PROC sIslanderFishingStateProcs[];
 
     Islander_AGB *islander = &gIslander;
 
-    sIslanderFishingSubMoveProcs[islander->action_state]();
+    sIslanderFishingStateProcs[islander->action_state]();
 }
 
+/**
+ * Initializes the flying-item catch sequence.
+ *
+ * Original address: 0x02022C30
+ */
 void Islander_ReceiveItem_Init(void) {
     Islander_AGB *islander = &gIslander;
 
@@ -5404,19 +6102,29 @@ void Islander_ReceiveItem_Init(void) {
     }
     islander->anim_timer = (*gIslanderAnimData[islander->anim_id])->duration;
     islander->held_item_sprite = 0x800000;
-    islander->action_state = 0;
-    islander->move_action = MoveActionReceiveItem;
+    islander->action_state = ISLANDER_RECEIVE_ITEM_CATCH;
+    islander->move_action = ISLANDER_MOVE_ACTION_RECEIVE_ITEM;
 }
 
-extern Islander_SUB_MOVE_PROC sIslanderReceiveItemSubMoveProcs[];
+extern Islander_SUB_MOVE_PROC sIslanderReceiveItemStateProcs[];
 
+/**
+ * Dispatches the current flying-item receive state.
+ *
+ * Original address: 0x02022C8C
+ */
 void IslanderMoveAction_ReceiveItem(void) {
     Islander_AGB *islander = &gIslander;
 
-    sIslanderReceiveItemSubMoveProcs[islander->action_state]();
+    sIslanderReceiveItemStateProcs[islander->action_state]();
 }
 
-void Islander_DespawnFlyingItem(void) {
+/**
+ * Plays the net catch, removes the flying entity, and selects its caught item.
+ *
+ * Original address: 0x02022CAC
+ */
+void Islander_CatchFlyingItem(void) {
     Islander_AGB *islander = &gIslander;
     IslandFieldWork *field = &gIslandFieldWork;
     u8 *anim_timer;
@@ -5426,7 +6134,7 @@ void Islander_DespawnFlyingItem(void) {
     s32 anim_finished;
 
     if (islander->held_item_sprite == 0) {
-        islander->move_action = ActionOutside;
+        islander->move_action = ISLANDER_MOVE_ACTION_START_WANDERING;
         Islander_StartWandering();
         return;
     }
@@ -5457,12 +6165,12 @@ void Islander_DespawnFlyingItem(void) {
             } else {
                 islander->anim_id = ISLANDER_ANIM_52;
             }
-            Islander_SpawnReactionEffect(3, 0x30);
+            Islander_SpawnReactionEffect(ENTITY_REACTION_MUSIC_NOTE, 0x30);
         }
         anim_data = *gIslanderAnimData[islander->anim_id];
         islander->anim_frame = 0;
         *anim_timer = anim_data->duration;
-        islander->action_state = 1;
+        islander->action_state = ISLANDER_RECEIVE_ITEM_STORE;
         return;
     }
 
@@ -5481,6 +6189,11 @@ void Islander_DespawnFlyingItem(void) {
     }
 }
 
+/**
+ * Stores the caught flying item or prepares it for direct display.
+ *
+ * Original address: 0x02022E54
+ */
 void Islander_StoreHeldItem(void) {
     Islander_AGB *islander = &gIslander;
     AnimFrameData *anim_data;
@@ -5496,11 +6209,16 @@ void Islander_StoreHeldItem(void) {
         anim_data = *gIslanderAnimData[islander->anim_id];
         islander->anim_frame = 0;
         islander->anim_timer = anim_data->duration;
-        islander->action_state = 2;
+        islander->action_state = ISLANDER_RECEIVE_ITEM_FINISH;
     }
 }
 
-void Islander_ProcessFishReceived(void) {
+/**
+ * Finishes the receive-item reaction and returns to wandering.
+ *
+ * Original address: 0x02022EC0
+ */
+void Islander_FinishReceivingItem(void) {
     Islander_AGB *islander = &gIslander;
 
     if (Islander_PlayAnim(1) != 0) {
@@ -5510,16 +6228,21 @@ void Islander_ProcessFishReceived(void) {
             islander->held_item_sprite = 0;
             islander->reaction_anim_id = ISLANDER_ANIM_SAD;
             islander->emotion = ISLANDER_EMOTION_SAD;
-            islander->move_action = MoveAction7;
+            islander->move_action = ISLANDER_MOVE_ACTION_UPDATE_EMOTION;
             IslanderMoveAction_UpdateEmotion();
             return;
         }
         islander->held_item_sprite = 0;
-        islander->move_action = ActionOutside;
+        islander->move_action = ISLANDER_MOVE_ACTION_START_WANDERING;
         Islander_StartWandering();
     }
 }
 
+/**
+ * Initializes the digging state machine for the prepared tile.
+ *
+ * Original address: 0x02022F28
+ */
 void IslanderMoveAction_Dig(void) {
     Islander_AGB *islander = &gIslander;
 
@@ -5531,11 +6254,16 @@ void IslanderMoveAction_Dig(void) {
     islander->anim_timer = (*gIslanderAnimData[islander->anim_id])->duration;
     islander->anim_frame = 0;
     islander->item_work.held_item.type_idx = 0;
-    islander->action_state = 0;
-    islander->move_action = MoveActionBury;
+    islander->action_state = ISLANDER_DIGGING_DIG_HOLE;
+    islander->move_action = ISLANDER_MOVE_ACTION_BURY;
 }
 
-void Islander_BuryItem_State0(void) {
+/**
+ * Performs the initial shovel strike and reveals any buried item.
+ *
+ * Original address: 0x02022F84
+ */
+void Islander_DigHole(void) {
     Islander_AGB *islander = &gIslander;
     IslandFieldWork *field = &gIslandFieldWork;
     u8 tile_idx = islander->interaction_tile;
@@ -5590,20 +6318,25 @@ void Islander_BuryItem_State0(void) {
 
         islander->held_item_sprite = 0x800000;
         islander->held_item_sprite |= definition->held_item_oam_attr2;
-        islander->action_state = 2;
+        islander->action_state = ISLANDER_DIGGING_REACT_TO_DUG_ITEM;
     } else {
         if (islander->direction == 0) {
             islander->anim_id = ISLANDER_ANIM_2A;
         } else {
             islander->anim_id = ISLANDER_ANIM_32;
         }
-        islander->action_state = 1;
+        islander->action_state = ISLANDER_DIGGING_BURY_IN_EMPTY_HOLE;
     }
     islander->anim_timer = (*gIslanderAnimData[islander->anim_id])->duration;
     islander->anim_frame = 0;
 }
 
-void Islander_BuryItem_State1(void) {
+/**
+ * Places an available inventory item into a newly dug empty hole.
+ *
+ * Original address: 0x02023120
+ */
+void Islander_BuryItemInEmptyHole(void) {
     Islander_AGB *islander = &gIslander;
     IslandFieldWork *field = &gIslandFieldWork;
     Island_agb_c *island;
@@ -5625,7 +6358,7 @@ void Islander_BuryItem_State1(void) {
     } else {
         islander->anim_id = ISLANDER_ANIM_31;
     }
-    islander->action_state = 4;
+    islander->action_state = ISLANDER_DIGGING_FILL_HOLE;
     islander->buried_item_tile_base = 0x1270;
 
     if (islander->emotion == ISLANDER_EMOTION_HAPPY) {
@@ -5680,7 +6413,12 @@ void Islander_BuryItem_State1(void) {
     }
 }
 
-void Islander_BuryItem_State2(void) {
+/**
+ * Reacts to the item uncovered by the digging action.
+ *
+ * Original address: 0x02023304
+ */
+void Islander_ReactToDugItem(void) {
     Islander_AGB *islander = &gIslander;
 
     if (Islander_PlayAnim(1) != 0) {
@@ -5709,17 +6447,22 @@ void Islander_BuryItem_State2(void) {
             } else {
                 islander->anim_id = ISLANDER_ANIM_36;
             }
-            Islander_SpawnReactionEffect(3, 0x30);
+            Islander_SpawnReactionEffect(ENTITY_REACTION_MUSIC_NOTE, 0x30);
         }
         islander->anim_timer = (*gIslanderAnimData[islander->anim_id])->duration;
         islander->anim_frame = 0;
-        islander->action_state = 5;
+        islander->action_state = ISLANDER_DIGGING_FINISH_ITEM_REACTION;
         Sound_PlayEffect0(0x1C);
     }
 }
 
-/* Ghidra name: Islander_BuryItem (differs; duplicate label, state 3 of the bury action). */
-void Islander_BuryItem_State3(void) {
+/**
+ * Selects an inventory item to replace the item removed from the hole.
+ *
+ * Ghidra name: Islander_BuryItem (differs; duplicate label, state 3 of the bury action).
+ * Original address: 0x020233E4
+ */
+void Islander_SelectReplacementBuriedItem(void) {
     Islander_AGB *islander = &gIslander;
 
     if (Islander_PlayAnim(1) != 0) {
@@ -5752,12 +6495,16 @@ void Islander_BuryItem_State3(void) {
         }
         islander->anim_timer = (*gIslanderAnimData[islander->anim_id])->duration;
         islander->anim_frame = 0;
-        islander->action_state = 4;
+        islander->action_state = ISLANDER_DIGGING_FILL_HOLE;
     }
 }
 
-/* Original address: 0x020234B0 */
-void Islander_BuryItem_State4(void) {
+/**
+ * Fills the prepared hole and writes its final item and tile state.
+ *
+ * Original address: 0x020234B0
+ */
+void Islander_FillHole(void) {
     Islander_AGB *islander = &gIslander;
     u8 tile_idx = islander->interaction_tile;
     u8 *tilemap_vram;
@@ -5811,7 +6558,7 @@ void Islander_BuryItem_State4(void) {
             islander->target_action = 0x50;
             islander->mood_level = 0;
             islander->emotion = ISLANDER_EMOTION_ANGRY;
-            islander->move_action = MoveAction7;
+            islander->move_action = ISLANDER_MOVE_ACTION_UPDATE_EMOTION;
             IslanderMoveAction_UpdateEmotion();
         } else {
             islander->target_action = 0x50;
@@ -5823,14 +6570,19 @@ void Islander_BuryItem_State4(void) {
             islander->target_x = islander->accepted_x;
             islander->target_y = islander->accepted_y;
             islander->item_work.held_item.type_idx = ITEM_TYPE_GYROID;
-            islander->move_action = MoveAction4;
+            islander->move_action = ISLANDER_MOVE_ACTION_MOVE_TO_TARGET;
             IslanderMoveAction_MoveToTarget();
         }
         islander->interaction_tile = 0;
     }
 }
 
-void Islander_BuryItem_State5(void) {
+/**
+ * Finishes the dug-item reaction and returns the islander to wandering.
+ *
+ * Original address: 0x02023628
+ */
+void Islander_FinishDugItemReaction(void) {
     Islander_AGB *islander = &gIslander;
 
     if (Islander_PlayAnim(1) != 0) {
@@ -5841,7 +6593,7 @@ void Islander_BuryItem_State5(void) {
             } else {
                 islander->anim_id = ISLANDER_ANIM_31;
             }
-            islander->action_state = 4;
+            islander->action_state = ISLANDER_DIGGING_FILL_HOLE;
             islander->buried_item_tile_base = 0x1270;
         } else {
             if (islander->direction == 0) {
@@ -5849,26 +6601,36 @@ void Islander_BuryItem_State5(void) {
             } else {
                 islander->anim_id = ISLANDER_ANIM_34;
             }
-            islander->action_state = 3;
+            islander->action_state = ISLANDER_DIGGING_SELECT_REPLACEMENT_ITEM;
         }
         islander->anim_timer = (*gIslanderAnimData[islander->anim_id])->duration;
         islander->anim_frame = 0;
     }
 }
 
+/**
+ * Dispatches the current digging or burying state.
+ *
+ * Original address: 0x020236B0
+ */
 void IslanderMoveAction_Bury(void) {
     Islander_AGB* islander = &gIslander;
 
-    IslanderSubMoveAction_BuryProcTbl[islander->action_state]();
+    sIslanderDiggingStateProcs[islander->action_state]();
 }
 
-void Islander_MoveAction20_Init(void) {
+/**
+ * Starts the carry transition and waits for the player to pick up the islander.
+ *
+ * Original address: 0x020236D0
+ */
+void Islander_StartCarryTransition(void) {
     Islander_AGB* islander = &gIslander;
 
     islander->anim_frame = 0;
     islander->anim_timer = 0;
-    islander->item_work.move_action20.phase = 0;
-    islander->item_work.move_action20.timer = 0;
+    islander->item_work.carry_transition.phase = 0;
+    islander->item_work.carry_transition.timer = 0;
     islander->anim_id = ISLANDER_ANIM_5E;
     islander->anim_timer = (*gIslanderAnimData[islander->anim_id])->duration;
     islander->carry_wait_timer = 0x2A30;
@@ -5876,17 +6638,22 @@ void Islander_MoveAction20_Init(void) {
     islander->target_y = 0;
     islander->accepted_x = islander->x;
     islander->accepted_y = islander->y;
-    islander->action_state = 0;
-    islander->move_action = MoveAction20;
+    islander->action_state = ISLANDER_CARRY_TRANSITION_WAIT_FOR_PICKUP;
+    islander->move_action = ISLANDER_MOVE_ACTION_CARRY_TRANSITION;
 }
 
-void Islander_MoveAction20_State0(void) {
+/**
+ * Waits for pickup or times out and resumes normal movement.
+ *
+ * Original address: 0x02023738
+ */
+void Islander_WaitForPickup(void) {
     Islander_AGB* islander = &gIslander;
 
     if (islander->carry_state == 2) {
-        islander->item_work.move_action20.phase = 0;
-        islander->item_work.move_action20.timer = 0;
-        islander->action_state = 3;
+        islander->item_work.carry_transition.phase = 0;
+        islander->item_work.carry_transition.timer = 0;
+        islander->action_state = ISLANDER_CARRY_TRANSITION_WAIT_FOR_PLACEMENT;
         return;
     }
 
@@ -5894,7 +6661,7 @@ void Islander_MoveAction20_State0(void) {
     islander->carry_wait_timer--;
     if (islander->anim_timer == 0) {
         if (islander->anim_frame == 2) {
-            Islander_SpawnReactionEffect(4, 0x20);
+            Islander_SpawnReactionEffect(ENTITY_REACTION_SLEEP, 0x20);
             Sound_PlayEffect0(0x25);
         }
     }
@@ -5904,19 +6671,24 @@ void Islander_MoveAction20_State0(void) {
         gGameState.bg2cnt |= 0x40;
         gGameState.bg3cnt |= 0x40;
         islander->carry_state = 1;
-        islander->item_work.move_action20.phase = 0;
-        islander->action_state = 1;
+        islander->item_work.carry_transition.phase = 0;
+        islander->action_state = ISLANDER_CARRY_TRANSITION_MOSAIC_IN;
     }
 }
 
-void Islander_MoveAction20_State1(void) {
+/**
+ * Applies an increasing mosaic while returning the carried islander home.
+ *
+ * Original address: 0x020237E8
+ */
+void Islander_ReturnHomeMosaicIn(void) {
     Islander_AGB* islander = &gIslander;
     IslandBuilding* house = &gIslandBuildings[ISLAND_BUILDING_ISLANDER_HOUSE];
     Player* player = &gPlayer;
     s32 player_y;
     u16 phase;
 
-    phase = (islander->item_work.move_action20.phase += 0x1111);
+    phase = (islander->item_work.carry_transition.phase += 0x1111);
     if (phase == 0xFFFF) {
         islander->x = house->x << 8;
         player_y = house->y << 8;
@@ -5939,17 +6711,22 @@ void Islander_MoveAction20_State1(void) {
         }
         gGameState.bg2_hofs = gGameState.bg1_hofs;
         gGameState.bg2_vofs = gGameState.bg1_vofs;
-        islander->action_state = 2;
+        islander->action_state = ISLANDER_CARRY_TRANSITION_MOSAIC_OUT;
     }
-    REG_MOSAIC = islander->item_work.move_action20.phase;
+    REG_MOSAIC = islander->item_work.carry_transition.phase;
 }
 
-void Islander_MoveAction20_State2(void) {
+/**
+ * Removes the return-home mosaic and restores the islander's visible state.
+ *
+ * Original address: 0x020238BC
+ */
+void Islander_ReturnHomeMosaicOut(void) {
     Islander_AGB* islander = &gIslander;
     IslandFieldWork* island_field = &gIslandFieldWork;
     u32 mosaic;
 
-    mosaic = (islander->item_work.move_action20.phase -= 0x1111);
+    mosaic = (islander->item_work.carry_transition.phase -= 0x1111);
     if (mosaic == 0) {
         gGameState.bg1cnt ^= 0x40;
         gGameState.bg2cnt ^= 0x40;
@@ -5962,55 +6739,65 @@ void Islander_MoveAction20_State2(void) {
         islander->target_action = 0x80;
         islander->reaction_anim_id = ISLANDER_ANIM_ANGRY;
         islander->emotion = ISLANDER_EMOTION_ANGRY;
-        islander->move_action = MoveAction7;
+        islander->move_action = ISLANDER_MOVE_ACTION_UPDATE_EMOTION;
         IslanderMoveAction_UpdateEmotion();
     }
-    REG_MOSAIC = islander->item_work.move_action20.phase;
+    REG_MOSAIC = islander->item_work.carry_transition.phase;
 }
 
-void Islander_MoveAction20_State3(void) {
+/**
+ * Waits for the player to release the islander, then starts placement checks.
+ *
+ * Original address: 0x02023968
+ */
+void Islander_WaitForPlacement(void) {
     Islander_AGB* islander = &gIslander;
 
     if (islander->carry_state == 1) {
-        islander->item_work.move_action20.timer = 0x10;
-        islander->item_work.move_action20.phase = ISLANDER_MOVE_ACTION20_PHASE_BEGIN;
-        islander->action_state = 4;
+        islander->item_work.carry_transition.timer = 0x10;
+        islander->item_work.carry_transition.phase = ISLANDER_PLACEMENT_CHECK_REACT;
+        islander->action_state = ISLANDER_CARRY_TRANSITION_CHECK_PLACEMENT;
     }
 }
-void Islander_MoveAction20_State4(void) {
+/**
+ * Runs the placement reaction sequence and validates the destination position.
+ *
+ * Original address: 0x02023994
+ */
+void Islander_CheckPlacement(void) {
     Islander_AGB* islander = &gIslander;
     s32 collision;
     s32 i;
 
-    islander->item_work.move_action20.timer--;
-    if ((islander->item_work.move_action20.timer & 0x8000) == 0) {
+    islander->item_work.carry_transition.timer--;
+    if ((islander->item_work.carry_transition.timer & 0x8000) == 0) {
         return;
     }
 
-    switch ((IslanderMoveAction20Phase)islander->item_work.move_action20.phase) {
-    case ISLANDER_MOVE_ACTION20_PHASE_BEGIN:
-        Islander_SpawnReactionEffect(1, 0x30);
+    switch ((IslanderPlacementCheckPhase)islander->item_work.carry_transition.phase) {
+    case ISLANDER_PLACEMENT_CHECK_REACT:
+        Islander_SpawnReactionEffect(ENTITY_REACTION_SWEAT, 0x30);
         islander->anim_frame = 0;
         islander->anim_timer = 0;
-        islander->item_work.move_action20.phase++;
-        islander->item_work.move_action20.timer = 0x30;
+        islander->item_work.carry_transition.phase++;
+        islander->item_work.carry_transition.timer = 0x30;
         break;
-    case ISLANDER_MOVE_ACTION20_PHASE_ANIM_02:
+    case ISLANDER_PLACEMENT_CHECK_ANIM_02:
         islander->anim_id = ISLANDER_ANIM_02;
-        islander->item_work.move_action20.phase++;
-        islander->item_work.move_action20.timer = 0x20;
+        islander->item_work.carry_transition.phase++;
+        islander->item_work.carry_transition.timer = 0x20;
         break;
-    case ISLANDER_MOVE_ACTION20_PHASE_ANIM_06:
+    case ISLANDER_PLACEMENT_CHECK_ANIM_06:
         islander->anim_id = ISLANDER_ANIM_06;
-        islander->item_work.move_action20.phase++;
-        islander->item_work.move_action20.timer = 0x20;
+        islander->item_work.carry_transition.phase++;
+        islander->item_work.carry_transition.timer = 0x20;
         break;
-    case ISLANDER_MOVE_ACTION20_PHASE_ANIM_00:
+    case ISLANDER_PLACEMENT_CHECK_ANIM_00:
         islander->anim_id = ISLANDER_ANIM_00;
-        islander->item_work.move_action20.phase++;
-        islander->item_work.move_action20.timer = 0x10;
+        islander->item_work.carry_transition.phase++;
+        islander->item_work.carry_transition.timer = 0x10;
         break;
-    case ISLANDER_MOVE_ACTION20_PHASE_CHECK_POSITION:
+    case ISLANDER_PLACEMENT_CHECK_POSITION:
         islander->work_x = islander->accepted_x - islander->x;
         islander->work_y = islander->accepted_y - islander->y;
         if (islander->work_x < 0) {
@@ -6020,8 +6807,8 @@ void Islander_MoveAction20_State4(void) {
             islander->work_y = -islander->work_y;
         }
         if (islander->work_x <= 0x2000 && islander->work_y <= 0x2000) {
-            islander->item_work.move_action20.timer = 2;
-            islander->item_work.move_action20.phase = ISLANDER_MOVE_ACTION20_PHASE_RESTART;
+            islander->item_work.carry_transition.timer = 2;
+            islander->item_work.carry_transition.phase = ISLANDER_PLACEMENT_CHECK_RETURN_HOME;
             return;
         }
 
@@ -6029,8 +6816,8 @@ void Islander_MoveAction20_State4(void) {
         for (i = 0; i < 4; i++) {
             collision = CheckSurroundingCollision(islander->surrounding_item_types[i], (u16*)islander->collision_tilemap);
             if (collision != 0) {
-                islander->item_work.move_action20.timer = 2;
-                islander->item_work.move_action20.phase = ISLANDER_MOVE_ACTION20_PHASE_RESTART;
+                islander->item_work.carry_transition.timer = 2;
+                islander->item_work.carry_transition.phase = ISLANDER_PLACEMENT_CHECK_RETURN_HOME;
                 return;
             }
         }
@@ -6042,29 +6829,38 @@ void Islander_MoveAction20_State4(void) {
         }
         islander->target_action = collision;
         islander->carry_state = collision;
-        islander->move_action = MoveAction7;
+        islander->move_action = ISLANDER_MOVE_ACTION_UPDATE_EMOTION;
         IslanderMoveAction_UpdateEmotion();
         break;
-    case ISLANDER_MOVE_ACTION20_PHASE_RESTART:
+    case ISLANDER_PLACEMENT_CHECK_RETURN_HOME:
         islander->accepted_x = islander->x;
         islander->accepted_y = islander->y;
         gGameState.bg1cnt |= 0x40;
         gGameState.bg2cnt |= 0x40;
         gGameState.bg3cnt |= 0x40;
-        islander->item_work.move_action20.phase = ISLANDER_MOVE_ACTION20_PHASE_BEGIN;
-        islander->action_state = 1;
+        islander->item_work.carry_transition.phase = ISLANDER_PLACEMENT_CHECK_REACT;
+        islander->action_state = ISLANDER_CARRY_TRANSITION_MOSAIC_IN;
         break;
     }
 }
 
-void Islander_MoveAction20_Move(void) {
-    extern Islander_SUB_MOVE_PROC sIslanderMoveAction20SubMoveProcs[];
+/**
+ * Dispatches the current carry-transition state.
+ *
+ * Original address: 0x02023B38
+ */
+void Islander_UpdateCarryTransition(void) {
+    extern Islander_SUB_MOVE_PROC sIslanderCarryTransitionProcs[];
 
     Islander_AGB* islander = &gIslander; // I don't know why I have to pull this out to match, but I do
-    sIslanderMoveAction20SubMoveProcs[(u8)islander->action_state]();
+    sIslanderCarryTransitionProcs[(u8)islander->action_state]();
 }
 
-/* Original address: 0x02023B58 */
+/**
+ * Draws the islander sprite, including carry, blink, and reaction presentation.
+ *
+ * Original address: 0x02023B58
+ */
 void Islander_Draw(void) {
     Islander_AGB* islander = &gIslander;
     OAMData* source;
@@ -6086,7 +6882,7 @@ void Islander_Draw(void) {
     do {
         OAMData* oam = &((OAMData*)GameOAMData)[gGameState.oam_count];
         u32 x;
-        u8 state;
+        u8 tool;
 
         oam->y = source->y + islander->work_y - gGameState.bg2_vofs;
         oam->obj_mode = source->obj_mode;
@@ -6125,8 +6921,8 @@ void Islander_Draw(void) {
             }
         }
 
-        state = islander->equipped_tool_state & 0xF;
-        if ((state == 6 || state == 8 || state == 5 || state == 7) && oam->palette_num == 2) {
+        tool = Islander_GET_TOOL_TYPE(islander);
+        if ((tool == ISLANDER_TOOL_GOLD_AXE || tool == ISLANDER_TOOL_GOLD_ROD || tool == ISLANDER_TOOL_GOLD_NET || tool == ISLANDER_TOOL_GOLD_SHOVEL) && oam->palette_num == 2) {
             oam->palette_num = 8;
         }
 
@@ -6134,20 +6930,20 @@ void Islander_Draw(void) {
             if (islander->direction == 0) {
                 if (source->tile_num == 0x40 || source->tile_num == 0x42) {
                     switch (islander->emotion) {
-                    case 0:
+                    case ISLANDER_EMOTION_NEUTRAL:
                         if (islander->blink_frame == 0) {
                             oam->tile_num = 0x40;
                         } else {
                             oam->tile_num = 0x42;
                         }
                         break;
-                    case 1:
+                    case ISLANDER_EMOTION_ANGRY:
                         oam->tile_num = 0x44;
                         break;
-                    case 2:
+                    case ISLANDER_EMOTION_SAD:
                         oam->tile_num = 0x46;
                         break;
-                    case 3:
+                    case ISLANDER_EMOTION_HAPPY:
                         oam->tile_num = 0x48;
                         break;
                     }
@@ -6156,20 +6952,20 @@ void Islander_Draw(void) {
                 if (((islander->direction >= 1 && islander->direction <= 2) || islander->direction == 6 || islander->direction == 7) &&
                     (source->tile_num == 0 || source->tile_num == 2)) {
                     switch (islander->emotion) {
-                    case 0:
+                    case ISLANDER_EMOTION_NEUTRAL:
                         if (islander->blink_frame == 0) {
                             oam->tile_num = 0;
                         } else {
                             oam->tile_num = 2;
                         }
                         break;
-                    case 1:
+                    case ISLANDER_EMOTION_ANGRY:
                         oam->tile_num = 4;
                         break;
-                    case 2:
+                    case ISLANDER_EMOTION_SAD:
                         oam->tile_num = 6;
                         break;
-                    case 3:
+                    case ISLANDER_EMOTION_HAPPY:
                         oam->tile_num = 8;
                         break;
                     }

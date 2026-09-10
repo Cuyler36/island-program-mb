@@ -8,7 +8,7 @@
 typedef void (*FieldObject_PROC)(int);
 
 /* Original address: 0x0202FECC */
-FieldObject_PROC gFieldObjectProcs[] = {
+FieldObject_PROC gFieldObjectProcs[FIELD_OBJECT_ACTION_NUM] = {
     FieldObject_Idle,
     FieldObject_HandleHit,
     FieldObject_UpdateShake,
@@ -17,7 +17,7 @@ FieldObject_PROC gFieldObjectProcs[] = {
 };
 
 /* Original address: 0x0202FEE0 */
-u8 gFieldObjectSpriteFrameIndices[19 * 8] = {
+u8 gFieldObjectSpriteFrameIndices[FIELD_OBJECT_TYPE_NUM * 8] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0C, 0x0D, 0x0E, 0x0D, 0x0C, 0x0E, 0x0C, 0x0C,
     0x0F, 0x10, 0x11, 0x10, 0x0F, 0x11, 0x0F, 0x0F, 0x12, 0x13, 0x14, 0x13, 0x12, 0x14, 0x12, 0x12,
@@ -73,7 +73,7 @@ u8 sFruitDropOffsetsY[3][4] = {
 };
 
 /* Original address: 0x02030110 */
-u8 sFieldObjectInitialTimers[19] = {
+u8 sFieldObjectInitialTimers[FIELD_OBJECT_TYPE_NUM] = {
     0xFF, 0xFF, 0xFF, 0x01, 0x02, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0xFF, 0xFF, 0x01, 0x02,
     0x03, 0x03, 0x03,
 };
@@ -83,8 +83,12 @@ u8 sFieldObjectShakeFrames[9] = {
     0x01, 0x02, 0x01, 0x00, 0x02, 0x01, 0x02, 0x01, 0x03,
 };
 
-/* Original address: 0x0201E3DC */
-void FieldObject_AttachEntity(s32 object_index, s32 type) {
+/**
+ * Allocates a falling-fruit slot and attaches it to a field object.
+ *
+ * Original address: 0x0201E3DC
+ */
+void FieldObject_AttachEntity(s32 object_index, s32 fruit_type) {
     FieldObject *object;
     IslandFieldWork *field;
     s32 slot;
@@ -94,7 +98,7 @@ void FieldObject_AttachEntity(s32 object_index, s32 type) {
     for (slot = 3; slot < 30; slot++) {
         if (field->entity_active[slot + 24] == 0) {
             field->entity_active[slot + 24] = 1;
-            FallingFruit_Init(object_index, slot, type, object->layer);
+            FallingFruit_Init(object_index, slot, fruit_type, object->layer);
             do {
             object->falling_fruit_id = slot + 1;
             } while(0);
@@ -103,7 +107,13 @@ void FieldObject_AttachEntity(s32 object_index, s32 type) {
     }
 }
 
-/* Original address: 0x0201E430 */
+/**
+ * Initializes a field object from its field-entity type, tile, and acre layer.
+ *
+ * Fruit-bearing trees also receive an attached fruit entity.
+ *
+ * Original address: 0x0201E430
+ */
 void FieldObject_Init(s32 object_index, u16 type, s32 tile, u8 layer) {
     FieldObject *object;
     s32 tile_x;
@@ -115,7 +125,7 @@ void FieldObject_Init(s32 object_index, u16 type, s32 tile, u8 layer) {
     object->topple_x_offset = 0;
     object->topple_y_offset = 0;
     object->topple_extra_x_offset = 0;
-    object->action_state = 0;
+    object->action_state = FIELD_OBJECT_ACTION_IDLE;
     object->anim_counter = 0;
     object->anim_frame = 0;
     object->anim_timer = 0;
@@ -136,41 +146,53 @@ void FieldObject_Init(s32 object_index, u16 type, s32 tile, u8 layer) {
     }
     object->hits_remaining = sFieldObjectInitialTimers[object->type];
     object->layer = layer;
-    if (object->type == 0x12) {
+    if (object->type == FIELD_OBJECT_TYPE_FRUIT_PALM_TREE) {
         FieldObject_AttachEntity(object_index, 0U);
     }
-    if (object->type == 7) {
+    if (object->type == FIELD_OBJECT_TYPE_APPLE_TREE) {
         FieldObject_AttachEntity(object_index, 3U);
     }
-    if (object->type == 8) {
+    if (object->type == FIELD_OBJECT_TYPE_ORANGE_TREE) {
         FieldObject_AttachEntity(object_index, 7U);
     }
-    if (object->type == 9) {
+    if (object->type == FIELD_OBJECT_TYPE_PEACH_TREE) {
         FieldObject_AttachEntity(object_index, 0xBU);
     }
-    if (object->type == 0xA) {
+    if (object->type == FIELD_OBJECT_TYPE_PEAR_TREE) {
         FieldObject_AttachEntity(object_index, 0xFU);
     }
-    if (object->type == 0xB) {
+    if (object->type == FIELD_OBJECT_TYPE_CHERRY_TREE) {
         FieldObject_AttachEntity(object_index, 0x13U);
     }
-    if (object->type == 6) {
+    if (object->type == FIELD_OBJECT_TYPE_FULLY_GROWN_TREE) {
         object->favorite_hour_item_eligible = 1;
     }
 }
 
-/* Original address: 0x0201E538 */
-void FieldObject_Update(s32 idx) {
-    FieldObject *object = &gFieldObjects[idx];
-    gFieldObjectProcs[object->action_state](idx);
+/**
+ * Dispatches the current update state for a field object.
+ *
+ * Original address: 0x0201E538
+ */
+void FieldObject_Update(s32 object_index) {
+    FieldObject *object = &gFieldObjects[object_index];
+    gFieldObjectProcs[object->action_state](object_index);
 }
 
-/* Original address: 0x0201E560 */
-void FieldObject_Idle(s32 idx) {
+/**
+ * Leaves an inactive field object unchanged until another system reports a hit.
+ *
+ * Original address: 0x0201E560
+ */
+void FieldObject_Idle(s32 object_index) {
 
 }
 
-/* Original address: 0x0201E564 */
+/**
+ * Spawns one debris effect near a tree as it begins to topple.
+ *
+ * Original address: 0x0201E564
+ */
 void FieldObject_SpawnToppleEffect(s32 object_index) {
     FieldObject *object = &gFieldObjects[object_index];
     IslandFieldWork *field = &gIslandFieldWork;
@@ -179,7 +201,7 @@ void FieldObject_SpawnToppleEffect(s32 object_index) {
     s32 offset_x;
     s32 offset_y;
 
-    if (object->type != 3 && object->type != 14) {
+    if (object->type != FIELD_OBJECT_TYPE_SMALL_TREE && object->type != FIELD_OBJECT_TYPE_SMALL_PALM_TREE) {
         for (slot = 3; slot < 10; slot++) {
             if (field->entity_active[slot + 3] == 0) {
                 entity = &g_EntityTable[slot];
@@ -187,7 +209,7 @@ void FieldObject_SpawnToppleEffect(s32 object_index) {
                 Entity_Reset(slot);
                 offset_x = 16 - rand_u16(&gGameState) % 33;
                 offset_y = rand_u16(&gGameState) % 17 + 16;
-                if (object->type == 4) {
+                if (object->type == FIELD_OBJECT_TYPE_MEDIUM_TREE) {
                     offset_y = 16;
                 }
                 entity->x = object->x + offset_x;
@@ -199,62 +221,66 @@ void FieldObject_SpawnToppleEffect(s32 object_index) {
     }
 }
 
-/* Original address: 0x0201E608 */
+/**
+ * Writes a toppled tree's stump or a shaken tree's fruitless form to field data.
+ *
+ * Original address: 0x0201E608
+ */
 void FieldObject_UpdateForegroundItem(s32 object_index) {
     FieldObject *object;
     s16 item;
 
     object = &gFieldObjects[object_index];
     item = 0;
-    if (object->action_state == 3) {
-        if (object->type == 3) {
-            item = 1;
+    if (object->action_state == FIELD_OBJECT_ACTION_TOPPLE) {
+        if (object->type == FIELD_OBJECT_TYPE_SMALL_TREE) {
+            item = TREE_STUMP001;
         }
-        if (object->type == 4) {
-            item = 2;
+        if (object->type == FIELD_OBJECT_TYPE_MEDIUM_TREE) {
+            item = TREE_STUMP002;
         }
-        if (object->type == 5) {
-            item = 3;
+        if (object->type == FIELD_OBJECT_TYPE_LARGE_TREE) {
+            item = TREE_STUMP003;
         }
-        if (object->type == 6) {
-            item = 4;
+        if (object->type == FIELD_OBJECT_TYPE_FULLY_GROWN_TREE) {
+            item = TREE_STUMP004;
         }
-        if (object->type == 0xE) {
-            item = 0x70;
+        if (object->type == FIELD_OBJECT_TYPE_SMALL_PALM_TREE) {
+            item = TREE_PALM_STUMP001;
         }
-        if (object->type == 0xF) {
-            item = 0x71;
+        if (object->type == FIELD_OBJECT_TYPE_MEDIUM_PALM_TREE) {
+            item = TREE_PALM_STUMP002;
         }
-        if (object->type == 0x10) {
-            item = 0x72;
+        if (object->type == FIELD_OBJECT_TYPE_LARGE_PALM_TREE) {
+            item = TREE_PALM_STUMP003;
         }
-        if (object->type == 0x11) {
-            item = 0x73;
+        if (object->type == FIELD_OBJECT_TYPE_FULLY_GROWN_PALM_TREE) {
+            item = TREE_PALM_STUMP004;
         }
     } else {
-        if (object->type == 0x12) {
-            item = 0x858;
-            object->type = 0x11;
+        if (object->type == FIELD_OBJECT_TYPE_FRUIT_PALM_TREE) {
+            item = TREE_PALM_NOFRUIT_0;
+            object->type = FIELD_OBJECT_TYPE_FULLY_GROWN_PALM_TREE;
         }
-        if (object->type == 7) {
-            item = 0x809;
-            object->type = 6;
+        if (object->type == FIELD_OBJECT_TYPE_APPLE_TREE) {
+            item = TREE_APPLE_NOFRUIT_0;
+            object->type = FIELD_OBJECT_TYPE_FULLY_GROWN_TREE;
         }
-        if (object->type == 8) {
-            item = 0x811;
-            object->type = 6;
+        if (object->type == FIELD_OBJECT_TYPE_ORANGE_TREE) {
+            item = TREE_ORANGE_NOFRUIT_0;
+            object->type = FIELD_OBJECT_TYPE_FULLY_GROWN_TREE;
         }
-        if (object->type == 9) {
-            item = 0x819;
-            object->type = 6;
+        if (object->type == FIELD_OBJECT_TYPE_PEACH_TREE) {
+            item = TREE_PEACH_NOFRUIT_0;
+            object->type = FIELD_OBJECT_TYPE_FULLY_GROWN_TREE;
         }
-        if (object->type == 0xA) {
-            item = 0x821;
-            object->type = 6;
+        if (object->type == FIELD_OBJECT_TYPE_PEAR_TREE) {
+            item = TREE_PEAR_NOFRUIT_0;
+            object->type = FIELD_OBJECT_TYPE_FULLY_GROWN_TREE;
         }
-        if (object->type == 0xB) {
-            item = 0x829;
-            object->type = 6;
+        if (object->type == FIELD_OBJECT_TYPE_CHERRY_TREE) {
+            item = TREE_CHERRY_NOFRUIT_0;
+            object->type = FIELD_OBJECT_TYPE_FULLY_GROWN_TREE;
         }
     }
     if (!(object->x & 0x100)) {
@@ -264,7 +290,13 @@ void FieldObject_UpdateForegroundItem(s32 object_index) {
     }
 }
 
-/* Original address: 0x0201E710 */
+/**
+ * Processes a hit, selecting shake or topple state and dropping attached fruit.
+ *
+ * Drop positions are chosen around the tree and may cross the acre boundary.
+ *
+ * Original address: 0x0201E710
+ */
 void FieldObject_HandleHit(s32 object_index) {
     FieldObject *object = &gFieldObjects[object_index];
     IslandFieldWork *field = &gIslandFieldWork;
@@ -281,7 +313,7 @@ void FieldObject_HandleHit(s32 object_index) {
         object->anim_timer = 8;
         object->anim_counter = 0;
         object->rotation_threshold = 0xFFFF;
-        object->action_state = 3;
+        object->action_state = FIELD_OBJECT_ACTION_TOPPLE;
         FieldObject_UpdateForegroundItem(object_index);
         Sound_PlayEffect0(0x13);
     } else {
@@ -289,7 +321,7 @@ void FieldObject_HandleHit(s32 object_index) {
         object->anim_timer = 2;
         object->anim_counter = 0;
         object->anim_frame = 0;
-        object->action_state = 2;
+        object->action_state = FIELD_OBJECT_ACTION_SHAKE;
     }
     if (object->falling_fruit_id == 0) {
         return;
@@ -337,22 +369,22 @@ void FieldObject_HandleHit(s32 object_index) {
             if ((object->drop_existing_item == 0 && fg_tile == 0xFFF &&
                  (u16)((*object->drop_tilemap & 0x3FF) - 0x20) <= 0x5E) || candidate == 3) {
                 field->entity_active[fruit_index + 21] = 1;
-                if (object->type == 18) {
+                if (object->type == FIELD_OBJECT_TYPE_FRUIT_PALM_TREE) {
                     FallingFruit_Init(object_index, fruit_index, fruit_index + 1, acre);
                 }
-                if (object->type == 7) {
+                if (object->type == FIELD_OBJECT_TYPE_APPLE_TREE) {
                     FallingFruit_Init(object_index, fruit_index, fruit_index + 4, acre);
                 }
-                if (object->type == 8) {
+                if (object->type == FIELD_OBJECT_TYPE_ORANGE_TREE) {
                     FallingFruit_Init(object_index, fruit_index, fruit_index + 8, acre);
                 }
-                if (object->type == 9) {
+                if (object->type == FIELD_OBJECT_TYPE_PEACH_TREE) {
                     FallingFruit_Init(object_index, fruit_index, fruit_index + 12, acre);
                 }
-                if (object->type == 10) {
+                if (object->type == FIELD_OBJECT_TYPE_PEAR_TREE) {
                     FallingFruit_Init(object_index, fruit_index, fruit_index + 16, acre);
                 }
-                if (object->type == 11) {
+                if (object->type == FIELD_OBJECT_TYPE_CHERRY_TREE) {
                     FallingFruit_Init(object_index, fruit_index, fruit_index + 20, acre);
                 }
                 if (acre == 0) {
@@ -373,24 +405,24 @@ void FieldObject_HandleHit(s32 object_index) {
                 break;
             }
         }
-        if (object->type == 18 && fruit_index == 1) {
+        if (object->type == FIELD_OBJECT_TYPE_FRUIT_PALM_TREE && fruit_index == 1) {
             break;
         }
     }
     FieldObject_UpdateForegroundItem(object_index);
-    if (object->action_state == 3) {
+    if (object->action_state == FIELD_OBJECT_ACTION_TOPPLE) {
         if (object->layer == 0) {
-            if (object->type == 18) {
-                field->fg_tiles[0][object->tile_idx] = 0x25;
+            if (object->type == FIELD_OBJECT_TYPE_FRUIT_PALM_TREE) {
+                field->fg_tiles[0][object->tile_idx] = ITEM_TYPE_FULLY_GROWN_TREE;
             } else {
-                field->fg_tiles[0][object->tile_idx] = 0x34;
+                field->fg_tiles[0][object->tile_idx] = ITEM_TYPE_PALM_TREE;
             }
         }
         if (object->layer != 0) {
-            if (object->type == 18) {
-                field->fg_tiles[1][object->tile_idx] = 0x25;
+            if (object->type == FIELD_OBJECT_TYPE_FRUIT_PALM_TREE) {
+                field->fg_tiles[1][object->tile_idx] = ITEM_TYPE_FULLY_GROWN_TREE;
             } else {
-                field->fg_tiles[1][object->tile_idx] = 0x34;
+                field->fg_tiles[1][object->tile_idx] = ITEM_TYPE_PALM_TREE;
             }
         }
     }
@@ -399,7 +431,11 @@ void FieldObject_HandleHit(s32 object_index) {
     object->falling_fruit_id = 0xFFFF;
 }
 
-/* Original address: 0x0201EB48 */
+/**
+ * Advances the shake animation, emits debris, and returns the object to idle.
+ *
+ * Original address: 0x0201EB48
+ */
 void FieldObject_UpdateShake(s32 object_index) {
     FieldObject *object = &gFieldObjects[object_index];
     IslandFieldWork *field = &gIslandFieldWork;
@@ -419,7 +455,7 @@ void FieldObject_UpdateShake(s32 object_index) {
         }
     }
     if (object->anim_counter & 1) {
-        if (object->type != 3 && object->type != 14) {
+        if (object->type != FIELD_OBJECT_TYPE_SMALL_TREE && object->type != FIELD_OBJECT_TYPE_SMALL_PALM_TREE) {
             for (count = 0; count < 3; count++) {
                 for (slot = 3; slot < 10; slot++) {
                     if (field->entity_active[slot + 3] == 0) {
@@ -444,11 +480,15 @@ void FieldObject_UpdateShake(s32 object_index) {
         object->anim_counter = 0;
         object->anim_frame = 0;
         object->shake_animation_paused = 0;
-        object->action_state = 0;
+        object->action_state = FIELD_OBJECT_ACTION_IDLE;
     }
 }
 
-/* Original address: 0x0201EC6C */
+/**
+ * Accelerates a chopped tree's rotation until it finishes falling and deactivates.
+ *
+ * Original address: 0x0201EC6C
+ */
 void FieldObject_UpdateTopple(s32 object_index) {
     FieldObject *object = &gFieldObjects[object_index];
     u32 rotation_step;
@@ -465,12 +505,12 @@ void FieldObject_UpdateTopple(s32 object_index) {
         rotation_step = 0x200;
         drop_angle = 0xF200;
         switch (object->type) {
-        case 14:
-        case 3:
+        case FIELD_OBJECT_TYPE_SMALL_PALM_TREE:
+        case FIELD_OBJECT_TYPE_SMALL_TREE:
             rotation_step = 0x800;
             drop_angle = 0xE800;
             break;
-        case 4:
+        case FIELD_OBJECT_TYPE_MEDIUM_TREE:
             rotation_step = 0x400;
             drop_angle = 0xF800;
             break;
@@ -488,7 +528,7 @@ void FieldObject_UpdateTopple(s32 object_index) {
             if ((u16)rotation_threshold < drop_angle) {
                 object->topple_y_offset++;
             }
-            if (object->type != 3 && object->type != 14) {
+            if (object->type != FIELD_OBJECT_TYPE_SMALL_TREE && object->type != FIELD_OBJECT_TYPE_SMALL_PALM_TREE) {
                 if (object->topple_extra_x_offset <= 5) {
                     object->topple_extra_x_offset++;
                 }
@@ -498,19 +538,27 @@ void FieldObject_UpdateTopple(s32 object_index) {
             object->rotation = 0xD000;
             object->anim_counter++;
             if (object->anim_counter > 0x20) {
-                object->action_state = 4;
+                object->action_state = FIELD_OBJECT_ACTION_DEACTIVATE;
                 object->falling_fruit_id = 0;
             }
         }
     }
 }
 
-/* Original address: 0x0201ED50 */
+/**
+ * Releases the field object's active slot.
+ *
+ * Original address: 0x0201ED50
+ */
 void FieldObject_Deactivate(s32 object_index) {
     gIslandFieldWork.entity_active[object_index + 54] = 0;
 }
 
-/* Original address: 0x0201ED68 */
+/**
+ * Appends one field-object sprite to OAM, applying topple rotation and offsets.
+ *
+ * Original address: 0x0201ED68
+ */
 void FieldObject_DrawSprite(FieldObjectSpriteFrame *frame, s32 object_index) {
     /* The BIOS reads the affine source as words. */
     struct ObjAffineSrcData transform __attribute__((aligned(4)));
@@ -525,7 +573,8 @@ void FieldObject_DrawSprite(FieldObjectSpriteFrame *frame, s32 object_index) {
     oam->priority = 1;
     oam->palette_num = 0;
     oam->mosaic = 1;
-    if ((u8)(object->action_state - 3) <= 1) {
+    if ((u8)(object->action_state - FIELD_OBJECT_ACTION_TOPPLE) <=
+        FIELD_OBJECT_ACTION_DEACTIVATE - FIELD_OBJECT_ACTION_TOPPLE) {
         oam->affine_mode = 1;
         oam->matrix_num = 0;
         oam->obj_mode = 0;
@@ -555,14 +604,18 @@ void FieldObject_DrawSprite(FieldObjectSpriteFrame *frame, s32 object_index) {
     gGameState.oam_count++;
 }
 
-/* Original address: 0x0201EF44 */
+/**
+ * Draws a visible field object using its type and current animation frame.
+ *
+ * Original address: 0x0201EF44
+ */
 void FieldObject_Draw(s32 object_index) {
     FieldObject *object = &gFieldObjects[object_index];
     u16 camera_y = gGameState.bg2_vofs;
     s32 y = object->y;
 
     if (y >= camera_y && y <= camera_y + 200 &&
-        (object->action_state != 3 || !(object->anim_counter & 2))) {
+        (object->action_state != FIELD_OBJECT_ACTION_TOPPLE || !(object->anim_counter & 2))) {
         u8 *frame_indices = gFieldObjectSpriteFrameIndices;
         u16 type = object->type;
         u8 anim_frame = object->anim_frame;

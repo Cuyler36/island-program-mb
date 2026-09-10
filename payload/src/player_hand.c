@@ -196,7 +196,7 @@ s32 PlayerHand_CheckHouseDoorInteraction(void) {
     if (PlayerHand_IsNearInteractionTarget(building->interaction_x << 8, building->interaction_y << 8, 0x10U) != 0) {
         player->near_house_door = 1;
     }
-    if (islander->move_action == 1) {
+    if (islander->move_action == ISLANDER_MOVE_ACTION_MOVE_INDOORS_OR_OUTDOORS) {
         if ((player->near_house_door != 0) && (islander->anim_timer == 0xFE)) {
             islander->anim_timer = 4;
             building->state = 0;
@@ -212,26 +212,27 @@ s32 PlayerHand_TryInteractWithIslander(void) {
     Player *player = &gPlayer;
     Islander_AGB *islander = &gIslander;
 
-    if (islander->collision_bypass_timer == 0 && islander->move_action == 3) {
+    if (islander->collision_bypass_timer == 0 && islander->move_action == ISLANDER_MOVE_ACTION_UPDATE_WANDERING) {
         islander->target_x = player->x;
         islander->target_y = player->y;
     }
-    if (islander->move_action == 3) {
+    if (islander->move_action == ISLANDER_MOVE_ACTION_UPDATE_WANDERING) {
         if (PlayerHand_IsNearInteractionTarget(islander->x, islander->y, 8)) {
             islander->reaction_anim_id = 1;
-            Islander_SpawnReactionEffect(2, 0x30);
-            if (islander->equipped_tool_state != 0) {
-                islander->equipped_tool_state |= 0x40;
+            Islander_SpawnReactionEffect(ENTITY_REACTION_EXCLAMATION, 0x30);
+            if (islander->equipped_tool_state != ISLANDER_TOOL_NONE) {
+                islander->equipped_tool_state |= ISLANDER_TOOL_STATE_DROP;
                 islander->reaction_anim_id = 0;
             }
             player->near_house_door = 0;
-            islander->move_action = 10;
+            islander->move_action = ISLANDER_MOVE_ACTION_CHECK_CLICKED_ON_TIMER;
             islander->click_cooldown_timer = 0x30;
             player->action_state = 0;
             PlayerHand_ResetToIdle();
             return 1;
         }
-    } else if (islander->move_action == 20 && islander->action_state == 0 &&
+    } else if (islander->move_action == ISLANDER_MOVE_ACTION_CARRY_TRANSITION &&
+               islander->action_state == ISLANDER_CARRY_TRANSITION_WAIT_FOR_PICKUP &&
                PlayerHand_IsNearInteractionTarget(islander->x, islander->y, 16)) {
         Sound_PlayEffect0(3);
         islander->carry_state = 2;
@@ -244,10 +245,10 @@ s32 PlayerHand_TryInteractWithIslander(void) {
 
 /* Original address: 0x02025D1C */
 s32 PlayerHand_TrySelectIslanderTarget(void) {
-    u8 temp_r0_29010;
+    u8 tool;
 
-    if ((gIslander.move_action == 3) && ((temp_r0_29010 = gIslander.equipped_tool_state, (temp_r0_29010 == 1)) || (temp_r0_29010 == 5)) && (PlayerHand_IsNearInteractionTarget(gIslander.flying_item_x, gIslander.flying_item_y, 0x10U) != 0)) {
-        gIslander.move_action = 9;
+    if ((gIslander.move_action == ISLANDER_MOVE_ACTION_UPDATE_WANDERING) && ((tool = gIslander.equipped_tool_state, (tool == ISLANDER_TOOL_NET)) || (tool == ISLANDER_TOOL_GOLD_NET)) && (PlayerHand_IsNearInteractionTarget(gIslander.flying_item_x, gIslander.flying_item_y, 0x10U) != 0)) {
+        gIslander.move_action = ISLANDER_MOVE_ACTION_START_CLICK_REACTION;
         gIslander.target_x = (s32) gIslander.flying_item_x;
         gIslander.target_y = (s32) gIslander.flying_item_y;
         gIslander.reaction_anim_id = 0;
@@ -552,7 +553,7 @@ void PlayerHand_BeginCarrying(void) {
         entity->y = (player->y >> 8) - 2;
         entity->sprite_tile = player->held_item_oam_attr2 & 0x3FF;
         entity->palette = player->held_item_oam_attr2 >> 12;
-        entity->anim_id = 0;
+        entity->anim_id = ENTITY_ANIM_ITEM;
         WriteItemToTile(player->x, player->tile_idx, 0, 0x200);
         Field_RestoreAdjacentTreeTiles(player->tile_idx, player->x);
     } else {
@@ -675,17 +676,17 @@ void PlayerHand_UpdatePlacing(void) {
         }
         player->held_item_layer = 0;
         player->held_item_tile_idx = 0;
-        if (islander->move_action == 3) {
+        if (islander->move_action == ISLANDER_MOVE_ACTION_UPDATE_WANDERING) {
             if (islander->stored_item_type_plus_one[4] == 0) {
-                if (islander->equipped_tool_state == 0) {
+                if (islander->equipped_tool_state == ISLANDER_TOOL_NONE) {
                     attract_islander = 1;
-                } else if (islander->equipped_tool_state == 3 || islander->equipped_tool_state == 7) {
+                } else if (islander->equipped_tool_state == ISLANDER_TOOL_SHOVEL || islander->equipped_tool_state == ISLANDER_TOOL_GOLD_SHOVEL) {
                     if (definition->interaction_type <= 3 || definition->interaction_type == 5 ||
                         definition->interaction_type == 6) {
                         attract_islander = 1;
                     }
                 }
-            } else if (islander->equipped_tool_state == 0 && (u16)(definition->interaction_type - 5) <= 9) {
+            } else if (islander->equipped_tool_state == ISLANDER_TOOL_NONE && (u16)(definition->interaction_type - 5) <= 9) {
                 attract_islander = 1;
             }
         }
@@ -696,7 +697,7 @@ void PlayerHand_UpdatePlacing(void) {
         if (dx <= 0x2FFF && dy <= 0x2FFF && attract_islander == 1) {
             islander->target_x = (player->x & 0xFF0000) | (((player->tile_idx & 0xF) << 12) + 0x800);
             islander->target_y = ((player->tile_idx & 0xF0) << 8) + 0x800;
-            islander->move_action = 9;
+            islander->move_action = ISLANDER_MOVE_ACTION_START_CLICK_REACTION;
         }
     } else {
         islander->carry_state = 1;
@@ -714,7 +715,8 @@ void PlayerHand_Update(void) {
     IslandFieldWork *field = &gIslandFieldWork;
     field->entity_active[0] = 1;
     field->entity_active[1] = 1;
-    if (islander->move_action != 0x14 || islander->action_state == 0 || islander->carry_state == 2) {
+    if (islander->move_action != ISLANDER_MOVE_ACTION_CARRY_TRANSITION ||
+        islander->action_state == ISLANDER_CARRY_TRANSITION_WAIT_FOR_PICKUP || islander->carry_state == 2) {
         sPlayerHandUpdateProcs[player->action_state]();
     }
 }
