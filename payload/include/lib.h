@@ -22,7 +22,7 @@ void ClearOamBuffer(void);
 void GameState_ReadKeys(void);
 void EnableVBlankInterrupt(void);
 
-extern u8 gSineTable[640];
+extern s16 gSineTable[320];
 
 #ifdef __cplusplus
 }
