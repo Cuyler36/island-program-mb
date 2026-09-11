@@ -277,13 +277,13 @@ void Entity_PlaceLandedItem(s32 entity_index) {
     }
     tile_idx = entity->landing_tile;
     if (!(entity->landing_tile & 0x1000)) {
-        field->fg_tiles[0][tile_idx] = entity->item_type_indices[0] | 0x8000;
+        field->fg_tiles[0][tile_idx] = entity->item_type_indices[0] | FIELD_ITEM_TYPE_SPECIAL_FLAG;
         tilemap = (u16 *)BG_SCREEN_ADDR(24);
         tilemap += (tile_idx & 0xF0) * 4;
         tilemap += (tile_idx & 0xF) * 2;
         gIslandData->fgblock[0][0].items[tile_idx >> 4][tile_idx & 0xF] = item;
     } else {
-        field->fg_tiles[1][tile_idx] = entity->item_type_indices[0] | 0x8000;
+        field->fg_tiles[1][tile_idx] = entity->item_type_indices[0] | FIELD_ITEM_TYPE_SPECIAL_FLAG;
         tilemap = (u16 *)BG_SCREEN_ADDR(25);
         tilemap += (tile_idx & 0xF0) * 4;
         tilemap += (tile_idx & 0xF) * 2;

@@ -305,7 +305,7 @@ void FieldObject_HandleHit(s32 object_index) {
     u32 fg_tile;
     u8 acre;
     FallingFruit *fruit;
-    u16 x, y = 0;
+    u16 y = 0;
 
     if (object->hits_remaining == 0 || (object->hits_remaining & 0x80)) {
         FieldObject_SpawnToppleEffect(object_index);
@@ -335,12 +335,12 @@ void FieldObject_HandleHit(s32 object_index) {
             return;
         }
         for (candidate = 0; candidate < 4; candidate++) {
-            // Odd variable assignment needed to match
+            // The chained y assignment is needed to match agbcc's register allocation.
             y = sFruitDropOffsetsY[fruit_index * 4 + candidate];
-            object->drop_tile_y = y = y * 16 + object->tile_idx;
+            object->drop_tile_y = y = (y << 4) + object->tile_idx;
             object->drop_tile_y &= 0xF0;
-            x = sFruitDropOffsetsX[fruit_index * 4 + candidate];
-            object->drop_tile_x = x = x + (object->tile_idx & 0xF);
+            object->drop_tile_x =
+                sFruitDropOffsetsX[fruit_index * 4 + candidate] + (object->tile_idx & 0xF);
             object->drop_tile_x &= 0xF;
             acre = 0;
             if (object->layer == 0) {
@@ -369,7 +369,7 @@ void FieldObject_HandleHit(s32 object_index) {
             }
             object->drop_tilemap = object->drop_tilemap + ((u8)(object->drop_tile_y + object->drop_tile_x) & 0xF0) * 4 +
                                    ((u8)(object->drop_tile_y + object->drop_tile_x) & 0xF) * 2;
-            if ((object->drop_existing_item == 0 && fg_tile == 0xFFF &&
+            if ((object->drop_existing_item == 0 && fg_tile == FIELD_ITEM_TYPE_EMPTY &&
                  ((*object->drop_tilemap & 0x3FF) >= 0x20 && (*object->drop_tilemap & 0x3FF) <= 0x7E)) || candidate == 3) {
                 field->entity_active[fruit_index + 21] = 1;
                 if (object->type == FIELD_OBJECT_TYPE_FRUIT_PALM_TREE) {
@@ -391,9 +391,9 @@ void FieldObject_HandleHit(s32 object_index) {
                     FallingFruit_Init(object_index, fruit_index, fruit_index + 20, acre);
                 }
                 if (acre == 0) {
-                    field->fg_tiles[0][(u8)(object->drop_tile_y + object->drop_tile_x)] = 0x7777;
+                    field->fg_tiles[0][(u8)(object->drop_tile_y + object->drop_tile_x)] = FIELD_ITEM_TYPE_RESERVED;
                 } else {
-                    field->fg_tiles[1][(u8)(object->drop_tile_y + object->drop_tile_x)] = 0x7777;
+                    field->fg_tiles[1][(u8)(object->drop_tile_y + object->drop_tile_x)] = FIELD_ITEM_TYPE_RESERVED;
                 }
                 fruit = &gFallingFruit[fruit_index];
                 fruit->landing_x = object->drop_tile_x << 4;
@@ -402,7 +402,7 @@ void FieldObject_HandleHit(s32 object_index) {
                 }
                 fruit->landing_y = object->drop_tile_y;
                 fruit->tile_idx = object->drop_tile_y + object->drop_tile_x;
-                if (object->drop_existing_item == 0 && fg_tile == 0xFFF) {
+                if (object->drop_existing_item == 0 && fg_tile == FIELD_ITEM_TYPE_EMPTY) {
                     fruit->can_land = 1;
                 }
                 break;

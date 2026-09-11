@@ -8,6 +8,13 @@
 extern "C" {
 #endif
 
+/* Encoded values stored in IslandFieldWork.fg_tiles[acre][tile_idx]. */
+#define FIELD_ITEM_TYPE_MASK          0x0FFF /* item-table index without field flags */
+#define FIELD_ITEM_TYPE_EMPTY         0x0FFF /* no foreground item */
+#define FIELD_ITEM_TYPE_ACTION_LOCK   0x3333 /* temporary islander/entity reservation */
+#define FIELD_ITEM_TYPE_RESERVED      0x7777 /* occupied, but not an interactable item */
+#define FIELD_ITEM_TYPE_SPECIAL_FLAG  0x8000 /* ignored by islander pickup logic */
+
 typedef enum ItemType {
     ITEM_TYPE_FOSSIL = 0x00,
     ITEM_TYPE_FURNITURE = 0x01,

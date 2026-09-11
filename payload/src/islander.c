@@ -3075,7 +3075,7 @@ s32 Islander_SetupDigApproach(u8 tile_offset) {
         left_tiles = (u16 *)BG_SCREEN_ADDR(20);
         items[1] = field->fg_tiles[0][left_tile];
     } else {
-        islander->interaction_tile = 0x8000;
+        islander->interaction_tile = FIELD_ITEM_TYPE_SPECIAL_FLAG;
         right_tiles = (u16 *)BG_SCREEN_ADDR(21);
         items[0] = field->fg_tiles[1][right_tile];
         left_tiles = (u16 *)BG_SCREEN_ADDR(21);
@@ -3512,12 +3512,12 @@ void Islander_BuryRandomItem(s32 item_type) {
             }
         }
 
-        if ((islander->interaction_tile & 0x8000) == 0) {
-            field->fg_tiles[0][tile_idx] = 0x7777;
+        if ((islander->interaction_tile & FIELD_ITEM_TYPE_SPECIAL_FLAG) == 0) {
+            field->fg_tiles[0][tile_idx] = FIELD_ITEM_TYPE_RESERVED;
             gIslandData->fgblock[0][0].items[tile_idx >> 4][tile_idx & 0xF] = buried_item_update->buried_item;
             gIslandData->deposit[0][tile_idx >> 4] &= ~(1 << (tile_idx & 0xF));
         } else {
-            field->fg_tiles[1][tile_idx] = 0x7777;
+            field->fg_tiles[1][tile_idx] = FIELD_ITEM_TYPE_RESERVED;
             gIslandData->fgblock[0][1].items[tile_idx >> 4][tile_idx & 0xF] = buried_item_update->buried_item;
             gIslandData->deposit[1][tile_idx >> 4] &= ~(1 << (tile_idx & 0xF));
         }
@@ -3529,12 +3529,12 @@ void Islander_BuryRandomItem(s32 item_type) {
             buried_item = Item_TypeToIslandItem(generator_def->item);
         }
 
-        if ((islander->interaction_tile & 0x8000) == 0) {
-            field->fg_tiles[0][tile_idx] = generator_def->item_type + 0x8000;
+        if ((islander->interaction_tile & FIELD_ITEM_TYPE_SPECIAL_FLAG) == 0) {
+            field->fg_tiles[0][tile_idx] = generator_def->item_type + FIELD_ITEM_TYPE_SPECIAL_FLAG;
             gIslandData->fgblock[0][0].items[tile_idx >> 4][tile_idx & 0xF] = buried_item;
             gIslandData->deposit[0][tile_idx >> 4] |= (1 << (tile_idx & 0xF));
         } else {
-            field->fg_tiles[1][tile_idx] = generator_def->item_type + 0x8000;
+            field->fg_tiles[1][tile_idx] = generator_def->item_type + FIELD_ITEM_TYPE_SPECIAL_FLAG;
             gIslandData->fgblock[0][1].items[tile_idx >> 4][tile_idx & 0xF] = buried_item;
             gIslandData->deposit[1][tile_idx >> 4] |= (1 << (tile_idx & 0xF));
         }
@@ -3555,12 +3555,12 @@ void Islander_PlantRandomFlower(void) {
     islander->held_item_sprite = 0x800000;
     flower = rand_u16(&gGameState) % 9;
     islander->held_item_sprite |= 0x5344;
-    if ((islander->interaction_tile & 0x8000) == 0) {
-        field->fg_tiles[0][tile_idx] = 0x7777;
+    if ((islander->interaction_tile & FIELD_ITEM_TYPE_SPECIAL_FLAG) == 0) {
+        field->fg_tiles[0][tile_idx] = FIELD_ITEM_TYPE_RESERVED;
         gIslandData->fgblock[0][0].items[tile_idx >> 4][tile_idx & 0xF] = sIslanderFlowerItems[flower];
         gIslandData->deposit[0][tile_idx >> 4] &= ~(1 << (tile_idx & 0xF));
     } else {
-        field->fg_tiles[1][tile_idx] = 0x7777;
+        field->fg_tiles[1][tile_idx] = FIELD_ITEM_TYPE_RESERVED;
         gIslandData->fgblock[0][1].items[tile_idx >> 4][tile_idx & 0xF] = sIslanderFlowerItems[flower];
         gIslandData->deposit[1][tile_idx >> 4] &= ~(1 << (tile_idx & 0xF));
     }
@@ -3750,13 +3750,13 @@ s32 SpawnEntity(u8 spawn_flag, u8 spawn_mode, u16 item_type, u16 item) {
     if (spawn_mode == 0) {
         if (!(islander->x & 0xFF0000)) {
             tile = field->fg_tiles[0][islander->tile_idx];
-            if (tile != 0xFFF && tile != 0x3333) {
+            if (tile != FIELD_ITEM_TYPE_EMPTY && tile != FIELD_ITEM_TYPE_ACTION_LOCK) {
                 return 0;
             }
             tilemap = (u16 *)BG_SCREEN_ADDR(20);
         } else {
             tile = field->fg_tiles[1][islander->tile_idx];
-            if (tile != 0xFFF && tile != 0x3333) {
+            if (tile != FIELD_ITEM_TYPE_EMPTY && tile != FIELD_ITEM_TYPE_ACTION_LOCK) {
                 return 0;
             }
             tilemap = (u16 *)BG_SCREEN_ADDR(21);
@@ -3934,7 +3934,7 @@ s32 Islander_SetupTreeApproach(FieldObject *object) {
         if ((*(u16 *)tilemap_addresses[side] & 0x3FF) > 0x7F) {
             islander->tree_approach_x[side] = 0;
         }
-        if (tile_ids[side] == 0x7777 || tile_ids[side] == 0x1F || tile_ids[side] == 0x20) {
+        if (tile_ids[side] == FIELD_ITEM_TYPE_RESERVED || tile_ids[side] == 0x1F || tile_ids[side] == 0x20) {
             islander->tree_approach_x[side] = 0;
         }
     }
@@ -4222,9 +4222,9 @@ s32 Islander_TryInteractWithBuriedItem(u8 layer) {
                 tile = field->fg_tiles[1][islander->tile_idx];
             }
             definition = &g_ItemDefinitions[tile];
-            if (tile != 0xFFF) {
-                special_tile = tile & 0x8000;
-                if (special_tile == 0 && tile != 0x3333 && tile != 0x7777 &&
+            if (tile != FIELD_ITEM_TYPE_EMPTY) {
+                special_tile = tile & FIELD_ITEM_TYPE_SPECIAL_FLAG;
+                if (special_tile == 0 && tile != FIELD_ITEM_TYPE_ACTION_LOCK && tile != FIELD_ITEM_TYPE_RESERVED &&
                     definition->interaction_type != 0xFFF) {
                     chance = 50;
                     switch (islander->reward_adjust) {
@@ -4335,13 +4335,13 @@ s32 Islander_TryDropTool(void) {
         collision = CheckSurroundingCollision(islander->tile_idx, islander->collision_tilemap);
         if ((islander->x & 0xFF0000) == 0) {
             if (collision == 0) {
-                if (field->fg_tiles[0][islander->tile_idx] == 0xFFF) {
+                if (field->fg_tiles[0][islander->tile_idx] == FIELD_ITEM_TYPE_EMPTY) {
                     field->fg_tiles[0][islander->tile_idx] = tile;
                     placed = 1;
                 }
             }
         } else if (collision == 0) {
-            if (field->fg_tiles[1][islander->tile_idx] == 0xFFF) {
+            if (field->fg_tiles[1][islander->tile_idx] == FIELD_ITEM_TYPE_EMPTY) {
                 field->fg_tiles[1][islander->tile_idx] = tile;
                 placed = 1;
             }
@@ -4349,9 +4349,9 @@ s32 Islander_TryDropTool(void) {
         if (placed == 1) {
             WriteItemToTile(islander->x, islander->tile_idx, islander->removed_tool_item, 0x6234);
             if (islander->removed_tool_layer == 0) {
-                field->fg_tiles[0][islander->removed_tool_tile_idx] = 0xFFF;
+                field->fg_tiles[0][islander->removed_tool_tile_idx] = FIELD_ITEM_TYPE_EMPTY;
             } else {
-                field->fg_tiles[1][islander->removed_tool_tile_idx] = 0xFFF;
+                field->fg_tiles[1][islander->removed_tool_tile_idx] = FIELD_ITEM_TYPE_EMPTY;
             }
             islander->removed_tool_tile_idx = 0;
             islander->removed_tool_layer = 0;
@@ -4657,10 +4657,10 @@ u16 Islander_TakeCurrentTileItem(void) {
     u16 item;
 
     if (!(islander->x & 0xFF0000)) {
-        field->fg_tiles[0][islander->tile_idx] = 0x7777;
+        field->fg_tiles[0][islander->tile_idx] = FIELD_ITEM_TYPE_RESERVED;
         item = gIslandData->fgblock[0][0].items[islander->tile_idx >> 4][islander->tile_idx & 0xF];
     } else {
-        field->fg_tiles[1][islander->tile_idx] = 0x7777;
+        field->fg_tiles[1][islander->tile_idx] = FIELD_ITEM_TYPE_RESERVED;
         item = gIslandData->fgblock[0][1].items[islander->tile_idx >> 4][islander->tile_idx & 0xF];
     }
     return item;
@@ -4692,16 +4692,16 @@ s32 Islander_TryInteractWithCurrentTile(void) {
     } else {
         tile = field->fg_tiles[1][islander->tile_idx];
     }
-    if (tile == 0xFFF) {
+    if (tile == FIELD_ITEM_TYPE_EMPTY) {
         return 0;
     }
-    if (tile & 0x8000) {
+    if (tile & FIELD_ITEM_TYPE_SPECIAL_FLAG) {
         return 0;
     }
-    if (tile == 0x7777) {
+    if (tile == FIELD_ITEM_TYPE_RESERVED) {
         return 0;
     }
-    if (tile == 0x3333) {
+    if (tile == FIELD_ITEM_TYPE_ACTION_LOCK) {
         return 0;
     }
     definition = &g_ItemDefinitions[tile];
@@ -4746,9 +4746,9 @@ s32 Islander_TryInteractWithCurrentTile(void) {
     }
 
     if (!(islander->x & 0xFF0000)) {
-        field->fg_tiles[0][islander->tile_idx] = 0x7777;
+        field->fg_tiles[0][islander->tile_idx] = FIELD_ITEM_TYPE_RESERVED;
     } else {
-        field->fg_tiles[1][islander->tile_idx] = 0x7777;
+        field->fg_tiles[1][islander->tile_idx] = FIELD_ITEM_TYPE_RESERVED;
     }
     islander->target_x = islander->x & 0xFF0000;
     islander->target_x |= ((islander->tile_idx & 0xF) << 12) + 0x800;
@@ -4795,7 +4795,7 @@ s32 Islander_TryStartDigging(void) {
             standing_tile = &islander->tile_idx;
             tile = field->fg_tiles[1][*standing_tile];
         }
-        if (tile == 0xFFF && rand_u16(&gGameState) % 101 <= 5 &&
+        if (tile == FIELD_ITEM_TYPE_EMPTY && rand_u16(&gGameState) % 101 <= 5 &&
             Islander_CanDigHere() != 0 && (u16)Islander_SetupDigApproach(0xF1) != 0) {
             islander->accepted_x = islander->target_x;
             islander->accepted_y = islander->target_y;
@@ -5291,9 +5291,9 @@ void Islander_ProcessFood(void) {
 
         islander->held_item_sprite = 0;
         if ((islander->x & 0xFF0000) == 0) {
-            field->fg_tiles[0][islander->tile_idx] = 0xFFF;
+            field->fg_tiles[0][islander->tile_idx] = FIELD_ITEM_TYPE_EMPTY;
         } else {
-            field->fg_tiles[1][islander->tile_idx] = 0xFFF;
+            field->fg_tiles[1][islander->tile_idx] = FIELD_ITEM_TYPE_EMPTY;
         }
 
         i = 0;
@@ -5319,9 +5319,9 @@ void Islander_ProcessFood(void) {
             islander->mood_level = 0;
         } else if (islander->mood_level > 5) {
             if ((islander->x & 0xFF0000) == 0) {
-                field->fg_tiles[0][islander->tile_idx] = 0x3333;
+                field->fg_tiles[0][islander->tile_idx] = FIELD_ITEM_TYPE_ACTION_LOCK;
             } else {
-                field->fg_tiles[1][islander->tile_idx] = 0x3333;
+                field->fg_tiles[1][islander->tile_idx] = FIELD_ITEM_TYPE_ACTION_LOCK;
             }
             islander->mood_level = 6;
             break;
@@ -5334,10 +5334,10 @@ void Islander_ProcessFood(void) {
         islander->held_item_sprite = 0;
         if ((islander->x & 0xFF0000) == 0) {
             if (islander->removed_tool_tile_idx != islander->tile_idx) {
-                field->fg_tiles[0][islander->tile_idx] = 0xFFF;
+                field->fg_tiles[0][islander->tile_idx] = FIELD_ITEM_TYPE_EMPTY;
             }
         } else if (islander->removed_tool_tile_idx != islander->tile_idx) {
-            field->fg_tiles[1][islander->tile_idx] = 0xFFF;
+            field->fg_tiles[1][islander->tile_idx] = FIELD_ITEM_TYPE_EMPTY;
         }
 
         switch (definition->interaction_type) {
@@ -5565,7 +5565,7 @@ void Islander_StartClickReaction(void) {
             index = field->fg_tiles[1][islander->player_interaction_tile_idx];
         }
 
-        if (((u16)index == 0xFFF) || (index == 0x3333) || (index == 0x7777) ||
+        if (((u16)index == FIELD_ITEM_TYPE_EMPTY) || (index == FIELD_ITEM_TYPE_ACTION_LOCK) || (index == FIELD_ITEM_TYPE_RESERVED) ||
             ((&g_ItemDefinitions[index])->held_item_oam_attr2 == 0xFFF)) {
             islander->move_action = ISLANDER_MOVE_ACTION_START_WANDERING;
             Islander_StartWandering();
@@ -5744,7 +5744,7 @@ void Islander_ChopFieldObject(void) {
         } else {
             tile = field->fg_tiles[1][field_object->tile_idx + 0x10];
         }
-        if (tile == 0xFFF) {
+        if (tile == FIELD_ITEM_TYPE_EMPTY) {
             islander->item_work.held_item.type_idx = 1;
             spawn_idx = 0;
             if ((Islander_GET_TOOL_TYPE(islander)) == ISLANDER_TOOL_GOLD_AXE) {
@@ -5756,9 +5756,9 @@ void Islander_ChopFieldObject(void) {
             spawn_idx = SpawnEntity(0, 2, spawn_params->type, spawn_params->param);
             if (spawn_idx != 0) {
                 if (field_object->layer == 0) {
-                    field->fg_tiles[0][islander->tile_idx] = 0x3333;
+                    field->fg_tiles[0][islander->tile_idx] = FIELD_ITEM_TYPE_ACTION_LOCK;
                 } else {
-                    field->fg_tiles[1][islander->tile_idx] = 0x3333;
+                    field->fg_tiles[1][islander->tile_idx] = FIELD_ITEM_TYPE_ACTION_LOCK;
                 }
                 entity = &g_EntityTable[spawn_idx];
                 entity->base_y = (entity->y + 0x20) << 8;
@@ -6281,9 +6281,9 @@ void Islander_DigHole(void) {
     }
 
     islander->item_work.held_item.type_idx = 0;
-    if (islander->interaction_tile & 0x8000) {
+    if (islander->interaction_tile & FIELD_ITEM_TYPE_SPECIAL_FLAG) {
         tilemap_vram = (u16 *)BG_SCREEN_ADDR(25);
-        if (field->fg_tiles[1][tile_idx] == 0xFFF) {
+        if (field->fg_tiles[1][tile_idx] == FIELD_ITEM_TYPE_EMPTY) {
             dug_empty = 1;
         } else {
             islander->item_work.held_item.type_idx = field->fg_tiles[1][tile_idx];
@@ -6291,10 +6291,10 @@ void Islander_DigHole(void) {
                 islander->item_work.held_item.type_idx = ITEM_TYPE_COCONUT;
             }
         }
-        field->fg_tiles[1][tile_idx] = 0x7777;
+        field->fg_tiles[1][tile_idx] = FIELD_ITEM_TYPE_RESERVED;
     } else {
         tilemap_vram = (u16 *)BG_SCREEN_ADDR(24);
-        if (field->fg_tiles[0][tile_idx] == 0xFFF) {
+        if (field->fg_tiles[0][tile_idx] == FIELD_ITEM_TYPE_EMPTY) {
             dug_empty = 1;
         } else {
             islander->item_work.held_item.type_idx = field->fg_tiles[0][tile_idx];
@@ -6302,7 +6302,7 @@ void Islander_DigHole(void) {
                 islander->item_work.held_item.type_idx = ITEM_TYPE_COCONUT;
             }
         }
-        field->fg_tiles[0][tile_idx] = 0x7777;
+        field->fg_tiles[0][tile_idx] = FIELD_ITEM_TYPE_RESERVED;
     }
 
     tilemap_vram += (tile_idx & 0xF0) * 4;
@@ -6396,15 +6396,15 @@ void Islander_BuryItemInEmptyHole(void) {
         Islander_OnMoodChanged();
     }
 
-    if (!(islander->interaction_tile & 0x8000)) {
-        field->fg_tiles[0][tile_idx] = 0x7777;
+    if (!(islander->interaction_tile & FIELD_ITEM_TYPE_SPECIAL_FLAG)) {
+        field->fg_tiles[0][tile_idx] = FIELD_ITEM_TYPE_RESERVED;
         island = gIslandData;
         island->fgblock[0][0].items[tile_idx >> 4][tile_idx & 0xF] = item;
         if (is_tree == 0) {
             island->deposit[0][tile_idx >> 4] |= 1 << (tile_idx & 0xF);
         }
     } else {
-        field->fg_tiles[1][tile_idx] = 0x7777;
+        field->fg_tiles[1][tile_idx] = FIELD_ITEM_TYPE_RESERVED;
         island = gIslandData;
         island->fgblock[0][1].items[tile_idx >> 4][tile_idx & 0xF] = item;
         if (is_tree == 0) {
@@ -6511,7 +6511,7 @@ void Islander_FillHole(void) {
 
     if (islander->anim_timer == 0) {
         if (islander->anim_frame == 0xE) {
-            if (!(islander->interaction_tile & 0x8000)) {
+            if (!(islander->interaction_tile & FIELD_ITEM_TYPE_SPECIAL_FLAG)) {
                 tilemap_vram = (u8 *)BG_SCREEN_ADDR(24);
             } else {
                 
@@ -6538,7 +6538,7 @@ void Islander_FillHole(void) {
         islander->held_item_sprite = 0;
         islander->dig_target_layer = 0;
         islander->dig_target_tile_idx = 0;
-        if (!(islander->interaction_tile & 0x8000)) {
+        if (!(islander->interaction_tile & FIELD_ITEM_TYPE_SPECIAL_FLAG)) {
             tilemap_vram = (u8 *)BG_SCREEN_ADDR(24);
         } else {
             
@@ -6915,7 +6915,7 @@ void Islander_Draw(void) {
 
             if ((tile_override & 0xFFFF0000) != 0 && (tile_override & 0xFFFF) != 0 &&
                 oam->tile_num == ((tile_override >> 16) & 0xFFFF)) {
-                tile_override &= 0xFFF;
+                tile_override &= FIELD_ITEM_TYPE_MASK;
                 oam->tile_num = tile_override;
                 oam->palette_num = (islander->held_item_sprite & 0xF000) >> 12;
             }

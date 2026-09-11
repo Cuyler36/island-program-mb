@@ -330,7 +330,7 @@ void LoadIslandFieldEntity(u16 type, s32 pos, u8 acre) {
         dest += (left_pos & 15) * 2;
         tile = sFieldEntityBaseTiles[type - 5];
         dest += 33;
-        if (field->tile_id_scratch == 0xFFF) {
+        if (field->tile_id_scratch == FIELD_ITEM_TYPE_EMPTY) {
             *dest = tile;
         }
         dest++;
@@ -436,8 +436,8 @@ void LoadIslandForeground(void) {
     fg1_tile = field->fg_tiles[1];
     pos = 0xFF;
     do {
-        *fg0_tile = 0xFFF;
-        *fg1_tile = 0xFFF;
+        *fg0_tile = FIELD_ITEM_TYPE_EMPTY;
+        *fg1_tile = FIELD_ITEM_TYPE_EMPTY;
         fg1_tile++;
         fg0_tile++;
         pos--;
@@ -449,8 +449,8 @@ void LoadIslandForeground(void) {
             if (item_type <= ITEM_TYPE_RESERVED) {
                 definition = &g_ItemDefinitions[item_type];
                 if (item_type == ITEM_TYPE_RESERVED) {
-                    if (field->fg_tiles[0][pos] == 0xFFF) {
-                        field->fg_tiles[0][pos] = 0x7777;
+                    if (field->fg_tiles[0][pos] == FIELD_ITEM_TYPE_EMPTY) {
+                        field->fg_tiles[0][pos] = FIELD_ITEM_TYPE_RESERVED;
                     }
                 } else {
                     field->fg_tiles[0][pos] = item_type;
@@ -495,8 +495,8 @@ void LoadIslandForeground(void) {
             if (item_type <= ITEM_TYPE_RESERVED) {
                 definition = &g_ItemDefinitions[item_type];
                 if (item_type == ITEM_TYPE_RESERVED) {
-                    if (field->fg_tiles[1][pos] == 0xFFF) {
-                        field->fg_tiles[1][pos] = 0x7777;
+                    if (field->fg_tiles[1][pos] == FIELD_ITEM_TYPE_EMPTY) {
+                        field->fg_tiles[1][pos] = FIELD_ITEM_TYPE_RESERVED;
                     }
                 } else {
                     field->fg_tiles[1][pos] = item_type;

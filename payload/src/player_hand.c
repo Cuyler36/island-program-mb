@@ -7,7 +7,11 @@
 #include "islander.h"
 #include "entity.h"
 
-/* Original address: 0x02034D8C */
+/**
+ * Sprite pieces for each visual frame of the player hand.
+ *
+ * Original address: 0x02034D8C
+ */
 OAMData sPlayerHandOamData[8][2] = {
     { OAM_ENTRY(0x00F6, 0x41FE, 0x72DA, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
     { OAM_ENTRY(0x00F6, 0x41FE, 0x72DC, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
@@ -19,8 +23,12 @@ OAMData sPlayerHandOamData[8][2] = {
     { OAM_ENTRY(0x00F4, 0x41F8, 0x731A, 0), OAM_ENTRY(0, 0, 0, 0xFFFF) },
 };
 
-/* Original address: 0x02034E0C */
-void (*sPlayerHandUpdateProcs[6])(void) = {
+/**
+ * Update routine selected by Player.action_state.
+ *
+ * Original address: 0x02034E0C
+ */
+void (*sPlayerHandUpdateProcs[PLAYER_HAND_ACTION_COUNT])(void) = {
     PlayerHand_ResetToIdle,
     PlayerHand_UpdateIdle,
     PlayerHand_BeginCarrying,
@@ -29,7 +37,11 @@ void (*sPlayerHandUpdateProcs[6])(void) = {
     PlayerHand_UpdatePlacing,
 };
 
-/* Original address: 0x02034E24 */
+/**
+ * Shared frame descriptions used to assemble the hand animations.
+ *
+ * Original address: 0x02034E24
+ */
 AnimFrameData sPlayerHandAnimFrames[11] = {
     { sPlayerHandOamData[0], 2, 0, 0 },
     { sPlayerHandOamData[1], 2, 0, 0 },
@@ -44,7 +56,7 @@ AnimFrameData sPlayerHandAnimFrames[11] = {
     { (OAMData *)0x0000FFFF, 0xFFFF, -1, 0 },
 };
 
-/* Original address: 0x02034E7C */
+/** Idle interaction animation. Original address: 0x02034E7C */
 AnimFrameData* sPlayerHandIdleAnimation[8] = {
     &sPlayerHandAnimFrames[2], &sPlayerHandAnimFrames[0],
     &sPlayerHandAnimFrames[1], &sPlayerHandAnimFrames[2],
@@ -52,28 +64,32 @@ AnimFrameData* sPlayerHandIdleAnimation[8] = {
     &sPlayerHandAnimFrames[2], &sPlayerHandAnimFrames[10],
 };
 
-/* Original address: 0x02034E9C */
+/** Item-carrying animation. Original address: 0x02034E9C */
 AnimFrameData* sPlayerHandCarryingAnimation[6] = {
     &sPlayerHandAnimFrames[3], &sPlayerHandAnimFrames[4],
     &sPlayerHandAnimFrames[5], &sPlayerHandAnimFrames[6],
     &sPlayerHandAnimFrames[7], &sPlayerHandAnimFrames[10],
 };
 
-/* Original address: 0x02034EB4 */
+/** Item-placement animation. Original address: 0x02034EB4 */
 AnimFrameData* sPlayerHandPlacingAnimation[5] = {
     &sPlayerHandAnimFrames[7], &sPlayerHandAnimFrames[5],
     &sPlayerHandAnimFrames[4], &sPlayerHandAnimFrames[3],
     &sPlayerHandAnimFrames[10],
 };
 
-/* Original address: 0x02034EC8 */
+/** Invalid-placement feedback animation. Original address: 0x02034EC8 */
 AnimFrameData* sPlayerHandBlockedAnimation[3] = {
     &sPlayerHandAnimFrames[9], &sPlayerHandAnimFrames[8],
     &sPlayerHandAnimFrames[10],
 };
 
-/* Original address: 0x02034ED4 */
-AnimFrameData** sPlayerHandAnimations[4] = {
+/**
+ * Animation sequences indexed by PlayerHandAnimation.
+ *
+ * Original address: 0x02034ED4
+ */
+AnimFrameData** sPlayerHandAnimations[PLAYER_HAND_ANIM_COUNT] = {
     sPlayerHandIdleAnimation,
     sPlayerHandCarryingAnimation,
     sPlayerHandPlacingAnimation,
@@ -84,7 +100,16 @@ static inline u16 PlayerHand_GetTerrainTile(u16 *tilemap) {
     return *tilemap & 0x3FF;
 }
 
-/* Original address: 0x020259C8 */
+/**
+ * Tests whether the tile under the hand can receive the carried object.
+ *
+ * Besides foreground occupancy, this checks the islander's dig target,
+ * terrain collision, and the house entrance's reserved interaction area.
+ *
+ * @return TRUE when placement is blocked, otherwise FALSE.
+ *
+ * Original address: 0x020259C8
+ */
 s32 PlayerHand_IsItemPlacementBlocked(void) {
     Player *player = &gPlayer;
     Islander_AGB *islander = &gIslander;
@@ -96,32 +121,32 @@ s32 PlayerHand_IsItemPlacementBlocked(void) {
 
     player->tile_idx = (player->work_y & ~0xF) | ((player->work_x & 0xF0) >> 4);
     if (!(player->work_x & 0xFF00)) {
-        if (field->fg_tiles[0][player->tile_idx] != 0xFFF &&
-            field->fg_tiles[0][player->tile_idx] != 0x7777) {
+        if (field->fg_tiles[0][player->tile_idx] != FIELD_ITEM_TYPE_EMPTY &&
+            field->fg_tiles[0][player->tile_idx] != FIELD_ITEM_TYPE_RESERVED) {
             return 1;
         }
         if (islander->dig_target_layer == 0 && player->tile_idx == islander->dig_target_tile_idx) {
             return 1;
         }
-        if (field->fg_tiles[0][player->tile_idx] == 0xFFF ||
+        if (field->fg_tiles[0][player->tile_idx] == FIELD_ITEM_TYPE_EMPTY ||
             (player->held_item_layer == 0 && player->tile_idx == player->held_item_tile_idx)) {
-            field->fg_tiles[0][player->tile_idx] = 0xFFF;
+            field->fg_tiles[0][player->tile_idx] = FIELD_ITEM_TYPE_EMPTY;
             item = field->fg_tiles[0][player->tile_idx];
             tilemap = (u16 *)BG_SCREEN_ADDR(20);
             tilemap += (player->tile_idx & 0xF0) * 4;
             tilemap += (player->tile_idx & 0xF) * 2;
         }
     } else {
-        if (field->fg_tiles[1][player->tile_idx] != 0xFFF &&
-            field->fg_tiles[1][player->tile_idx] != 0x7777) {
+        if (field->fg_tiles[1][player->tile_idx] != FIELD_ITEM_TYPE_EMPTY &&
+            field->fg_tiles[1][player->tile_idx] != FIELD_ITEM_TYPE_RESERVED) {
             return 1;
         }
         if (islander->dig_target_layer != 0 && player->tile_idx == islander->dig_target_tile_idx) {
             return 1;
         }
-        if (field->fg_tiles[1][player->tile_idx] == 0xFFF ||
+        if (field->fg_tiles[1][player->tile_idx] == FIELD_ITEM_TYPE_EMPTY ||
             (player->held_item_layer != 0 && player->tile_idx == player->held_item_tile_idx)) {
-            field->fg_tiles[1][player->tile_idx] = 0xFFF;
+            field->fg_tiles[1][player->tile_idx] = FIELD_ITEM_TYPE_EMPTY;
             item = field->fg_tiles[1][player->tile_idx];
             tilemap = (u16 *)BG_SCREEN_ADDR(21);
             tilemap += (player->tile_idx & 0xF0) * 4;
@@ -158,7 +183,19 @@ s32 PlayerHand_IsItemPlacementBlocked(void) {
     return 1;
 }
 
-/* Original address: 0x02025B94 */
+/**
+ * Tests whether the hand is close enough to an interaction target.
+ *
+ * Interactions are also suppressed when the hand is too far horizontally
+ * from the islander.
+ *
+ * @param x Target X in 8.8 fixed-point coordinates.
+ * @param y Target Y in 8.8 fixed-point coordinates.
+ * @param range Maximum per-axis distance in pixels.
+ * @return TRUE when the target is in range, otherwise FALSE.
+ *
+ * Original address: 0x02025B94
+ */
 s32 PlayerHand_IsNearInteractionTarget(s32 x, s32 y, u16 range) {
     Player *player = &gPlayer;
     Islander_AGB *islander = &gIslander;
@@ -186,7 +223,14 @@ s32 PlayerHand_IsNearInteractionTarget(s32 x, s32 y, u16 range) {
     return 0;
 }
 
-/* Original address: 0x02025BEC */
+/**
+ * Handles the player's interaction with the island house entrance.
+ *
+ * @return TRUE while the islander is moving through the entrance, otherwise
+ *         FALSE.
+ *
+ * Original address: 0x02025BEC
+ */
 s32 PlayerHand_CheckHouseDoorInteraction(void) {
     Player *player = &gPlayer;
     Islander_AGB *islander = &gIslander;
@@ -207,7 +251,13 @@ s32 PlayerHand_CheckHouseDoorInteraction(void) {
     return 0;
 }
 
-/* Original address: 0x02025C4C */
+/**
+ * Tries to direct or pick up the islander under the hand.
+ *
+ * @return TRUE when an islander interaction began, otherwise FALSE.
+ *
+ * Original address: 0x02025C4C
+ */
 s32 PlayerHand_TryInteractWithIslander(void) {
     Player *player = &gPlayer;
     Islander_AGB *islander = &gIslander;
@@ -227,7 +277,7 @@ s32 PlayerHand_TryInteractWithIslander(void) {
             player->near_house_door = 0;
             islander->move_action = ISLANDER_MOVE_ACTION_CHECK_CLICKED_ON_TIMER;
             islander->click_cooldown_timer = 0x30;
-            player->action_state = 0;
+            player->action_state = PLAYER_HAND_ACTION_RESET_TO_IDLE;
             PlayerHand_ResetToIdle();
             return 1;
         }
@@ -236,14 +286,20 @@ s32 PlayerHand_TryInteractWithIslander(void) {
                PlayerHand_IsNearInteractionTarget(islander->x, islander->y, 16)) {
         Sound_PlayEffect0(3);
         islander->carry_state = 2;
-        player->action_state = 2;
+        player->action_state = PLAYER_HAND_ACTION_BEGIN_CARRYING;
         PlayerHand_BeginCarrying();
         return 1;
     }
     return 0;
 }
 
-/* Original address: 0x02025D1C */
+/**
+ * Selects an airborne net target beneath the player hand.
+ *
+ * @return TRUE when the islander was directed to the target, otherwise FALSE.
+ *
+ * Original address: 0x02025D1C
+ */
 s32 PlayerHand_TrySelectIslanderTarget(void) {
     u8 tool;
 
@@ -258,7 +314,11 @@ s32 PlayerHand_TrySelectIslanderTarget(void) {
     return 0;
 }
 
-/* Original address: 0x02025D70 */
+/**
+ * Initializes the player hand at its starting position.
+ *
+ * Original address: 0x02025D70
+ */
 void PlayerHand_Init(void) {
     Player *player = &gPlayer;
 
@@ -268,7 +328,7 @@ void PlayerHand_Init(void) {
     player->saved_y = 0x8800;
     player->anim_frame = 0;
     player->anim_timer = 0;
-    player->anim_id = 0;
+    player->anim_id = PLAYER_HAND_ANIM_IDLE;
     player->interaction_attempt_active = 0;
     player->held_item_oam_attr2 = 0;
     player->tile_idx = 0;
@@ -283,9 +343,10 @@ void PlayerHand_Init(void) {
     player->held_item_tile_idx = 0;
     player->left_neighbor_tile_idx = 0;
     player->right_neighbor_tile_idx = 0;
-    player->action_state = 0;
+    player->action_state = PLAYER_HAND_ACTION_RESET_TO_IDLE;
 }
 
+/* Keeps the field scroll centered on the hand and clamps it to the map. */
 static inline void PlayerHand_UpdateCamera(Player *player) {
     GameState *camera = &gGameState;
     s32 camera_y;
@@ -308,7 +369,14 @@ static inline void PlayerHand_UpdateCamera(Player *player) {
     camera->bg2_vofs = camera->bg1_vofs;
 }
 
-/* Original address: 0x02025DC8 */
+/**
+ * Moves the player hand from directional input and updates field scrolling.
+ *
+ * Holding the run button doubles the movement step. Bounds are tightened at
+ * the bottom of the field while the islander is being carried.
+ *
+ * Original address: 0x02025DC8
+ */
 void PlayerHand_UpdateMovement(void) {
     Player *player = &gPlayer;
     Islander_AGB *islander = &gIslander;
@@ -366,20 +434,31 @@ void PlayerHand_UpdateMovement(void) {
     PlayerHand_UpdateCamera(player);
 }
 
-/* Original address: 0x02025F60 */
+/**
+ * Returns the player hand to its normal movable state.
+ *
+ * Original address: 0x02025F60
+ */
 void PlayerHand_ResetToIdle(void) {
     Player *player = &gPlayer;
     AnimFrameData *frame;
 
-    player->anim_id = 0;
-    frame = sPlayerHandAnimations[0][0];
+    player->anim_id = PLAYER_HAND_ANIM_IDLE;
+    frame = sPlayerHandAnimations[PLAYER_HAND_ANIM_IDLE][0];
     player->interaction_attempt_active = 0;
     player->anim_frame = 0;
     player->anim_timer = frame->duration;
-    player->action_state = 1;
+    player->action_state = PLAYER_HAND_ACTION_IDLE;
 }
 
-/* Original address: 0x02025F90 */
+/**
+ * Updates free movement, pickup attempts, and the interaction animation.
+ *
+ * Pressing the interaction button either lifts an eligible field item or
+ * plays the idle animation before checking the house and islander targets.
+ *
+ * Original address: 0x02025F90
+ */
 void PlayerHand_UpdateIdle(void) {
     Player *player = &gPlayer;
     IslandFieldWork *field = &gIslandFieldWork;
@@ -398,7 +477,7 @@ void PlayerHand_UpdateIdle(void) {
             item_type = field->fg_tiles[1][player->tile_idx];
         }
         definition = &g_ItemDefinitions[item_type];
-        if (item_type == 0xFFF || item_type == 0x7777 || item_type == 0x3333 ||
+        if (item_type == FIELD_ITEM_TYPE_EMPTY || item_type == FIELD_ITEM_TYPE_RESERVED || item_type == FIELD_ITEM_TYPE_ACTION_LOCK ||
             definition->interaction_type == 0xFFF) {
             player->interaction_attempt_active = 1;
         } else {
@@ -413,16 +492,16 @@ void PlayerHand_UpdateIdle(void) {
                 }
             }
             if (!buried) {
-                item_type &= 0xFFF;
+                item_type &= FIELD_ITEM_TYPE_MASK;
                 definition = &g_ItemDefinitions[item_type];
                 if (definition->held_item_oam_attr2 != 0xFFF) {
                     if (!((player->x >> 8) & 0xFF00)) {
-                        field->fg_tiles[0][player->tile_idx] = 0x7777;
+                        field->fg_tiles[0][player->tile_idx] = FIELD_ITEM_TYPE_RESERVED;
                         item = gIslandData->fgblock[0][0].items[player->tile_idx >> 4][player->tile_idx & 0xF];
                         gIslandData->fgblock[0][0].items[player->tile_idx >> 4][player->tile_idx & 0xF] = 0;
                         player->held_item_layer = 0;
                     } else {
-                        field->fg_tiles[1][player->tile_idx] = 0x7777;
+                        field->fg_tiles[1][player->tile_idx] = FIELD_ITEM_TYPE_RESERVED;
                         item = gIslandData->fgblock[0][1].items[player->tile_idx >> 4][player->tile_idx & 0xF];
                         gIslandData->fgblock[0][1].items[player->tile_idx >> 4][player->tile_idx & 0xF] = 0;
                         player->held_item_layer = 1;
@@ -432,7 +511,7 @@ void PlayerHand_UpdateIdle(void) {
                     player->held_item_oam_attr2 = definition->held_item_oam_attr2;
                     player->held_item = item;
                     Sound_PlayEffect0(3);
-                    player->action_state = 2;
+                    player->action_state = PLAYER_HAND_ACTION_BEGIN_CARRYING;
                     PlayerHand_BeginCarrying();
                     return;
                 }
@@ -451,22 +530,33 @@ void PlayerHand_UpdateIdle(void) {
             player->anim_timer = frame->duration;
         } else if (PlayerHand_CheckHouseDoorInteraction() != 0) {
             Sound_PlayEffect0(2);
-            player->action_state = 0;
+            player->action_state = PLAYER_HAND_ACTION_RESET_TO_IDLE;
             PlayerHand_ResetToIdle();
         } else if (PlayerHand_TryInteractWithIslander() == 0) {
             if (PlayerHand_TrySelectIslanderTarget() != 0) {
-                player->action_state = 0;
+                player->action_state = PLAYER_HAND_ACTION_RESET_TO_IDLE;
                 PlayerHand_ResetToIdle();
             } else {
                 Sound_PlayEffect0(2);
-                player->action_state = 0;
+                player->action_state = PLAYER_HAND_ACTION_RESET_TO_IDLE;
                 PlayerHand_ResetToIdle();
             }
         }
     }
 }
 
-/* Original address: 0x0202622C */
+/**
+ * Restores the terrain edge hidden by a neighboring tree or stump.
+ *
+ * @param tile_idx Tile whose rendered terrain is being repaired.
+ * @param x World X used to select the destination screen block.
+ * @param neighbor_tile Wrapped index of the neighboring field tile.
+ * @param acre Acre containing the neighboring field tile.
+ * @param right_side TRUE to restore the neighbor's right edge; FALSE for its
+ *        left edge.
+ *
+ * Original address: 0x0202622C
+ */
 void Field_RestoreNeighborTreeTile(u16 tile_idx, s32 x, u8 neighbor_tile, u8 acre, u8 right_side) {
     IslandFieldWork *field = &gIslandFieldWork;
     u16 item_type;
@@ -506,7 +596,14 @@ void Field_RestoreNeighborTreeTile(u16 tile_idx, s32 x, u8 neighbor_tile, u8 acr
     }
 }
 
-/* Original address: 0x020262DC */
+/**
+ * Repairs tree-edge terrain on both sides of a tile, including acre seams.
+ *
+ * @param tile_idx Tile whose adjacent terrain was exposed.
+ * @param x World X used to select the destination screen block.
+ *
+ * Original address: 0x020262DC
+ */
 void Field_RestoreAdjacentTreeTiles(u16 tile_idx, s32 x) {
     Player *player = &gPlayer;
     player->left_neighbor_tile_idx = (tile_idx & 0xF) - 1;
@@ -532,7 +629,14 @@ void Field_RestoreAdjacentTreeTiles(u16 tile_idx, s32 x) {
     }
 }
 
-/* Original address: 0x020263A0 */
+/**
+ * Enters the carrying state for either a field item or the islander.
+ *
+ * A lifted item is represented by the reserved field entity while it follows
+ * the hand. An islander being carried instead follows the hand directly.
+ *
+ * Original address: 0x020263A0
+ */
 void PlayerHand_BeginCarrying(void) {
     Player *player = &gPlayer;
     Entity *entity = &g_EntityTable[2];
@@ -540,8 +644,8 @@ void PlayerHand_BeginCarrying(void) {
     Islander_AGB *islander = &gIslander;
     AnimFrameData *frame;
 
-    player->anim_id = 1;
-    frame = sPlayerHandAnimations[1][0];
+    player->anim_id = PLAYER_HAND_ANIM_CARRYING;
+    frame = sPlayerHandAnimations[PLAYER_HAND_ANIM_CARRYING][0];
     player->interaction_attempt_active = 0;
     player->anim_frame = 0;
     player->anim_timer = frame->duration;
@@ -561,10 +665,16 @@ void PlayerHand_BeginCarrying(void) {
         islander->y = player->y + 0x1200;
     }
     player->placement_input_delay = 0x20;
-    player->action_state = 3;
+    player->action_state = PLAYER_HAND_ACTION_CARRYING;
 }
 
-/* Original address: 0x02026464 */
+/**
+ * Moves the carried object with the hand and handles placement attempts.
+ *
+ * Invalid targets play the blocked animation and keep the object held.
+ *
+ * Original address: 0x02026464
+ */
 void PlayerHand_UpdateCarrying(void) {
     Player *player = &gPlayer;
     Islander_AGB *islander = &gIslander;
@@ -574,7 +684,7 @@ void PlayerHand_UpdateCarrying(void) {
 
     if (islander->carry_state == 0) {
         if (player->held_item_layer == 0 && player->held_item_tile_idx == 0) {
-            player->action_state = 0;
+            player->action_state = PLAYER_HAND_ACTION_RESET_TO_IDLE;
             PlayerHand_ResetToIdle();
             return;
         }
@@ -590,12 +700,12 @@ void PlayerHand_UpdateCarrying(void) {
         }
         if (PlayerHand_IsItemPlacementBlocked() == 0) {
             Sound_PlayEffect0(4);
-            player->action_state = 4;
+            player->action_state = PLAYER_HAND_ACTION_BEGIN_PLACING;
             PlayerHand_BeginPlacing();
             return;
         }
-        player->anim_id = 3;
-        blocked_frame = sPlayerHandAnimations[3][0];
+        player->anim_id = PLAYER_HAND_ANIM_BLOCKED;
+        blocked_frame = sPlayerHandAnimations[PLAYER_HAND_ANIM_BLOCKED][0];
         player->anim_frame = 0;
         player->anim_timer = blocked_frame->duration;
         Sound_PlayEffect0(0x12);
@@ -622,18 +732,30 @@ void PlayerHand_UpdateCarrying(void) {
     }
 }
 
-/* Original address: 0x020265A8 */
+/**
+ * Starts the item-placement animation.
+ *
+ * Original address: 0x020265A8
+ */
 void PlayerHand_BeginPlacing(void) {
     Player *player = &gPlayer;
     AnimFrameData *frame;
-    player->anim_id = 2;
-    frame = sPlayerHandAnimations[2][0];
+    player->anim_id = PLAYER_HAND_ANIM_PLACING;
+    frame = sPlayerHandAnimations[PLAYER_HAND_ANIM_PLACING][0];
     player->anim_frame = 0;
     player->anim_timer = frame->duration;
-    player->action_state = 5;
+    player->action_state = PLAYER_HAND_ACTION_PLACING;
 }
 
-/* Original address: 0x020265D4 */
+/**
+ * Advances placement and commits the held object to the destination tile.
+ *
+ * Finishing an item placement updates both field representations and may call
+ * the islander toward an interesting nearby object. Finishing an islander
+ * placement returns the islander to the ground.
+ *
+ * Original address: 0x020265D4
+ */
 void PlayerHand_UpdatePlacing(void) {
     Player *player = &gPlayer;
     IslandFieldWork *field = &gIslandFieldWork;
@@ -644,7 +766,7 @@ void PlayerHand_UpdatePlacing(void) {
     s32 dx, dy;
 
     if (islander->carry_state == 0 && player->held_item_layer == 0 && player->held_item_tile_idx == 0) {
-        player->action_state = 0;
+        player->action_state = PLAYER_HAND_ACTION_RESET_TO_IDLE;
         PlayerHand_ResetToIdle();
         return;
     }
@@ -665,9 +787,9 @@ void PlayerHand_UpdatePlacing(void) {
         definition = &g_ItemDefinitions[player->held_item_type_idx];
         WriteItemToTile(player->x, player->tile_idx, player->held_item, definition->field_tile_id);
         if (player->held_item_layer == 0) {
-            field->fg_tiles[0][player->held_item_tile_idx] = 0xFFF;
+            field->fg_tiles[0][player->held_item_tile_idx] = FIELD_ITEM_TYPE_EMPTY;
         } else {
-            field->fg_tiles[1][player->held_item_tile_idx] = 0xFFF;
+            field->fg_tiles[1][player->held_item_tile_idx] = FIELD_ITEM_TYPE_EMPTY;
         }
         if (!(player->x & 0xFF0000)) {
             field->fg_tiles[0][player->tile_idx] = player->held_item_type_idx;
@@ -704,11 +826,17 @@ void PlayerHand_UpdatePlacing(void) {
     }
     player->interaction_cooldown_timer = 0x20;
     islander->player_interaction_tile_idx = player->tile_idx;
-    player->action_state = 0;
+    player->action_state = PLAYER_HAND_ACTION_RESET_TO_IDLE;
     PlayerHand_ResetToIdle();
 }
 
-/* Original address: 0x020267D0 */
+/**
+ * Dispatches the current hand action when islander transitions allow it.
+ *
+ * The first two field-entity slots are reserved before drawing the hand.
+ *
+ * Original address: 0x020267D0
+ */
 void PlayerHand_Update(void) {
     Player *player = &gPlayer;
     Islander_AGB *islander = &gIslander;
@@ -721,7 +849,11 @@ void PlayerHand_Update(void) {
     }
 }
 
-/* Original address: 0x02026830 */
+/**
+ * Appends the current hand-animation sprites to the game's OAM buffer.
+ *
+ * Original address: 0x02026830
+ */
 void PlayerHand_Draw(void) {
     Player *player = &gPlayer;
     IslandFieldWork *field = &gIslandFieldWork;
