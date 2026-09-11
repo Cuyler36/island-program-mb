@@ -59,17 +59,17 @@ FieldObjectSpriteFrame gFieldObjectSpriteFrames[24] = {
 };
 
 /* Original address: 0x020300F8 */
-u8 sFruitDropOffsetsX[3][4] = {
-    {0x0F, 0x0F, 0x0E, 0x0F},
-    {0x01, 0x01, 0x02, 0x01},
-    {0x00, 0x00, 0x0F, 0x01},
+u8 sFruitDropOffsetsX[3*4] = {
+    0x0F, 0x0F, 0x0E, 0x0F,
+    0x01, 0x01, 0x02, 0x01,
+    0x00, 0x00, 0x0F, 0x01,
 };
 
 /* Original address: 0x02030104 */
-u8 sFruitDropOffsetsY[3][4] = {
-    {0x00, 0x0F, 0x00, 0x01},
-    {0x00, 0x0F, 0x00, 0x01},
-    {0x01, 0x02, 0x01, 0x01},
+u8 sFruitDropOffsetsY[3*4] = {
+    0x00, 0x0F, 0x00, 0x01,
+    0x00, 0x0F, 0x00, 0x01,
+    0x01, 0x02, 0x01, 0x01,
 };
 
 /* Original address: 0x02030110 */
@@ -336,10 +336,10 @@ void FieldObject_HandleHit(s32 object_index) {
         }
         for (candidate = 0; candidate < 4; candidate++) {
             // Odd variable assignment needed to match
-            y = sFruitDropOffsetsY[0][fruit_index * 4 + candidate];
+            y = sFruitDropOffsetsY[fruit_index * 4 + candidate];
             object->drop_tile_y = y = y * 16 + object->tile_idx;
             object->drop_tile_y &= 0xF0;
-            x = sFruitDropOffsetsX[0][fruit_index * 4 + candidate];
+            x = sFruitDropOffsetsX[fruit_index * 4 + candidate];
             object->drop_tile_x = x = x + (object->tile_idx & 0xF);
             object->drop_tile_x &= 0xF;
             acre = 0;
