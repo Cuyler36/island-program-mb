@@ -59,17 +59,17 @@ FieldObjectSpriteFrame gFieldObjectSpriteFrames[24] = {
 };
 
 /* Original address: 0x020300F8 */
-u8 sFruitDropOffsetsX[3][4] = {
-    {0x0F, 0x0F, 0x0E, 0x0F},
-    {0x01, 0x01, 0x02, 0x01},
-    {0x00, 0x00, 0x0F, 0x01},
+u8 sFruitDropOffsetsX[3*4] = {
+    0x0F, 0x0F, 0x0E, 0x0F,
+    0x01, 0x01, 0x02, 0x01,
+    0x00, 0x00, 0x0F, 0x01,
 };
 
 /* Original address: 0x02030104 */
-u8 sFruitDropOffsetsY[3][4] = {
-    {0x00, 0x0F, 0x00, 0x01},
-    {0x00, 0x0F, 0x00, 0x01},
-    {0x01, 0x02, 0x01, 0x01},
+u8 sFruitDropOffsetsY[3*4] = {
+    0x00, 0x0F, 0x00, 0x01,
+    0x00, 0x0F, 0x00, 0x01,
+    0x01, 0x02, 0x01, 0x01,
 };
 
 /* Original address: 0x02030110 */
@@ -301,14 +301,13 @@ void FieldObject_HandleHit(s32 object_index) {
     FieldObject *object = &gFieldObjects[object_index];
     IslandFieldWork *field = &gIslandFieldWork;
     s32 fruit_index;
-    s32 hits_remaining;
     s32 candidate;
-    u32 fg_tile = 0;
+    u32 fg_tile;
     u8 acre;
     FallingFruit *fruit;
+    u16 x, y = 0;
 
-    hits_remaining = object->hits_remaining;
-    if (hits_remaining == 0 || (hits_remaining & 0x80)) {
+    if (object->hits_remaining == 0 || (object->hits_remaining & 0x80)) {
         FieldObject_SpawnToppleEffect(object_index);
         object->anim_timer = 8;
         object->anim_counter = 0;
@@ -336,9 +335,13 @@ void FieldObject_HandleHit(s32 object_index) {
             return;
         }
         for (candidate = 0; candidate < 4; candidate++) {
-            u32 tile = object->tile_idx;
-            object->drop_tile_y = (sFruitDropOffsetsY[fruit_index][candidate] * 16 + tile) & 0xF0;
-            object->drop_tile_x = (sFruitDropOffsetsX[fruit_index][candidate] + (tile & 0xF)) & 0xF;
+            // Odd variable assignment needed to match
+            y = sFruitDropOffsetsY[fruit_index * 4 + candidate];
+            object->drop_tile_y = y = y * 16 + object->tile_idx;
+            object->drop_tile_y &= 0xF0;
+            x = sFruitDropOffsetsX[fruit_index * 4 + candidate];
+            object->drop_tile_x = x = x + (object->tile_idx & 0xF);
+            object->drop_tile_x &= 0xF;
             acre = 0;
             if (object->layer == 0) {
                 object->drop_existing_item = gIslandData->fgblock[0][0].items[object->drop_tile_y >> 4][object->drop_tile_x];
@@ -367,7 +370,7 @@ void FieldObject_HandleHit(s32 object_index) {
             object->drop_tilemap = object->drop_tilemap + ((u8)(object->drop_tile_y + object->drop_tile_x) & 0xF0) * 4 +
                                    ((u8)(object->drop_tile_y + object->drop_tile_x) & 0xF) * 2;
             if ((object->drop_existing_item == 0 && fg_tile == 0xFFF &&
-                 (u16)((*object->drop_tilemap & 0x3FF) - 0x20) <= 0x5E) || candidate == 3) {
+                 ((*object->drop_tilemap & 0x3FF) >= 0x20 && (*object->drop_tilemap & 0x3FF) <= 0x7E)) || candidate == 3) {
                 field->entity_active[fruit_index + 21] = 1;
                 if (object->type == FIELD_OBJECT_TYPE_FRUIT_PALM_TREE) {
                     FallingFruit_Init(object_index, fruit_index, fruit_index + 1, acre);
@@ -393,7 +396,7 @@ void FieldObject_HandleHit(s32 object_index) {
                     field->fg_tiles[1][(u8)(object->drop_tile_y + object->drop_tile_x)] = 0x7777;
                 }
                 fruit = &gFallingFruit[fruit_index];
-                fruit->landing_x = object->drop_tile_x * 16;
+                fruit->landing_x = object->drop_tile_x << 4;
                 if (acre != 0) {
                     fruit->landing_x |= 0x100;
                 }
