@@ -298,14 +298,10 @@ void LoadIslandFieldEntity(u16 type, s32 pos, u8 acre) {
     s32 left_pos;
     u32 tilemap;
     u16 *dest;
-    u16 tile;
-    s32 next_tile;
-    s32 remaining;
+    u16 *dest2;
+    s32 tile;
     s32 slot;
-    u8 *active;
-    u16 ground_tile;
     s32 column_offset;
-    u16 *ground;
 
     switch (type) {
     case FIELD_OBJECT_TYPE_LARGE_TREE:
@@ -328,64 +324,63 @@ void LoadIslandFieldEntity(u16 type, s32 pos, u8 acre) {
         }
         dest = (u16 *)((u32)dest + ((left_pos & 0xFF0) << 3));
         dest += (left_pos & 15) * 2;
-        tile = sFieldEntityBaseTiles[type - 5];
+        slot = sFieldEntityBaseTiles[type - 5];
         dest += 33;
         if (field->tile_id_scratch == FIELD_ITEM_TYPE_EMPTY) {
-            *dest = tile;
+            *dest = slot;
         }
         dest++;
-        next_tile = tile + 1;
-        remaining = 2;
-        do {
-            /* Continue the row in the next screen block at an acre boundary. */
+        slot = slot + 1;
+
+        left_pos = 0;
+        while (left_pos < 3) {
+
             if (right_acre == 0 && (((u32)dest & 0xFF) == 0 || ((u32)dest & 0xFF) == 0x40 ||
                                     ((u32)dest & 0xFF) == 0x80 || ((u32)dest & 0xFF) == 0xC0)) {
                 dest += 0x3E0;
             }
-            *dest = next_tile;
-            remaining--;
+            *dest = slot;
+            left_pos++;
             dest++;
-            next_tile++;
-        } while (remaining >= 0);
-        if (type >= 12 && type <= 13) {
-            return;
+            slot++;
+        }
+        if (type == FIELD_OBJECT_TYPE_LARGE_STUMP || type == FIELD_OBJECT_TYPE_FULLY_GROWN_STUMP) {
+            break;
         }
         slot = 0;
-        active = &field->entity_active[54];
-        do {
-            if (*active == 0) {
-                *active = 1;
+        while (slot <= 29) {
+            if (field->entity_active[54 + slot] == 0) {
+                field->entity_active[54 + slot] = 1;
                 FieldObject_Init(slot, type, pos, acre);
-                return;
+                break;
             }
-            active++;
             slot++;
-        } while (slot <= 29);
+        }
         break;
     case 19:
         AnimatedFieldObject_Init(84, pos, acre);
         break;
     case 20:
         if (acre == 0) {
-            ground = (u16 *)(BG_SCREEN_ADDR(20) + ((pos & 0xFF0) << 3));
+            dest = (u16 *)(BG_SCREEN_ADDR(20) + ((pos & 0xFF0) << 3));
             column_offset = (pos & 15) << 2;
-            ground = (u16 *)((u32)ground + column_offset);
+            dest = (u16 *)((u32)dest + column_offset);
             tilemap = BG_SCREEN_ADDR(24) + ((pos & 0xFF0) << 3);
         } else {
-            ground = (u16 *)(BG_SCREEN_ADDR(21) + ((pos & 0xFF0) << 3));
+            dest = (u16 *)((0x6000000 + (0x800 * (21))) + ((pos & 0xFF0) << 3));
             column_offset = (pos & 15) << 2;
-            ground = (u16 *)((u32)ground + column_offset);
+            dest = (u16 *)((u32)dest + column_offset);
             tilemap = BG_SCREEN_ADDR(25) + ((pos & 0xFF0) << 3);
         }
-        dest = (u16 *)(tilemap + column_offset);
-        ground_tile = *ground & 0x3FF;
-        field->tile_render_scratch = ground_tile;
-        if ((ground_tile >= 10 && ground_tile <= 15) || (ground_tile >= 0xC6 && ground_tile <= 0xCB)) {
-            *dest++ = 0x22AC;
-            *dest = 0x22AD;
-            dest += 31;
-            *dest = 0x22AE;
-            dest[1] = 0x22AF;
+        dest2 = (u16 *)(tilemap + column_offset);
+        field->tile_render_scratch = *dest & 0x3FF;
+        if ((field->tile_render_scratch >= 10 && field->tile_render_scratch <= 15)
+            || (field->tile_render_scratch >= 0xC6 && field->tile_render_scratch <= 0xCB)) {
+            *dest2++ = 0x22AC;
+            *dest2++ = 0x22AD;
+            dest2 += 30;
+            *dest2++ = 0x22AE;
+            *dest2++ = 0x22AF;
         }
         break;
     case FIELD_OBJECT_TYPE_SMALL_TREE:
@@ -396,16 +391,14 @@ void LoadIslandFieldEntity(u16 type, s32 pos, u8 acre) {
     case FIELD_OBJECT_TYPE_FULLY_GROWN_PALM_TREE:
     case FIELD_OBJECT_TYPE_FRUIT_PALM_TREE:
         slot = 0;
-        active = &field->entity_active[54];
-        do {
-            if (*active == 0) {
-                *active = 1;
+        while (slot <= 29) {
+            if (field->entity_active[54 + slot] == 0) {
+                field->entity_active[54 + slot] = 1;
                 FieldObject_Init(slot, type, pos, acre);
-                return;
+                break;
             }
-            active++;
             slot++;
-        } while (slot <= 29);
+        }
         break;
     }
 }
